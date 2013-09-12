@@ -33,18 +33,16 @@ function(commonViews, models, supportPageTemplate) {
         },
         scheduleUpdate: function() {
             var task = this.logsPackageTasks.filterTasks({name: 'dump'});
-            if (task.length) {
-                if (this.timeout) {
-                    this.timeout.clear();
-                }
-                if (_.isUndefined(task[0].get('progress')) || task[0].get('progress') < 100 ) {
-                    this.registerDeferred(this.timeout = $.timeout(this.updateInterval).done(_.bind(this.update, this)));
-                } else {
-                    this.$('.genereate-logs').toggleClass('hide');
-                    this.$('.donwload-logs-link').toggleClass('hide');
-                    this.$('.donwload-logs-link > a').attr('href', task[0].get('message'));
-                    this.$('.download-logs').toggleClass('disabled');
-                }
+            if (this.timeout) {
+                this.timeout.clear();
+            }
+            if (_.isUndefined(task[0]) || task[0].get('progress') < 100 ) {
+                this.registerDeferred(this.timeout = $.timeout(this.updateInterval).done(_.bind(this.update, this)));
+            } else {
+                this.$('.genereate-logs').addClass('hide');
+                this.$('.donwload-logs-link').removeClass('hide');
+                this.$('.donwload-logs-link > a').attr('href', task[0].get('message'));
+                this.$('.download-logs').removeClass('disabled');
             }
         },
         update: function() {
@@ -53,9 +51,11 @@ function(commonViews, models, supportPageTemplate) {
         downloadLogs: function() {
             var task = new models.LogsPackage()
             task.save({}, {method: 'PUT'});
-            this.$('.download-logs').toggleClass('disabled');
-            this.$('.donwload-logs-link').toggleClass('hide');
-            this.$('.genereate-logs').toggleClass('hide');
+            this.$('.download-logs').addClass('disabled');
+            this.$('.donwload-logs-link').addClass('hide');
+            this.$('.genereate-logs').removeClass('hide');
+            this.logsPackageTasks = new models.Tasks();
+            this.logsPackageTasks.fetch();
             this.scheduleUpdate();
         },
         initialize: function(options) {
@@ -63,10 +63,6 @@ function(commonViews, models, supportPageTemplate) {
             this.model = new models.FuelKey();
             this.model.fetch();
             this.model.on('change', this.render, this);
-            this.logsPackageTasks = new models.Tasks();
-            this.logsPackageTasks.fetch()
-            this.logsPackageTasks.on('change', this.scheduleUpdate());
-
         },
         render: function() {
             this.$el.html(this.template());
