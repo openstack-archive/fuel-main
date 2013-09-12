@@ -25,7 +25,7 @@ from fuelweb_test.nailgun_client import NailgunClient
 from fuelweb_test.settings import CLEAN, NETWORK_MANAGERS, EMPTY_SNAPSHOT, \
     REDHAT_USERNAME, REDHAT_PASSWORD, REDHAT_SATELLITE_HOST, \
     REDHAT_ACTIVATION_KEY, OPENSTACK_RELEASE, OPENSTACK_RELEASE_REDHAT, \
-    REDHAT_LICENSE_TYPE
+    REDHAT_LICENSE_TYPE, READY_SNAPSHOT
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
@@ -116,7 +116,21 @@ class BaseNodeTestCase(BaseTestCase):
         self.client.clean_clusters()
 
     @logwrap
+    def update_deployment_mode(self, cluster_id, nodes_dict):
+        controller_names = filter(
+            lambda x: 'controller' in nodes_dict[x], nodes_dict)
+        if len(nodes_dict) > 1:
+            controller_amount = len(controller_names)
+            if controller_amount == 1:
+                self.client.update_cluster(
+                    cluster_id,
+                    {"mode": "multinode"})
+            if controller_amount > 1:
+                self.client.update_cluster(cluster_id, {"mode": "ha"})
+
+    @logwrap
     def configure_cluster(self, cluster_id, nodes_dict):
+        self.update_deployment_mode(cluster_id, nodes_dict)
         self.update_nodes(cluster_id, nodes_dict, True, False)
         # TODO: update network configuration
 
@@ -137,9 +151,8 @@ class BaseNodeTestCase(BaseTestCase):
     def prepare_environment(self, name='cluster_name', mode="multinode",
                             settings={}):
         if not(self.ci().revert_to_state(settings)):
-            # create cluster
-            self.ci().get_empty_environment()
-            cluster_id = self.create_cluster(name=name, mode=mode)
+            self.get_ready_environment()
+            cluster_id = self.create_cluster(name=name)
             self.basic_provisioning(cluster_id, settings['nodes'])
             self.ci().snapshot_state(name, settings)
 
@@ -428,27 +441,25 @@ class BaseNodeTestCase(BaseTestCase):
             net_manager=NETWORK_MANAGERS['vlan'])
 
     @logwrap
-    def get_empty_environment(self):
-        if not(self.ci().get_empty_state()):
-            self.ci().setup_environment()
+    def get_ready_environment(self):
+        if self.ci().get_state(READY_SNAPSHOT):
+            self.environment().resume(verbose=False)
+            return
 
-            if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
-                # update redhat credentials so that fuel uploads redhat
-                # packages
+        self.ci().get_empty_environment()
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            # update redhat credentials so that fuel may upload redhat
+            # packages
 
-                # download redhat repo from local place to boost the test
-                # remote = self.nodes().admin.remote('internal', 'root', 'r00tme')
-                # remote.execute('wget -q http://172.18.67.168/rhel6/rhel-rpms.tar.gz')
-                # remote.execute('tar xzf rhel-rpms.tar.gz -C /')
+            # download redhat repo from local place to boost the test
+            # remote = self.nodes().admin.remote('internal', 'root', 'r00tme')
+            # remote.execute('wget -q http://172.18.67.168/rhel6/rhel-rpms.tar.gz')
+            # remote.execute('tar xzf rhel-rpms.tar.gz -C /')
 
-                self.update_redhat_credentials()
-                self.assert_release_state(OPENSTACK_RELEASE_REDHAT,
-                                          state='available')
-                self.ci().environment().snapshot(
-                    name=EMPTY_SNAPSHOT, description=EMPTY_SNAPSHOT,
-                    force=True)
-
-            self.ci().environment().snapshot(EMPTY_SNAPSHOT)
+            self.update_redhat_credentials()
+            self.assert_release_state(OPENSTACK_RELEASE_REDHAT,
+                                      state='available')
+            self.ci().snapshot_state(READY_SNAPSHOT)
 
     @logwrap
     def update_redhat_credentials(

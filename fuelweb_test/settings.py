@@ -17,6 +17,7 @@ import os
 
 ISO_PATH = os.environ.get('ISO_PATH')
 EMPTY_SNAPSHOT = os.environ.get('EMPTY_SNAPSHOT', 'empty')
+READY_SNAPSHOT = os.environ.get('READY_SNAPSHOT', 'ready')
 
 OPENSTACK_RELEASE_CENTOS = 'Grizzly on CentOS 6.4'
 OPENSTACK_RELEASE_REDHAT = 'RHOS 3.0 for RHEL 6.4'
