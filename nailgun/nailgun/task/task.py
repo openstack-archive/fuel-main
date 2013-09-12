@@ -126,7 +126,8 @@ class DeploymentTask(object):
             'respond_to': 'deploy_resp',
             'args': {
                 'task_uuid': task.uuid,
-                'deployment_info': serialize(task.cluster)
+                'deployment_info': task.cluster.facts
+                or serialize(task.cluster)
             }
         }
 

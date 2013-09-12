@@ -189,9 +189,10 @@ class DeploymentTaskManager(TaskManager):
             db().commit()
 
             # checking admin intersection with untagged
-            network_info = NetworkConfigurationSerializer.serialize_for_cluster(
-                self.cluster
-            )
+            network_info = NetworkConfigurationSerializer\
+                .serialize_for_cluster(
+                    self.cluster
+                )
             check_networks = supertask.create_subtask('check_networks')
             self._call_silently(
                 check_networks,

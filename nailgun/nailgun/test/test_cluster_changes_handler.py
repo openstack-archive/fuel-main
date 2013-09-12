@@ -283,7 +283,6 @@ class TestHandlers(BaseHandlers):
         self.datadiff(args[1][0], provision_msg)
         self.datadiff(args[1][1], deployment_msg)
 
-
     @fake_tasks(fake_rpc=False, mock_rpc=False)
     @patch('nailgun.rpc.cast')
     def test_deploy_and_remove_correct_nodes_and_statuses(self, mocked_rpc):
