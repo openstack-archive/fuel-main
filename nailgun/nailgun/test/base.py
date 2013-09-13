@@ -546,6 +546,12 @@ class Environment(object):
 class BaseTestCase(TestCase):
     fixtures = ['admin_network']
 
+    def __init__(self, *args, **kwargs):
+        super(BaseTestCase, self).__init__(*args, **kwargs)
+        self.default_headers = {
+            "Content-Type": "application/json"
+        }
+
     @classmethod
     def setUpClass(cls):
         cls.db = db()
@@ -576,12 +582,6 @@ class BaseIntegrationTest(BaseTestCase):
     def setUpClass(cls):
         super(BaseIntegrationTest, cls).setUpClass()
         nailgun.task.task.DeploymentTask._prepare_syslog_dir = mock.Mock()
-
-    def __init__(self, *args, **kwargs):
-        super(BaseIntegrationTest, self).__init__(*args, **kwargs)
-        self.default_headers = {
-            "Content-Type": "application/json"
-        }
 
     def _wait_for_threads(self):
         # wait for fake task thread termination
