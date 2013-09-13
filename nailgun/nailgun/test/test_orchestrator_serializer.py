@@ -62,7 +62,8 @@ class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
                 {'roles': ['controller', 'cinder'], 'pending_addition': True},
                 {'roles': ['compute', 'cinder'], 'pending_addition': True},
                 {'roles': ['compute'], 'pending_addition': True},
-                {'roles': ['cinder'], 'pending_addition': True}])
+                {'roles': [], 'pending_roles': ['cinder'],
+                 'pending_addition': True}])
 
         cluster_db = self.db.query(Cluster).get(cluster['id'])
         cluster_db.prepare_for_deployment()
@@ -171,7 +172,7 @@ class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
                                   node['storage_address'])
 
     def test_controller_nodes(self):
-        ctrl_nodes = self.serializer.controller_nodes(self.cluster.id)
+        ctrl_nodes = self.serializer.controller_nodes(self.cluster)
         self.assertEquals(len(ctrl_nodes), 1)
 
         # And should equal to nodes in nodes_list

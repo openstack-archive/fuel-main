@@ -91,7 +91,7 @@ class TestHandlers(BaseHandlers):
         i = 0
         for node in nodes_db:
             node_id = node.id
-            for role in node.roles:
+            for role in sorted(node.roles + node.pending_roles):
                 assigned_ips[node_id] = {}
                 assigned_ips[node_id]['internal'] = '192.168.0.%d' % (i + 3)
                 assigned_ips[node_id]['public'] = '172.16.1.%d' % (i + 3)
