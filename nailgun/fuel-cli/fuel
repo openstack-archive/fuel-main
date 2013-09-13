@@ -16,7 +16,9 @@
 import argparse
 from itertools import chain
 import json
+import os
 from pprint import pprint
+import shutil
 import sys
 import urllib2
 
@@ -93,11 +95,26 @@ def format_table(data, acceptable_keys=None, subdict_keys=None):
     )
 
 
+def json_api_delete_request(api):
+    """Make DELETE request to specific API with some data
+    """
+    opener = urllib2.build_opener(urllib2.HTTPHandler)
+    request = urllib2.Request(API_ROOT + api)
+    request.add_header('Content-Type', ' application/json')
+    request.get_method = lambda: 'DELETE'
+    try:
+        return json.loads(
+            opener.open(request).read()
+        )
+    except urllib2.HTTPError as e:
+        print_error(str(e) + "\n")
+
+
 def json_api_put_request(api, data):
     """Make PUT request to specific API with some data
     """
     opener = urllib2.build_opener(urllib2.HTTPHandler)
-    request = urllib2.Request(API_ROOT + api, data=data)
+    request = urllib2.Request(API_ROOT + api, data=json.dumps(data))
     request.add_header('Content-Type', ' application/json')
     request.get_method = lambda: 'PUT'
     try:
@@ -149,8 +166,9 @@ def check_for_attributes(params, attributes):
     not_paseed_checks = [attribute for attribute in attributes
                          if not getattr(params, attribute)]
     if len(not_paseed_checks):
-        msg = "{0} required!\n".format(", ".join(not_paseed_checks))
-        print_error(msg)
+        print_error(
+            "{0} required!\n".format(", ".join(not_paseed_checks))
+        )
 
 
 def release(params):
@@ -193,7 +211,6 @@ def environment(params):
         pprint(post_response)
         if params.mode:
             data = {"mode": params.mode}
-            data = json.dumps(data)
             put_response = json_api_put_request(
                 "clusters/{0}".format(post_response[u"id"]),
                 data
@@ -207,7 +224,6 @@ def environment(params):
                 data["mode"] = params.mode
             if params.ename:
                 data["name"] = params.ename
-            data = json.dumps(data)
             put_response = json_api_put_request(
                 "clusters/{0}".format(params.eid),
                 data
@@ -238,13 +254,13 @@ def node(params):
             lambda node_id: {
                 "id": node_id,
                 "cluster_id": params.eid,
-                "role": role,
+                "roles": [role],
                 "pending_addition": True,
                 "pending_deletion": False
             },
             node_ids
         )
-        put_response = json_api_put_request("nodes/", json.dumps(data))
+        put_response = json_api_put_request("nodes/", data)
         pprint(put_response)
 
 
@@ -290,7 +306,7 @@ def deploy(params):
     check_for_attributes(params, ["eid"])
     put_response = json_api_put_request(
         "clusters/{0}/changes".format(params.eid),
-        "{}"
+        {}
     )
     pprint(put_response)
 
@@ -299,11 +315,89 @@ def fact(params):
     """Show computed facts for orchestrator
     """
     check_for_attributes(params, ["eid"])
-    facts = json_api_get_request(
-        "clusters/{0}/orchestrator/defaults"
-        .format(params.eid)
+
+    dir_name = os.path.join(
+        os.path.abspath(os.path.curdir
+                        if params.dir is None else params.dir),
+        "cluster_{0}".format(params.eid)
     )
-    print(facts)
+
+    if params.default:
+        facts = json_api_get_request(
+            "clusters/{0}/orchestrator/defaults"
+            .format(params.eid)
+        )
+        write_facts_to_dir(facts, dir_name)
+    elif params.upload:
+        put_response = json_api_put_request(
+            "clusters/{0}/orchestrator/"
+            .format(params.eid),
+            parse_fact_from_dir(dir_name)
+        )
+        pprint(put_response)
+    elif params.delete:
+        json_api_delete_request(
+            "clusters/{0}/orchestrator/"
+            .format(params.eid),
+        )
+    else:
+        facts = json_api_get_request(
+            "clusters/{0}/orchestrator/"
+            .format(params.eid),
+        )
+        if not facts:
+            print(
+                "Environment with id={0} has no facts."
+                .format(params.eid)
+            )
+            return
+        if params.download:
+            write_facts_to_dir(facts, dir_name)
+        else:
+            pprint(facts)
+
+
+def read_json(path):
+        with open(path, "r") as json_file:
+            return json.loads(json_file.read())
+
+
+def parse_fact_from_dir(dir_name):
+    if not os.path.exists(dir_name):
+        path_to_folder = dir_name.split(os.sep)
+        one_folder_up = path_to_folder[:-2] + path_to_folder[-2:-1]
+        dir_name = os.sep.join(one_folder_up)
+    try:
+        return map(
+            read_json,
+            [os.path.join(dir_name, json_file)
+             for json_file in os.listdir(dir_name)
+             if json_file.endswith('.json')]
+        )
+    except OSError:
+        print(
+            "Directory {0} doesn't exist."
+            .format(dir_name)
+        )
+
+
+def write_facts_to_dir(facts, dir_name):
+    if os.path.exists(dir_name):
+        shutil.rmtree(dir_name)
+        print("old directory {0} was removed".format(dir_name))
+    os.makedirs(dir_name)
+    print("directory {0} was created".format(dir_name))
+    for fact in facts:
+        fd = open(
+            os.path.join(
+                dir_name,
+                "{role}_{uid}.json".format(**fact)
+            ),
+            "w+"
+        )
+        fd.write(json.dumps(fact, indent=4))
+        print("Created {0}".format(fd.name))
+        fd.close()
 
 
 def parse_node_ids(x):
@@ -690,6 +784,46 @@ actions = {
                 "help": "environment id",
                 "default": None
             }
+        }, {
+            "args": ["--delete"],
+            "params": {
+                "dest": "delete",
+                "action": "store_true",
+                "help": "Delete current orchestrator data.",
+                "default": False
+            }
+        }, {
+            "args": ["--download"],
+            "params": {
+                "dest": "download",
+                "action": "store_true",
+                "help": "Download current orchestrator data.",
+                "default": False
+            }
+        }, {
+            "args": ["--upload"],
+            "params": {
+                "dest": "upload",
+                "action": "store_true",
+                "help": "Upload current orchestrator data.",
+                "default": False
+            }
+        }, {
+            "args": ["--default"],
+            "params": {
+                "dest": "default",
+                "action": "store_true",
+                "help": "Download default orchestrator data.",
+                "default": False
+            }
+        }, {
+            "args": ["-d", "--dir"],
+            "params": {
+                "dest": "dir",
+                "action": "store",
+                "help": "Directory with orchestrator data.",
+                "default": None
+            }
         }]
     }
 }
@@ -702,6 +836,9 @@ substitutions = {
     "list": "--list",
     "set": "--set",
     "delete": "--delete",
+    "download": "--download",
+    "upload": "--upload",
+    "default": "--default",
     "create": "--create"
 }
 
