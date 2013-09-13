@@ -1,61 +1,175 @@
 #!/bin/sh
-# System Tests Script
-#
-# It can perform several actions depending on Jenkins JOB_NAME it's ran from
-# or it can take names from exported environment variables if you do need to override them.
-#
-# If task name is "iso" it will make iso file
-# Other defined names will run Nose tests using previously built ISO file.
-#
-# ISO file name is taken from job name prefix
-# Task name is taken from job name suffix
-# Separator is one dot '.'
-#
-# For example if task name is:
-# mytest.somestring.iso
-# ISO name: mytest.iso
-# Task name: iso
-# If ran with such JOB_NAME iso file with name mytest.iso will be created
-# If task name is:
-# mytest.somestring.node
-# ISO name: mytest.iso
-# Task name: node
-# If script was run with this JOB_NAME node tests will be using ISO file mytest.iso.
-#
-# First you should run mytest.somestring.iso job to create mytest.iso.
-# Then you can ran mytest.somestring.node job to start tests using mytest.iso and other tests too.
-#
-# You can override following variables using export VARNAME="value" before running this script
-# WORKSPACE  - path to directory where Fuelweb repository was chacked out by Jenkins or manually
-# JOB_NAME   - name of Jenkins job that determines which task should be done and ISO file name.
-# USE_MIRROR - what mirror should be user. Override to your local mirror if possible.
-# ROTATE_ISO - should iso files be rotated with build numbers and symlinked to the last one
-#              or just copied over single file. Can be 'yes' or 'no'.
-#              Uses BUILD_NUMBER variable to get tag number.
-
 PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # functions
 
-GlobalVars() {
+ShowHelp() {
+cat << EOF
+System Tests Script
+
+It can perform several actions depending on Jenkins JOB_NAME it's ran from
+or it can take names from exported environment variables or command line options
+if you do need to override them.
+
+-w (dir)    - Path to workspace where fuelwe git repository was checked out.
+              Uses Jenkins' WORKSPACE if not set
+-j (name)   - Name of this job. Determines ISO name, Task name and used by tests.
+              Uses Jenkins' JOB_NAME if not set
+-i (file)   - Full path to ISO file to build or use for tests.
+              Made from iso dir and name if not set.
+-t (name)   - Name of task this script should perform. Should be one of defined ones.
+              Taken from Jenkins' job's suffix if not set.
+-T (class)  - Overrides what tests should be ran insted of using task system.
+              Set if you want to run custom test.
+-a (str)    - Allows you to path NOSE_ATTR to the test job if you want
+              to use some parameters.
+-A (str)    - Pather NOSE_EVAL_ATTR if you want to path attributes to the
+              nose tests as a python expression.
+-m (name)   - Use this mirror to build ISO from.
+              Uses 'srt' if not set.
+-r (yes/no) - Should built ISO file be places with build number tag and
+              symlinked to the last build or just copied over the last file.
+-b (num)    - Allows you to override Jenkins' build number if you need to.
+-d          - Dry run mode. Only show what wouyld be done and do nothing.
+              Useful for debugging.
+-h          - Show this help page
+
+Most variables uses guesing from Jenkins' job name but can be overriden
+by exported variable before script is run or by one of command line options.
+
+You can override following variables using export VARNAME="value" before running this script
+WORKSPACE  - path to directory where Fuelweb repository was chacked out by Jenkins or manually
+JOB_NAME   - name of Jenkins job that determines which task should be done and ISO file name.
+
+If task name is "iso" it will make iso file
+Other defined names will run Nose tests using previously built ISO file.
+
+ISO file name is taken from job name prefix
+Task name is taken from job name suffix
+Separator is one dot '.'
+
+For example if JOB_NAME is:
+mytest.somestring.iso
+ISO name: mytest.iso
+Task name: iso
+If ran with such JOB_NAME iso file with name mytest.iso will be created
+
+If JOB_NAME is:
+mytest.somestring.node
+ISO name: mytest.iso
+Task name: node
+If script was run with this JOB_NAME node tests will be using ISO file mytest.iso.
+
+First you should run mytest.somestring.iso job to create mytest.iso.
+Then you can ran mytest.somestring.node job to start tests using mytest.iso and other tests too.
+EOF
+}
+
+GlobalVariables() {
   # where built iso's should be placed
+  # use hardcoded default if not set before by export
   ISO_DIR="${ISO_DIR:=/var/www/fuelweb-iso}"
+
   # name of iso file
-  export ISO_NAME="${JOB_NAME%.*}.iso"
+  # taken from jenkins job prefix
+  # if not set before by variable export
+  if [ -z "${ISO_NAME}" ]; then
+    ISO_NAME="${JOB_NAME%.*}.iso"
+  fi
+
   # full path where iso file should be placed
-  export ISO_PATH="${ISO_DIR}/${ISO_NAME}"
+  # make from iso name and path to iso shared directory
+  # if was not overriden by options or export
+  if [ -z "${ISO_PATH}" ]; then
+    ISO_PATH="${ISO_DIR}/${ISO_NAME}"
+  fi
+
   # what task should be ran
-  TASK_NAME="${JOB_NAME##*.}"
+  # it's taken from jenkins job name suffix if not set by options
+  if [ -z "${TASK_NAME}" ]; then
+    TASK_NAME="${JOB_NAME##*.}"
+  fi
+
   # do we want to keep iso's for each build or just copy over single file
   ROTATE_ISO="${ROTATE_ISO:=yes}"
+
   # choose mirror to build iso from. Default is 'srt' for Saratov's mirror
   # you can change mirror by exporting USE_MIRROR variable before running this script
-  export USE_MIRROR="${USE_MIRROR:=srt}"
+  USE_MIRROR="${USE_MIRROR:=srt}"
+
+  # only show what commands would be executed but do nothing
+  # this feature is usefull if you want to debug this script's behaviour
+  DRY_RUN="${DRY_RUN:=no}"
+}
+
+GetoptsVariables() {
+  while getopts ":w:j:i:t:T:a:A:m:r:b:dh" opt; do
+    case $opt in
+      w)
+        WORKSPACE="${OPTARG}"
+        ;;
+      j)
+        JOB_NAME="${OPTARG}"
+        ;;
+      i)
+        ISO_PATH="${OPTARG}"
+        ;;
+      t)
+        TASK_NAME="${OPTARG}"
+        ;;
+      T)
+        TEST_NAME="${OPTARG}"
+        ;;
+      a)
+        NOSE_ATTR="${OPTARG}"
+        ;;
+      A)
+        NOSE_EVAL_ATTR="${OPTARG}"
+        ;;
+      m)
+		USE_MIRROR="${OPTARG}"
+		;;
+      r)
+        ROTATE_ISO="${OPTARG}"
+        ;;
+      b)
+        BUILD_NUMBER="${OPTARG}"
+        ;;
+      d)
+        DRY_RUN="yes"
+        ;;
+      h)
+        ShowHelp
+        exit 0
+        ;;
+      \?)
+        echo "Invalid option: -$OPTARG"
+        ShowHelp
+        exit 1
+        ;;
+      :)
+        echo "Option -$OPTARG requires an argument."
+        ShowHelp
+        exit 1
+        ;;
+    esac
+  done
 }
 
 CheckVariables() {
+
   if [ -z "${JOB_NAME}" ]; then
     echo "Error! JOB_NAME is not set!"
+    exit 1
+  fi
+
+  if [ -z "${ISO_PATH}" ]; then
+    echo "Error! ISO_PATH is not set!"
+    exit 1
+  fi
+  
+  if [ -z "${TASK_NAME}" ]; then
+    echo "Error! TASK_NAME is not set!"
     exit 1
   fi
 
@@ -69,7 +183,11 @@ MakeISO() {
   # Create iso file to be used in tests
 
   # clean previous garbage
-  make deep_clean
+  if [ "${DRY_RUN}" = "yes" ]; then
+    echo make deep_clean
+  else
+    make deep_clean
+  fi
   ec="${?}"
 
   if [ "${ec}" -gt "0" ]; then
@@ -78,24 +196,29 @@ MakeISO() {
   fi
 
   # create ISO file
-  make iso
+  export USE_MIRROR
+  if [ "${DRY_RUN}" = "yes" ]; then
+    echo make iso
+  else
+    make iso
+  fi
   ec=$?
 
   if [ "${ec}" -gt "0" ]; then
-    echo "Error! Make ISO!"
+    echo "Error making ISO!"
     exit "${ec}"
   fi
 
-  ISO="`ls ${WORKSPACE}/build/iso/*.iso | head -n 1`"
-
-  # check that ISO file exists
-  if [ ! -f "${ISO}" ]; then
-    echo "Error! ISO file not found!"
-    exit 1
+  if [ "${DRY_RUN}" = "yes" ]; then
+    ISO="${WORKSPACE}/build/iso/fuel.iso"
+  else
+    ISO="`ls ${WORKSPACE}/build/iso/*.iso | head -n 1`"
+    # check that ISO file exists
+    if [ ! -f "${ISO}" ]; then
+      echo "Error! ISO file not found!"
+      exit 1
+    fi
   fi
-
-  # create shared iso dir if not present
-  mkdir -p "${ISO_DIR}"
 
   # copy ISO file to storage dir
   # if rotation is enabled and build number is aviable
@@ -103,9 +226,13 @@ MakeISO() {
   # if rotation is not enabled just copy iso to iso_dir
 
   if [ "${ROTATE_ISO}" = "yes" -a "${BUILD_NUMBER}" != "" ]; then
-    # copy iso file to ISO_DIR with revision tagged name
+    # copy iso file to shared dir with revision tagged name
     NEW_BUILD_ISO_PATH="${ISO_PATH#.iso}_${BUILD_NUMBER}.iso"
-    cp "${ISO}" "${NEW_BUILD_ISO_PATH}"
+    if [ "${DRY_RUN}" = "yes" ]; then
+      echo cp "${ISO}" "${NEW_BUILD_ISO_PATH}"
+    else
+      cp "${ISO}" "${NEW_BUILD_ISO_PATH}"
+    fi
     ec=$?
 
     if [ "${ec}" -gt "0" ]; then
@@ -114,7 +241,11 @@ MakeISO() {
     fi
 
     # create symlink to the last built ISO file
-    ln -sf "${NEW_BUILD_ISO_PATH}" "${ISO_PATH}"
+    if [ "${DRY_RUN}" = "yes" ]; then
+      echo ln -sf "${NEW_BUILD_ISO_PATH}" "${ISO_PATH}"
+    else
+      ln -sf "${NEW_BUILD_ISO_PATH}" "${ISO_PATH}"
+    fi
     ec=$?
 
     if [ "${ec}" -gt "0" ]; then
@@ -122,7 +253,12 @@ MakeISO() {
       exit "${ec}"
     fi
   else
-    cp "${ISO}" "${ISO_PATH}"
+    # just copy file to shared dir
+    if [ "${DRY_RUN}" = "yes" ]; then
+      echo cp "${ISO}" "${ISO_PATH}"
+    else
+      cp "${ISO}" "${ISO_PATH}"
+    fi
     ec=$?
 
     if [ "${ec}" -gt "0" ]; then
@@ -139,35 +275,69 @@ MakeISO() {
   exit 0
 }
 
+CdWorkSpace() {
+  # chdir into workspace or fail if could not
+  if [ "${DRY_RUN}" != "yes" ]; then
+    cd "${WORKSPACE}"
+    ec=$?
+
+    if [ "${ec}" -gt "0" ]; then
+      echo "Error! Cannot cd to WORKSPACE!"
+      exit "${ec}"
+    fi
+  fi
+}
+
+RunCustomTest() {
+  # if TEST_NAME is set we override task selector and run this test instead
+  if [ -n "${TEST_NAME}" ]; then
+    RunTest "${TEST_NAME}"
+    exit 0
+  fi
+}
+
 RunTest() {
   # Run test selected by task name
 
-  # first we chdir into our working directory
-  cd "${WORKSPACE}"
-  ec=$?
-
-  if [ "${ec}" -gt "0" ]; then
-    echo "Error! Cannot cd to WORKSPACE!"
-    exit "${ec}"
-  fi
-
   # check if iso file exists
-  if [ ! -f "${ISO_PATH}" ]; then
+  if [ ! -f "${ISO_PATH}" -a "${DRY_RUN}" != "yes" ]; then
     echo "Error! File ${ISO_PATH} not found!"
     exit 1
   fi
 
   # run python virtualenv
-  . ~/venv-nailgun-tests/bin/activate
+  if [ "${DRY_RUN}" = "yes" ]; then
+    echo source ~/venv-nailgun-tests/bin/activate
+  else
+    source ~/venv-nailgun-tests/bin/activate
+  fi
 
   export ENV_NAME="${JOB_NAME}_system_test"
   export LOGS_DIR="${WORKSPACE}/logs"
+  export ISO_PATH
 
   # remove previous garbage
-  dos.py erase "${ENV_NAME}"
+  if [ "${DRY_RUN}" = "yes" ]; then
+    echo dos.py erase "${ENV_NAME}"
+  else
+    dos.py erase "${ENV_NAME}"
+  fi
+
+  # gather additional option for this nose test run
+  OPTS=""
+  if [ -n "${NOSE_ATTR}" ]; then
+    OPTS="${OPTS} -a ${NOSE_ATTR}"
+  fi
+  if [ -n "${NOSE_EVAL_ATTR}" ]; then
+    OPTS="${OPTS} -A ${NOSE_EVAL_ATTR}"
+  fi
 
   # run python test set to create environments, deploy and test product
-  nosetests -w "fuelweb_test" -s -l DEBUG --with-xunit "${1}"
+  if [ "${DRY_RUN}" = "yes" ]; then
+    echo nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit "${1}"
+  else
+    nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit "${1}"
+  fi
   ec=$?
 
   exit "${ec}"
@@ -176,6 +346,7 @@ RunTest() {
 RouteTasks() {
   # this selector defines task names that are recognised by this script
   # and runs corresponding jobs for them
+  # running any jobs should exit this script
 
   case "${TASK_NAME}" in
   admin_node)
@@ -198,9 +369,25 @@ RouteTasks() {
     exit 1
     ;;
   esac
+  exit 0
 }
 
 # MAIN
+
+# first we want to get variable from command line options
+GetoptsVariables ${@}
+
+# then we define global variables and there defaults when needed
+GlobalVariables
+
+# check do we have all critical variables set
 CheckVariables
-GlobalVars
+
+# first we chdir into our working directory unless we dry run
+CdWorkSpace
+
+# run custom test if TEST_NAME is set
+RunCustomTest
+
+# finally we can choose what to do according to TASK_NAME
 RouteTasks
