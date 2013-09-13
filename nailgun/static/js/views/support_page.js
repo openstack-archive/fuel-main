@@ -49,7 +49,7 @@ function(commonViews, models, supportPageTemplate) {
             this.registerDeferred(this.logsPackageTasks.fetch().always(_.bind(this.scheduleUpdate, this)));
         },
         downloadLogs: function() {
-            var task = new models.LogsPackage()
+            var task = new models.LogsPackage();
             task.save({}, {method: 'PUT'});
             this.$('.download-logs').addClass('disabled');
             this.$('.donwload-logs-link').addClass('hide');
