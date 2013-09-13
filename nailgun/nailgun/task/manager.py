@@ -163,9 +163,9 @@ class DeploymentTaskManager(TaskManager):
         db().commit()
         if not self.cluster.facts:
             try:
-                supertask = self.check_before_deployment(supertask)
-            except errors.CheckBeforeDeploymentError as e:
-                return e.supertask
+                self.check_before_deployment(supertask)
+            except errors.CheckBeforeDeploymentError:
+                return supertask
         # in case of Red Hat
         if self.cluster.release.operating_system == "RHEL":
             try:
@@ -270,9 +270,10 @@ class DeploymentTaskManager(TaskManager):
         )
         db().refresh(check_networks)
         if check_networks.status == 'error':
-            error = errors.CheckBeforeDeploymentError()
-            error.supertask = supertask
-            raise error
+            logger.debug(
+                "Checking networks failed: %s", check_networks.message
+            )
+            raise errors.CheckBeforeDeploymentError(check_networks.message)
         db().delete(check_networks)
         db().commit()
 
@@ -290,15 +291,12 @@ class DeploymentTaskManager(TaskManager):
             logger.debug(
                 "Checking prerequisites failed: %s", check_before.message
             )
-            error = errors.CheckBeforeDeploymentError()
-            error.supertask = supertask
-            raise error
+            raise errors.CheckBeforeDeploymentError(check_before.message)
         logger.debug(
             "Checking prerequisites is successful, starting deployment..."
         )
         db().delete(check_before)
         db().commit()
-        return supertask
 
 
 class CheckNetworksTaskManager(TaskManager):
