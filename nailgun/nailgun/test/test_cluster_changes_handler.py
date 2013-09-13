@@ -16,8 +16,8 @@
 
 from copy import deepcopy
 import json
-
 from mock import patch
+
 
 import nailgun
 from nailgun.api.models import IPAddr
@@ -280,7 +280,6 @@ class TestHandlers(BaseHandlers):
         args, kwargs = nailgun.task.manager.rpc.cast.call_args
         self.assertEquals(len(args), 2)
         self.assertEquals(len(args[1]), 2)
-
         self.datadiff(args[1][0], provision_msg)
         self.datadiff(args[1][1], deployment_msg)
 

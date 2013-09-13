@@ -20,6 +20,7 @@ from nailgun.api.handlers.cluster import ClusterHandler
 from nailgun.api.handlers.cluster import ClusterCollectionHandler
 from nailgun.api.handlers.cluster import ClusterChangesHandler
 from nailgun.api.handlers.cluster import ClusterAttributesHandler
+from nailgun.api.handlers.cluster import ClusterOrchestratorData
 from nailgun.api.handlers.cluster import ClusterAttributesDefaultsHandler
 from nailgun.api.handlers.cluster import ClusterDefaultOrchestratorData
 
@@ -85,6 +86,8 @@ urls = (
     'NetworkConfigurationHandler',
     r'/clusters/(?P<cluster_id>\d+)/network_configuration/verify/?$',
     'NetworkConfigurationVerifyHandler',
+    r'/clusters/(?P<cluster_id>\d+)/orchestrator/?$',
+    'ClusterOrchestratorData',
     r'/clusters/(?P<cluster_id>\d+)/orchestrator/defaults/?$',
     'ClusterDefaultOrchestratorData',
 

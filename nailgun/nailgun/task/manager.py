@@ -161,45 +161,11 @@ class DeploymentTaskManager(TaskManager):
         )
         db().add(supertask)
         db().commit()
-
-        # checking admin intersection with untagged
-        network_info = NetworkConfigurationSerializer.serialize_for_cluster(
-            self.cluster
-        )
-        check_networks = supertask.create_subtask('check_networks')
-        self._call_silently(
-            check_networks,
-            tasks.CheckNetworksTask,
-            data=network_info,
-            check_admin_untagged=True
-        )
-        db().refresh(check_networks)
-        if check_networks.status == 'error':
-            return supertask
-        db().delete(check_networks)
-        db().commit()
-
-        # checking prerequisites
-        check_before = supertask.create_subtask('check_before_deployment')
-        logger.debug("Checking prerequisites task: %s", check_before.uuid)
-        self._call_silently(
-            check_before,
-            tasks.CheckBeforeDeploymentTask
-        )
-        db().refresh(check_before)
-        # if failed to check prerequisites
-        # then task is already set to error
-        if check_before.status == 'error':
-            logger.debug(
-                "Checking prerequisites failed: %s", check_before.message
-            )
-            return supertask
-        logger.debug(
-            "Checking prerequisites is successful, starting deployment..."
-        )
-        db().delete(check_before)
-        db().commit()
-
+        if not self.cluster.facts:
+            try:
+                self.check_before_deployment(supertask)
+            except errors.CheckBeforeDeploymentError:
+                return supertask
         # in case of Red Hat
         if self.cluster.release.operating_system == "RHEL":
             try:
@@ -288,6 +254,49 @@ class DeploymentTaskManager(TaskManager):
             )
         )
         return supertask
+
+    def check_before_deployment(self, supertask):
+        # checking admin intersection with untagged
+        network_info = NetworkConfigurationSerializer\
+            .serialize_for_cluster(
+                self.cluster
+            )
+        check_networks = supertask.create_subtask('check_networks')
+        self._call_silently(
+            check_networks,
+            tasks.CheckNetworksTask,
+            data=network_info,
+            check_admin_untagged=True
+        )
+        db().refresh(check_networks)
+        if check_networks.status == 'error':
+            logger.warning(
+                "Checking networks failed: %s", check_networks.message
+            )
+            raise errors.CheckBeforeDeploymentError(check_networks.message)
+        db().delete(check_networks)
+        db().commit()
+
+        # checking prerequisites
+        check_before = supertask.create_subtask('check_before_deployment')
+        logger.debug("Checking prerequisites task: %s", check_before.uuid)
+        self._call_silently(
+            check_before,
+            tasks.CheckBeforeDeploymentTask
+        )
+        db().refresh(check_before)
+        # if failed to check prerequisites
+        # then task is already set to error
+        if check_before.status == 'error':
+            logger.warning(
+                "Checking prerequisites failed: %s", check_before.message
+            )
+            raise errors.CheckBeforeDeploymentError(check_before.message)
+        logger.debug(
+            "Checking prerequisites is successful, starting deployment..."
+        )
+        db().delete(check_before)
+        db().commit()
 
 
 class CheckNetworksTaskManager(TaskManager):
