@@ -14,7 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Serializers for orchestrator"""
+"""Deployment serializers for orchestrator"""
 
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
