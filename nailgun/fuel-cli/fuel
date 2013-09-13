@@ -359,7 +359,7 @@ def fact(params):
 
 def read_json(path):
         with open(path, "r") as json_file:
-            return [json.loads(json_file.read())]
+            return json.loads(json_file.read())
 
 
 def parse_fact_from_dir(dir_name):
@@ -368,14 +368,12 @@ def parse_fact_from_dir(dir_name):
         one_folder_up = path_to_folder[:-2] + path_to_folder[-2:-1]
         dir_name = os.sep.join(one_folder_up)
     try:
-        return list(chain(
-            *map(
-                read_json,
-                [os.path.join(dir_name, json_file)
-                 for json_file in os.listdir(dir_name)
-                 if json_file.endswith('.json')]
-            )
-        ))
+        return map(
+            read_json,
+            [os.path.join(dir_name, json_file)
+             for json_file in os.listdir(dir_name)
+             if json_file.endswith('.json')]
+        )
     except OSError:
         print(
             "Directory {0} doesn't exist."
