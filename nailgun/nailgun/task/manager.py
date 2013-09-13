@@ -270,7 +270,7 @@ class DeploymentTaskManager(TaskManager):
         )
         db().refresh(check_networks)
         if check_networks.status == 'error':
-            logger.debug(
+            logger.warning(
                 "Checking networks failed: %s", check_networks.message
             )
             raise errors.CheckBeforeDeploymentError(check_networks.message)
@@ -288,7 +288,7 @@ class DeploymentTaskManager(TaskManager):
         # if failed to check prerequisites
         # then task is already set to error
         if check_before.status == 'error':
-            logger.debug(
+            logger.warning(
                 "Checking prerequisites failed: %s", check_before.message
             )
             raise errors.CheckBeforeDeploymentError(check_before.message)
