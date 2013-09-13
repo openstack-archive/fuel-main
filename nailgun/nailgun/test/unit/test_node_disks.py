@@ -515,7 +515,7 @@ class TestDisks(BaseIntegrationTest):
         self.assertEquals(boot_record['file_system'], 'ext2')
 
 
-class TestFixtures(BaseHandlers):
+class TestFixtures(BaseIntegrationTest):
 
     @property
     def get_vgs_for_releases(self):
