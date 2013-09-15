@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Approved+1: Ilya Shakhat <ishakhat@mirantis.com>
+Code-Review+2: Ilya Shakhat <ishakhat@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Sun, 15 Sep 2013 17:16:02 +0000
+Reviewed-on: https://review.openstack.org/46666
+Project: stackforge/fuel-main
+Branch: refs/heads/master
