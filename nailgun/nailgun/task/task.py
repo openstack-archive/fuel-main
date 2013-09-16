@@ -14,7 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import shlex
 import subprocess
 
@@ -22,7 +21,6 @@ import netaddr
 from sqlalchemy.orm import ColumnProperty
 from sqlalchemy.orm import object_mapper
 
-from nailgun.api.models import IPAddr
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
 from nailgun.api.models import NodeNICInterface
@@ -125,7 +123,7 @@ class DeploymentTask(object):
         # if task.cluster.facts not empty dict, it will be used
         # instead of computing cluster facts through serialize
         serialized_cluster = task.cluster.facts or \
-                             deployment_serializers.serialize(task.cluster)
+            deployment_serializers.serialize(task.cluster)
 
         return {
             'method': 'deploy',

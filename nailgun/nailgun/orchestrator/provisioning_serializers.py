@@ -18,12 +18,12 @@
 
 import json
 
-from nailgun.task.helpers import TaskHelper
+from nailgun.api.models import IPAddr
+from nailgun.db import db
+from nailgun.logger import logger
 from nailgun.network.manager import NetworkManager
 from nailgun.settings import settings
-from nailgun.api.models import IPAddr
-from nailgun.logger import logger
-from nailgun.db import db
+from nailgun.task.helpers import TaskHelper
 
 
 class ProvisioningSerializer(object):
@@ -31,7 +31,7 @@ class ProvisioningSerializer(object):
 
     @classmethod
     def serialize(cls, cluster):
-        """Serialize cluster for provisioning"""
+        """Serialize cluster for provisioning."""
 
         serialized_nodes = cls.serialize_nodes(cluster)
 
@@ -44,7 +44,7 @@ class ProvisioningSerializer(object):
 
     @classmethod
     def serialize_nodes(cls, cluster):
-        """Serialize nodes"""
+        """Serialize nodes."""
         nodes_to_provision = TaskHelper.nodes_to_provision(cluster)
         cluster_attrs = cluster.attributes.merged_attrs_values()
 
@@ -57,7 +57,7 @@ class ProvisioningSerializer(object):
 
     @classmethod
     def serialize_node(cls, cluster_attrs, node):
-        """Serialize a single node"""
+        """Serialize a single node."""
 
         serialized_node = {
             'power_address': node.ip,
@@ -147,7 +147,7 @@ class ProvisioningSerializer(object):
 
     @classmethod
     def get_power_pass(cls, node):
-        """Assign power pass depend on node state"""
+        """Assign power pass depend on node state."""
         if node.status == "discover":
             logger.info(
                 u'Node %s seems booted with bootstrap image', node.full_name)
@@ -158,6 +158,6 @@ class ProvisioningSerializer(object):
 
 
 def serialize(cluster):
-    """Serialize cluster for provisioning"""
+    """Serialize cluster for provisioning."""
     cluster.prepare_for_provisioning()
     return ProvisioningSerializer.serialize(cluster)

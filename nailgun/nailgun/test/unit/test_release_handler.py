@@ -15,7 +15,6 @@
 #    under the License.
 
 import json
-import unittest
 
 from nailgun.api.models import Release
 from nailgun.test.base import BaseIntegrationTest
