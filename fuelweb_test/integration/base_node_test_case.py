@@ -112,21 +112,7 @@ class BaseNodeTestCase(BaseTestCase):
         self.client.clean_clusters()
 
     @logwrap
-    def update_deployment_mode(self, cluster_id, nodes_dict):
-        controller_names = filter(
-            lambda x: 'controller' in nodes_dict[x], nodes_dict)
-        if len(nodes_dict) > 1:
-            controller_amount = len(controller_names)
-            if controller_amount == 1:
-                self.client.update_cluster(
-                    cluster_id,
-                    {"mode": "multinode"})
-            if controller_amount > 1:
-                self.client.update_cluster(cluster_id, {"mode": "ha"})
-
-    @logwrap
     def configure_cluster(self, cluster_id, nodes_dict):
-        self.update_deployment_mode(cluster_id, nodes_dict)
         self.update_nodes(cluster_id, nodes_dict, True, False)
         # TODO: update network configuration
 
@@ -144,11 +130,12 @@ class BaseNodeTestCase(BaseTestCase):
         return cluster_id
 
     @logwrap
-    def prepare_environment(self, name='cluster_name', settings={}):
+    def prepare_environment(self, name='cluster_name', mode="multinode",
+                            settings={}):
         if not(self.ci().revert_to_state(settings)):
             # create cluster
             self.ci().get_empty_environment()
-            cluster_id = self.create_cluster(name=name)
+            cluster_id = self.create_cluster(name=name, mode=mode)
             self.basic_provisioning(cluster_id, settings['nodes'])
             self.ci().snapshot_state(name, settings)
 
@@ -240,13 +227,17 @@ class BaseNodeTestCase(BaseTestCase):
         return release_id
 
     @logwrap
-    def get_or_create_cluster(self, name, release_id):
+    def get_or_create_cluster(self, name, release_id, mode="multinode"):
         if not release_id:
             release_id = self._upload_sample_release()
         cluster_id = self.client.get_cluster_id(name)
         if not cluster_id:
             self.client.create_cluster(
-                data={"name": name, "release": str(release_id)}
+                data={
+                    "name": name,
+                    "release": str(release_id),
+                    "mode": mode
+                }
             )
             cluster_id = self.client.get_cluster_id(name)
         if not cluster_id:
@@ -254,13 +245,15 @@ class BaseNodeTestCase(BaseTestCase):
         return cluster_id
 
     @logwrap
-    def create_cluster(self, name='default', release_id=None):
+    def create_cluster(self, name='default', release_id=None,
+                       mode="multinode"):
         """
         :param name:
         :param release_id:
+        :param mode:
         :return: cluster_id
         """
-        return self.get_or_create_cluster(name, release_id)
+        return self.get_or_create_cluster(name, release_id, mode)
 
     @logwrap
     def update_nodes(self, cluster_id, nodes_dict,
