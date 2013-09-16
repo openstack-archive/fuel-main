@@ -20,7 +20,7 @@ autoconf-2.63-5.1.el6
 automake-1.11.1-4.el6
 avahi-0.6.25-12.el6
 bc-1.06.95-1.el6
-bind-utils-9.8.2-0.17.rc1.el6_4.4
+bind-utils-9.8.2-0.17.rc1.el6_4.6
 boost-program-options-1.41.0-17.el6_4
 boost-system-1.41.0-17.el6_4
 boost-thread-1.41.0-17.el6_4
