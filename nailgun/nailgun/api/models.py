@@ -233,6 +233,15 @@ class Cluster(Base):
             netmanager.assign_ips(nodes_ids, 'public')
             netmanager.assign_ips(nodes_ids, 'storage')
 
+    def prepare_for_provisioning(self):
+        from nailgun.network.manager import NetworkManager
+        from nailgun.task.helpers import TaskHelper
+
+        netmanager = NetworkManager()
+        for node in TaskHelper.nodes_to_provision(self):
+            netmanager.assign_admin_ips(
+                node.id, len(node.meta.get('interfaces', [])))
+
 
 class Node(Base):
     __tablename__ = 'nodes'
