@@ -250,3 +250,30 @@ class TestHandlers(BaseHandlers):
             headers=self.default_headers,
             expect_errors=True)
         self.assertEquals(resp.status, 403)
+
+    def test_node_can_be_created_with_any_role(self):
+        node = self.env.create_node(api=True)
+        cluster = self.env.create_cluster(api=True)
+
+        new_pending_roles = ['new_pending_role1', 'new_pending_role2']
+        new_roles = ['new_role1', 'new_role2']
+
+        resp = self.app.put(
+            reverse('NodeCollectionHandler'),
+            json.dumps([
+                {'mac': node['mac'],
+                 'cluster_id': cluster['id'],
+                 'pending_roles': new_pending_roles,
+                 'roles': new_roles}]),
+            headers=self.default_headers)
+
+        self.assertEqual(resp.status, 200)
+        node_resp = json.loads(resp.body)[0]
+
+        self.assertEqual(node_resp['pending_roles'], new_pending_roles)
+        self.assertEqual(node_resp['roles'], new_roles)
+
+        node_db = self.db.query(Node).get(node['id'])
+
+        self.assertEqual(node_db.pending_roles, new_pending_roles)
+        self.assertEqual(node_db.roles, new_roles)
