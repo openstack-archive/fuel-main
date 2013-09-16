@@ -121,19 +121,19 @@ class DeploymentTask(object):
                 db().add(n)
                 db().commit()
 
-        message = {
+        # if task.cluster.facts not empty dict, it will be used
+        # instead of computing cluster facts through serialize
+        serialized_cluster = task.cluster.facts or serialize(task.cluster)
+
+        return {
             'method': 'deploy',
             'respond_to': 'deploy_resp',
             'args': {
                 'task_uuid': task.uuid,
-                # if task.cluster.facts not empty dict, it will be used
-                # instead of computing cluster facts through serialize
-                'deployment_info': task.cluster.facts
-                or serialize(task.cluster)
+                'deployment_info': serialized_cluster
             }
         }
 
-        return message
 
     @classmethod
     def execute(cls, task):
