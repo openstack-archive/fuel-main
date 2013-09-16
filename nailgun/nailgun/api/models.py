@@ -291,6 +291,10 @@ class Node(Base):
                               cascade="delete")
 
     @property
+    def offline(self):
+        return not self.online
+
+    @property
     def network_data(self):
         # It is required for integration tests; to get info about nets
         #   which must be created on target node
