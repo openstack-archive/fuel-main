@@ -20,10 +20,7 @@ from nailgun.test.base import BaseTestCase
 
 class TestRedHatAccountValidator(BaseTestCase):
     def test_valid_account_data(self):
-        """
-
-
-        """
+        """Tests for Red Hat account validator"""
         accounts_data = [
             '{"release_id": 1, "license_type": "rhsm",'
             ' "username": "u", "password": "p"}',

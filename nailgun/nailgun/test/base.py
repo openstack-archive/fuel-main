@@ -643,7 +643,7 @@ def reverse(name, kwargs=None):
     url = urldict[name]
     urlregex = re.compile(url)
     for kwarg in urlregex.groupindex:
-        if not kwarg in kwargs:
+        if kwarg not in kwargs:
             raise KeyError("Invalid argument specified")
         url = re.sub(
             r"\(\?P<{0}>[^)]+\)".format(kwarg),
@@ -669,7 +669,7 @@ def datadiff(data1, data2, branch, p=True):
     if data1 != data2:
         try:
             it = iterator(data1, data2)
-        except:
+        except Exception:
             return [(branch, data1, data2)]
 
         for k in it:
