@@ -9,6 +9,7 @@ function usage {
   echo "  -j, --jslint             Just run JSLint"
   echo "  -u, --ui-tests           Just run UI tests"
   echo "  -i, --integration        Just run integration tests"
+  echo "  -u, --unit               Just run unit tests"
   echo "  -x, --xunit              Generate reports (useful in Jenkins environment)"
   echo "  -P, --no-flake8          Don't run static code checks"
   echo "  -J, --no-jslint          Don't run JSLint"
@@ -31,6 +32,7 @@ function process_option {
     -J|--no-jslint) no_jslint=1;;
     -U|--no-ui-tests) no_ui_tests=1;;
     -I|--integration) integration_tests=1;;
+    -u|--unit) unit_tests=1;;
     -x|--xunit) xunit=1;;
     -c|--clean) clean=1;;
     ui_tests*) ui_test_files="$ui_test_files $1";;
@@ -47,10 +49,11 @@ no_jslint=0
 just_ui_tests=0
 no_ui_tests=0
 integration_tests=0
+unit_tests=0
 xunit=0
 clean=0
 ui_test_files=
-default_noseargs="--with-timer --timer-top-n=10 --exclude-dir=nailgun/test/integration"
+default_noseargs="--with-timer --timer-top-n=10"
 noseargs="$default_noseargs"
 noseopts=
 
@@ -192,19 +195,29 @@ function run_tests {
   ./manage.py syncdb > /dev/null
   [ -z "$noseargs" ] && test_args=. || test_args="$noseargs"
   stderr=$(nosetests $noseopts $test_args --verbosity=2 3>&1 1>&2 2>&3 | tee /dev/stderr)
-  if [[ "$stderr" =~ "Exception" ]]; then
-    echo "Tests executed with errors!"
-    exit 1
-  fi
+#  if [[ "$stderr" =~ "Exception" ]]; then
+#    echo "Tests executed with errors!"
+#    exit 1
+#  fi
 }
 
 function run_integration_tests {
-  noseargs="nailgun/test/integration" 
-  run_tests
+    noseargs="nailgun/test/integration" 
+    run_tests
 }
 
 if [ $integration_tests -eq 1 ]; then
     run_integration_tests || exit 1
+    exit
+fi
+
+function run_unit_tests {
+    noseargs="nailgun/test/unit"
+    run_tests
+}
+
+if [ $unit_tests -eq 1 ]; then
+    run_unit_tests || exit 1
     exit
 fi
 
