@@ -125,7 +125,6 @@ class CiBase(object):
     def get_empty_environment(self):
         if not(self.get_state(EMPTY_SNAPSHOT)):
             self.setup_environment()
-            self.environment().snapshot(EMPTY_SNAPSHOT)
 
     def generate_state_hash(self, settings):
         return hashlib.md5(str(settings)).hexdigest()
