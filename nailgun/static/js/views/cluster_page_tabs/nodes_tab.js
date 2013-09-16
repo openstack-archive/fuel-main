@@ -123,6 +123,18 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             var href = '#cluster/' + this.model.id + '/nodes/edit/' + utils.serializeTabOptions({nodes: selectedNodesIds});
             this.$('.btn-edit-nodes').attr('href', href);
         },
+        initialize: function() {
+            this.nodes.on('resize', this.render, this);
+            if (this instanceof AddNodesScreen || this instanceof EditNodesScreen) {
+                this.nodes.parse = function(response) {
+                    return _.map(response, function(node) {
+                       return _.omit(node, 'pending_roles');
+                    });
+                };
+                this.model.on('change:status', _.bind(function() {app.navigate('#cluster/' + this.model.id + '/nodes', {trigger: true});}, this));
+            }
+            this.scheduleUpdate();
+        },
         render: function() {
             this.tearDownRegisteredSubViews();
             this.$el.html('');
@@ -148,19 +160,17 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         constructorName: 'ClusterNodesScreen',
         initialize: function(options) {
             _.defaults(this, options);
-            this.constructor.__super__.initialize.apply(this, arguments);
             this.nodes = this.model.get('nodes');
             this.nodes.cluster = this.model;
             var clusterId = this.model.id;
             this.nodes.fetch = function(options) {
                 return this.constructor.__super__.fetch.call(this, _.extend({data: {cluster_id: clusterId}}, options));
             };
-            this.nodes.fetch().done(_.bind(this.render, this));
-            this.nodes.on('resize', this.render, this);
             this.model.on('change:status', this.render, this);
             this.model.get('tasks').each(this.bindTaskEvents, this);
             this.model.get('tasks').on('add', this.onNewTask, this);
-            this.scheduleUpdate();
+            this.constructor.__super__.initialize.apply(this, arguments);
+            this.nodes.fetch().done(_.bind(this.render, this));
         },
         bindTaskEvents: function(task) {
             return (task.get('name') == 'deploy' || task.get('name') == 'verify_networks') ? task.on('change:status', this.render, this) : null;
@@ -174,22 +184,15 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         constructorName: 'AddNodesScreen',
         initialize: function(options) {
             _.defaults(this, options);
-            this.constructor.__super__.initialize.apply(this, arguments);
             this.nodes = new models.Nodes();
             this.nodes.fetch = function(options) {
                 return this.constructor.__super__.fetch.call(this, _.extend({data: {cluster_id: ''}}, options));
             };
-            this.nodes.parse = function(response) {
-                return _.map(response, function(node) {
-                   return _.omit(node, 'pending_roles');
-                });
-            };
+            this.constructor.__super__.initialize.apply(this, arguments);
             this.nodes.fetch().done(_.bind(function() {
                 this.nodes.each(function(node) {node.set({pending_roles: []}, {silent: true});});
                 this.render();
             }, this));
-            this.nodes.on('resize', this.render, this);
-            this.scheduleUpdate();
         }
     });
 
@@ -197,21 +200,15 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
         constructorName: 'EditNodesScreen',
         initialize: function(options) {
             _.defaults(this, options);
-            this.constructor.__super__.initialize.apply(this, arguments);
             var nodeIds = utils.deserializeTabOptions(this.screenOptions[0]).nodes.split(',').map(function(id) {return parseInt(id, 10);});
             this.nodes = new models.Nodes(this.model.get('nodes').getByIds(nodeIds));
             this.nodes.cluster = this.model;
-            this.nodes.parse = function(response) {
-                return _.map(response, function(node) {
-                   return _.omit(node, 'pending_roles');
-                });
-            };
+            this.constructor.__super__.initialize.apply(this, arguments);
         },
         render: function() {
             this.constructor.__super__.render.apply(this, arguments);
             this.roles.render();
             this.nodeList.calculateSelectAllTumblerState();
-            this.scheduleUpdate();
             return this;
         }
     });
