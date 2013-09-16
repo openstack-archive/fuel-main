@@ -31,7 +31,7 @@
         <% if (renaming) { %>
           <input type="text" class="input-medium" value="<%- node.get('name') || '' %>" />
         <% } else { %>
-          <p <%= deployment ? '' : 'class="node-renameable"  title="Edit Name"' %>><%- node.get('name') || node.get('mac') %></p>
+          <p <%= renameable ? 'class="node-renameable"  title="Edit Name"' : '' %>><%- node.get('name') || node.get('mac') %></p>
         <% } %>
       </div>
       <div class="roles">
