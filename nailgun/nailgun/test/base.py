@@ -683,14 +683,14 @@ def datadiff(data1, data2, branch, p=True):
                     v1 = data1[k]
                 except (KeyError, IndexError):
                     if p:
-                        print "data1 seems does not have key = %s" % k
+                        print("data1 seems does not have key = %s" % k)
                     diff.append((newbranch, None, data2[k]))
                     continue
                 try:
                     v2 = data2[k]
                 except (KeyError, IndexError):
                     if p:
-                        print "data2 seems does not have key = %s" % k
+                        print("data2 seems does not have key = %s" % k)
                     diff.append((newbranch, data1[k], None))
                     continue
 
