@@ -357,7 +357,6 @@ python-paste-deploy1.5-1.5.0-5.el6
 python-pbr-0.5.21-mira.2
 python-pip-0.8-1.el6
 python-prettytable-0.6.1-1.el6
-python-pushy-0.5.1-6.1
 python-py-1.4.15-1.el6
 python-pygments-1.1.1-1.el6
 python-pyudev-0.15-1.el6
