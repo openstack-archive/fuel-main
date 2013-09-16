@@ -22,9 +22,9 @@ All sizes in megabytes.
 import json
 
 from copy import deepcopy
+from functools import partial
 from nailgun.errors import errors
 from nailgun.logger import logger
-from functools import partial
 
 
 def only_disks(spaces):
