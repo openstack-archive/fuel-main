@@ -44,7 +44,7 @@ class TestNode(BaseNodeTestCase):
             'slave-04': ['compute'],
             'slave-05': ['compute']
         }
-        cluster_id = self.create_cluster(name=cluster_name)
+        cluster_id = self.create_cluster(name=cluster_name, mode="ha_compact")
         self.update_vlan_network_fixed(cluster_id, amount=8, network_size=32)
         self.basic_provisioning(cluster_id, nodes_dict)
         self.assertClusterReady(

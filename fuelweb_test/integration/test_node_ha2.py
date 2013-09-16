@@ -37,6 +37,7 @@ class TestNode(BaseNodeTestCase):
     def test_ha_cluster_flat(self):
         cluster_id = self.prepare_environment(
             name="ha_flat",
+            mode="ha_compact",
             settings={
                 'nodes': {
                     'slave-01': ['controller'],
