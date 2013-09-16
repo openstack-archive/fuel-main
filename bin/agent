@@ -84,7 +84,7 @@ class McollectiveConfig
         @logger.info "Identity in mcollective server.cfg has not been found. Setting to '#{new_id}'"
         File.open(@configfile, "w") { |f| f.write(config) }
       end
-      puts `/sbin/service mcollective restart`
+      puts `/etc/init.d/mcollective stop; /etc/init.d/mcollective start`
     end
   end
 end
