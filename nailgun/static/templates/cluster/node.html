@@ -27,11 +27,11 @@
     </div>
     <div class="node-status"></div>
     <div class="node-name">
-      <div class="name">
+      <div class="name enable-selection">
         <% if (renaming) { %>
           <input type="text" class="input-medium" value="<%- node.get('name') || '' %>" />
         <% } else { %>
-          <p <%= renameable ? 'class="node-renameable"  title="Edit Name"' : '' %>><%- node.get('name') || node.get('mac') %></p>
+          <p <%= deployment ? '' : 'class="node-renameable"  title="Edit Name"' %>><%- node.get('name') || node.get('mac') %></p>
         <% } %>
       </div>
       <div class="roles">

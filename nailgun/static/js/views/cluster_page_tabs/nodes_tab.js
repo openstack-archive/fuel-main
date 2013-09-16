@@ -467,11 +467,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             _.defaults(this, options);
         },
         renderNode: function(node) {
-            var nodeView = new Node({
-                node: node,
-                renameable: true,
-                group: this
-            });
+            var nodeView = new Node({node: node, group: this});
             this.registerSubView(nodeView);
             this.$('.nodes-group').append(nodeView.render().el);
         },
@@ -520,7 +516,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             }
         },
         startNodeRenaming: function() {
-            if (!this.renameable || this.renaming) {return;}
+            if (this.renaming) {return;}
             $('html').off(this.eventNamespace);
             $('html').on(this.eventNamespace, _.after(2, _.bind(function(e) {
                 if (!$(e.target).closest(this.$('.name input')).length) {
@@ -646,7 +642,6 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.$el.html(this.template(_.extend({
                 node: this.node,
                 renaming: this.renaming,
-                renameable: this.renameable,
                 checked: this.checked,
                 edit: this.screen instanceof EditNodesScreen,
                 deployment: this.screen.tab.model.task('deploy', 'running')
