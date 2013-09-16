@@ -444,7 +444,7 @@ class ClusterGeneratedData(JSONHandler):
 
     @content_json
     def GET(self, cluster_id):
-        """:returns: JSONized data which will be passed to orchestrator
+        """:returns: JSONized cluster generated data
         :http: * 200 (OK)
                * 404 (cluster not found in db)
         """
