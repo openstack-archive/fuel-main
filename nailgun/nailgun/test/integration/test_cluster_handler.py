@@ -212,3 +212,48 @@ class TestHandlers(BaseIntegrationTest):
             new_provisioning_info, args[1][0]['args']['provisioning_info'])
         self.datadiff(
             new_deployment_info, args[1][1]['args']['deployment_info'])
+
+    def test_cluster_orchestrator_data_handler(self):
+        # creating cluster, cluster.facts default value is {}
+        cluster = self.env.create_cluster(api=False)
+        # updating facts
+        orchestrator_data = {"field": "test"}
+        orchestrator_data_json = json.dumps(orchestrator_data)
+        put_resp = self.app.put(
+            reverse('ClusterOrchestratorData',
+                    kwargs={'cluster_id': cluster.id}),
+            orchestrator_data_json,
+            headers=self.default_headers
+        )
+        self.assertEquals(put_resp.status, 200)
+        self.assertEquals(cluster.facts, orchestrator_data)
+        # getting facts
+        get_resp = self.app.get(
+            reverse('ClusterOrchestratorData',
+                    kwargs={'cluster_id': cluster.id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(get_resp.status, 200)
+        self.datadiff(orchestrator_data, json.loads(get_resp.body))
+        # deleting facts
+        delete_resp = self.app.delete(
+            reverse('ClusterOrchestratorData',
+                    kwargs={'cluster_id': cluster.id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(delete_resp.status, 202)
+        self.assertEqual(cluster.facts, {})
+
+    def test_cluster_generated_data_handler(self):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {'pending_addition': True},
+                {'online': False, 'status': 'ready'}])
+
+        get_resp = self.app.get(
+            reverse('ClusterGeneratedData',
+                    kwargs={'cluster_id': self.env.clusters[0].id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(get_resp.status, 200)
