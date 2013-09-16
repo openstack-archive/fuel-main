@@ -61,7 +61,7 @@
                         "name": "Ceph Journal",
                         "label": "Ceph Journal",
                         "mount": "/var/lib/ceph/journal",
-                        "disk_label": "ceph-journal",
+                        "disk_label": "cephjournal",
                         "file_system": "xfs"
                     },
                     {
@@ -706,7 +706,7 @@
             "operating_system": "Ubuntu",
             "description": "This option will install the OpenStack Grizzly packages using Ubuntu as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
             "state": "available",
-            "roles": ["controller", "compute", "cinder"],
+            "roles": ["controller", "compute", "cinder", "ceph-osd"],
             "roles_metadata": {
                 "controller": {
                     "name": "Controller",
@@ -721,6 +721,10 @@
                 "cinder": {
                     "name": "Cinder",
                     "description": ["Cinder"]
+                },
+                "ceph-osd": {
+                    "name": "Ceph OSD",
+                    "description": ["Ceph Storage Node"]
                 }
             },
             "networks_metadata": [
@@ -755,7 +759,7 @@
                         "name": "Ceph Journal",
                         "label": "Ceph Journal",
                         "mount": "/var/lib/ceph/journal",
-                        "disk_label": "ceph-journal",
+                        "disk_label": "cephjournal",
                         "file_system": "xfs"
                     },
                     {
