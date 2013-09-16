@@ -23,10 +23,10 @@ from nailgun.db import db
 from nailgun.orchestrator.serializers import OrchestratorHASerializer
 from nailgun.orchestrator.serializers import OrchestratorSerializer
 from nailgun.settings import settings
-from nailgun.test.base import BaseHandlers
+from nailgun.test.base import BaseIntegrationTest
 
 
-class OrchestratorSerializerTestBase(BaseHandlers):
+class OrchestratorSerializerTestBase(BaseIntegrationTest):
     """Class containts helpers."""
 
     def filter_by_role(self, nodes, role):

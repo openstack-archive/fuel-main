@@ -576,6 +576,41 @@ class BaseTestCase(TestCase):
         except exception:
             self.fail('Exception "{0}" raised.'.format(exception))
 
+    def datadiff(self, node1, node2, path=None):
+        if path is None:
+            path = []
+
+        print("Path: {0}".format("->".join(path)))
+
+        if not isinstance(node1, dict) or not isinstance(node2, dict):
+            if isinstance(node1, list):
+                newpath = path[:]
+                for i, keys in enumerate(izip(node1, node2)):
+                    newpath.append(str(i))
+                    self.datadiff(keys[0], keys[1], newpath)
+                    newpath.pop()
+            elif node1 != node2:
+                err = "Values differ: {0} != {1}".format(
+                    str(node1),
+                    str(node2)
+                )
+                raise Exception(err)
+        else:
+            newpath = path[:]
+            for key1, key2 in zip(
+                sorted(node1.keys()),
+                sorted(node2.keys())
+            ):
+                if key1 != key2:
+                    err = "Keys differ: {0} != {1}".format(
+                        str(key1),
+                        str(key2)
+                    )
+                    raise Exception(err)
+                newpath.append(key1)
+                self.datadiff(node1[key1], node2[key2], newpath)
+                newpath.pop()
+
 
 class BaseIntegrationTest(BaseTestCase):
     @classmethod
