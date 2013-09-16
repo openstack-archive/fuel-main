@@ -431,5 +431,35 @@ class TestNode(BaseNodeTestCase):
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 5)
 
+    @snapshot_errors
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos'])
+    def test_multirole_controller_cinder(self):
+        cluster_id = self.prepare_environment(settings={
+            'nodes': {
+                'slave-01': ['controller', 'cinder'],
+                'slave-02': ['compute']
+            }
+        })
+        task = self._run_network_verify(cluster_id)
+        self.assertTaskSuccess(task, 60 * 2)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=6, should_pass=18)
+
+    @snapshot_errors
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos'])
+    def test_multirole_compute_cinder(self):
+        cluster_id = self.prepare_environment(settings={
+            'nodes': {
+                'slave-01': ['controller'],
+                'slave-02': ['compute', 'cinder']
+            }
+        })
+        task = self._run_network_verify(cluster_id)
+        self.assertTaskSuccess(task, 60 * 2)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=6, should_pass=18)
+
 if __name__ == '__main__':
     unittest.main()
