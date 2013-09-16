@@ -53,7 +53,7 @@ unit_tests=0
 xunit=0
 clean=0
 ui_test_files=
-default_noseargs="--with-timer --timer-top-n=10"
+default_noseargs="--with-timer"
 noseargs="$default_noseargs"
 noseopts=
 
