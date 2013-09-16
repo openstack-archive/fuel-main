@@ -16,6 +16,14 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 
+$(BUILD_DIR)/iso/isoroot-ubuntu.done: \
+		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/packages/build.done \
+		$(BUILD_DIR)/iso/isoroot-dotfiles.done
+	mkdir -p $(ISOROOT)/ubuntu
+	rsync -rp $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ $(ISOROOT)/ubuntu/
+	$(ACTION.TOUCH)
+
 $(BUILD_DIR)/iso/isoroot-rhel.done: $(call depv,CACHE_RHEL)
 $(BUILD_DIR)/iso/isoroot-rhel.done: \
 		$(BUILD_DIR)/mirror/build.done \
@@ -118,6 +126,7 @@ $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/packages/build.done \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
+		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-rhel.done \
 		$(BUILD_DIR)/iso/isoroot-eggs.done \
 		$(BUILD_DIR)/iso/isoroot-gems.done \
