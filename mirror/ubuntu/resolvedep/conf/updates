@@ -1,5 +1,0 @@
-Name: MirantisRepo
-Method: http://mirror.yandex.ru/ubuntu
-Components: main restricted universe
-Architectures: amd64
-FilterList: purge ../mirror.packages

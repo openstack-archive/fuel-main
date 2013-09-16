@@ -1,7 +1,0 @@
-Origin: Mirantis
-Label: Mirantis
-Codename: precise
-Architectures: amd64
-Components: main restricted universe 
-Description: Mirantis local mirror
-Update: MirantisRepo
