@@ -1,0 +1,6 @@
+Origin: Mirantis
+Label: Mirantis
+Codename: precise
+Architectures: i386 amd64
+Components: main restricted universe 
+Description: Mirantis local package mirror
