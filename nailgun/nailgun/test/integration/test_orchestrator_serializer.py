@@ -20,8 +20,10 @@ from nailgun.api.models import IPAddrRange
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
 from nailgun.db import db
-from nailgun.orchestrator.serializers import OrchestratorHASerializer
-from nailgun.orchestrator.serializers import OrchestratorSerializer
+from nailgun.orchestrator.deployment_serializers \
+    import OrchestratorHASerializer
+from nailgun.orchestrator.deployment_serializers \
+    import OrchestratorSerializer
 from nailgun.settings import settings
 from nailgun.test.base import BaseIntegrationTest
 

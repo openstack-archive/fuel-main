@@ -375,7 +375,7 @@ class TestNetworkManager(BaseIntegrationTest):
 
         self.env.launch_deployment()
         rpc_nodes_provision = nailgun.task.manager.rpc.cast. \
-            call_args_list[0][0][1][0]['args']['nodes']
+            call_args_list[0][0][1][0]['args']['provisioning_info']['nodes']
 
         map(
             lambda (x, y): self.assertIn(
