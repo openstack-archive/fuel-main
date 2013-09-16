@@ -11,7 +11,7 @@ It can perform several actions depending on Jenkins JOB_NAME it's ran from
 or it can take names from exported environment variables or command line options
 if you do need to override them.
 
--w (dir)    - Path to workspace where fuelwe git repository was checked out.
+-w (dir)    - Path to workspace where fuelweb git repository was checked out.
               Uses Jenkins' WORKSPACE if not set
 -j (name)   - Name of this job. Determines ISO name, Task name and used by tests.
               Uses Jenkins' JOB_NAME if not set
@@ -23,14 +23,14 @@ if you do need to override them.
               Set if you want to run custom test.
 -a (str)    - Allows you to path NOSE_ATTR to the test job if you want
               to use some parameters.
--A (str)    - Pather NOSE_EVAL_ATTR if you want to path attributes to the
-              nose tests as a python expression.
+-A (str)    - Allows you to path  NOSE_EVAL_ATTR if you want to enter attributes
+              as python expressions.
 -m (name)   - Use this mirror to build ISO from.
               Uses 'srt' if not set.
 -r (yes/no) - Should built ISO file be places with build number tag and
               symlinked to the last build or just copied over the last file.
 -b (num)    - Allows you to override Jenkins' build number if you need to.
--d          - Dry run mode. Only show what wouyld be done and do nothing.
+-d          - Dry run mode. Only show what would be done and do nothing.
               Useful for debugging.
 -h          - Show this help page
 
@@ -38,7 +38,7 @@ Most variables uses guesing from Jenkins' job name but can be overriden
 by exported variable before script is run or by one of command line options.
 
 You can override following variables using export VARNAME="value" before running this script
-WORKSPACE  - path to directory where Fuelweb repository was chacked out by Jenkins or manually
+WORKSPACE  - path to directory where Fuelweb repository was checked out by Jenkins or manually
 JOB_NAME   - name of Jenkins job that determines which task should be done and ISO file name.
 
 If task name is "iso" it will make iso file
@@ -127,8 +127,8 @@ GetoptsVariables() {
         NOSE_EVAL_ATTR="${OPTARG}"
         ;;
       m)
-		USE_MIRROR="${OPTARG}"
-		;;
+        USE_MIRROR="${OPTARG}"
+        ;;
       r)
         ROTATE_ISO="${OPTARG}"
         ;;
