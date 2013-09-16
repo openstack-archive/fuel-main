@@ -195,6 +195,7 @@ function run_tests {
   ./manage.py syncdb > /dev/null
   [ -z "$noseargs" ] && test_args=. || test_args="$noseargs"
   stderr=$(nosetests $noseopts $test_args --verbosity=2 3>&1 1>&2 2>&3 | tee /dev/stderr)
+# TODO: uncomment after cluster deletion issue fix
 #  if [[ "$stderr" =~ "Exception" ]]; then
 #    echo "Tests executed with errors!"
 #    exit 1
