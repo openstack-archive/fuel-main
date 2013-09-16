@@ -227,8 +227,8 @@ class Cluster(Base):
         TaskHelper.update_slave_nodes_fqdn(nodes)
 
         nodes_ids = sorted([n.id for n in nodes])
+        netmanager = NetworkManager()
         if nodes_ids:
-            netmanager = NetworkManager()
             netmanager.assign_ips(nodes_ids, 'management')
             netmanager.assign_ips(nodes_ids, 'public')
             netmanager.assign_ips(nodes_ids, 'storage')
