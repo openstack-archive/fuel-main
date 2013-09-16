@@ -430,11 +430,11 @@ actions = {
             "params": {
                 "dest": "config",
                 "action": "store_true",
-                "help": "Configure release with --rid",
+                "help": "Configure release with --release",
                 "default": False
             }
         }, {
-            "args": ["--rid"],
+            "args": ["--rel", "--release"],
             "params": {
                 "dest": "rid",
                 "action": "store",
@@ -464,7 +464,7 @@ actions = {
                 "default": False
             }
         }, {
-            "args": ["--eid", "--env-id"],
+            "args": ["--env", "--env-id"],
             "params": {
                 "dest": "eid",
                 "action": "store",
@@ -473,7 +473,7 @@ actions = {
                 "default": None
             }
         }, {
-            "args": ["--name", "--ename", "--env-name"],
+            "args": ["--name", "--env-name"],
             "params": {
                 "dest": "ename",
                 "action": "store",
@@ -486,7 +486,7 @@ actions = {
             "params": {
                 "dest": "set",
                 "action": "store_true",
-                "help": "Set environment parameters (e.g ename, "
+                "help": "Set environment parameters (e.g name, "
                         "deployment mode)",
                 "default": False
             }
@@ -495,11 +495,11 @@ actions = {
             "params": {
                 "dest": "delete",
                 "action": "store_true",
-                "help": "Delete environment with specific eid or ename",
+                "help": "Delete environment with specific eid or name",
                 "default": False
             }
         }, {
-            "args": ["--rid"],
+            "args": ["--rel", "--release"],
             "params": {
                 "dest": "rid",
                 "action": "store",
@@ -545,7 +545,7 @@ actions = {
                 "default": False
             }
         }, {
-            "args": ["--nid", "--node-id"],
+            "args": ["--node", "--node-id"],
             "params": {
                 "dest": "nid",
                 "action": "store",
@@ -560,7 +560,7 @@ actions = {
                 "dest": "role",
                 "type": lambda v: v.split(','),
                 "action": SetAction,
-                "help": "Role to assign for node with nid.",
+                "help": "Role to assign for node.",
                 "default": None
             }
         }, {
@@ -568,11 +568,11 @@ actions = {
             "params": {
                 "dest": "remove",
                 "action": "store_true",
-                "help": "Remove node with specific nid.",
+                "help": "Remove specific node.",
                 "default": False
             }
         }, {
-            "args": ["--eid", "--env-id"],
+            "args": ["--env", "--env-id"],
             "params": {
                 "dest": "eid",
                 "action": "store",
@@ -625,7 +625,7 @@ actions = {
                 "default": False
             }
         }, {
-            "args": ["--eid", "--env-id"],
+            "args": ["--env", "--env-id"],
             "params": {
                 "dest": "eid",
                 "action": "store",
@@ -670,7 +670,7 @@ actions = {
                 "default": False
             }
         }, {
-            "args": ["--eid", "--env-id"],
+            "args": ["--env", "--env-id"],
             "params": {
                 "dest": "eid",
                 "action": "store",
@@ -738,7 +738,7 @@ actions = {
                 "default": None
             }
         }, {
-            "args": ["--eid", "--env-id"],
+            "args": ["--env", "--env-id"],
             "params": {
                 "dest": "eid",
                 "action": "store",
@@ -763,7 +763,7 @@ actions = {
     "deploy": {
         "action": deploy,
         "args": [{
-            "args": ["--eid", "--env-id"],
+            "args": ["--env", "--env-id"],
             "params": {
                 "dest": "eid",
                 "action": "store",
@@ -776,7 +776,7 @@ actions = {
     "fact": {
         "action": fact,
         "args": [{
-            "args": ["--eid", "--env-id"],
+            "args": ["--env", "--env-id"],
             "params": {
                 "dest": "eid",
                 "action": "store",
@@ -848,7 +848,7 @@ if __name__ == '__main__':
         sys.argv
     )
     parser = argparse.ArgumentParser()
-    parser.add_argument(*["--eid", "--env-id"], **{
+    parser.add_argument(*["--env", "--env-id"], **{
         "dest": "eid",
         "action": "store",
         "type": str,
