@@ -303,19 +303,13 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.checkForConflicts();
         },
         calculateInputState: function(input) {
-            input = this.$(input);
-            if (!this.nodeIds.length) {
-                input.prop('checked', false).prop('indeterminate', false);
-            } else {
-                var nodes = this.screen.nodes.filter(function(node) {return _.contains(this.nodeIds, node.id) && _.contains(_.union(node.get('roles'),node.get('pending_roles')), input.val());}, this);
-                this.setInputState(input, nodes);
-            }
+            var nodes = this.screen.nodes.filter(function(node) {return _.contains(this.nodeIds, node.id) && _.contains(_.union(node.get('roles'),node.get('pending_roles')), $(input).val());}, this);
+            this.setInputState($(input), nodes);
         },
         checkRoleDeletionAbility: function(input) {
-            input = this.$(input);
-            if (!input.is(':checked')) {
-                var nodes = this.screen.nodes.filter(function(node) {return _.contains(this.nodeIds, node.id) && !node.get('pending_addition') && _.contains(node.get('roles'), input.val());}, this);
-                this.setInputState(input, nodes);
+            if (!$(input).is(':checked')) {
+                var nodes = this.screen.nodes.filter(function(node) {return _.contains(this.nodeIds, node.id) && !node.get('pending_addition') && _.contains(node.get('roles'), $(input).val());}, this);
+                this.setInputState($(input), nodes);
             }
         },
         setInputState: function(input, nodes) {
@@ -341,11 +335,11 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.$('input').prop('disabled', false);
             this.$('.role-conflict').text('');
             // check for nodes
-            this.$('input').prop('disabled', !this.nodeIds.length);
+            this.$('input').prop('disabled', !this.screen.nodes.length);
             // check for deployed nodes
             _.each(this.$('input'), function(input) {
-                var deployedNodes = this.screen.nodes.filter(function(node) {return _.contains(node.get('roles'), $(input).val());});
-                $(input).prop('disabled', deployedNodes.length == this.nodeIds.length);
+                var deployedNodes = this.screen.nodes.filter(function(node) {return _.contains(node.get('roles'), $(input).val());}).length;
+                $(input).prop('disabled', deployedNodes && deployedNodes == this.nodeIds.length);
             }, this);
             // check uncompatible roles
             var selectedRoles = _.filter(this.$('input'), function(input) {return $(input).prop('indeterminate') || $(input).prop('checked');}).map(function(input) {return $(input).val();});
@@ -357,7 +351,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             if (this.cluster.get('mode') == 'multinode') {
                 var allocatedController = this.screen.tab.model.get('nodes').filter(function(node) {return !node.get('pending_deletion') && _.contains(_.union(node.get('roles'),node.get('pending_roles')), 'controller');})[0];
                 var cantAddController = allocatedController && !_.contains(this.nodeIds, allocatedController.id);
-                var controllerSelected = this.$('input[value=controller]').is(':checked') || this.$('input[value=controller]').prop('indeterminate');
+                var controllerSelected = (this.$('input[value=controller]').is(':checked') || this.$('input[value=controller]').prop('indeterminate')) && this.nodeIds.length;
                 this.screen.$('.node-box:not(.node-offline):not(.node-error):not(.node-delete) input:not(:checked)').prop('disabled', controllerSelected);
                 if (this.nodeIds.length > 1 || cantAddController) {
                     this.$('input[value=controller]').prop('disabled', true);
@@ -515,14 +509,14 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             this.$el.toggleClass('checked');
             this.checked = !this.checked;
             this.group.calculateSelectAllTumblerState();
+            if (!this.checked) {
+                this.node.set({pending_roles: this.initialRoles});
+            }
             if (this.screen instanceof AddNodesScreen || this.screen instanceof EditNodesScreen) {
                 this.screen.roles.handleChanges();
             } else {
                 this.screen.showEditNodesButton();
                 this.screen.calculateBatchActionsButtonsState();
-            }
-            if (!this.checked) {
-                this.node.set({pending_roles: this.initialRoles});
             }
         },
         startNodeRenaming: function() {
