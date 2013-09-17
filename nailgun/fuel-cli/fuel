@@ -15,7 +15,11 @@
 
 import argparse
 from itertools import chain
+from functools import partial
 import json
+from time import sleep
+import curses
+import math
 import os
 import shutil
 import sys
@@ -226,21 +230,28 @@ def environment(params):
                            subdict_keys=[("release", u"id")]))
     elif params.create:
         check_for_attributes(params, ["ename", "rid"])
-        data = {"nodes": [],
-                "tasks": [],
-                "name": params.ename,
-                "release": int(params.rid)}
-        post_response = json_api_post_request("clusters/", data)
-        if params.json:
-            print(json.dumps(post_response, indent=4))
+        data = {
+            "nodes": [],
+            "tasks": [],
+            "name": params.ename,
+            "release": int(params.rid)
+        }
+        cluster_response = json_api_post_request("clusters/", data)
+        cluster_id = cluster_response[u"id"]
         if params.mode:
             data = {"mode": params.mode}
-            put_response = json_api_put_request(
-                "clusters/{0}".format(post_response[u"id"]),
+            cluster_response = json_api_put_request(
+                "clusters/{0}/".format(cluster_id),
                 data
             )
-            if params.json:
-                print(json.dumps(put_response, indent=4))
+        if params.json:
+            print(json.dumps(cluster_response, indent=4))
+        else:
+            print(
+                "Environment with id={id} in mode={mode}"
+                " was successfully created!"
+                .format(**cluster_response)
+            )
     elif params.set:
         check_for_attributes(params, ["eid"])
         if params.mode or params.ename:
@@ -250,11 +261,30 @@ def environment(params):
             if params.ename:
                 data["name"] = params.ename
             put_response = json_api_put_request(
-                "clusters/{0}".format(params.eid),
+                "clusters/{0}/".format(params.eid),
                 data
             )
             if params.json:
                 print(json.dumps(put_response, indent=4))
+            else:
+                if params.ename:
+                    print(
+                        "Environment with id={0} was "
+                        "successfully renamed to {1}"
+                        .format(
+                            params.eid,
+                            params.ename
+                        )
+                    )
+                if params.mode:
+                    print(
+                        "Mode of environment with id={0} was "
+                        "successfully set to {1}."
+                        .format(
+                            params.eid,
+                            params.mode
+                        )
+                    )
 
 
 def node(params):
@@ -287,8 +317,49 @@ def node(params):
             node_ids
         )
         put_response = json_api_put_request("nodes/", data)
+        node_ids = map(str, node_ids)
         if params.json:
             print(json.dumps(put_response, indent=4))
+        else:
+            print(
+                "{0} added to environment with id={1} in {2}."
+                .format(
+                    "Node with id={0} was".format(node_ids[0])
+                    if len(node_ids) == 1 else
+                    "Nodes with ids={0} were".format(", ".join(node_ids)),
+                    params.eid,
+                    "role={0}".format(roles[0])
+                    if len(roles) == 1 else
+                    "roles={0}".format(", ".join(roles))
+                )
+            )
+    elif params.remove:
+        check_for_attributes(params, ["nid", "eid"])
+        node_ids = list(chain(*params.nid))
+        data = map(
+            lambda node_id: {
+                "id": node_id,
+                "cluster_id": params.eid,
+                "pending_roles": [],
+                "pending_addition": False,
+                "pending_deletion": True
+            },
+            node_ids
+        )
+        put_response = json_api_put_request("nodes/", data)
+        node_ids = map(str, node_ids)
+        if params.json:
+            print(json.dumps(put_response, indent=4))
+        else:
+            print(
+                "{0} removed from environment with id={1}."
+                .format(
+                    "Node with id={0} was".format(node_ids[0])
+                    if len(node_ids) == 1 else
+                    "Nodes with ids={0} were".format(", ".join(node_ids)),
+                    params.eid
+                )
+            )
 
 
 def network(params):
@@ -312,7 +383,9 @@ def logs(params):
 def task(params):
     """Show tasks
     """
-    print(params)
+    get_response = json_api_get_request("tasks/")
+    if params.json:
+        print(json.dumps(get_response, indent=4))
 
 
 def notifications(params):
@@ -337,6 +410,54 @@ def deploy(params):
     )
     if params.json:
         print(json.dumps(put_response, indent=4))
+    else:
+        print_deploy_progress(params.eid)
+
+
+def get_bar_for_progress(width, progress):
+    nqs = int(math.ceil(progress * float(width-2)/100))
+    return "[" + ("=" * (nqs-1)) + ">" + (" " * (width-2-nqs)) + "]"
+
+
+def print_deploy_progress(eid):
+    stdscr = curses.initscr()
+    curses.noecho()
+    curses.cbreak()
+    tasks = json_api_get_request("tasks?cluster_id={0}".format(eid))
+    deploy_task = filter(
+        lambda x: x.get("name", "") == "deploy",
+        tasks
+    )[0]
+    deploy_task_id = deploy_task["id"]
+    progress = 0
+    get_bar = partial(get_bar_for_progress, 80)
+    try:
+        while progress != 100:
+            task_response = json_api_get_request(
+                "tasks/{0}/".format(deploy_task_id)
+            )
+            node_progresses = {
+                "Node {0}".format(node["id"]): node["progress"]
+                for node in json_api_get_request(
+                    "nodes?cluster_id={0}"
+                    .format(eid)
+                )
+            }
+            progress = task_response["progress"]
+            stdscr.addstr(0, 0,
+                          "Deploying changes to environment with id={0}"
+                          .format(eid)
+            )
+            stdscr.addstr(1, 0, "Deployment: " + get_bar(progress))
+            for index, node_tuple in enumerate(node_progresses.iteritems()):
+                node, node_progress = node_tuple
+                stdscr.addstr(index + 2, 0, node + ": " + get_bar(node_progress))
+            sleep(0.25)
+            stdscr.refresh()
+    finally:
+        curses.echo()
+        curses.nocbreak()
+        curses.endwin()
 
 
 def fact(params):
@@ -585,7 +706,7 @@ actions = {
                 "default": None
             }
         }, {
-            "args": ["-rm", "--remove"],
+            "args": ["--rm", "--remove"],
             "params": {
                 "dest": "remove",
                 "action": "store_true",
@@ -806,7 +927,8 @@ substitutions = {
     "download": "--download",
     "upload": "--upload",
     "default": "--default",
-    "create": "--create"
+    "create": "--create",
+    "remove": "--remove"
 }
 
 if __name__ == '__main__':
