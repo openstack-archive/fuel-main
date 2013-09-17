@@ -57,7 +57,7 @@ class CiFuelWeb(CiBase):
                 name=name, environment=environment, pool=pool,
                 forward=FORWARDING.get(name), has_dhcp_server=DHCP.get(name)))
 
-        for name in self.node_roles().admin_names:
+        for name in self.nod().admin_names:
             self.describe_admin_node(name, networks)
         for name in self.node_roles().other_names:
             self.describe_empty_node(name, networks, memory=1024)
@@ -104,8 +104,7 @@ class CiFuelWeb(CiBase):
             ''.join(remote.execute('grep HWADDR %s' % file_name)['stdout'])
         uuid = ''.join(remote.execute('grep UUID %s' % file_name)['stdout'])
         nameserver = os.popen(
-            "nmcli dev list | grep 'IP[46].DNS' | "
-            "sed -e 's/IP[46]\.DNS\[[0-9]\+\]:\s\+/nameserver /'| "
+            "grep '^nameserver' /etc/resolv.conf | "
             "grep -v 'nameserver\s\s*127.' | head -3").read()
 
         remote.execute('echo -e "%s'
