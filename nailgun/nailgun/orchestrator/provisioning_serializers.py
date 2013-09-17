@@ -63,7 +63,7 @@ class ProvisioningSerializer(object):
             'power_address': node.ip,
             'name': TaskHelper.make_slave_name(node.id),
             'hostname': node.fqdn,
-            'power_pass': cls.get_power_pass(node),
+            'power_pass': cls.get_ssh_key_path(node),
 
             'profile': cluster_attrs['cobbler']['profile'],
             'power_type': 'ssh',
@@ -146,7 +146,7 @@ class ProvisioningSerializer(object):
         return admin_ips
 
     @classmethod
-    def get_power_pass(cls, node):
+    def get_ssh_key_path(cls, node):
         """Assign power pass depend on node state."""
         if node.status == "discover":
             logger.info(
