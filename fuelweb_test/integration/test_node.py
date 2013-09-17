@@ -447,5 +447,57 @@ class TestNode(BaseNodeTestCase):
         # self.ci().environment().snapshot(
         #     name=EMPTY_SNAPSHOT, description=EMPTY_SNAPSHOT, force=True)
 
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos'])
+    def test_untagged_networks_negative(self):
+        cluster_name = 'simple_untagged'
+
+        vlan_turn_off = {'vlan_start': None}
+        nodes = {
+            'slave-01': ['controller'],
+            'slave-02': ['compute']
+        }
+        interfaces = {
+            'eth0': ["fixed"],
+            'eth1': ["public", "floating",
+                     "management", "storage"],
+            'eth2': [],
+            'eth3': []
+        }
+
+        self.prepare_environment()
+
+        # create a new empty cluster and add nodes to it:
+        cluster_id = self.create_cluster(name=cluster_name)
+        self.bootstrap_nodes(self.nodes().slaves[:2])
+        self.update_nodes(cluster_id, nodes)
+
+        # assign all networks to second network interface:
+        nets = self.client.get_networks(cluster_id)['networks']
+        nailgun_nodes = self.client.list_cluster_nodes(cluster_id)
+        for node in nailgun_nodes:
+            self.update_node_networks(node['id'], interfaces)
+
+        # select networks that will be untagged:
+        [net.update(vlan_turn_off) for net in nets]
+
+        # stop using VLANs:
+        self.client.update_network(cluster_id,
+                                   networks=nets)
+
+        # run network check:
+        task = self._run_network_verify(cluster_id)
+        self.assertTaskFailed(task, 60 * 5)
+
+        # deploy cluster:
+        task = self.deploy_cluster(cluster_id)
+        self.assertTaskSuccess(task)
+
+        #run network check again:
+        task = self._run_network_verify(cluster_id)
+        self.assertTaskFailed(task, 60 * 5)
+
+
 if __name__ == '__main__':
     unittest.main()
