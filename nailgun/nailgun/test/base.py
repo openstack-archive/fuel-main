@@ -544,33 +544,38 @@ class Environment(object):
             time.sleep(0.1)
 
 
-class BaseHandlers(TestCase):
-
+class BaseTestCase(TestCase):
     fixtures = ['admin_network']
 
     def __init__(self, *args, **kwargs):
-        super(BaseHandlers, self).__init__(*args, **kwargs)
-        self.mock = mock
+        super(BaseTestCase, self).__init__(*args, **kwargs)
         self.default_headers = {
             "Content-Type": "application/json"
         }
 
-    def _wait_for_threads(self):
-        # wait for fake task thread termination
-        import threading
-        for thread in threading.enumerate():
-            if thread is not threading.currentThread():
-                if hasattr(thread, "rude_join"):
-                    timer = time.time()
-                    timeout = 25
-                    thread.rude_join(timeout)
-                    if time.time() - timer > timeout:
-                        raise Exception(
-                            '{0} seconds is not enough'
-                            ' - possible hanging'.format(
-                                timeout
-                            )
-                        )
+    @classmethod
+    def setUpClass(cls):
+        cls.db = db()
+        cls.app = TestApp(build_app().wsgifunc())
+        syncdb()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.db.commit()
+
+    def setUp(self):
+        flush()
+        self.env = Environment(app=self.app)
+        self.env.upload_fixtures(self.fixtures)
+
+    def tearDown(self):
+        self.db.expunge_all()
+
+    def assertNotRaises(self, exception, method, *args, **kwargs):
+        try:
+            method(*args, **kwargs)
+        except exception:
+            self.fail('Exception "{0}" raised.'.format(exception))
 
     def datadiff(self, node1, node2, path=None):
         if path is None:
@@ -607,28 +612,29 @@ class BaseHandlers(TestCase):
                 self.datadiff(node1[key1], node2[key2], newpath)
                 newpath.pop()
 
+
+class BaseIntegrationTest(BaseTestCase):
     @classmethod
     def setUpClass(cls):
-        cls.db = db()
-        cls.app = TestApp(build_app().wsgifunc())
+        super(BaseIntegrationTest, cls).setUpClass()
         nailgun.task.task.DeploymentTask._prepare_syslog_dir = mock.Mock()
-        # dropdb()
-        syncdb()
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.db.commit()
-
-    def setUp(self):
-        self.default_headers = {
-            "Content-Type": "application/json"
-        }
-        flush()
-        self.env = Environment(app=self.app)
-        self.env.upload_fixtures(self.fixtures)
-
-    def tearDown(self):
-        self.db.expunge_all()
+    def _wait_for_threads(self):
+        # wait for fake task thread termination
+        import threading
+        for thread in threading.enumerate():
+            if thread is not threading.currentThread():
+                if hasattr(thread, "rude_join"):
+                    timer = time.time()
+                    timeout = 25
+                    thread.rude_join(timeout)
+                    if time.time() - timer > timeout:
+                        raise Exception(
+                            '{0} seconds is not enough'
+                            ' - possible hanging'.format(
+                                timeout
+                            )
+                        )
 
 
 def fake_tasks(fake_rpc=True,
