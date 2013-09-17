@@ -334,9 +334,9 @@ RunTest() {
 
   # run python test set to create environments, deploy and test product
   if [ "${DRY_RUN}" = "yes" ]; then
-    echo nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit
+    echo nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit "${1}"
   else
-    nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit
+    nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit "${1}"
   fi
   ec=$?
 
