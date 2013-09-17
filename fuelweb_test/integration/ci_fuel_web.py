@@ -57,7 +57,7 @@ class CiFuelWeb(CiBase):
                 name=name, environment=environment, pool=pool,
                 forward=FORWARDING.get(name), has_dhcp_server=DHCP.get(name)))
 
-        for name in self.nod().admin_names:
+        for name in self.node_roles().admin_names:
             self.describe_admin_node(name, networks)
         for name in self.node_roles().other_names:
             self.describe_empty_node(name, networks, memory=1024)
