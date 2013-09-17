@@ -307,9 +307,9 @@ RunTest() {
 
   # run python virtualenv
   if [ "${DRY_RUN}" = "yes" ]; then
-    echo source ~/venv-nailgun-tests/bin/activate
+    echo . ~/venv-nailgun-tests/bin/activate
   else
-    source ~/venv-nailgun-tests/bin/activate
+    . ~/venv-nailgun-tests/bin/activate
   fi
 
   export ENV_NAME="${JOB_NAME}_system_test"
