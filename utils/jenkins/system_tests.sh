@@ -82,13 +82,7 @@ GlobalVariables() {
   # if was not overriden by options or export
   if [ -z "${ISO_PATH}" ]; then
     ISO_PATH="${ISO_DIR}/${ISO_NAME}"
-  fi
-
-  # what task should be ran
-  # it's taken from jenkins job name suffix if not set by options
-  if [ -z "${TASK_NAME}" ]; then
-    TASK_NAME="${JOB_NAME##*.}"
-  fi
+  fi  
 
   # do we want to keep iso's for each build or just copy over single file
   ROTATE_ISO="${ROTATE_ISO:=yes}"
@@ -334,9 +328,9 @@ RunTest() {
 
   # run python test set to create environments, deploy and test product
   if [ "${DRY_RUN}" = "yes" ]; then
-    echo nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit "${1}"
+    echo nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit
   else
-    nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit "${1}"
+    nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit
   fi
   ec=$?
 
@@ -349,18 +343,9 @@ RouteTasks() {
   # running any jobs should exit this script
 
   case "${TASK_NAME}" in
-  admin_node)
-    RunTest "fuelweb_test.integration.test_admin_node"
-    ;;
-  node)
-    RunTest "fuelweb_test.integration.test_node:TestNode"
-    ;;
-  node_ha)
-    RunTest "fuelweb_test.integration.test_node_ha"
-    ;;
-  node_ha2)
-    RunTest "fuelweb_test.integration.test_node_ha2"
-    ;;
+  test)
+    RunTest
+    ;;  
   iso)
     MakeISO
     ;;
