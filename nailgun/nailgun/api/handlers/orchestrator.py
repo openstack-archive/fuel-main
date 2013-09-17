@@ -28,10 +28,6 @@ from nailgun.orchestrator import provisioning_serializers
 class DefaultOrchestratorInfo(JSONHandler):
     """Base class for default orchestrator data."""
 
-    def serialize(self, cluster):
-        """Method should serialize cluster"""
-        raise NotImplementedError('Please Implement this method')
-
     @content_json
     def GET(self, cluster_id):
         """:returns: JSONized default data which will be passed to orchestrator
@@ -39,7 +35,7 @@ class DefaultOrchestratorInfo(JSONHandler):
                * 404 (cluster not found in db)
         """
         cluster = self.get_object_or_404(Cluster, cluster_id)
-        return self.serialize(cluster)
+        return serializer.serialize(cluster)
 
 
 class OrchestratorInfo(JSONHandler):
@@ -95,14 +91,12 @@ class OrchestratorInfo(JSONHandler):
 
 class DefaultProvisioningInfo(DefaultOrchestratorInfo):
 
-    def serialize(self, cluster):
-        return provisioning_serializers.serialize(cluster)
+    serializer = provisioning_serializers
 
 
 class DefaultDeploymentInfo(DefaultOrchestratorInfo):
 
-    def serialize(self, cluster):
-        return deployment_serializers.serialize(cluster)
+    serializer = deployment_serializers
 
 
 class ProvisioningInfo(OrchestratorInfo):
