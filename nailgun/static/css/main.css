@@ -496,6 +496,7 @@ h6.page-title {
   background: #ffffff !important;
 }
 .node-checkbox {
+  display: block;
   width: 48px;
   height: 48px;
   float: left;
@@ -825,7 +826,7 @@ h6.page-title {
 }
 
 .roles .pending {
-  color: #f00;
+  color: #468847;
 }
 
 .node-status:hover > div {
@@ -4381,4 +4382,31 @@ input.input-append {
 .environment-status > p > strong {
   font-weight: 200;
   color: #666666;
+}
+
+.register-fuel-img {
+  display: block;
+  width: 118px;
+  height: 118px;
+  overflow: hidden;
+  background: url(../img/support_icons.png) no-repeat 0px 0px;
+  margin: 10px 0px 0px 20px;
+}
+
+.contact-support-img {
+  display: block;
+  width: 118px;
+  height: 118px;
+  overflow: hidden;
+  background: url(../img/support_icons.png) no-repeat 0px -118px;
+  margin: 10px 0px 0px 20px;
+}
+
+.download-logs-img {
+  display: block;
+  width: 118px;
+  height: 118px;
+  overflow: hidden;
+  background: url(../img/support_icons.png) no-repeat 0px -236px;
+  margin: 10px 0px 0px 20px;
 }
