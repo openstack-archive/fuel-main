@@ -120,9 +120,8 @@ class DeploymentTask(object):
                 db().add(n)
                 db().commit()
 
-        # if task.cluster.facts not empty dict, it will be used
-        # instead of computing cluster facts through serialize
-        serialized_cluster = task.cluster.facts or \
+        # here we replace provisioning data if user redefined them
+        serialized_cluster = task.cluster.replaced_deployment_info or \
             deployment_serializers.serialize(task.cluster)
 
         return {
@@ -164,7 +163,8 @@ class ProvisionTask(object):
             node.status = 'provisioning'
             db().commit()
 
-        serialized_cluster = provisioning_serializers.serialize(task.cluster)
+        serialized_cluster = task.cluster.replaced_provisioning_info or \
+            provisioning_serializers.serialize(task.cluster)
 
         message = {
             'method': 'provision',

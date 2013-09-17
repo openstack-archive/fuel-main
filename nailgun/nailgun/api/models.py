@@ -123,7 +123,6 @@ class Cluster(Base):
     STATUSES = ('new', 'deployment', 'operational', 'error', 'remove')
     NET_MANAGERS = ('FlatDHCPManager', 'VlanManager')
     GROUPING = ('roles', 'hardware', 'both')
-    facts = Column(JSON, default={})
     id = Column(Integer, primary_key=True)
     mode = Column(
         Enum(*MODES, name='cluster_mode'),
@@ -162,6 +161,8 @@ class Cluster(Base):
     notifications = relationship("Notification", backref="cluster")
     network_groups = relationship("NetworkGroup", backref="cluster",
                                   cascade="delete")
+    replaced_deployment_info = Column(JSON, default={})
+    replaced_provisioning_info = Column(JSON, default={})
 
     @property
     def is_ha_mode(self):
