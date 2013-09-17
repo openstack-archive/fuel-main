@@ -83,6 +83,12 @@ GlobalVariables() {
   if [ -z "${ISO_PATH}" ]; then
     ISO_PATH="${ISO_DIR}/${ISO_NAME}"
   fi  
+  
+  # what task should be ran
+  # it's taken from jenkins job name suffix if not set by options
+  if [ -z "${TASK_NAME}" ]; then
+    TASK_NAME="${JOB_NAME##*.}"
+  fi
 
   # do we want to keep iso's for each build or just copy over single file
   ROTATE_ISO="${ROTATE_ISO:=yes}"
