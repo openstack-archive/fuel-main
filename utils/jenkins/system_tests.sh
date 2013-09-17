@@ -82,8 +82,8 @@ GlobalVariables() {
   # if was not overriden by options or export
   if [ -z "${ISO_PATH}" ]; then
     ISO_PATH="${ISO_DIR}/${ISO_NAME}"
-  fi
-
+  fi  
+  
   # what task should be ran
   # it's taken from jenkins job name suffix if not set by options
   if [ -z "${TASK_NAME}" ]; then
@@ -349,18 +349,9 @@ RouteTasks() {
   # running any jobs should exit this script
 
   case "${TASK_NAME}" in
-  admin_node)
-    RunTest "fuelweb_test.integration.test_admin_node"
-    ;;
-  node)
-    RunTest "fuelweb_test.integration.test_node:TestNode"
-    ;;
-  node_ha)
-    RunTest "fuelweb_test.integration.test_node_ha"
-    ;;
-  node_ha2)
-    RunTest "fuelweb_test.integration.test_node_ha2"
-    ;;
+  test)
+    RunTest
+    ;;  
   iso)
     MakeISO
     ;;
