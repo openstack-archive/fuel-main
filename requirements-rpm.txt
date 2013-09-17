@@ -300,6 +300,7 @@ python-cheetah-2.4.1-1.el6
 python-cinder-2013.1.3.fuel3.2-mira.1
 python-cinderclient-1.0.4.fuel3.2-mira.1
 python-cliff-1.3-1.el6
+python-cliff-tablib-1.1-1.2.x86_64.rpm
 python-cloudfiles-1.7.9.3-1.el6
 python-cmd2-0.6.4-7.el6
 python-crypto-2.0.1-22.el6
