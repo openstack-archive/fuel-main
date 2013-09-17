@@ -339,6 +339,41 @@ class FakeVerificationThread(FakeThread):
             self.sleep(tick_interval)
 
 
+class FakeCheckingDhcpThread(FakeAmpqThread):
+    """Thread to be used with test_task_managers.py
+    """
+
+    NODES = [{'uid': '90',
+              'status': 'ready',
+              'data': [{'mac': 'ee:ae:c5:e0:f5:17',
+                       'server_id': '10.20.0.157',
+                       'yiaddr': '10.20.0.133',
+                       'iface': 'eth0'}]},
+             {'uid': '91',
+              'status': 'ready',
+              'data': [{'mac': 'bc:ae:c5:e0:f5:85',
+                        'server_id': '10.20.0.20',
+                        'yiaddr': '10.20.0.131',
+                        'iface': 'eth0'}]}]
+
+    @property
+    def _message(self):
+        """Example of message with discovered dhcp server
+        """
+        return {'task_uuid': self.task_uuid,
+                'error': '',
+                'status': 'ready',
+                'progress': 100,
+                'nodes': self.NODES}
+
+    def message_gen(self):
+        self.sleep(self.tick_interval)
+        if self.params.get("dhcp_error"):
+            return self.error_message_gen()
+        else:
+            return (self._message,)
+
+
 class FakeRedHatCredentials(FakeAmpqThread):
     def message_gen(self):
         self.sleep(self.tick_interval)
@@ -444,6 +479,7 @@ FAKE_THREADS = {
     'deploy': FakeDeploymentThread,
     'remove_nodes': FakeDeletionThread,
     'verify_networks': FakeVerificationThread,
+    'check_dhcp': FakeCheckingDhcpThread,
     'download_release': DownloadReleaseThread,
     'check_redhat_credentials': FakeRedHatCredentials,
     'check_redhat_licenses': FakeRedHatLicenses,

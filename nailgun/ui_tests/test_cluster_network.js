@@ -333,17 +333,9 @@ casper.then(function() {
 casper.then(function() {
     this.test.comment('Testing cluster networks: verification');
     this.click('.verify-networks-btn:not(:disabled)');
-    this.test.assertSelectorAppears('.connect-3-success', 'Verification result is rendered', 10000);
-    this.then(function() {
-        this.test.assertExists('input:disabled', 'Form fields are disabled while verification');
-        this.test.assertExists('.connect-3-success', 'Verification is in progress');
-        this.test.info('Waiting for verification readiness...');
-    });
-    this.test.assertSelectorDisappears('.connect-3-success', 'Verification result is rendered', 10000);
-    this.then(function() {
-        this.test.assertExists('.connect-3-error', 'Verification was failed without nodes in cluster');
-        this.test.assertExists('input:not(:disabled)', 'Form fields are enabled again after verification');
-    });
+    this.test.assertSelectorAppears('.connect-3-error',
+        'There should be atleast 1 node for dhcp check. And 2 nodes for connectivity check', 10000);
+
 });
 
 casper.then(function() {

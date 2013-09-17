@@ -96,9 +96,8 @@ module Naily
     end
 
     def verify_networks(data)
-      reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
-      args = data['args']
-      result = @orchestrator.verify_networks(reporter, data['args']['task_uuid'], args['nodes'])
+      reporter = Naily::SubtaskReporter.new(@producer, data['respond_to'], data['args']['task_uuid'], data['subtasks'])
+      result = @orchestrator.verify_networks(reporter, data['args']['task_uuid'], data['args']['nodes'])
       report_result(result, reporter)
     end
 
@@ -126,7 +125,7 @@ module Naily
     end
 
     private
-    
+
     def report_result(result, reporter)
       result = {} unless result.instance_of?(Hash)
       status = {'status' => 'ready', 'progress' => 100}.merge(result)

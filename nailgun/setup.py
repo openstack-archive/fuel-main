@@ -40,6 +40,8 @@ requires = [
     'wsgiref==0.1.2',
     'fysom==1.0.11',
     'jsonschema==2.0.0',
+    'netifaces==0.8',
+    'psycopg2==2.4.6'
 ]
 
 major_version = '0.1'

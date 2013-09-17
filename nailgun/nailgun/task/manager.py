@@ -331,8 +331,14 @@ class VerifyNetworksTaskManager(TaskManager):
             name="check_networks",
             cluster=self.cluster
         )
+        if not task.cluster.nodes:
+            task.status = 'error'
+            task.message = ('There should be atleast 1 node for dhcp check.'
+                            'And 2 nodes for connectivity check')
+
         db().add(task)
         db().commit()
+
         self._call_silently(
             task,
             tasks.CheckNetworksTask,
@@ -343,14 +349,23 @@ class VerifyNetworksTaskManager(TaskManager):
             # this one is connected with UI issues - we need to
             # separate if error happened inside nailgun or somewhere
             # in the orchestrator, and UI does it by task name.
-            task.name = "verify_networks"
-            db().add(task)
+
+            dhcp_subtask = Task(
+                name='check_dhcp',
+                cluster=self.cluster,
+                parent_id=task.id)
+            db().add(dhcp_subtask)
             db().commit()
+            db().refresh(task)
+
+            task.name = 'verify_networks'
+
             self._call_silently(
                 task,
                 tasks.VerifyNetworksTask,
                 vlan_ids
             )
+
         return task
 
 

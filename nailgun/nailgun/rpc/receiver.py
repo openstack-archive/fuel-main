@@ -14,9 +14,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import collections
 import itertools
 import json
+import netifaces
 import traceback
+
 
 from sqlalchemy import or_
 
@@ -562,6 +565,57 @@ class NailgunReceiver(object):
             status = 'error'
             logger.error(error_msg)
 
+        TaskHelper.update_task_status(task_uuid, status,
+                                      progress, error_msg, result)
+
+    @classmethod
+    def _master_networks_gen(cls, ifaces):
+        for iface in ifaces:
+            iface_data = netifaces.ifaddresses(iface)
+            if netifaces.AF_LINK in iface_data:
+                yield netifaces.ifaddresses(iface)[netifaces.AF_LINK]
+
+    @classmethod
+    def _get_master_macs(cls):
+        return itertools.chain(*cls._master_networks_gen(
+            netifaces.interfaces()))
+
+    @classmethod
+    def check_dhcp_resp(cls, **kwargs):
+        """Receiver method for check_dhcp task
+        For example of kwargs check FakeCheckingDhcpThread
+        """
+        logger.info(
+            "RPC method check_dhcp_resp received: %s" %
+            json.dumps(kwargs)
+        )
+        messages = []
+        result = collections.defaultdict(list)
+        message_template = ("Dhcp server on {server_id} - {mac}."
+                            "Discovered from node {yiaddr} on {iface}.")
+
+        task_uuid = kwargs.get('task_uuid')
+        nodes = kwargs.get('nodes')
+        error_msg = kwargs.get('error')
+        status = kwargs.get('status')
+        progress = kwargs.get('progress')
+
+        macs = [item['addr'] for item in cls._get_master_macs()]
+        logger.debug('Mac addr on master node %s', macs)
+
+        if nodes:
+            for node in nodes:
+                if node['status'] == 'ready':
+                    for row in node.get('data', []):
+                        if row['mac'] not in macs:
+                            messages.append(message_template.format(**row))
+                            result[node['uid']].append(row)
+                elif node['status'] == 'error':
+                    messages.append(node.get('error_msg',
+                                             ('Dhcp check method failed.'
+                                              ' Check logs for details.')))
+            status = status if not messages else "error"
+            error_msg = '\n'.join(messages) if messages else error_msg
         TaskHelper.update_task_status(task_uuid, status,
                                       progress, error_msg, result)
 

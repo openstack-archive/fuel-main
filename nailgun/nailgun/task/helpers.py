@@ -111,8 +111,9 @@ class TaskHelper(object):
         os.system("/usr/bin/pkill -HUP rsyslog")
 
     @classmethod
-    def update_task_status(cls, uuid, status, progress, msg="",
-                           result=None):
+    def update_task_status(cls, uuid, status, progress, msg="", result=None):
+        # verify_networks - task is expecting to receive result with
+        # some data if connectivity_verification fails
         logger.debug("Updating task: %s", uuid)
         task = db().query(Task).filter_by(uuid=uuid).first()
         if not task:
@@ -142,7 +143,7 @@ class TaskHelper(object):
                          task.cluster_id, status)
             cls.update_cluster_status(uuid)
         if task.parent:
-            logger.debug("Updating parent task: %s", task.parent.uuid)
+            logger.debug("Updating parent task: %s.", task.parent.uuid)
             cls.update_parent_task(task.parent.uuid)
 
     @classmethod
@@ -153,7 +154,7 @@ class TaskHelper(object):
             if all(map(lambda s: s.status == 'ready', subtasks)):
                 task.status = 'ready'
                 task.progress = 100
-                task.message = '; '.join(map(
+                task.message = '\n'.join(map(
                     lambda s: s.message, filter(
                         lambda s: s.message is not None, subtasks)))
                 db().add(task)
@@ -162,7 +163,7 @@ class TaskHelper(object):
             elif all(map(lambda s: s.status in ('ready', 'error'), subtasks)):
                 task.status = 'error'
                 task.progress = 100
-                task.message = '; '.join(list(set(map(
+                task.message = '\n'.join(list(set(map(
                     lambda s: (s.message or ""), filter(
                         lambda s: (
                             s.status == 'error' and not
