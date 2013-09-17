@@ -37,7 +37,6 @@ from nailgun.db import db
 from nailgun.errors import errors
 from nailgun.logger import logger
 from nailgun.network.manager import NetworkManager
-from nailgun import orchestrator
 from nailgun.task.manager import ClusterDeletionManager
 from nailgun.task.manager import DeploymentTaskManager
 

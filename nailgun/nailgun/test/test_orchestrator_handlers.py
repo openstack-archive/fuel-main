@@ -16,7 +16,6 @@
 
 import json
 
-from nailgun.api.models import Cluster
 from nailgun.test.base import BaseHandlers
 from nailgun.test.base import reverse
 
@@ -57,15 +56,12 @@ class TestHandlers(BaseHandlers):
         self.assertEquals(delete_resp.status, 202)
         self.assertEqual(get_info(), {})
 
-
     def test_cluster_provisioning_info(self):
-        cluster = self.env.create_cluster(api=False)
         self.check_info_handler(
             'ProvisioningInfo',
             lambda: self.cluster.replaced_provisioning_info)
 
     def test_cluster_deployment_info(self):
-        cluster = self.env.create_cluster(api=False)
         self.check_info_handler(
             'DeploymentInfo',
             lambda: self.cluster.replaced_deployment_info)

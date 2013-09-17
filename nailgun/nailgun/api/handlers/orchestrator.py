@@ -14,14 +14,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nailgun.orchestrator import deployment_serializers
-from nailgun.orchestrator import provisioning_serializers
-from nailgun.api.handlers.base import JSONHandler
+import web
+
 from nailgun.api.handlers.base import content_json
+from nailgun.api.handlers.base import JSONHandler
 from nailgun.api.models import Cluster
 from nailgun.db import db
 from nailgun.logger import logger
-import web
+from nailgun.orchestrator import deployment_serializers
+from nailgun.orchestrator import provisioning_serializers
 
 
 class DefaultOrchestratorInfo(JSONHandler):
