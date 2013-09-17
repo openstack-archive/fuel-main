@@ -84,7 +84,11 @@ class McollectiveConfig
         @logger.info "Identity in mcollective server.cfg has not been found. Setting to '#{new_id}'"
         File.open(@configfile, "w") { |f| f.write(config) }
       end
-      puts `/sbin/service mcollective restart`
+      # Generally because generic init script for
+      # mcollective is broken at least in Ubuntu and
+      # altering restart in such way seems better
+      # than shipping our own package.
+      puts `/etc/init.d/mcollective stop; /etc/init.d/mcollective start`
     end
   end
 end
