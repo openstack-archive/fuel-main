@@ -104,8 +104,7 @@ class CiFuelWeb(CiBase):
             ''.join(remote.execute('grep HWADDR %s' % file_name)['stdout'])
         uuid = ''.join(remote.execute('grep UUID %s' % file_name)['stdout'])
         nameserver = os.popen(
-            "nmcli dev list | grep 'IP[46].DNS' | "
-            "sed -e 's/IP[46]\.DNS\[[0-9]\+\]:\s\+/nameserver /'| "
+            "grep '^nameserver' /etc/resolv.conf | "
             "grep -v 'nameserver\s\s*127.' | head -3").read()
 
         remote.execute('echo -e "%s'
