@@ -35,21 +35,21 @@ logwrap = debug(logger)
 class TestNode(BaseNodeTestCase):
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_release_upload(self):
         self.prepare_environment()
         self._upload_sample_release()
 
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_http_returns_no_error(self):
         self.prepare_environment()
         self.client.get_root()
 
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_create_empty_cluster(self):
         self.prepare_environment()
         self.create_cluster(name='empty')
@@ -57,7 +57,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_node_deploy(self):
         self.prepare_environment()
         self.bootstrap_nodes(self.nodes().slaves[:1])
@@ -65,7 +65,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_updating_nodes_in_cluster(self):
         self.prepare_environment()
         cluster_id = self.create_cluster(name='empty')
@@ -76,7 +76,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_one_node_provisioning(self):
         self.prepare_environment()
         cluster_id = self.create_cluster(name="provision")
@@ -89,7 +89,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_simple_cluster_flat(self):
         cluster_id = self.prepare_environment(settings={
             'nodes': {
@@ -107,7 +107,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_simple_cluster_vlan(self):
         self.prepare_environment()
         cluster_name = 'simple_vlan'
@@ -125,7 +125,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_network_config(self):
         cluster_id = self.prepare_environment(settings={
             'nodes': {
@@ -141,7 +141,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_node_deletion(self):
         cluster_id = self.prepare_environment(settings={
             'nodes': {
@@ -167,7 +167,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_network_verify_with_blocked_vlan(self):
         self.prepare_environment()
         cluster_name = 'net_verify'
@@ -190,7 +190,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_multinic_bootstrap_booting(self):
         self.prepare_environment()
         slave = self.nodes().slaves[0]
@@ -213,7 +213,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_simple_cluster_with_cinder(self):
         cluster_id = self.prepare_environment(settings={
             'nodes': {
@@ -229,7 +229,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_add_compute_node(self):
         cluster_id = self.prepare_environment(settings={
             'nodes': {
@@ -255,7 +255,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_floating_ips(self):
         self.prepare_environment()
         cluster_name = 'floating_ips'
@@ -293,7 +293,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_node_disk_sizes(self):
         self.prepare_environment()
         # all nodes have 3 identical disks with same size
@@ -345,7 +345,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_node_multiple_interfaces(self):
         self.prepare_environment()
         cluster_name = 'node interfaces'
@@ -381,6 +381,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
+    @attr(releases=['centos'], suite='simple')
     def test_untagged_network(self):
         cluster_name = 'simple_untagged'
 
@@ -432,7 +433,7 @@ class TestNode(BaseNodeTestCase):
 
     @logwrap
     @fetch_logs
-    @attr(releases=['redhat'])
+    @attr(releases=['redhat'], suite='simple')
     def test_download_redhat(self):
         self.prepare_environment()
 
