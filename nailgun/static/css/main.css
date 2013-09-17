@@ -4384,7 +4384,7 @@ input.input-append {
   color: #666666;
 }
 
-.register-fuel-img {
+.img-register-fuel {
   display: block;
   width: 118px;
   height: 118px;
@@ -4393,7 +4393,7 @@ input.input-append {
   margin: 10px 0px 0px 20px;
 }
 
-.contact-support-img {
+.img-contact-support {
   display: block;
   width: 118px;
   height: 118px;
@@ -4402,7 +4402,7 @@ input.input-append {
   margin: 10px 0px 0px 20px;
 }
 
-.download-logs-img {
+.img-download-logs {
   display: block;
   width: 118px;
   height: 118px;
