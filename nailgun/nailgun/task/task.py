@@ -698,7 +698,7 @@ class DumpTask(object):
 
 
 def dump():
-    """Entry point dump script"""
+    """Entry point dump script."""
     from shotgun.config import Config as ShotgunConfig
     from shotgun.manager import Manager as ShotgunManager
     logger.debug("Starting snapshot procedure")

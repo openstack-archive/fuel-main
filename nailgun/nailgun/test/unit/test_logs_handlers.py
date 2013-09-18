@@ -27,11 +27,6 @@ import unittest
 from mock import Mock
 from mock import patch
 
-from nailgun.test.base import BaseIntegrationTest
-from nailgun.test.base import reverse
-
-from nailgun.settings import settings
-
 import nailgun
 from nailgun.api.handlers.logs import read_backwards
 from nailgun.api.models import RedHatAccount
@@ -39,6 +34,7 @@ from nailgun.errors import errors
 from nailgun.settings import settings
 from nailgun.task.manager import DumpTaskManager
 from nailgun.task.task import DumpTask
+from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import fake_tasks
 from nailgun.test.base import reverse
 
