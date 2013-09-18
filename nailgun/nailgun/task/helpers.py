@@ -46,11 +46,6 @@ class TaskHelper(object):
 
     @classmethod
     def prepare_syslog_dir(cls, node, prefix=None):
-        # FIXME(eli): I don't like this hack and
-        # the idea to spread logic for fake tasks
-        if settings.FAKE_TASKS or settings.FAKE_TASKS_AMQP:
-            return
-
         logger.debug("Preparing syslog directories for node: %s", node.fqdn)
         if not prefix:
             prefix = settings.SYSLOG_DIR

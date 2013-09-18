@@ -243,11 +243,6 @@ class Cluster(Base):
             netmanager.assign_admin_ips(
                 node.id, len(node.meta.get('interfaces', [])))
 
-            # We need to assign admin ips
-            # and only after that prepare syslog
-            # directories
-            TaskHelper.prepare_syslog_dir(node)
-
 
 class Node(Base):
     __tablename__ = 'nodes'

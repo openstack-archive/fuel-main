@@ -149,6 +149,11 @@ class ProvisionTask(object):
         nodes = TaskHelper.nodes_to_provision(task.cluster)
         USE_FAKE = settings.FAKE_TASKS or settings.FAKE_TASKS_AMQP
 
+        # We need to assign admin ips
+        # and only after that prepare syslog
+        # directories
+        task.cluster.prepare_for_provisioning()
+
         for node in nodes:
             if USE_FAKE:
                 continue
@@ -158,6 +163,8 @@ class ProvisionTask(object):
                     u'Node "%s" is offline.'
                     ' Remove it from environment and try again.' %
                     node.full_name)
+
+            TaskHelper.prepare_syslog_dir(node)
 
             node.status = 'provisioning'
             db().commit()
