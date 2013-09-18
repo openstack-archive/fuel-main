@@ -506,7 +506,7 @@ function(utils, models, commonViews, dialogViews, nodesManagementPanelTemplate, 
             'change .node-checkbox input': 'selectNode',
             'click .node-renameable': 'startNodeRenaming',
             'keydown .name input': 'onNodeNameInputKeydown',
-            'click .node-hardware': 'showNodeDetails',
+            'click .node-details': 'showNodeDetails',
             'click .btn-discard-role-changes': 'discardRoleChanges',
             'click .btn-discard-addition': 'discardAddition',
             'click .btn-discard-deletion': 'discardDeletion'

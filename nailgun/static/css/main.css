@@ -591,7 +591,7 @@ h6.page-title {
 }
 .node-hardware > ul {
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
-  cursor: pointer;
+  cursor: default;
   margin: 0px;
   padding: 0px;
   font-size: 11px;
@@ -611,10 +611,7 @@ h6.page-title {
 .node-hardware > ul > li:first-child {
   width: 26%;
 }
-.node-hardware > ul:hover {
-  color: #0178b3;
-}
-.node-settings {
+.node-details {
   display: block;
   height: 22px;
   width: 22px;
@@ -624,7 +621,7 @@ h6.page-title {
   margin: 13px 13px 0px 14px;
   cursor: pointer;
 }
-.node-settings:hover {
+.node-details:hover {
   background: url(/static/img/icons.png) 0px -22px no-repeat;
   -moz-animation: spin 2s infinite linear;
   -o-animation: spin 2s infinite linear;
