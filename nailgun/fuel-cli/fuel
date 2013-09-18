@@ -14,15 +14,15 @@
 #    under the License.
 
 import argparse
-from itertools import chain
-from functools import partial
-import json
-from time import sleep
 import curses
+from functools import partial
+from itertools import chain
+import json
 import math
 import os
 import shutil
 import sys
+from time import sleep
 import urllib2
 
 API_ROOT = "http://127.0.0.1:8000/api/"
@@ -199,6 +199,16 @@ def check_for_attributes(params, attributes):
         )
 
 
+def check_for_one_attribute(params, attributes):
+    if not any(map(
+        lambda attr: getattr(params, attr),
+        attributes
+    )):
+        print_error(
+            "At least one of {0} is required!\n".format(", ".join(attributes))
+        )
+
+
 def release(params):
     """List and modify currently available releases
     """
@@ -334,12 +344,18 @@ def node(params):
                 )
             )
     elif params.remove:
-        check_for_attributes(params, ["nid", "eid"])
-        node_ids = list(chain(*params.nid))
+        check_for_one_attribute(params, ["eid", "nid"])
+        nodes_clusters = {node["id"]: node["cluster"]
+                          for node in json_api_get_request("nodes/")}
+        if not params.nid and params.eid:
+            node_ids = [k for k, v in nodes_clusters.iteritems()
+                        if v == int(params.eid)]
+        else:
+            node_ids = list(chain(*params.nid))
         data = map(
             lambda node_id: {
                 "id": node_id,
-                "cluster_id": params.eid,
+                "cluster_id": params.eid or nodes_clusters.get(node_id),
                 "pending_roles": [],
                 "pending_addition": False,
                 "pending_deletion": True
@@ -414,9 +430,15 @@ def deploy(params):
         print_deploy_progress(params.eid)
 
 
-def get_bar_for_progress(width, progress):
-    nqs = int(math.ceil(progress * float(width-2)/100))
-    return "[" + ("=" * (nqs-1)) + ">" + (" " * (width-2-nqs)) + "]"
+def get_bar_for_progress(full_width, progress):
+    number_of_equal_signs = int(
+        math.ceil(progress * float(full_width-2)/100)
+    )
+    return "[{0}{1}{2}]".format(
+        "=" * number_of_equal_signs,
+        ">" if number_of_equal_signs < full_width-2 else "",
+        " " * (full_width-3-number_of_equal_signs)
+    )
 
 
 def print_deploy_progress(eid):
@@ -436,22 +458,29 @@ def print_deploy_progress(eid):
             task_response = json_api_get_request(
                 "tasks/{0}/".format(deploy_task_id)
             )
-            node_progresses = {
-                "Node {0}".format(node["id"]): node["progress"]
-                for node in json_api_get_request(
-                    "nodes?cluster_id={0}"
-                    .format(eid)
-                )
-            }
             progress = task_response["progress"]
+            nodes = json_api_get_request(
+                "nodes?cluster_id={0}"
+                .format(eid)
+            )
+            sorted(nodes, key=lambda node: node.get("id"))
             stdscr.addstr(0, 0,
                           "Deploying changes to environment with id={0}"
                           .format(eid)
-            )
-            stdscr.addstr(1, 0, "Deployment: " + get_bar(progress))
-            for index, node_tuple in enumerate(node_progresses.iteritems()):
-                node, node_progress = node_tuple
-                stdscr.addstr(index + 2, 0, node + ": " + get_bar(node_progress))
+                          )
+            stdscr.addstr(1, 0, "Deployment: {0} {1:4.0%}".format(
+                get_bar(progress),
+                progress/100.0
+            ))
+            for index, node in enumerate(nodes):
+                stdscr.addstr(index + 2, 0,
+                              "Node{0:3} {1:13}: {2} {3:4.0%}".format(
+                                  node["id"],
+                                  node["status"],
+                                  get_bar(node["progress"]),
+                                  node["progress"]/100.0
+                              )
+                              )
             sleep(0.25)
             stdscr.refresh()
     finally:
@@ -485,6 +514,10 @@ def fact(params):
         )
         if params.json:
             print(json.dumps(put_response, indent=4))
+        else:
+            print(
+                "Facts uploaded successfully."
+            )
     elif params.delete:
         json_api_delete_request(
             "clusters/{0}/orchestrator/"
@@ -668,14 +701,6 @@ actions = {
                 "dest": "list",
                 "action": "store_true",
                 "help": "List all nodes.",
-                "default": False
-            }
-        }, {
-            "args": ["--alloc"],
-            "params": {
-                "dest": "alloc",
-                "action": "store_true",
-                "help": "List only allocated nodes.",
                 "default": False
             }
         }, {
