@@ -116,21 +116,7 @@ class BaseNodeTestCase(BaseTestCase):
         self.client.clean_clusters()
 
     @logwrap
-    def update_deployment_mode(self, cluster_id, nodes_dict):
-        controller_names = filter(
-            lambda x: 'controller' in nodes_dict[x], nodes_dict)
-        if len(nodes_dict) > 1:
-            controller_amount = len(controller_names)
-            if controller_amount == 1:
-                self.client.update_cluster(
-                    cluster_id,
-                    {"mode": "multinode"})
-            if controller_amount > 1:
-                self.client.update_cluster(cluster_id, {"mode": "ha"})
-
-    @logwrap
     def configure_cluster(self, cluster_id, nodes_dict):
-        self.update_deployment_mode(cluster_id, nodes_dict)
         self.update_nodes(cluster_id, nodes_dict, True, False)
         # TODO: update network configuration
 
@@ -148,8 +134,7 @@ class BaseNodeTestCase(BaseTestCase):
         return cluster_id
 
     @logwrap
-    def prepare_environment(self, name='cluster_name', mode="multinode",
-                            settings={}):
+    def prepare_environment(self, name='cluster_name', settings={}):
         if not(self.ci().revert_to_state(settings)):
             self.get_ready_environment()
             cluster_id = self.create_cluster(name=name)
