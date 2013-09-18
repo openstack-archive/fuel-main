@@ -136,4 +136,3 @@ class CiFuelWeb(CiBase):
         self.wait_bootstrap()
         time.sleep(10)
         self.enable_nat_for_admin_node()
-        self.environment().snapshot(EMPTY_SNAPSHOT)

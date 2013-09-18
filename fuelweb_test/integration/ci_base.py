@@ -125,18 +125,13 @@ class CiBase(object):
     def get_empty_environment(self):
         if not(self.get_state(EMPTY_SNAPSHOT)):
             self.setup_environment()
+            self.environment().snapshot(EMPTY_SNAPSHOT)
 
     def generate_state_hash(self, settings):
         return hashlib.md5(str(settings)).hexdigest()
 
-    def revert_to_state(self, settings):
+    def revert_to_state(self, settings={}):
         state_hash = self.generate_state_hash(settings)
-
-        empty_state_hash = self.generate_state_hash({})
-        if state_hash == empty_state_hash:
-            # revert to empty state
-            self.get_empty_environment()
-            return True
 
         if state_hash in self.saved_environment_states:
             # revert to matching state
@@ -148,10 +143,12 @@ class CiBase(object):
 
         return False
 
-    def snapshot_state(self, name, settings):
+    def snapshot_state(self, name, settings={}):
         state_hash = self.generate_state_hash(settings)
+
         snapshot_name = '{0}_{1}'.format(
             name.replace(' ', '_')[:17], state_hash)
+
         self.environment().suspend(verbose=False)
         self.environment().snapshot(
             name=snapshot_name,

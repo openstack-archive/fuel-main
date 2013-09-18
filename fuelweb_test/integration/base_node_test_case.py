@@ -17,19 +17,23 @@ import logging
 from devops.helpers.helpers import SSHClient, wait, _wait
 from paramiko import RSAKey
 import re
+import hashlib
 from fuelweb_test.helpers import Ebtables
 from fuelweb_test.integration.base_test_case import BaseTestCase
 from fuelweb_test.integration.decorators import debug
 from fuelweb_test.nailgun_client import NailgunClient
 from fuelweb_test.settings import CLEAN, NETWORK_MANAGERS, EMPTY_SNAPSHOT, \
     REDHAT_USERNAME, REDHAT_PASSWORD, REDHAT_SATELLITE_HOST, \
-    REDHAT_ACTIVATION_KEY
+    REDHAT_ACTIVATION_KEY, OPENSTACK_RELEASE, OPENSTACK_RELEASE_REDHAT, \
+    REDHAT_LICENSE_TYPE, READY_SNAPSHOT
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
 
 
 class BaseNodeTestCase(BaseTestCase):
+
+    environment_states = {}
 
     def setUp(self):
         self.client = NailgunClient(self.get_admin_node_ip())
@@ -130,12 +134,10 @@ class BaseNodeTestCase(BaseTestCase):
         return cluster_id
 
     @logwrap
-    def prepare_environment(self, name='cluster_name', mode="multinode",
-                            settings={}):
+    def prepare_environment(self, name='cluster_name', settings={}):
         if not(self.ci().revert_to_state(settings)):
-            # create cluster
-            self.ci().get_empty_environment()
-            cluster_id = self.create_cluster(name=name, mode=mode)
+            self.get_ready_environment()
+            cluster_id = self.create_cluster(name=name)
             self.basic_provisioning(cluster_id, settings['nodes'])
             self.ci().snapshot_state(name, settings)
 
@@ -424,8 +426,31 @@ class BaseNodeTestCase(BaseTestCase):
             net_manager=NETWORK_MANAGERS['vlan'])
 
     @logwrap
+    def get_ready_environment(self):
+        if self.ci().get_state(READY_SNAPSHOT):
+            self.environment().resume(verbose=False)
+            return
+
+        self.ci().get_empty_environment()
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            # update redhat credentials so that fuel may upload redhat
+            # packages
+
+            # download redhat repo from local place to boost the test
+            # remote = self.nodes().admin.remote(
+            #   'internal', 'root', 'r00tme')
+            # remote.execute(
+            #   'wget -q http://172.18.67.168/rhel6/rhel-rpms.tar.gz')
+            # remote.execute('tar xzf rhel-rpms.tar.gz -C /')
+
+            self.update_redhat_credentials()
+            self.assert_release_state(OPENSTACK_RELEASE_REDHAT,
+                                      state='available')
+            self.ci().snapshot_state(READY_SNAPSHOT)
+
+    @logwrap
     def update_redhat_credentials(
-            self, license_type,
+            self, license_type=REDHAT_LICENSE_TYPE,
             username=REDHAT_USERNAME, password=REDHAT_PASSWORD,
             satellite_host=REDHAT_SATELLITE_HOST,
             activation_key=REDHAT_ACTIVATION_KEY):

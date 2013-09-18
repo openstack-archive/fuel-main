@@ -431,21 +431,5 @@ class TestNode(BaseNodeTestCase):
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 5)
 
-    @logwrap
-    @fetch_logs
-    @attr(releases=['redhat'], suite='simple')
-    def test_download_redhat(self):
-        self.prepare_environment()
-
-        # download redhat repo from local place to boost the test
-        # remote = self.nodes().admin.remote('internal', 'root', 'r00tme')
-        # remote.execute('wget -q http://172.18.67.168/rhel6/rhel-rpms.tar.gz')
-        # remote.execute('tar xzf rhel-rpms.tar.gz -C /')
-
-        self.update_redhat_credentials('rhn')
-        self.assert_release_state('RHOS', state='available')
-        # self.ci().environment().snapshot(
-        #     name=EMPTY_SNAPSHOT, description=EMPTY_SNAPSHOT, force=True)
-
 if __name__ == '__main__':
     unittest.main()
