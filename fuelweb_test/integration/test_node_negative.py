@@ -36,7 +36,7 @@ class TestNodeNegative(BaseNodeTestCase):
 
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_untagged_networks_negative(self):
         cluster_name = 'simple_untagged'
 
