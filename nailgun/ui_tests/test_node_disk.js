@@ -38,7 +38,7 @@ casper.then(function() {
 
     this.then(function() {
         this.then(function() {
-            this.click('.node-hardware');
+            this.click('.node-details');
         });
         this.test.assertSelectorAppears('.modal', 'Node details popup was opened');
         this.then(function() {
