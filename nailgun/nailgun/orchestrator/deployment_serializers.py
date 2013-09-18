@@ -129,10 +129,8 @@ class OrchestratorSerializer(object):
 
     @classmethod
     def add_vlan_interfaces(cls, nodes):
-        """We shouldn't pass to orchetrator fixed network
-        when network manager is VlanManager, but we should specify
-        fixed_interface (private_interface in terms of fuel) as result
-        we just pass vlan_interface as node attribute.
+        """Assign fixed_interfaces and vlan_interface.
+        They should be equal.
         """
         netmanager = NetworkManager()
         for node in nodes:
@@ -141,6 +139,7 @@ class OrchestratorSerializer(object):
             fixed_interface = netmanager._get_interface_by_network_name(
                 node_db.id, 'fixed')
 
+            node['fixed_interface'] = fixed_interface.name
             node['vlan_interface'] = fixed_interface.name
 
     @classmethod
