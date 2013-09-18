@@ -40,7 +40,7 @@
                 "volumes_roles_mapping": {
                     "controller": ["os", "image"],
                     "compute": ["os", "vm"],
-                    "ceph-osd": ["os", "ceph-journal", "ceph"],
+                    "ceph-osd": ["os", "cephjournal", "ceph"],
                     "cinder": ["os", "cinder"],
                     "other": ["os"]
                 },
@@ -56,7 +56,7 @@
                         "file_system": "xfs"
                     },
                     {
-                        "id": "ceph-journal",
+                        "id": "cephjournal",
                         "type": "partition",
                         "min_size": 0,
                         "name": "Ceph Journal",
@@ -739,7 +739,7 @@
                 "volumes_roles_mapping": {
                     "controller": ["os", "image"],
                     "compute": ["os", "vm"],
-                    "ceph-osd": ["os", "ceph-journal", "ceph"],
+                    "ceph-osd": ["os", "cephjournal", "ceph"],
                     "cinder": ["os", "cinder"],
                     "other": ["os"]
                 },
@@ -754,7 +754,7 @@
                         "file_system": "xfs"
                     },
                     {
-                        "id": "ceph-journal",
+                        "id": "cephjournal",
                         "type": "raid",
                         "min_size": 0,
                         "name": "Ceph Journal",
