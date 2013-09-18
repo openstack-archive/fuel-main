@@ -159,7 +159,6 @@ class ProvisionTask(object):
                     ' Remove it from environment and try again.' %
                     node.full_name)
 
-            TaskHelper.prepare_syslog_dir(node)
             node.status = 'provisioning'
             db().commit()
 
