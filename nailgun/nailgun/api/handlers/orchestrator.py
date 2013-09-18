@@ -30,6 +30,9 @@ class DefaultOrchestratorInfo(JSONHandler):
     Need to redefine serializer variable
     """
 
+    def serialize(self, cluster):
+        pass
+
     @content_json
     def GET(self, cluster_id):
         """:returns: JSONized default data which will be passed to orchestrator
@@ -37,7 +40,7 @@ class DefaultOrchestratorInfo(JSONHandler):
                * 404 (cluster not found in db)
         """
         cluster = self.get_object_or_404(Cluster, cluster_id)
-        return serializer.serialize(cluster)  # nopep8
+        return self.serialize(cluster)  # nopep8
 
 
 class OrchestratorInfo(JSONHandler):
@@ -93,12 +96,14 @@ class OrchestratorInfo(JSONHandler):
 
 class DefaultProvisioningInfo(DefaultOrchestratorInfo):
 
-    serializer = provisioning_serializers
+    def serialize(self, cluster):
+        return provisioning_serializers.serialize(cluster)
 
 
 class DefaultDeploymentInfo(DefaultOrchestratorInfo):
 
-    serializer = deployment_serializers
+    def serialize(self, cluster):
+        return deployment_serializers.serialize(cluster)
 
 
 class ProvisioningInfo(OrchestratorInfo):
