@@ -452,8 +452,10 @@ class BaseNodeTestCase(BaseTestCase):
             # packages
 
             # download redhat repo from local place to boost the test
-            # remote = self.nodes().admin.remote('internal', 'root', 'r00tme')
-            # remote.execute('wget -q http://172.18.67.168/rhel6/rhel-rpms.tar.gz')
+            # remote = self.nodes().admin.remote(
+            #   'internal', 'root', 'r00tme')
+            # remote.execute(
+            #   'wget -q http://172.18.67.168/rhel6/rhel-rpms.tar.gz')
             # remote.execute('tar xzf rhel-rpms.tar.gz -C /')
 
             self.update_redhat_credentials()
