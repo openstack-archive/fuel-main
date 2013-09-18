@@ -823,5 +823,4 @@ class NailgunReceiver(object):
                             'Visit Support page to download')
             TaskHelper.update_task_status(
                 task_uuid, status, progress,
-                'http://{0}:8080/dump/{1}'.format(
-                    settings.MASTER_IP, dumpfile))
+                '/dump/{1}'.format(dumpfile))
