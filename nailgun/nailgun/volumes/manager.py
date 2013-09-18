@@ -307,6 +307,7 @@ class Disk(object):
                 'type': partition_type,
                 'file_system': 'ext2',
                 'mount': '/boot',
+                'name': 'Boot',
                 'size': self.get_size(boot_size)})
 
     def create_boot_records(self):
@@ -450,7 +451,7 @@ class Disk(object):
         for volume in self.volumes:
             if volume.get('type') == 'raid' and \
                volume.get('name') == name and \
-               volume.get('mount') != 'boot':
+               volume.get('mount') != '/boot':
                 self.free_space += volume['size']
                 volume['size'] = size
                 self.free_space -= size

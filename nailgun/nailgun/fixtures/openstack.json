@@ -50,13 +50,14 @@
                         "type": "partition",
                         "min_size": {"generator": "calc_min_ceph_size"},
                         "label": "Ceph",
+                        "name": "Ceph",
                         "mount": "none",
                         "disk_label": "cephosd",
                         "file_system": "xfs"
                     },
                     {
                         "id": "ceph-journal",
-                        "type": "raid",
+                        "type": "partition",
                         "min_size": 0,
                         "name": "Ceph Journal",
                         "label": "Ceph Journal",
