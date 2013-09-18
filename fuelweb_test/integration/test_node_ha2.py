@@ -33,7 +33,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='ha2')
     def test_ha_cluster_flat(self):
         cluster_id = self.prepare_environment(
             name="ha_flat",
@@ -58,7 +58,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='ha2')
     def test_ha_add_compute(self):
         cluster_id = self.prepare_environment(
             name="ha_flat",

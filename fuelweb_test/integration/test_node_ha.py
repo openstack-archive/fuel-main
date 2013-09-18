@@ -33,7 +33,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='ha')
     def test_ha_cluster_vlan(self):
         self.prepare_environment()
         cluster_name = 'ha_vlan'
