@@ -14,7 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import shlex
 import subprocess
 
@@ -22,7 +21,6 @@ import netaddr
 from sqlalchemy.orm import ColumnProperty
 from sqlalchemy.orm import object_mapper
 
-from nailgun.api.models import IPAddr
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
 from nailgun.api.models import NodeNICInterface
@@ -31,7 +29,8 @@ from nailgun.db import db
 from nailgun.errors import errors
 from nailgun.logger import logger
 from nailgun.network.manager import NetworkManager
-from nailgun.orchestrator.serializers import serialize
+from nailgun.orchestrator import deployment_serializers
+from nailgun.orchestrator import provisioning_serializers
 import nailgun.rpc as rpc
 from nailgun.settings import settings
 from nailgun.task.fake import FAKE_THREADS
@@ -121,19 +120,16 @@ class DeploymentTask(object):
                 db().add(n)
                 db().commit()
 
-        message = {
+        # here we replace provisioning data if user redefined them
+        serialized_cluster = task.cluster.replaced_deployment_info or \
+            deployment_serializers.serialize(task.cluster)
+
+        return {
             'method': 'deploy',
             'respond_to': 'deploy_resp',
             'args': {
                 'task_uuid': task.uuid,
-                # if task.cluster.facts not empty dict, it will be used
-                # instead of computing cluster facts through serialize
-                'deployment_info': task.cluster.facts
-                or serialize(task.cluster)
-            }
-        }
-
-        return message
+                'deployment_info': serialized_cluster}}
 
     @classmethod
     def execute(cls, task):
@@ -146,148 +142,37 @@ class DeploymentTask(object):
 
 
 class ProvisionTask(object):
+
     @classmethod
     def message(cls, task):
         logger.debug("ProvisionTask.message(task=%s)" % task.uuid)
-        # this variable is used to set 'auth_key' in cobbler ks_meta
-        cluster_attrs = task.cluster.attributes.merged_attrs_values()
         nodes = TaskHelper.nodes_to_provision(task.cluster)
-        netmanager = NetworkManager()
-
         USE_FAKE = settings.FAKE_TASKS or settings.FAKE_TASKS_AMQP
-        # TODO(NAME): For now we send nodes data to orchestrator
-        # which is cobbler oriented. But for future we
-        # need to use more abstract data structure.
-        nodes_data = []
+
         for node in nodes:
-            if not node.online:
-                if not USE_FAKE:
-                    raise errors.NodeOffline(
-                        u"Node '%s' (id=%s) is offline."
-                        " Remove it from environment and try again." %
-                        (node.name, node.id)
-                    )
-                else:
-                    logger.warning(
-                        u"Node '%s' (id=%s) is offline."
-                        " Remove it from environment and try again." %
-                        (node.name, node.id)
-                    )
+            if USE_FAKE:
+                continue
 
-            cobbler_profile = cluster_attrs['cobbler']['profile']
+            if node.offline:
+                raise errors.NodeOffline(
+                    u'Node "%s" is offline.'
+                    ' Remove it from environment and try again.' %
+                    node.full_name)
 
-            node_data = {
-                'profile': cobbler_profile,
-                'power_type': 'ssh',
-                'power_user': 'root',
-                'power_address': node.ip,
-                'name': TaskHelper.make_slave_name(node.id),
-                'hostname': node.fqdn,
-                'name_servers': '\"%s\"' % settings.DNS_SERVERS,
-                'name_servers_search': '\"%s\"' % settings.DNS_SEARCH,
-                'netboot_enabled': '1',
-                'ks_meta': {
-                    'puppet_auto_setup': 1,
-                    'puppet_master': settings.PUPPET_MASTER_HOST,
-                    'puppet_version': settings.PUPPET_VERSION,
-                    'puppet_enable': 0,
-                    'mco_auto_setup': 1,
-                    'install_log_2_syslog': 1,
-                    'mco_pskey': settings.MCO_PSKEY,
-                    'mco_vhost': settings.MCO_VHOST,
-                    'mco_host': settings.MCO_HOST,
-                    'mco_user': settings.MCO_USER,
-                    'mco_password': settings.MCO_PASSWORD,
-                    'mco_connector': settings.MCO_CONNECTOR,
-                    'mco_enable': 1,
-                    'auth_key': "\"%s\"" % cluster_attrs.get('auth_key', ''),
-                    'ks_spaces': "\"%s\"" % json.dumps(
-                        node.attributes.volumes).replace("\"", "\\\"")
-                }
-            }
+            TaskHelper.prepare_syslog_dir(node)
+            node.status = 'provisioning'
+            db().commit()
 
-            if node.status == "discover":
-                logger.info(
-                    "Node %s seems booted with bootstrap image",
-                    node.id
-                )
-                node_data['power_pass'] = settings.PATH_TO_BOOTSTRAP_SSH_KEY
-            else:
-                # If it's not in discover, we expect it to be booted
-                #   in target system.
-                # TODO(NAME): Get rid of expectations!
-                logger.info(
-                    "Node %s seems booted with real system",
-                    node.id
-                )
-                node_data['power_pass'] = settings.PATH_TO_SSH_KEY
-
-            # FIXME: move this code (updating) into receiver.provision_resp
-            if not USE_FAKE:
-                node.status = "provisioning"
-                db().add(node)
-                db().commit()
-
-            # here we assign admin network IPs for node
-            # one IP for every node interface
-            netmanager.assign_admin_ips(
-                node.id,
-                len(node.meta.get('interfaces', []))
-            )
-            admin_net_id = netmanager.get_admin_network_id()
-            admin_ips = set([i.ip_addr for i in db().query(IPAddr).
-                            filter_by(node=node.id).
-                            filter_by(network=admin_net_id)])
-            for i in node.meta.get('interfaces', []):
-                if 'interfaces' not in node_data:
-                    node_data['interfaces'] = {}
-                node_data['interfaces'][i['name']] = {
-                    'mac_address': i['mac'],
-                    'static': '0',
-                    'netmask': settings.ADMIN_NETWORK['netmask'],
-                    'ip_address': admin_ips.pop(),
-                }
-                # interfaces_extra field in cobbler ks_meta
-                # means some extra data for network interfaces
-                # configuration. It is used by cobbler snippet.
-                # For example, cobbler interface model does not
-                # have 'peerdns' field, but we need this field
-                # to be configured. So we use interfaces_extra
-                # branch in order to set this unsupported field.
-                if 'interfaces_extra' not in node_data:
-                    node_data['interfaces_extra'] = {}
-                node_data['interfaces_extra'][i['name']] = {
-                    'peerdns': 'no',
-                    'onboot': 'no'
-                }
-
-                # We want node to be able to PXE boot via any of its
-                # interfaces. That is why we add all discovered
-                # interfaces into cobbler system. But we want
-                # assignted fqdn to be resolved into one IP address
-                # because we don't completely support multiinterface
-                # configuration yet.
-                if i['mac'] == node.mac:
-                    node_data['interfaces'][i['name']]['dns_name'] = node.fqdn
-                    node_data['interfaces_extra'][i['name']]['onboot'] = 'yes'
-
-            nodes_data.append(node_data)
-            if not USE_FAKE:
-                TaskHelper.prepare_syslog_dir(node)
+        serialized_cluster = task.cluster.replaced_provisioning_info or \
+            provisioning_serializers.serialize(task.cluster)
 
         message = {
             'method': 'provision',
             'respond_to': 'provision_resp',
             'args': {
                 'task_uuid': task.uuid,
-                'engine': {
-                    'url': settings.COBBLER_URL,
-                    'username': settings.COBBLER_USER,
-                    'password': settings.COBBLER_PASSWORD,
-                },
-                'nodes': nodes_data
-            }
-        }
+                'provisioning_info': serialized_cluster}}
+
         return message
 
     @classmethod

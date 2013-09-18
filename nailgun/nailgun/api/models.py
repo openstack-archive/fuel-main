@@ -123,7 +123,6 @@ class Cluster(Base):
     STATUSES = ('new', 'deployment', 'operational', 'error', 'remove')
     NET_MANAGERS = ('FlatDHCPManager', 'VlanManager')
     GROUPING = ('roles', 'hardware', 'both')
-    facts = Column(JSON, default={})
     id = Column(Integer, primary_key=True)
     mode = Column(
         Enum(*MODES, name='cluster_mode'),
@@ -162,6 +161,8 @@ class Cluster(Base):
     notifications = relationship("Notification", backref="cluster")
     network_groups = relationship("NetworkGroup", backref="cluster",
                                   cascade="delete")
+    replaced_deployment_info = Column(JSON, default={})
+    replaced_provisioning_info = Column(JSON, default={})
 
     @property
     def is_ha_mode(self):
@@ -227,11 +228,20 @@ class Cluster(Base):
         TaskHelper.update_slave_nodes_fqdn(nodes)
 
         nodes_ids = sorted([n.id for n in nodes])
+        netmanager = NetworkManager()
         if nodes_ids:
-            netmanager = NetworkManager()
             netmanager.assign_ips(nodes_ids, 'management')
             netmanager.assign_ips(nodes_ids, 'public')
             netmanager.assign_ips(nodes_ids, 'storage')
+
+    def prepare_for_provisioning(self):
+        from nailgun.network.manager import NetworkManager
+        from nailgun.task.helpers import TaskHelper
+
+        netmanager = NetworkManager()
+        for node in TaskHelper.nodes_to_provision(self):
+            netmanager.assign_admin_ips(
+                node.id, len(node.meta.get('interfaces', [])))
 
 
 class Node(Base):
@@ -280,6 +290,10 @@ class Node(Base):
                               uselist=False)
     interfaces = relationship("NodeNICInterface", backref="node",
                               cascade="delete")
+
+    @property
+    def offline(self):
+        return not self.online
 
     @property
     def network_data(self):

@@ -15,7 +15,6 @@
 #    under the License.
 
 import json
-import unittest
 
 from nailgun.api.models import Release
 from nailgun.test.base import BaseIntegrationTest
@@ -49,17 +48,3 @@ class TestHandlers(BaseIntegrationTest):
             headers=self.default_headers,
             expect_errors=True)
         self.assertEquals(resp.status, 400)
-
-    @unittest.skip("Database constrains do not allow to delete release now")
-    def test_release_delete(self):
-        release = self.env.create_release(api=False)
-        resp = self.app.delete(
-            reverse('ReleaseHandler', kwargs={'release_id': release.id}),
-            params=json.dumps({
-                'name': 'Another test release',
-                'version': '1.0'
-            }),
-            headers=self.default_headers
-        )
-        self.assertEquals(204, resp.status)
-        self.assertEquals('', resp.body)

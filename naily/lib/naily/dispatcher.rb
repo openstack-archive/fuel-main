@@ -76,7 +76,9 @@ module Naily
       Naily.logger.info("'provision' method called with data: #{data.inspect}")
 
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
-      @orchestrator.fast_provision(reporter, data['args']['engine'], data['args']['nodes'])
+      @orchestrator.fast_provision(reporter,
+                                   data['args']['provisioning_info']['engine'],
+                                   data['args']['provisioning_info']['nodes'])
     end
 
     def deploy(data)

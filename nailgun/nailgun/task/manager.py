@@ -161,7 +161,8 @@ class DeploymentTaskManager(TaskManager):
         )
         db().add(supertask)
         db().commit()
-        if not self.cluster.facts:
+        if not self.cluster.replaced_provisioning_info \
+           and not self.cluster.replaced_deployment_info:
             try:
                 self.check_before_deployment(supertask)
             except errors.CheckBeforeDeploymentError:

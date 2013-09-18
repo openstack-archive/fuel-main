@@ -269,14 +269,12 @@ class TestHandlers(BaseIntegrationTest):
             'respond_to': 'provision_resp',
             'args': {
                 'task_uuid': provision_task_uuid,
-                'engine': {
-                    'url': settings.COBBLER_URL,
-                    'username': settings.COBBLER_USER,
-                    'password': settings.COBBLER_PASSWORD,
-                },
-                'nodes': provision_nodes,
-            }
-        }
+                'provisioning_info': {
+                    'engine': {
+                        'url': settings.COBBLER_URL,
+                        'username': settings.COBBLER_USER,
+                        'password': settings.COBBLER_PASSWORD},
+                    'nodes': provision_nodes}}}
 
         args, kwargs = nailgun.task.manager.rpc.cast.call_args
         self.assertEquals(len(args), 2)
@@ -320,7 +318,7 @@ class TestHandlers(BaseIntegrationTest):
 
         # provision method call [1][0][1][0]
         n_rpc_provision = nailgun.task.manager.rpc.cast. \
-            call_args_list[1][0][1][0]['args']['nodes']
+            call_args_list[1][0][1][0]['args']['provisioning_info']['nodes']
         # Nodes will be appended in provision list if
         # they 'pending_deletion' = False and
         # 'status' in ('discover', 'provisioning') or
