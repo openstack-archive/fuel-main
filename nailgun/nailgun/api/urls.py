@@ -21,12 +21,11 @@ from nailgun.api.handlers.cluster import ClusterCollectionHandler
 from nailgun.api.handlers.cluster import ClusterChangesHandler
 from nailgun.api.handlers.cluster import ClusterAttributesHandler
 from nailgun.api.handlers.cluster import ClusterAttributesDefaultsHandler
+from nailgun.api.handlers.cluster import ClusterGeneratedData
 from nailgun.api.handlers.orchestrator import DefaultProvisioningInfo
 from nailgun.api.handlers.orchestrator import DefaultDeploymentInfo
 from nailgun.api.handlers.orchestrator import ProvisioningInfo
 from nailgun.api.handlers.orchestrator import DeploymentInfo
-from nailgun.api.handlers.cluster import ClusterDefaultOrchestratorData
-from nailgun.api.handlers.cluster import ClusterGeneratedData
 
 from nailgun.api.handlers.network_configuration \
     import NetworkConfigurationHandler
@@ -98,10 +97,6 @@ urls = (
     'ProvisioningInfo',
     r'/clusters/(?P<cluster_id>\d+)/orchestrator/provisioning/defaults/?$',
     'DefaultProvisioningInfo',
-    r'/clusters/(?P<cluster_id>\d+)/orchestrator/?$',
-    'ClusterOrchestratorData',
-    r'/clusters/(?P<cluster_id>\d+)/orchestrator/defaults/?$',
-    'ClusterDefaultOrchestratorData',
     r'/clusters/(?P<cluster_id>\d+)/generated/?$',
     'ClusterGeneratedData',
 
