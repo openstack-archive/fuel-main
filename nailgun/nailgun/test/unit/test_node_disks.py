@@ -286,7 +286,7 @@ class TestNodeVolumesInformationHandler(BaseIntegrationTest):
     def test_volumes_information_for_ceph_role(self):
         node_db = self.create_node('ceph-osd')
         response = self.get(node_db.id)
-        self.check_volumes(response, ['os', 'ceph'])
+        self.check_volumes(response, ['os', 'ceph', 'cephjournal'])
 
 
 class TestVolumeManager(BaseIntegrationTest):

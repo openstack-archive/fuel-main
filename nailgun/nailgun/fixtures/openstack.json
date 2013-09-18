@@ -40,8 +40,8 @@
                 "volumes_roles_mapping": {
                     "controller": ["os", "image"],
                     "compute": ["os", "vm"],
+                    "ceph-osd": ["os", "cephjournal", "ceph"],
                     "cinder": ["os", "cinder"],
-                    "ceph-osd": ["os", "ceph"],
                     "other": ["os"]
                 },
                 "volumes": [
@@ -50,8 +50,19 @@
                         "type": "partition",
                         "min_size": {"generator": "calc_min_ceph_size"},
                         "label": "Ceph",
+                        "name": "Ceph",
                         "mount": "none",
                         "disk_label": "cephosd",
+                        "file_system": "xfs"
+                    },
+                    {
+                        "id": "cephjournal",
+                        "type": "partition",
+                        "min_size": 0,
+                        "name": "Ceph Journal",
+                        "label": "Ceph Journal",
+                        "mount": "/var/lib/ceph/journal",
+                        "disk_label": "cephjournal",
                         "file_system": "xfs"
                     },
                     {
@@ -259,6 +270,44 @@
                             "description": "Remote syslog port",
                             "weight": 20,
                             "type": "text"
+                        }
+                    },
+                    "storage": {
+                        "cinder": {
+                            "value": "lvm",
+                            "values": [
+                                {
+                                    "data": "ceph",
+                                    "display_name": "Ceph",
+                                    "description": ""
+                                },
+                                {
+                                    "data": "lvm",
+                                    "display_name": "LVM",
+                                    "description": ""
+                                }
+                            ],
+                            "label": "Storage backend for Cinder",
+                            "weight": 30,
+                            "type": "radio"
+                        },
+                        "glance": {
+                            "value": "swift",
+                            "values": [
+                                {
+                                    "data": "ceph",
+                                    "display_name": "Ceph",
+                                    "description": ""
+                                },
+                                {
+                                    "data": "swift",
+                                    "display_name": "Swift",
+                                    "description": ""
+                                }
+                            ],
+                            "label": "Storage backend for Glance",
+                            "weight": 40,
+                            "type": "radio"
                         }
                     }
                 },
@@ -658,7 +707,7 @@
             "operating_system": "Ubuntu",
             "description": "This option will install the OpenStack Grizzly packages using Ubuntu as a base operating system. With high availability features built in, you are getting a robust, enterprise-grade OpenStack deployment.",
             "state": "available",
-            "roles": ["controller", "compute", "cinder"],
+            "roles": ["controller", "compute", "cinder", "ceph-osd"],
             "roles_metadata": {
                 "controller": {
                     "name": "Controller",
@@ -673,6 +722,10 @@
                 "cinder": {
                     "name": "Cinder",
                     "description": ["Cinder"]
+                },
+                "ceph-osd": {
+                    "name": "Ceph OSD",
+                    "description": ["Ceph Storage Node"]
                 }
             },
             "networks_metadata": [
@@ -686,8 +739,9 @@
                 "volumes_roles_mapping": {
                     "controller": ["os", "image"],
                     "compute": ["os", "vm"],
-                    "ceph-osd": ["os", "ceph"],
-                    "cinder": ["os", "cinder"]
+                    "ceph-osd": ["os", "cephjournal", "ceph"],
+                    "cinder": ["os", "cinder"],
+                    "other": ["os"]
                 },
                 "volumes": [
                     {
@@ -696,7 +750,17 @@
                         "min_size": {"generator": "calc_min_ceph_size"},
                         "label": "Ceph",
                         "mount": "none",
-                        "disk_label": "ceph",
+                        "disk_label": "cephosd",
+                        "file_system": "xfs"
+                    },
+                    {
+                        "id": "cephjournal",
+                        "type": "raid",
+                        "min_size": 0,
+                        "name": "Ceph Journal",
+                        "label": "Ceph Journal",
+                        "mount": "/var/lib/ceph/journal",
+                        "disk_label": "cephjournal",
                         "file_system": "xfs"
                     },
                     {
@@ -904,6 +968,44 @@
                             "description": "Remote syslog port",
                             "weight": 20,
                             "type": "text"
+                        }
+                    },
+                    "storage": {
+                        "cinder": {
+                            "value": "lvm",
+                            "values": [
+                                {
+                                    "data": "ceph",
+                                    "display_name": "Ceph",
+                                    "description": ""
+                                },
+                                {
+                                    "data": "lvm",
+                                    "display_name": "LVM",
+                                    "description": ""
+                                }
+                            ],
+                            "label": "Storage backend for Cinder",
+                            "weight": 30,
+                            "type": "radio"
+                        },
+                        "glance": {
+                            "value": "swift",
+                            "values": [
+                                {
+                                    "data": "ceph",
+                                    "display_name": "Ceph",
+                                    "description": ""
+                                },
+                                {
+                                    "data": "swift",
+                                    "display_name": "Swift",
+                                    "description": ""
+                                }
+                            ],
+                            "label": "Storage backend for Glance",
+                            "weight": 40,
+                            "type": "radio"
                         }
                     }
                 },
