@@ -102,7 +102,7 @@ class TestNode(BaseNodeTestCase):
         self.get_ebtables(cluster_id, self.nodes().slaves[:2]).restore_vlans()
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)
-        self.run_OSTF(cluster_id=cluster_id, should_fail=6, should_pass=18)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
 
     @snapshot_errors
     @logwrap
@@ -136,7 +136,7 @@ class TestNode(BaseNodeTestCase):
         slave = self.nodes().slaves[0]
         node = self.get_node_by_devops_node(slave)
         self.assertNetworkConfiguration(node)
-        self.run_OSTF(cluster_id=cluster_id, should_fail=6, should_pass=18)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
 
     @snapshot_errors
     @logwrap
@@ -162,7 +162,7 @@ class TestNode(BaseNodeTestCase):
             nodes[0]),
             timeout=3 * 60
         )
-        self.run_OSTF(cluster_id=cluster_id, should_fail=24, should_pass=0)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=23, should_pass=1)
 
     @snapshot_errors
     @logwrap
@@ -224,7 +224,7 @@ class TestNode(BaseNodeTestCase):
         })
         self.assertClusterReady(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
-        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=4, should_pass=20)
 
     @snapshot_errors
     @logwrap
@@ -250,7 +250,7 @@ class TestNode(BaseNodeTestCase):
             smiles_count=8, networks_count=1, timeout=300)
         self.assert_node_service_list(self.nodes().slaves[1].name, 8)
         self.assert_node_service_list(self.nodes().slaves[2].name, 8)
-        self.run_OSTF(cluster_id=cluster_id, should_fail=6, should_pass=18)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
 
     @snapshot_errors
     @logwrap
@@ -288,7 +288,7 @@ class TestNode(BaseNodeTestCase):
                        ['240.0.0.%s' % i for i in range(20, 26, 1)] + \
                        ['240.0.0.%s' % i for i in range(30, 36, 1)]
         self.assert_cluster_floating_list('slave-02', expected_ips)
-        self.run_OSTF(cluster_id=cluster_id, should_fail=6, should_pass=18)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
 
     @snapshot_errors
     @logwrap
