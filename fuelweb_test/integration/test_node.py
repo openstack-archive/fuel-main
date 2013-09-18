@@ -434,7 +434,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_multirole_controller_cinder(self):
         cluster_id = self.prepare_environment(settings={
             'nodes': {
@@ -449,7 +449,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos'])
+    @attr(releases=['centos'], suite='simple')
     def test_multirole_compute_cinder(self):
         cluster_id = self.prepare_environment(settings={
             'nodes': {
