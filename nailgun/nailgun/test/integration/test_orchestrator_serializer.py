@@ -191,6 +191,7 @@ class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
 
         for fact in facts:
             self.assertEquals(fact['vlan_interface'], 'eth0')
+            self.assertEquals(fact['fixed_interface'], 'eth0')
             self.assertEquals(
                 fact['novanetwork_parameters']['network_manager'],
                 'VlanManager')
