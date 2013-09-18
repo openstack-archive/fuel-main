@@ -26,7 +26,9 @@ from nailgun.orchestrator import provisioning_serializers
 
 
 class DefaultOrchestratorInfo(JSONHandler):
-    """Base class for default orchestrator data."""
+    """Base class for default orchestrator data.
+    Need to redefine serializer variable
+    """
 
     @content_json
     def GET(self, cluster_id):
@@ -35,7 +37,7 @@ class DefaultOrchestratorInfo(JSONHandler):
                * 404 (cluster not found in db)
         """
         cluster = self.get_object_or_404(Cluster, cluster_id)
-        return serializer.serialize(cluster)
+        return serializer.serialize(cluster)  # nopep8
 
 
 class OrchestratorInfo(JSONHandler):
