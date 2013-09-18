@@ -391,12 +391,10 @@ class TestNode(BaseNodeTestCase):
             'slave-02': ['compute']
         }
         interfaces = {
-            'eth0': [],
-            'eth1': ["public", "floating",
-                     "management", "storage",
-                     "fixed"],
-            'eth2': [],
-            'eth3': []
+            'eth0': ["storage"],
+            'eth1': ["public", "floating"],
+            'eth2': ["management"],
+            'eth3': ["fixed"]
         }
 
         self.prepare_environment()
@@ -413,7 +411,7 @@ class TestNode(BaseNodeTestCase):
             self.update_node_networks(node['id'], interfaces)
 
         # select networks that will be untagged:
-        [net.update(vlan_turn_off) for net in nets]
+        [net.update(vlan_turn_off) for net in nets if net["name"] != "storage"]
 
         # stop using VLANs:
         self.client.update_network(cluster_id,
