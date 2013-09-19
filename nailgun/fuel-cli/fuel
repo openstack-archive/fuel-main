@@ -14,17 +14,21 @@
 #    under the License.
 
 import argparse
+import curses
+from functools import partial
 from itertools import chain
 import json
+import math
 import os
-from pprint import pprint
 import shutil
 import sys
+from time import sleep
 import urllib2
 
 API_ROOT = "http://127.0.0.1:8000/api/"
-
-passive_arguments = ["eid", "action"]
+DEBUG = False
+JSON = False
+passive_arguments = ["eid", "action", "debug", "json"]
 
 
 class SetAction(argparse.Action):
@@ -59,6 +63,9 @@ def format_table(data, acceptable_keys=None, subdict_keys=None):
                                     which are applied to dictionaries
                                     to extract values
     """
+    if JSON:
+        print(json.dumps(data, indent=4))
+        exit(0)
     if subdict_keys:
         for key_chain in subdict_keys:
             for data_dict in data:
@@ -98,6 +105,9 @@ def format_table(data, acceptable_keys=None, subdict_keys=None):
 def json_api_delete_request(api):
     """Make DELETE request to specific API with some data
     """
+    print_debug(
+        "DELETE {0}".format(API_ROOT + api)
+    )
     opener = urllib2.build_opener(urllib2.HTTPHandler)
     request = urllib2.Request(API_ROOT + api)
     request.add_header('Content-Type', ' application/json')
@@ -113,8 +123,13 @@ def json_api_delete_request(api):
 def json_api_put_request(api, data):
     """Make PUT request to specific API with some data
     """
+    data_json = json.dumps(data)
+    print_debug(
+        "PUT {0} data={1}"
+        .format(API_ROOT + api, data_json)
+    )
     opener = urllib2.build_opener(urllib2.HTTPHandler)
-    request = urllib2.Request(API_ROOT + api, data=json.dumps(data))
+    request = urllib2.Request(API_ROOT + api, data=data_json)
     request.add_header('Content-Type', ' application/json')
     request.get_method = lambda: 'PUT'
     try:
@@ -128,23 +143,32 @@ def json_api_put_request(api, data):
 def json_api_get_request(api):
     """Make GET request to specific API
     """
+    print_debug(
+        "GET {0}"
+        .format(API_ROOT + api)
+    )
     try:
         request = urllib2.urlopen(API_ROOT + api)
+        return json.loads(
+            request.read()
+        )
     except urllib2.HTTPError as e:
         print_error(str(e) + "\n")
-    return json.loads(
-        request.read()
-    )
 
 
 def json_api_post_request(api, data):
     """Make POST request to specific API with some data
     """
+    data_json = json.dumps(data)
+    print_debug(
+        "POST {0} data={1}"
+        .format(API_ROOT + api, data_json)
+    )
     try:
         return json.loads(
             urllib2.urlopen(
                 url=API_ROOT + api,
-                data=data
+                data=data_json
             ).read()
         )
     except urllib2.HTTPError as e:
@@ -162,12 +186,27 @@ def print_error(message):
     exit(1)
 
 
+def print_debug(message):
+    if DEBUG:
+        print(message)
+
+
 def check_for_attributes(params, attributes):
     not_paseed_checks = [attribute for attribute in attributes
                          if not getattr(params, attribute)]
     if len(not_paseed_checks):
         print_error(
             "{0} required!\n".format(", ".join(not_paseed_checks))
+        )
+
+
+def check_for_one_attribute(params, attributes):
+    if not any(map(
+        lambda attr: getattr(params, attr),
+        attributes
+    )):
+        print_error(
+            "At least one of {0} is required!\n".format(", ".join(attributes))
         )
 
 
@@ -202,20 +241,28 @@ def environment(params):
                            subdict_keys=[("release", u"id")]))
     elif params.create:
         check_for_attributes(params, ["ename", "rid"])
-        data = {"nodes": [],
-                "tasks": [],
-                "name": params.ename,
-                "release": int(params.rid)}
-        data = json.dumps(data)
-        post_response = json_api_post_request("clusters/", data)
-        pprint(post_response)
+        data = {
+            "nodes": [],
+            "tasks": [],
+            "name": params.ename,
+            "release": int(params.rid)
+        }
+        cluster_response = json_api_post_request("clusters/", data)
+        cluster_id = cluster_response[u"id"]
         if params.mode:
             data = {"mode": params.mode}
-            put_response = json_api_put_request(
-                "clusters/{0}".format(post_response[u"id"]),
+            cluster_response = json_api_put_request(
+                "clusters/{0}/".format(cluster_id),
                 data
             )
-            pprint(put_response)
+        if params.json:
+            print(json.dumps(cluster_response, indent=4))
+        else:
+            print(
+                "Environment with id={id} in mode={mode}"
+                " was successfully created!"
+                .format(**cluster_response)
+            )
     elif params.set:
         check_for_attributes(params, ["eid"])
         if params.mode or params.ename:
@@ -225,10 +272,30 @@ def environment(params):
             if params.ename:
                 data["name"] = params.ename
             put_response = json_api_put_request(
-                "clusters/{0}".format(params.eid),
+                "clusters/{0}/".format(params.eid),
                 data
             )
-            pprint(put_response)
+            if params.json:
+                print(json.dumps(put_response, indent=4))
+            else:
+                if params.ename:
+                    print(
+                        "Environment with id={0} was "
+                        "successfully renamed to {1}"
+                        .format(
+                            params.eid,
+                            params.ename
+                        )
+                    )
+                if params.mode:
+                    print(
+                        "Mode of environment with id={0} was "
+                        "successfully set to {1}."
+                        .format(
+                            params.eid,
+                            params.mode
+                        )
+                    )
 
 
 def node(params):
@@ -249,19 +316,67 @@ def node(params):
     elif params.set:
         check_for_attributes(params, ["nid", "role", "eid"])
         node_ids = list(chain(*params.nid))
-        role = params.role.pop().lower()
+        roles = map(str.lower, params.role)
         data = map(
             lambda node_id: {
                 "id": node_id,
                 "cluster_id": params.eid,
-                "roles": [role],
+                "roles": roles,
                 "pending_addition": True,
                 "pending_deletion": False
             },
             node_ids
         )
         put_response = json_api_put_request("nodes/", data)
-        pprint(put_response)
+        node_ids = map(str, node_ids)
+        if params.json:
+            print(json.dumps(put_response, indent=4))
+        else:
+            print(
+                "{0} added to environment with id={1} in {2}."
+                .format(
+                    "Node with id={0} was".format(node_ids[0])
+                    if len(node_ids) == 1 else
+                    "Nodes with ids={0} were".format(", ".join(node_ids)),
+                    params.eid,
+                    "role={0}".format(roles[0])
+                    if len(roles) == 1 else
+                    "roles={0}".format(", ".join(roles))
+                )
+            )
+    elif params.remove:
+        check_for_one_attribute(params, ["eid", "nid"])
+        nodes_clusters = dict((node["id"], node["cluster"])
+                              for node in json_api_get_request("nodes/"))
+        if not params.nid and params.eid:
+            node_ids = [k for k, v in nodes_clusters.iteritems()
+                        if v == int(params.eid)]
+        else:
+            node_ids = list(chain(*params.nid))
+        data = map(
+            lambda node_id: {
+                "id": node_id,
+                "cluster_id": params.eid or nodes_clusters.get(node_id),
+                "pending_roles": [],
+                "pending_addition": False,
+                "pending_deletion": True
+            },
+            node_ids
+        )
+        put_response = json_api_put_request("nodes/", data)
+        node_ids = map(str, node_ids)
+        if params.json:
+            print(json.dumps(put_response, indent=4))
+        else:
+            print(
+                "{0} removed from environment with id={1}."
+                .format(
+                    "Node with id={0} was".format(node_ids[0])
+                    if len(node_ids) == 1 else
+                    "Nodes with ids={0} were".format(", ".join(node_ids)),
+                    params.eid
+                )
+            )
 
 
 def network(params):
@@ -285,7 +400,9 @@ def logs(params):
 def task(params):
     """Show tasks
     """
-    print(params)
+    get_response = json_api_get_request("tasks/")
+    if params.json:
+        print(json.dumps(get_response, indent=4))
 
 
 def notifications(params):
@@ -308,7 +425,69 @@ def deploy(params):
         "clusters/{0}/changes".format(params.eid),
         {}
     )
-    pprint(put_response)
+    if params.json:
+        print(json.dumps(put_response, indent=4))
+    else:
+        print_deploy_progress(params.eid)
+
+
+def get_bar_for_progress(full_width, progress):
+    number_of_equal_signs = int(
+        math.ceil(progress * float(full_width-2)/100)
+    )
+    return "[{0}{1}{2}]".format(
+        "=" * number_of_equal_signs,
+        ">" if number_of_equal_signs < full_width-2 else "",
+        " " * (full_width-3-number_of_equal_signs)
+    )
+
+
+def print_deploy_progress(eid):
+    stdscr = curses.initscr()
+    curses.noecho()
+    curses.cbreak()
+    tasks = json_api_get_request("tasks?cluster_id={0}".format(eid))
+    deploy_task = filter(
+        lambda x: x.get("name", "") == "deploy",
+        tasks
+    )[0]
+    deploy_task_id = deploy_task["id"]
+    progress = 0
+    get_bar = partial(get_bar_for_progress, 80)
+    try:
+        while progress != 100:
+            task_response = json_api_get_request(
+                "tasks/{0}/".format(deploy_task_id)
+            )
+            progress = task_response["progress"]
+            nodes = json_api_get_request(
+                "nodes?cluster_id={0}"
+                .format(eid)
+            )
+            sorted(nodes, key=lambda node: node.get("id"))
+            stdscr.addstr(0, 0,
+                          "Deploying changes to environment with id={0}"
+                          .format(eid)
+                          )
+            stdscr.addstr(1, 0, "Deployment: {0} {1:4.0%}".format(
+                get_bar(progress),
+                progress/100.0
+            ))
+            for index, node in enumerate(nodes):
+                stdscr.addstr(index + 2, 0,
+                              "Node{0:3} {1:13}: {2} {3:4.0%}".format(
+                                  node["id"],
+                                  node["status"],
+                                  get_bar(node["progress"]),
+                                  node["progress"]/100.0
+                              )
+                              )
+            sleep(0.25)
+            stdscr.refresh()
+    finally:
+        curses.echo()
+        curses.nocbreak()
+        curses.endwin()
 
 
 def fact(params):
@@ -334,7 +513,12 @@ def fact(params):
             .format(params.eid),
             parse_fact_from_dir(dir_name)
         )
-        pprint(put_response)
+        if params.json:
+            print(json.dumps(put_response, indent=4))
+        else:
+            print(
+                "Facts uploaded successfully."
+            )
     elif params.delete:
         json_api_delete_request(
             "clusters/{0}/orchestrator/"
@@ -345,7 +529,7 @@ def fact(params):
             "clusters/{0}/orchestrator/"
             .format(params.eid),
         )
-        if not facts:
+        if not facts and not json:
             print(
                 "Environment with id={0} has no facts."
                 .format(params.eid)
@@ -354,7 +538,8 @@ def fact(params):
         if params.download:
             write_facts_to_dir(facts, dir_name)
         else:
-            pprint(facts)
+            if params.json:
+                print(json.dumps(facts, indent=4))
 
 
 def read_json(path):
@@ -430,11 +615,11 @@ actions = {
             "params": {
                 "dest": "config",
                 "action": "store_true",
-                "help": "Configure release with --rid",
+                "help": "Configure release with --release",
                 "default": False
             }
         }, {
-            "args": ["--rid"],
+            "args": ["--rel", "--release"],
             "params": {
                 "dest": "rid",
                 "action": "store",
@@ -464,16 +649,7 @@ actions = {
                 "default": False
             }
         }, {
-            "args": ["--eid", "--env-id"],
-            "params": {
-                "dest": "eid",
-                "action": "store",
-                "type": str,
-                "help": "environment id",
-                "default": None
-            }
-        }, {
-            "args": ["--name", "--ename", "--env-name"],
+            "args": ["--name", "--env-name"],
             "params": {
                 "dest": "ename",
                 "action": "store",
@@ -486,7 +662,7 @@ actions = {
             "params": {
                 "dest": "set",
                 "action": "store_true",
-                "help": "Set environment parameters (e.g ename, "
+                "help": "Set environment parameters (e.g name, "
                         "deployment mode)",
                 "default": False
             }
@@ -495,11 +671,11 @@ actions = {
             "params": {
                 "dest": "delete",
                 "action": "store_true",
-                "help": "Delete environment with specific eid or ename",
+                "help": "Delete environment with specific eid or name",
                 "default": False
             }
         }, {
-            "args": ["--rid"],
+            "args": ["--rel", "--release"],
             "params": {
                 "dest": "rid",
                 "action": "store",
@@ -529,14 +705,6 @@ actions = {
                 "default": False
             }
         }, {
-            "args": ["--alloc"],
-            "params": {
-                "dest": "alloc",
-                "action": "store_true",
-                "help": "List only allocated nodes.",
-                "default": False
-            }
-        }, {
             "args": ["-s", "--set"],
             "params": {
                 "dest": "set",
@@ -545,7 +713,7 @@ actions = {
                 "default": False
             }
         }, {
-            "args": ["--nid", "--node-id"],
+            "args": ["--node", "--node-id"],
             "params": {
                 "dest": "nid",
                 "action": "store",
@@ -560,25 +728,16 @@ actions = {
                 "dest": "role",
                 "type": lambda v: v.split(','),
                 "action": SetAction,
-                "help": "Role to assign for node with nid.",
+                "help": "Role to assign for node.",
                 "default": None
             }
         }, {
-            "args": ["-rm", "--remove"],
+            "args": ["--rm", "--remove"],
             "params": {
                 "dest": "remove",
                 "action": "store_true",
-                "help": "Remove node with specific nid.",
+                "help": "Remove specific node.",
                 "default": False
-            }
-        }, {
-            "args": ["--eid", "--env-id"],
-            "params": {
-                "dest": "eid",
-                "action": "store",
-                "type": str,
-                "help": "environment id",
-                "default": None
             }
         }]
     },
@@ -624,15 +783,6 @@ actions = {
                 "help": "Save current changes in configuration.",
                 "default": False
             }
-        }, {
-            "args": ["--eid", "--env-id"],
-            "params": {
-                "dest": "eid",
-                "action": "store",
-                "type": str,
-                "help": "environment id",
-                "default": None
-            }
         }]
     },
     "settings": {
@@ -668,15 +818,6 @@ actions = {
                 "action": "store_true",
                 "help": "Save current changes in configuration.",
                 "default": False
-            }
-        }, {
-            "args": ["--eid", "--env-id"],
-            "params": {
-                "dest": "eid",
-                "action": "store",
-                "type": str,
-                "help": "environment id",
-                "default": None
             }
         }]
     },
@@ -737,15 +878,6 @@ actions = {
                 "help": "Log level. e.g DEBUG, INFO, WARNING",
                 "default": None
             }
-        }, {
-            "args": ["--eid", "--env-id"],
-            "params": {
-                "dest": "eid",
-                "action": "store",
-                "type": str,
-                "help": "environment id",
-                "default": None
-            }
         }]
     },
     "task": {
@@ -762,29 +894,11 @@ actions = {
     },
     "deploy": {
         "action": deploy,
-        "args": [{
-            "args": ["--eid", "--env-id"],
-            "params": {
-                "dest": "eid",
-                "action": "store",
-                "type": str,
-                "help": "environment id",
-                "default": None
-            }
-        }]
+        "args": []
     },
     "fact": {
         "action": fact,
         "args": [{
-            "args": ["--eid", "--env-id"],
-            "params": {
-                "dest": "eid",
-                "action": "store",
-                "type": str,
-                "help": "environment id",
-                "default": None
-            }
-        }, {
             "args": ["--delete"],
             "params": {
                 "dest": "delete",
@@ -839,7 +953,8 @@ substitutions = {
     "download": "--download",
     "upload": "--upload",
     "default": "--default",
-    "create": "--create"
+    "create": "--create",
+    "remove": "--remove"
 }
 
 if __name__ == '__main__':
@@ -847,14 +962,41 @@ if __name__ == '__main__':
         lambda x: substitutions.get(x, x),
         sys.argv
     )
+
+    for argument in ["--json", "--debug"]:
+        if argument in sys.argv:
+            sys.argv.remove(argument)
+            sys.argv.insert(1, argument)
+
+    for argument in ["--env", "--env-id"]:
+        if argument in sys.argv:
+            index_of_inv = sys.argv.index(argument)
+            sys.argv.pop(index_of_inv)
+            env = sys.argv.pop(index_of_inv)
+            sys.argv.insert(1, env)
+            sys.argv.insert(1, argument)
+            break
+
     parser = argparse.ArgumentParser()
-    parser.add_argument(*["--eid", "--env-id"], **{
-        "dest": "eid",
-        "action": "store",
-        "type": str,
-        "help": "environment id",
-        "default": None
-    })
+    parser.add_argument("--env", "--env-id",
+                        dest="eid",
+                        action="store",
+                        type=str,
+                        help="environment id",
+                        default=None
+                        )
+    parser.add_argument("--json",
+                        dest="json",
+                        action="store_true",
+                        help="prints to only json to stdout",
+                        default=False
+                        )
+    parser.add_argument("--debug",
+                        dest="debug",
+                        action="store_true",
+                        help="prints details of all HTTP request",
+                        default=False
+                        )
     subparsers = parser.add_subparsers(
         dest="action", help='actions'
     )
@@ -871,7 +1013,8 @@ if __name__ == '__main__':
 
     params, other_params = parser.parse_known_args()
     sys.argv.pop(1)
-
+    DEBUG = params.debug
+    JSON = params.json
     if params.action not in actions:
         parser.print_help()
         sys.exit(0)
