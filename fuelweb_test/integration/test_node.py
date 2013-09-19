@@ -457,7 +457,7 @@ class TestNode(BaseNodeTestCase):
         })
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)
-        self.run_OSTF(cluster_id=cluster_id, should_fail=4, should_pass=20)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
 
 if __name__ == '__main__':
     unittest.main()
