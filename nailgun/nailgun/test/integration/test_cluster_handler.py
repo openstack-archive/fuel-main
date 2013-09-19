@@ -212,3 +212,18 @@ class TestHandlers(BaseIntegrationTest):
             new_provisioning_info, args[1][0]['args']['provisioning_info'])
         self.datadiff(
             new_deployment_info, args[1][1]['args']['deployment_info'])
+
+    def test_cluster_generated_data_handler(self):
+        self.env.create(
+            cluster_kwargs={},
+            nodes_kwargs=[
+                {'pending_addition': True},
+                {'online': False, 'status': 'ready'}])
+        cluster = self.env.clusters[0]
+        get_resp = self.app.get(
+            reverse('ClusterGeneratedData',
+                    kwargs={'cluster_id': cluster.id}),
+            headers=self.default_headers
+        )
+        self.assertEquals(get_resp.status, 200)
+        self.datadiff(json.loads(get_resp.body), cluster.attributes.generated)

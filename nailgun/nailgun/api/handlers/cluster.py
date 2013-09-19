@@ -370,3 +370,17 @@ class ClusterAttributesDefaultsHandler(JSONHandler):
                      ' editable attributes for cluster_id %s were reset'
                      ' to default' % cluster_id)
         return {"editable": cluster.attributes.editable}
+
+
+class ClusterGeneratedData(JSONHandler):
+    """Cluster generated data
+    """
+
+    @content_json
+    def GET(self, cluster_id):
+        """:returns: JSONized cluster generated data
+        :http: * 200 (OK)
+               * 404 (cluster not found in db)
+        """
+        cluster = self.get_object_or_404(Cluster, cluster_id)
+        return cluster.attributes.generated
