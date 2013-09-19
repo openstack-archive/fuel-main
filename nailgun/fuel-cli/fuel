@@ -346,8 +346,8 @@ def node(params):
             )
     elif params.remove:
         check_for_one_attribute(params, ["eid", "nid"])
-        nodes_clusters = {node["id"]: node["cluster"]
-                          for node in json_api_get_request("nodes/")}
+        nodes_clusters = dict((node["id"], node["cluster"])
+                              for node in json_api_get_request("nodes/"))
         if not params.nid and params.eid:
             node_ids = [k for k, v in nodes_clusters.iteritems()
                         if v == int(params.eid)]
