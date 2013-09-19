@@ -105,10 +105,9 @@ def format_table(data, acceptable_keys=None, subdict_keys=None):
 def json_api_delete_request(api):
     """Make DELETE request to specific API with some data
     """
-    if DEBUG:
-        print(
-            "DELETE {0}".format(API_ROOT + api)
-        )
+    print_debug(
+        "DELETE {0}".format(API_ROOT + api)
+    )
     opener = urllib2.build_opener(urllib2.HTTPHandler)
     request = urllib2.Request(API_ROOT + api)
     request.add_header('Content-Type', ' application/json')
@@ -125,11 +124,10 @@ def json_api_put_request(api, data):
     """Make PUT request to specific API with some data
     """
     data_json = json.dumps(data)
-    if DEBUG:
-        print(
-            "PUT {0} data={1}"
-            .format(API_ROOT + api, data_json)
-        )
+    print_debug(
+        "PUT {0} data={1}"
+        .format(API_ROOT + api, data_json)
+    )
     opener = urllib2.build_opener(urllib2.HTTPHandler)
     request = urllib2.Request(API_ROOT + api, data=data_json)
     request.add_header('Content-Type', ' application/json')
@@ -145,11 +143,10 @@ def json_api_put_request(api, data):
 def json_api_get_request(api):
     """Make GET request to specific API
     """
-    if DEBUG:
-        print(
-            "GET {0}"
-            .format(API_ROOT + api)
-        )
+    print_debug(
+        "GET {0}"
+        .format(API_ROOT + api)
+    )
     try:
         request = urllib2.urlopen(API_ROOT + api)
         return json.loads(
@@ -163,11 +160,10 @@ def json_api_post_request(api, data):
     """Make POST request to specific API with some data
     """
     data_json = json.dumps(data)
-    if DEBUG:
-        print(
-            "POST {0} data={1}"
-            .format(API_ROOT + api, data_json)
-        )
+    print_debug(
+        "POST {0} data={1}"
+        .format(API_ROOT + api, data_json)
+    )
     try:
         return json.loads(
             urllib2.urlopen(
@@ -188,6 +184,11 @@ def has_arguments(params):
 def print_error(message):
     sys.stderr.write(message)
     exit(1)
+
+
+def print_debug(message):
+    if DEBUG:
+        print(message)
 
 
 def check_for_attributes(params, attributes):
