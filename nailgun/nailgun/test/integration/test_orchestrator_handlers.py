@@ -16,6 +16,8 @@
 
 import json
 
+from nailgun.api.models import Cluster
+from nailgun.db import db
 from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
@@ -65,3 +67,37 @@ class TestHandlers(BaseIntegrationTest):
         self.check_info_handler(
             'DeploymentInfo',
             lambda: self.cluster.replaced_deployment_info)
+
+
+class TestDefaultOrchestratorHandlers(BaseIntegrationTest):
+
+    def setUp(self):
+        super(TestDefaultOrchestratorHandlers, self).setUp()
+
+        cluster = self.env.create(
+            cluster_kwargs={
+                'mode': 'multinode'},
+            nodes_kwargs=[
+                {'roles': ['controller'], 'pending_addition': True},
+                {'roles': ['compute'], 'pending_addition': True},
+                {'roles': ['cinder'], 'pending_addition': True}])
+
+        self.cluster = self.db.query(Cluster).get(cluster['id'])
+
+    def test_default_deployment_handler(self):
+        resp = self.app.get(
+            reverse('DefaultDeploymentInfo',
+                    kwargs={'cluster_id': self.cluster.id}),
+            headers=self.default_headers)
+
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(3, len(json.loads(resp.body)))
+
+    def test_default_provisioning_handler(self):
+        resp = self.app.get(
+            reverse('DefaultProvisioningInfo',
+                    kwargs={'cluster_id': self.cluster.id}),
+            headers=self.default_headers)
+
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(3, len(json.loads(resp.body)['nodes']))
