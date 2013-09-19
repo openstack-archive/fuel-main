@@ -120,7 +120,7 @@ class TestNode(BaseNodeTestCase):
         self.get_ebtables(cluster_id, self.nodes().slaves[:2]).restore_vlans()
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)
-        self.run_OSTF(cluster_id=cluster_id, should_fail=6, should_pass=18)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
 
     @snapshot_errors
     @logwrap
@@ -224,7 +224,7 @@ class TestNode(BaseNodeTestCase):
         })
         self.assertClusterReady(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
-        self.run_OSTF(cluster_id=cluster_id, should_fail=4, should_pass=20)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
 
     @snapshot_errors
     @logwrap
@@ -457,7 +457,7 @@ class TestNode(BaseNodeTestCase):
         })
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)
-        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=4, should_pass=20)
 
 if __name__ == '__main__':
     unittest.main()
