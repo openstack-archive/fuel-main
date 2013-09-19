@@ -448,7 +448,8 @@ class BaseNodeTestCase(BaseTestCase):
             self.update_redhat_credentials()
             self.assert_release_state(OPENSTACK_RELEASE_REDHAT,
                                       state='available')
-            self.ci().snapshot_state(READY_SNAPSHOT)
+            
+        self.ci().snapshot_state(READY_SNAPSHOT)
 
     @logwrap
     def update_redhat_credentials(
