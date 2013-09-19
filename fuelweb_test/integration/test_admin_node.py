@@ -32,7 +32,7 @@ class TestAdminNode(BaseTestCase):
             self.ci().get_empty_environment()
 
     @logwrap
-    @attr(suite='admin_node')
+    @attr(test_thread='thread_1')
     def test_puppetmaster_alive(self):
         wait(
             lambda: tcp_ping(self.get_admin_node_ip(), 8140),
@@ -47,7 +47,7 @@ class TestAdminNode(BaseTestCase):
         self.assertEquals(len(pm_processes), 4)
 
     @logwrap
-    @attr(suite='admin_node')
+    @attr(test_thread='thread_1')
     def test_cobbler_alive(self):
         wait(
             lambda: http(host=self.get_admin_node_ip(), url='/cobbler_api',
@@ -61,7 +61,7 @@ class TestAdminNode(BaseTestCase):
 
     @logwrap
     @fetch_logs
-    @attr(suite='admin_node')
+    @attr(test_thread='thread_1')
     def test_nailyd_alive(self):
         ps_output = self.remote().execute('ps ax')['stdout']
         naily_master = filter(lambda x: 'naily master' in x, ps_output)
