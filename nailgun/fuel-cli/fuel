@@ -444,6 +444,7 @@ def get_bar_for_progress(full_width, progress):
 
 def print_deploy_progress(eid):
     stdscr = curses.initscr()
+    scr_width = stdscr.getmaxyx()[1]
     curses.noecho()
     curses.cbreak()
     tasks = json_api_get_request("tasks?cluster_id={0}".format(eid))
@@ -453,7 +454,8 @@ def print_deploy_progress(eid):
     )[0]
     deploy_task_id = deploy_task["id"]
     progress = 0
-    get_bar = partial(get_bar_for_progress, 80)
+    deployment_bar = partial(get_bar_for_progress, scr_width - 17)
+    node_bar = partial(get_bar_for_progress, scr_width - 28)
     try:
         while progress != 100:
             task_response = json_api_get_request(
@@ -470,7 +472,7 @@ def print_deploy_progress(eid):
                           .format(eid)
                           )
             stdscr.addstr(1, 0, "Deployment: {0} {1:4.0%}".format(
-                get_bar(progress),
+                deployment_bar(progress),
                 progress/100.0
             ))
             for index, node in enumerate(nodes):
@@ -478,7 +480,7 @@ def print_deploy_progress(eid):
                               "Node{0:3} {1:13}: {2} {3:4.0%}".format(
                                   node["id"],
                                   node["status"],
-                                  get_bar(node["progress"]),
+                                  node_bar(node["progress"]),
                                   node["progress"]/100.0
                               )
                               )
@@ -490,49 +492,56 @@ def print_deploy_progress(eid):
         curses.endwin()
 
 
-def fact(params):
-    """Show computed facts for orchestrator
+def provisioning(params):
+    """Show computed provisioning facts for orchestrator
     """
+    fact(params, "provisioning")
+
+
+def deployment(params):
+    """Show computed deployment facts for orchestrator
+    """
+    fact(params, "deployment")
+
+
+def fact(params, info_type):
     check_for_attributes(params, ["eid"])
 
     dir_name = os.path.join(
         os.path.abspath(os.path.curdir
                         if params.dir is None else params.dir),
-        "cluster_{0}".format(params.eid)
+        "{0}_{1}".format(info_type, params.eid)
     )
-
+    facts_default_url = "clusters/{0}/orchestrator/{1}/defaults".format(
+        params.eid,
+        info_type
+    )
+    facts_url = "clusters/{0}/orchestrator/{1}/".format(
+        params.eid,
+        info_type
+    )
     if params.default:
-        facts = json_api_get_request(
-            "clusters/{0}/orchestrator/defaults"
-            .format(params.eid)
-        )
+        facts = json_api_get_request(facts_default_url)
         write_facts_to_dir(facts, dir_name)
     elif params.upload:
         put_response = json_api_put_request(
-            "clusters/{0}/orchestrator/"
-            .format(params.eid),
+            facts_url,
             parse_fact_from_dir(dir_name)
         )
+
         if params.json:
             print(json.dumps(put_response, indent=4))
         else:
-            print(
-                "Facts uploaded successfully."
-            )
+            print("{0} facts uploaded successfully.".format(info_type))
     elif params.delete:
-        json_api_delete_request(
-            "clusters/{0}/orchestrator/"
-            .format(params.eid),
-        )
+        json_api_delete_request(facts_url)
+        print("{0} facts deleted successfully.".format(info_type))
     else:
-        facts = json_api_get_request(
-            "clusters/{0}/orchestrator/"
-            .format(params.eid),
-        )
-        if not facts and not json:
+        facts = json_api_get_request(facts_url)
+        if not facts:
             print(
-                "Environment with id={0} has no facts."
-                .format(params.eid)
+                "Environment with id={0} has no {1} info."
+                .format(params.eid, info_type)
             )
             return
         if params.download:
@@ -553,15 +562,22 @@ def parse_fact_from_dir(dir_name):
         one_folder_up = path_to_folder[:-2] + path_to_folder[-2:-1]
         dir_name = os.sep.join(one_folder_up)
     try:
-        return map(
+        facts = map(
             read_json,
             [os.path.join(dir_name, json_file)
              for json_file in os.listdir(dir_name)
-             if json_file.endswith('.json')]
+             if json_file.endswith('.json') and json_file != "engine.json"]
         )
+        if "engine.json" in os.listdir(dir_name):
+            engine = read_json(os.path.join(dir_name, "engine.json"))
+            facts = {
+                "engine": engine,
+                "nodes": facts
+            }
+        return facts
     except OSError:
-        print(
-            "Directory {0} doesn't exist."
+        print_error(
+            "Directory {0} doesn't exist.\n"
             .format(dir_name)
         )
 
@@ -572,11 +588,20 @@ def write_facts_to_dir(facts, dir_name):
         print("old directory {0} was removed".format(dir_name))
     os.makedirs(dir_name)
     print("directory {0} was created".format(dir_name))
+    if isinstance(facts, dict):
+        engine_fd = open(os.path.join(dir_name, "engine.json"), "w+")
+        engine_fd.write(json.dumps(facts["engine"], indent=4))
+        print("Created {0}".format(engine_fd.name))
+        engine_fd.close()
+        facts = facts["nodes"]
+        name_template = "{name}.json"
+    else:
+        name_template = "{role}_{uid}.json"
     for fact in facts:
         fd = open(
             os.path.join(
                 dir_name,
-                "{role}_{uid}.json".format(**fact)
+                name_template.format(**fact)
             ),
             "w+"
         )
@@ -895,15 +920,18 @@ actions = {
     "deploy": {
         "action": deploy,
         "args": []
-    },
-    "fact": {
-        "action": fact,
-        "args": [{
+    }
+}
+
+
+def get_args_for_facts(fact_type):
+    return [
+        {
             "args": ["--delete"],
             "params": {
                 "dest": "delete",
                 "action": "store_true",
-                "help": "Delete current orchestrator data.",
+                "help": "Delete current {0} data.".format(fact_type),
                 "default": False
             }
         }, {
@@ -911,7 +939,7 @@ actions = {
             "params": {
                 "dest": "download",
                 "action": "store_true",
-                "help": "Download current orchestrator data.",
+                "help": "Download current {0} data.".format(fact_type),
                 "default": False
             }
         }, {
@@ -919,7 +947,7 @@ actions = {
             "params": {
                 "dest": "upload",
                 "action": "store_true",
-                "help": "Upload current orchestrator data.",
+                "help": "Upload current {0} data.".format(fact_type),
                 "default": False
             }
         }, {
@@ -927,7 +955,7 @@ actions = {
             "params": {
                 "dest": "default",
                 "action": "store_true",
-                "help": "Download default orchestrator data.",
+                "help": "Download default {0} data.".format(fact_type),
                 "default": False
             }
         }, {
@@ -935,12 +963,11 @@ actions = {
             "params": {
                 "dest": "dir",
                 "action": "store",
-                "help": "Directory with orchestrator data.",
+                "help": "Directory with {0} data.".format(fact_type),
                 "default": None
             }
-        }]
-    }
-}
+        }
+    ]
 
 
 substitutions = {
@@ -976,6 +1003,13 @@ if __name__ == '__main__':
             sys.argv.insert(1, env)
             sys.argv.insert(1, argument)
             break
+
+    fact_types = [deployment, provisioning]
+    for fact_type in fact_types:
+        actions[fact_type.__name__] = {
+            "action": fact_type,
+            "args": get_args_for_facts(fact_type.__name__)
+        }
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--env", "--env-id",
