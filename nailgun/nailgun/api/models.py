@@ -239,7 +239,9 @@ class Cluster(Base):
         from nailgun.task.helpers import TaskHelper
 
         netmanager = NetworkManager()
-        for node in TaskHelper.nodes_to_provision(self):
+        nodes = TaskHelper.nodes_to_provision(self)
+        TaskHelper.update_slave_nodes_fqdn(nodes)
+        for node in nodes:
             netmanager.assign_admin_ips(
                 node.id, len(node.meta.get('interfaces', [])))
 
