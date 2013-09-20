@@ -40,7 +40,7 @@ class DefaultOrchestratorInfo(JSONHandler):
                * 404 (cluster not found in db)
         """
         cluster = self.get_object_or_404(Cluster, cluster_id)
-        return self._serializer.serialize(cluster)  # nopep8
+        return self._serializer.serialize(cluster)
 
 
 class OrchestratorInfo(JSONHandler):
