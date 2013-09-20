@@ -127,7 +127,7 @@ Building the Fuel ISO
    12.10 or newer (on Ubuntu 12.04, use nodejs package instead of
    nodejs-legacy)::
 
-    sudo apt-get install build-essential make git ruby ruby-dev rubygems
+    sudo apt-get install build-essential make git ruby ruby-dev rubygems debootstrap
     sudo apt-get install python-setuptools yum yum-utils libmysqlclient-dev isomd5sum
     sudo apt-get install python-nose libvirt-bin python-ipaddr python-paramiko python-yaml
     sudo apt-get install python-pip kpartx extlinux npm nodejs-legacy unzip genisoimage
