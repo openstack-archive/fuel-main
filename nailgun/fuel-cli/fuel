@@ -454,10 +454,12 @@ def print_deploy_progress(eid):
     )[0]
     deploy_task_id = deploy_task["id"]
     progress = 0
-    deployment_bar = partial(get_bar_for_progress, scr_width - 17)
+    total_progress_bar = partial(get_bar_for_progress, scr_width - 17)
     node_bar = partial(get_bar_for_progress, scr_width - 28)
+    nodes = []
     try:
-        while progress != 100:
+        while progress != 100 or \
+                any(map(lambda node: node["progress"] != 100, nodes)):
             task_response = json_api_get_request(
                 "tasks/{0}/".format(deploy_task_id)
             )
@@ -466,26 +468,28 @@ def print_deploy_progress(eid):
                 "nodes?cluster_id={0}"
                 .format(eid)
             )
-            sorted(nodes, key=lambda node: node.get("id"))
+            nodes.sort(key=lambda node: node.get("id"))
             stdscr.addstr(0, 0,
                           "Deploying changes to environment with id={0}"
                           .format(eid)
                           )
-            stdscr.addstr(1, 0, "Deployment: {0} {1:4.0%}".format(
-                deployment_bar(progress),
-                progress/100.0
-            ))
+            stdscr.addstr(1, 0,
+                          "Deployment: {0} {1:4.0%}".format(
+                              total_progress_bar(progress),
+                              progress / 100.0
+                          ))
             for index, node in enumerate(nodes):
                 stdscr.addstr(index + 2, 0,
                               "Node{0:3} {1:13}: {2} {3:4.0%}".format(
                                   node["id"],
                                   node["status"],
                                   node_bar(node["progress"]),
-                                  node["progress"]/100.0
+                                  node["progress"] / 100.0
                               )
                               )
             sleep(0.25)
             stdscr.refresh()
+        sleep(1)
     finally:
         curses.echo()
         curses.nocbreak()
@@ -526,7 +530,9 @@ def fact(params, info_type):
     elif params.upload:
         put_response = json_api_put_request(
             facts_url,
-            parse_fact_from_dir(dir_name)
+            read_deployment_info(dir_name)
+            if info_type == "deployment" else
+            read_provisioning_info(dir_name)
         )
 
         if params.json:
@@ -556,25 +562,49 @@ def read_json(path):
             return json.loads(json_file.read())
 
 
-def parse_fact_from_dir(dir_name):
-    if not os.path.exists(dir_name):
-        path_to_folder = dir_name.split(os.sep)
+def folder_or_one_up(dir_path):
+    if not os.path.exists(dir_path):
+        path_to_folder = dir_path.split(os.sep)
         one_folder_up = path_to_folder[:-2] + path_to_folder[-2:-1]
-        dir_name = os.sep.join(one_folder_up)
+        dir_path = os.sep.join(one_folder_up)
+    return dir_path
+
+
+def read_provisioning_info(dir_name):
+    dir_name = folder_or_one_up(dir_name)
+    if "engine.json" not in os.listdir(dir_name):
+        print_error(
+            "engine.json was not found in {0}\n"
+            .format(dir_name)
+        )
     try:
-        facts = map(
+        node_facts = map(
             read_json,
             [os.path.join(dir_name, json_file)
              for json_file in os.listdir(dir_name)
              if json_file.endswith('.json') and json_file != "engine.json"]
         )
-        if "engine.json" in os.listdir(dir_name):
-            engine = read_json(os.path.join(dir_name, "engine.json"))
-            facts = {
-                "engine": engine,
-                "nodes": facts
-            }
-        return facts
+        engine = read_json(os.path.join(dir_name, "engine.json"))
+        return {
+            "engine": engine,
+            "nodes": node_facts
+        }
+    except OSError:
+        print_error(
+            "Directory {0} doesn't exist.\n"
+            .format(dir_name)
+        )
+
+
+def read_deployment_info(dir_name):
+    dir_name = folder_or_one_up(dir_name)
+    try:
+        return map(
+            read_json,
+            [os.path.join(dir_name, json_file)
+             for json_file in os.listdir(dir_name)
+             if json_file.endswith('.json')]
+        )
     except OSError:
         print_error(
             "Directory {0} doesn't exist.\n"
