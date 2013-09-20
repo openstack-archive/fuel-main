@@ -138,8 +138,8 @@ class BaseNodeTestCase(BaseTestCase):
                             settings={}):
         if not(self.ci().revert_to_state(settings)):
             self.get_ready_environment()
-            cluster_id = self.create_cluster(name=name, mode=mode)
             if 'nodes' in settings:
+                cluster_id = self.create_cluster(name=name, mode=mode)
                 self.basic_provisioning(cluster_id, settings['nodes'])
             self.ci().snapshot_state(name, settings)
 
