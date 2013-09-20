@@ -234,6 +234,59 @@ class TestOrchestratorSerializer(OrchestratorSerializerTestBase):
                  '172.16.0.3-172.16.0.5',
                  '172.16.0.10-172.16.0.12'])
 
+    def test_configure_interfaces_untagged_network(self):
+        network_data = [
+            {
+                'name': 'management',
+                'ip': '192.168.0.4/24',
+                'dev': 'eth1',
+                'netmask': '255.255.255.0',
+                'brd': '192.168.0.255',
+                'gateway': '192.168.0.1'},
+            {
+                'name': 'public',
+                'ip': '172.16.1.4/24',
+                'dev': 'eth0',
+                'netmask': '255.255.255.0',
+                'brd': '172.16.1.255',
+                'gateway': '172.16.1.1'},
+            {
+                'name': 'storage',
+                'ip': '192.168.1.4/24',
+                'dev': 'eth1',
+                'netmask': '255.255.255.0',
+                'brd': '192.168.1.255',
+                'gateway': '192.168.1.1'},
+            {
+                'name': 'floating', 'dev': 'eth0'},
+            {
+                'name': 'fixed', 'dev': 'eth1'},
+            {
+                'name': 'admin', 'dev': 'eth0'}]
+
+        for network in network_data:
+            network['vlan'] = None
+
+        interfaces = self.serializer.configure_interfaces(network_data)
+
+        expected_interfaces = {
+            'lo': {
+                'interface': 'lo',
+                'ipaddr': ['127.0.0.1/8']},
+            'eth1': {
+                'interface': 'eth1',
+                'ipaddr': [
+                    '192.168.0.4/24', '192.168.1.4/24'],
+                '_name': 'management'
+            },
+            'eth0': {
+                'interface': 'eth0',
+                'ipaddr': 'dhcp',
+                'gateway': '172.16.1.1',
+                '_name': 'public'}}
+
+        self.assertEquals(expected_interfaces, interfaces)
+
 
 class TestOrchestratorHASerializer(OrchestratorSerializerTestBase):
 

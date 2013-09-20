@@ -309,8 +309,13 @@ class OrchestratorSerializer(object):
 
             name = cls.__make_interface_name(network.get('dev'),
                                              network.get('vlan'))
-            interfaces[name] = {'interface': name, 'ipaddr': [],
-                                '_name': network_name}
+
+            if name not in interfaces:
+                interfaces[name] = {
+                    'interface': name,
+                    'ipaddr': [],
+                    '_name': network_name}
+
             interface = interfaces[name]
 
             if network_name == 'admin':
