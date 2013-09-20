@@ -17,7 +17,6 @@
 import json
 
 from nailgun.api.models import Cluster
-from nailgun.db import db
 from nailgun.test.base import BaseIntegrationTest
 from nailgun.test.base import reverse
 
