@@ -90,8 +90,8 @@ fi
 function run_flake8 {
   # H302 - "import only modules. does not import a module" requires to import only modules and not functions
   # H802 - first line of git commit commentary should be less than 50 characters
-  # urls.py,__init__.py - are exclude because they don't comply with pep standard
-  flake8 --exclude=urls.py,__init__.py --ignore=H302,H802 --show-source --show-pep8 --count . || return 1
+  # __init__.py - excluded because it doesn't comply with pep8 standard
+  flake8 --exclude=__init__.py --ignore=H302,H802 --show-source --show-pep8 --count . || return 1
   echo "Flake8 check passed successfully."
 }
 

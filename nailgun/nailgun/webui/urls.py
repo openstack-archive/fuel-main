@@ -16,11 +16,12 @@
 
 import web
 
-from nailgun.webui.handlers import IndexHandler, StaticHandler
+from nailgun.webui.handlers import IndexHandler
+from nailgun.webui.handlers import StaticHandler
 
 urls = (
-    r"/static/(.*)", 'StaticHandler',
-    r"/", 'IndexHandler',
+    r"/static/(.*)", StaticHandler.__name__,
+    r"/", IndexHandler.__name__,
 )
 
 app = web.application(urls, locals())
