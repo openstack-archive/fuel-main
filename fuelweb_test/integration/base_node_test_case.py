@@ -135,9 +135,12 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def prepare_environment(self, name='cluster_name', mode="multinode",
-                            settings={}):
+                            settings=None):
         if not(self.ci().revert_to_state(settings)):
             self.get_ready_environment()
+            if settings is None:
+                return None
+
             if 'nodes' in settings:
                 cluster_id = self.create_cluster(name=name, mode=mode)
                 self.basic_provisioning(cluster_id, settings['nodes'])
