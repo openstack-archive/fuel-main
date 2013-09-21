@@ -70,7 +70,7 @@ Logical Architecture Diagram:
     actor Web_User
     actor CLI_User
     Web_User --> [JavaScript UI]
-    CLI_User --> [Orchestrator (Astute)]
+    CLI_User --> [REST API]
 
     [JavaScript UI] --> [REST API]
 
