@@ -1,6 +1,6 @@
 #!/bin/bash
 
-$WORKSPACE/utils/jenkins/common.sh
+. $WORKSPACE/utils/jenkins/common.sh
 
 topdir=$WORKSPACE/utils/jenkins
 
