@@ -39,9 +39,15 @@ function(commonViews, models, supportPageTemplate) {
             if (_.isUndefined(task[0]) || task[0].get('progress') < 100 ) {
                 this.registerDeferred(this.timeout = $.timeout(this.updateInterval).done(_.bind(this.update, this)));
             } else {
+                if (task[0].get('status') == 'error') {
+                    this.$('.download-logs-error').text(task[0].get('message'))
+                    this.$('.download-logs-error').removeClass('hide');
+                } else {
+
+                    this.$('.donwload-logs-link').removeClass('hide');
+                    this.$('.donwload-logs-link > a').attr('href', task[0].get('message'));
+                }
                 this.$('.genereate-logs').addClass('hide');
-                this.$('.donwload-logs-link').removeClass('hide');
-                this.$('.donwload-logs-link > a').attr('href', task[0].get('message'));
                 this.$('.download-logs').removeClass('disabled');
             }
         },
@@ -53,6 +59,7 @@ function(commonViews, models, supportPageTemplate) {
             task.save({}, {method: 'PUT'});
             this.$('.download-logs').addClass('disabled');
             this.$('.donwload-logs-link').addClass('hide');
+            this.$('.download-logs-error').addlass('hide');
             this.$('.genereate-logs').removeClass('hide');
             this.logsPackageTasks = new models.Tasks();
             this.logsPackageTasks.fetch();
