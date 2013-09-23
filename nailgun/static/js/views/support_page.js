@@ -40,7 +40,7 @@ function(commonViews, models, supportPageTemplate) {
                 this.registerDeferred(this.timeout = $.timeout(this.updateInterval).done(_.bind(this.update, this)));
             } else {
                 if (task[0].get('status') == 'error') {
-                    this.$('.download-logs-error').text(task[0].get('message'))
+                    this.$('.download-logs-error').text(task[0].get('message'));
                     this.$('.download-logs-error').removeClass('hide');
                 } else {
 
