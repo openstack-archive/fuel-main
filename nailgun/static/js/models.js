@@ -581,5 +581,10 @@ define(['utils'], function(utils) {
         urlRoot: '/api/registration/key'
     });
 
+    models.LogsPackage = Backbone.Model.extend({
+        constructorName: 'LogsPackage',
+        urlRoot: '/api/logs/package'
+    });
+
     return models;
 });

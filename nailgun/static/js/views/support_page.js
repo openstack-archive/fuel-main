@@ -26,13 +26,44 @@ function(commonViews, models, supportPageTemplate) {
         navbarActiveElement: 'support',
         breadcrumbsPath: [['Home', '#'], 'Support'],
         title: 'Support',
+        updateInterval: 2000,
         template: _.template(supportPageTemplate),
         events: {
             'click .download-logs:not(.disabled)': 'downloadLogs'
         },
+        scheduleUpdate: function() {
+            var task = this.logsPackageTasks.findTask({name: 'dump'});
+            if (this.timeout) {
+                this.timeout.clear();
+            }
+            if (_.isUndefined(task) || task.get('progress') < 100 ) {
+                this.registerDeferred(this.timeout = $.timeout(this.updateInterval).done(_.bind(this.update, this)));
+            } else {
+                if (task.get('status') == 'error') {
+                    this.$('.download-logs-error').text(task.get('message'));
+                    this.$('.download-logs-error').removeClass('hide');
+                } else {
+
+                    this.$('.donwload-logs-link').removeClass('hide');
+                    this.$('.donwload-logs-link > a').attr('href', task.get('message'));
+                }
+                this.$('.genereate-logs').addClass('hide');
+                this.$('.download-logs').removeClass('disabled');
+            }
+        },
+        update: function() {
+            this.registerDeferred(this.logsPackageTasks.fetch().always(_.bind(this.scheduleUpdate, this)));
+        },
         downloadLogs: function() {
+            var task = new models.LogsPackage();
+            task.save({}, {method: 'PUT'});
             this.$('.download-logs').addClass('disabled');
-            window.location = '/api/logs/package';
+            this.$('.donwload-logs-link').addClass('hide');
+            this.$('.download-logs-error').addlass('hide');
+            this.$('.genereate-logs').removeClass('hide');
+            this.logsPackageTasks = new models.Tasks();
+            this.logsPackageTasks.fetch();
+            this.scheduleUpdate();
         },
         initialize: function(options) {
             _.defaults(this, options);

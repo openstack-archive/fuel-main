@@ -474,6 +474,17 @@ class DownloadReleaseThread(FakeAmpqThread):
             self.sleep(self.tick_interval)
 
 
+class FakeDumpEnvironment(FakeAmpqThread):
+    def message_gen(self):
+        self.sleep(self.tick_interval)
+        return [{
+            'task_uuid': self.task_uuid,
+            'status': 'ready',
+            'progress': 100,
+            'msg': '/tmp/fake_dump'
+        }]
+
+
 FAKE_THREADS = {
     'provision': FakeProvisionThread,
     'deploy': FakeDeploymentThread,
@@ -483,5 +494,6 @@ FAKE_THREADS = {
     'download_release': DownloadReleaseThread,
     'check_redhat_credentials': FakeRedHatCredentials,
     'check_redhat_licenses': FakeRedHatLicenses,
-    'redhat_update_cobbler_profile': FakeRedHatUpdateCobbler
+    'redhat_update_cobbler_profile': FakeRedHatUpdateCobbler,
+    'dump_environment': FakeDumpEnvironment
 }
