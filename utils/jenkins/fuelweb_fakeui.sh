@@ -10,6 +10,7 @@ sudo WORKSPACE=$WORKSPACE /etc/init.d/nailgun stop
 # Installing nailgun dependencies
 nailgun_deps
 
+make clean
 make $WORKSPACE/build/repos/nailgun.done
 
 cd $WORKSPACE/build/repos/nailgun/nailgun
