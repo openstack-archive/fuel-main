@@ -762,13 +762,13 @@ h6.page-title {
   font-size: 15px;
   font-weight: 500;
   border-bottom: 1px dotted #afafaf;
-  cursor: pointer;
   color: #4a4a4a;
 }
-.node-name > .name > p:hover {
+.node-name > .name > p.node-renameable:hover {
   border-bottom: 1px dotted #0178b3;
   cursor: pointer;
   color: #0178b3;
+  cursor: pointer;
 }
 .node-new {
   border-color: #61a466;
