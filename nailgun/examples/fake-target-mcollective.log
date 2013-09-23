@@ -1,0 +1,309 @@
+2013-01-16T12:26:36 info: # Logfile created on Wed Jan 16 12:26:36 +0000 2013 by logger.rb/1.2.6
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.492877 #834] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading Mcollective::Facts::Yaml_facts from mcollective/facts/yaml_facts.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.503049 #834] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin facts_plugin with class MCollective::Facts::Yaml_facts single_instance: true
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.503142 #834] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading Mcollective::Connector::Stomp from mcollective/connector/stomp.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.503832 #834] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin connector_plugin with class MCollective::Connector::Stomp single_instance: true
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.503940 #834] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading Mcollective::Security::Psk from mcollective/security/psk.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.504627 #834] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin security_plugin with class MCollective::Security::Psk single_instance: true
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.504751 #834] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading Mcollective::Registration::Agentlist from mcollective/registration/agentlist.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.505116 #834] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin registration_plugin with class MCollective::Registration::Agentlist single_instance: true
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.505348 #834] DEBUG -- : pluginmanager.rb:47:in `<<' Registering plugin global_stats with class MCollective::RunnerStats single_instance: true
+2013-01-16T12:26:36 info: I, [2013-01-16T12:26:36.505395 #834]  INFO -- : mcollectived:31 The Marionette Collective 2.2.1 started logging at debug level
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.505433 #834] DEBUG -- : mcollectived:34 Starting in the background (true)
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.512411 #838] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin global_stats with class MCollective::RunnerStats
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.512524 #838] DEBUG -- : pluginmanager.rb:80:in `[]' Returning new plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.512598 #838] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin global_stats with class MCollective::RunnerStats
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.512662 #838] DEBUG -- : pluginmanager.rb:80:in `[]' Returning new plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.512756 #838] DEBUG -- : stomp.rb:150:in `connect' Connecting to 10.20.0.2:61613
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.518718 #838] DEBUG -- : agents.rb:26:in `loadagents' Reloading all agents from disk
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.518854 #838] DEBUG -- : agents.rb:104:in `findagentfile' Found erase_node at /usr/libexec/mcollective/mcollective/agent/erase_node.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.518923 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Erase_node from mcollective/agent/erase_node.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.539956 #838] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for erase_node
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.540066 #838] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin erase_node_agent with class MCollective::Agent::Erase_node single_instance: false
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.540121 #838] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin erase_node_agent with class MCollective::Agent::Erase_node
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.540416 #838] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/erase_node'
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.541162 #838] DEBUG -- : base.rb:93:in `findddlfile' Found erase_node ddl at /usr/libexec/mcollective/mcollective/agent/erase_node.ddl
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.541332 #838] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.541417 #838] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.erase_node.command
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.541706 #838] DEBUG -- : agents.rb:104:in `findagentfile' Found discovery at /usr/libexec/mcollective/mcollective/agent/discovery.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.541796 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Discovery from mcollective/agent/discovery.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.545131 #838] DEBUG -- : agents.rb:91:in `activate_agent?' MCollective::Agent::Discovery does not have an activate? method, activating as default
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.545221 #838] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin discovery_agent with class MCollective::Agent::Discovery single_instance: true
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.545274 #838] DEBUG -- : pluginmanager.rb:80:in `[]' Returning new plugin discovery_agent with class MCollective::Agent::Discovery
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.545353 #838] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.545422 #838] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.discovery.command
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.545540 #838] DEBUG -- : agents.rb:104:in `findagentfile' Found systemtype at /usr/libexec/mcollective/mcollective/agent/systemtype.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.545602 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Systemtype from mcollective/agent/systemtype.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.545788 #838] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for systemtype
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.545846 #838] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin systemtype_agent with class MCollective::Agent::Systemtype single_instance: false
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.545894 #838] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin systemtype_agent with class MCollective::Agent::Systemtype
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.545998 #838] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/systemtype'
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.546101 #838] DEBUG -- : base.rb:93:in `findddlfile' Found systemtype ddl at /usr/libexec/mcollective/mcollective/agent/systemtype.ddl
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.546248 #838] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.546315 #838] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.systemtype.command
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.546400 #838] DEBUG -- : agents.rb:104:in `findagentfile' Found net_probe at /usr/libexec/mcollective/mcollective/agent/net_probe.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.546456 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Net_probe from mcollective/agent/net_probe.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.546846 #838] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for net_probe
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.546903 #838] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin net_probe_agent with class MCollective::Agent::Net_probe single_instance: false
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.546958 #838] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin net_probe_agent with class MCollective::Agent::Net_probe
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.547054 #838] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/net_probe'
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.547148 #838] DEBUG -- : base.rb:93:in `findddlfile' Found net_probe ddl at /usr/libexec/mcollective/mcollective/agent/net_probe.ddl
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.547339 #838] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.547402 #838] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.net_probe.command
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.547492 #838] DEBUG -- : agents.rb:104:in `findagentfile' Found rpuppet at /usr/libexec/mcollective/mcollective/agent/rpuppet.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.547549 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Rpuppet from mcollective/agent/rpuppet.rb
+2013-01-16T12:26:36 err: E, [2013-01-16T12:26:36.551471 #838] ERROR -- : pluginmanager.rb:171:in `loadclass' Failed to load MCollective::Agent::Rpuppet: no such file to load -- puppet/util/command_line
+2013-01-16T12:26:36 err: E, [2013-01-16T12:26:36.551553 #838] ERROR -- : agents.rb:71:in `loadagent' Loading agent rpuppet failed: no such file to load -- puppet/util/command_line
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.551626 #838] DEBUG -- : agents.rb:104:in `findagentfile' Found rapply at /usr/libexec/mcollective/mcollective/agent/rapply.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.551688 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Rapply from mcollective/agent/rapply.rb
+2013-01-16T12:26:36 err: E, [2013-01-16T12:26:36.555693 #838] ERROR -- : pluginmanager.rb:171:in `loadclass' Failed to load MCollective::Agent::Rapply: no such file to load -- puppet/application
+2013-01-16T12:26:36 err: E, [2013-01-16T12:26:36.555757 #838] ERROR -- : agents.rb:71:in `loadagent' Loading agent rapply failed: no such file to load -- puppet/application
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.555823 #838] DEBUG -- : agents.rb:104:in `findagentfile' Found puppetd at /usr/libexec/mcollective/mcollective/agent/puppetd.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.555882 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Puppetd from mcollective/agent/puppetd.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.556361 #838] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for puppetd
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.556425 #838] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin puppetd_agent with class MCollective::Agent::Puppetd single_instance: false
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.556474 #838] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin puppetd_agent with class MCollective::Agent::Puppetd
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.556562 #838] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/puppetd'
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.556661 #838] DEBUG -- : base.rb:93:in `findddlfile' Found puppetd ddl at /usr/libexec/mcollective/mcollective/agent/puppetd.ddl
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.556942 #838] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.557042 #838] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.puppetd.command
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.557142 #838] DEBUG -- : agents.rb:104:in `findagentfile' Found rpcutil at /usr/libexec/mcollective/mcollective/agent/rpcutil.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.557197 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Rpcutil from mcollective/agent/rpcutil.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.557546 #838] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for rpcutil
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.557603 #838] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin rpcutil_agent with class MCollective::Agent::Rpcutil single_instance: false
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.557650 #838] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin rpcutil_agent with class MCollective::Agent::Rpcutil
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.557725 #838] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/rpcutil'
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.557815 #838] DEBUG -- : base.rb:93:in `findddlfile' Found rpcutil ddl at /usr/libexec/mcollective/mcollective/agent/rpcutil.ddl
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.558307 #838] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.558369 #838] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.rpcutil.command
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.558456 #838] DEBUG -- : agents.rb:104:in `findagentfile' Found nailyfact at /usr/libexec/mcollective/mcollective/agent/nailyfact.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.558512 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Nailyfact from mcollective/agent/nailyfact.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.558816 #838] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for nailyfact
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.558872 #838] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin nailyfact_agent with class MCollective::Agent::Nailyfact single_instance: false
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.558919 #838] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin nailyfact_agent with class MCollective::Agent::Nailyfact
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.559015 #838] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/nailyfact'
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.559106 #838] DEBUG -- : base.rb:93:in `findddlfile' Found nailyfact ddl at /usr/libexec/mcollective/mcollective/agent/nailyfact.ddl
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.559285 #838] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.559348 #838] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.nailyfact.command
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.559435 #838] DEBUG -- : agents.rb:104:in `findagentfile' Found node_indirector at /usr/libexec/mcollective/mcollective/agent/node_indirector.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.559490 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Node_indirector from mcollective/agent/node_indirector.rb
+2013-01-16T12:26:36 err: E, [2013-01-16T12:26:36.564361 #838] ERROR -- : pluginmanager.rb:171:in `loadclass' Failed to load MCollective::Agent::Node_indirector: no such file to load -- puppet/node
+2013-01-16T12:26:36 err: E, [2013-01-16T12:26:36.564424 #838] ERROR -- : agents.rb:71:in `loadagent' Loading agent node_indirector failed: no such file to load -- puppet/node
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.564490 #838] DEBUG -- : agents.rb:104:in `findagentfile' Found fake at /usr/libexec/mcollective/mcollective/agent/fake.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.564549 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Fake from mcollective/agent/fake.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.564715 #838] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for fake
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.564775 #838] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin fake_agent with class MCollective::Agent::Fake single_instance: false
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.564824 #838] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin fake_agent with class MCollective::Agent::Fake
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.564907 #838] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/fake'
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.565043 #838] DEBUG -- : base.rb:93:in `findddlfile' Found fake ddl at /usr/libexec/mcollective/mcollective/agent/fake.ddl
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.565181 #838] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.565245 #838] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.fake.command
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.565666 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Data::Agent_data from mcollective/data/agent_data.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.566017 #838] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin agent_data with class MCollective::Data::Agent_data single_instance: false
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.566082 #838] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Data::Fstat_data from mcollective/data/fstat_data.rb
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.566294 #838] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin fstat_data with class MCollective::Data::Fstat_data single_instance: false
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.566365 #838] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin fstat_data with class MCollective::Data::Fstat_data
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.566440 #838] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'data/fstat_data'
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.566660 #838] DEBUG -- : base.rb:93:in `findddlfile' Found fstat_data ddl at /usr/libexec/mcollective/mcollective/data/fstat_data.ddl
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.567041 #838] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin agent_data with class MCollective::Data::Agent_data
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.567117 #838] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'data/agent_data'
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.567201 #838] DEBUG -- : base.rb:93:in `findddlfile' Found agent_data ddl at /usr/libexec/mcollective/mcollective/data/agent_data.ddl
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.567366 #838] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.567427 #838] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.mcollective.command
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.567507 #838] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.567603 #838] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /queue/mcollective.ca4c50b905dc21ea17a10549a6f5944f
+2013-01-16T12:26:36 debug: D, [2013-01-16T12:26:36.567676 #838] DEBUG -- : stomp.rb:197:in `receive' Waiting for a message from Stomp
+2013-01-16T12:26:37 warning: W, [2013-01-16T12:26:37.452256 #838]  WARN -- : runner.rb:60:in `run' Exiting after signal: SIGTERM
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.452333 #838] DEBUG -- : stomp.rb:270:in `disconnect' Disconnecting from Stomp
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.609291 #958] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading Mcollective::Facts::Yaml_facts from mcollective/facts/yaml_facts.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.619522 #958] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin facts_plugin with class MCollective::Facts::Yaml_facts single_instance: true
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.619617 #958] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading Mcollective::Connector::Stomp from mcollective/connector/stomp.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.620322 #958] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin connector_plugin with class MCollective::Connector::Stomp single_instance: true
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.620433 #958] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading Mcollective::Security::Psk from mcollective/security/psk.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.621145 #958] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin security_plugin with class MCollective::Security::Psk single_instance: true
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.621264 #958] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading Mcollective::Registration::Agentlist from mcollective/registration/agentlist.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.621654 #958] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin registration_plugin with class MCollective::Registration::Agentlist single_instance: true
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.621894 #958] DEBUG -- : pluginmanager.rb:47:in `<<' Registering plugin global_stats with class MCollective::RunnerStats single_instance: true
+2013-01-16T12:26:37 info: I, [2013-01-16T12:26:37.621939 #958]  INFO -- : mcollectived:31 The Marionette Collective 2.2.1 started logging at debug level
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.621974 #958] DEBUG -- : mcollectived:34 Starting in the background (true)
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.627841 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin global_stats with class MCollective::RunnerStats
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.627954 #962] DEBUG -- : pluginmanager.rb:80:in `[]' Returning new plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.628056 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin global_stats with class MCollective::RunnerStats
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.628129 #962] DEBUG -- : pluginmanager.rb:80:in `[]' Returning new plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.628224 #962] DEBUG -- : stomp.rb:150:in `connect' Connecting to 10.20.0.2:61613
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.636559 #962] DEBUG -- : agents.rb:26:in `loadagents' Reloading all agents from disk
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.636706 #962] DEBUG -- : agents.rb:104:in `findagentfile' Found erase_node at /usr/libexec/mcollective/mcollective/agent/erase_node.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.636773 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Erase_node from mcollective/agent/erase_node.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.652064 #962] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for erase_node
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.652159 #962] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin erase_node_agent with class MCollective::Agent::Erase_node single_instance: false
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.652207 #962] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin erase_node_agent with class MCollective::Agent::Erase_node
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.652505 #962] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/erase_node'
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.653250 #962] DEBUG -- : base.rb:93:in `findddlfile' Found erase_node ddl at /usr/libexec/mcollective/mcollective/agent/erase_node.ddl
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.653417 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.653487 #962] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.erase_node.command
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.653736 #962] DEBUG -- : agents.rb:104:in `findagentfile' Found discovery at /usr/libexec/mcollective/mcollective/agent/discovery.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.653795 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Discovery from mcollective/agent/discovery.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.653972 #962] DEBUG -- : agents.rb:91:in `activate_agent?' MCollective::Agent::Discovery does not have an activate? method, activating as default
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.656743 #962] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin discovery_agent with class MCollective::Agent::Discovery single_instance: true
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.656800 #962] DEBUG -- : pluginmanager.rb:80:in `[]' Returning new plugin discovery_agent with class MCollective::Agent::Discovery
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.656877 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.656941 #962] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.discovery.command
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.657062 #962] DEBUG -- : agents.rb:104:in `findagentfile' Found systemtype at /usr/libexec/mcollective/mcollective/agent/systemtype.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.657124 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Systemtype from mcollective/agent/systemtype.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.657296 #962] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for systemtype
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.657353 #962] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin systemtype_agent with class MCollective::Agent::Systemtype single_instance: false
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.657400 #962] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin systemtype_agent with class MCollective::Agent::Systemtype
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.657499 #962] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/systemtype'
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.657601 #962] DEBUG -- : base.rb:93:in `findddlfile' Found systemtype ddl at /usr/libexec/mcollective/mcollective/agent/systemtype.ddl
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.657741 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.657801 #962] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.systemtype.command
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.657900 #962] DEBUG -- : agents.rb:104:in `findagentfile' Found net_probe at /usr/libexec/mcollective/mcollective/agent/net_probe.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.657955 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Net_probe from mcollective/agent/net_probe.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.658388 #962] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for net_probe
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.658447 #962] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin net_probe_agent with class MCollective::Agent::Net_probe single_instance: false
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.658496 #962] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin net_probe_agent with class MCollective::Agent::Net_probe
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.658572 #962] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/net_probe'
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.658664 #962] DEBUG -- : base.rb:93:in `findddlfile' Found net_probe ddl at /usr/libexec/mcollective/mcollective/agent/net_probe.ddl
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.658853 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.658919 #962] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.net_probe.command
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.664250 #962] DEBUG -- : agents.rb:104:in `findagentfile' Found rpuppet at /usr/libexec/mcollective/mcollective/agent/rpuppet.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.664346 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Rpuppet from mcollective/agent/rpuppet.rb
+2013-01-16T12:26:37 err: E, [2013-01-16T12:26:37.665259 #962] ERROR -- : pluginmanager.rb:171:in `loadclass' Failed to load MCollective::Agent::Rpuppet: no such file to load -- puppet/util/command_line
+2013-01-16T12:26:37 err: E, [2013-01-16T12:26:37.665313 #962] ERROR -- : agents.rb:71:in `loadagent' Loading agent rpuppet failed: no such file to load -- puppet/util/command_line
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.665388 #962] DEBUG -- : agents.rb:104:in `findagentfile' Found rapply at /usr/libexec/mcollective/mcollective/agent/rapply.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.665444 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Rapply from mcollective/agent/rapply.rb
+2013-01-16T12:26:37 err: E, [2013-01-16T12:26:37.668623 #962] ERROR -- : pluginmanager.rb:171:in `loadclass' Failed to load MCollective::Agent::Rapply: no such file to load -- puppet/application
+2013-01-16T12:26:37 err: E, [2013-01-16T12:26:37.668684 #962] ERROR -- : agents.rb:71:in `loadagent' Loading agent rapply failed: no such file to load -- puppet/application
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.668751 #962] DEBUG -- : agents.rb:104:in `findagentfile' Found puppetd at /usr/libexec/mcollective/mcollective/agent/puppetd.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.668811 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Puppetd from mcollective/agent/puppetd.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.669313 #962] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for puppetd
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.669376 #962] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin puppetd_agent with class MCollective::Agent::Puppetd single_instance: false
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.669426 #962] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin puppetd_agent with class MCollective::Agent::Puppetd
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.669547 #962] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/puppetd'
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.669647 #962] DEBUG -- : base.rb:93:in `findddlfile' Found puppetd ddl at /usr/libexec/mcollective/mcollective/agent/puppetd.ddl
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.669926 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.670016 #962] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.puppetd.command
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.670124 #962] DEBUG -- : agents.rb:104:in `findagentfile' Found rpcutil at /usr/libexec/mcollective/mcollective/agent/rpcutil.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.670181 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Rpcutil from mcollective/agent/rpcutil.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.670528 #962] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for rpcutil
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.670583 #962] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin rpcutil_agent with class MCollective::Agent::Rpcutil single_instance: false
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.670630 #962] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin rpcutil_agent with class MCollective::Agent::Rpcutil
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.670703 #962] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/rpcutil'
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.670792 #962] DEBUG -- : base.rb:93:in `findddlfile' Found rpcutil ddl at /usr/libexec/mcollective/mcollective/agent/rpcutil.ddl
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.674272 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.674374 #962] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.rpcutil.command
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.674490 #962] DEBUG -- : agents.rb:104:in `findagentfile' Found nailyfact at /usr/libexec/mcollective/mcollective/agent/nailyfact.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.674556 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Nailyfact from mcollective/agent/nailyfact.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.674931 #962] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for nailyfact
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.675019 #962] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin nailyfact_agent with class MCollective::Agent::Nailyfact single_instance: false
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.675072 #962] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin nailyfact_agent with class MCollective::Agent::Nailyfact
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.675164 #962] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/nailyfact'
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.675272 #962] DEBUG -- : base.rb:93:in `findddlfile' Found nailyfact ddl at /usr/libexec/mcollective/mcollective/agent/nailyfact.ddl
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.675488 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.675556 #962] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.nailyfact.command
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.675656 #962] DEBUG -- : agents.rb:104:in `findagentfile' Found node_indirector at /usr/libexec/mcollective/mcollective/agent/node_indirector.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.675718 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Node_indirector from mcollective/agent/node_indirector.rb
+2013-01-16T12:26:37 err: E, [2013-01-16T12:26:37.676526 #962] ERROR -- : pluginmanager.rb:171:in `loadclass' Failed to load MCollective::Agent::Node_indirector: no such file to load -- puppet/node
+2013-01-16T12:26:37 err: E, [2013-01-16T12:26:37.676585 #962] ERROR -- : agents.rb:71:in `loadagent' Loading agent node_indirector failed: no such file to load -- puppet/node
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.676652 #962] DEBUG -- : agents.rb:104:in `findagentfile' Found fake at /usr/libexec/mcollective/mcollective/agent/fake.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.676711 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Agent::Fake from mcollective/agent/fake.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.676898 #962] DEBUG -- : agent.rb:138:in `activate?' Starting default activation checks for fake
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.676960 #962] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin fake_agent with class MCollective::Agent::Fake single_instance: false
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.680570 #962] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin fake_agent with class MCollective::Agent::Fake
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.680716 #962] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'agent/fake'
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.680834 #962] DEBUG -- : base.rb:93:in `findddlfile' Found fake ddl at /usr/libexec/mcollective/mcollective/agent/fake.ddl
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.681027 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.681100 #962] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.fake.command
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.681567 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Data::Agent_data from mcollective/data/agent_data.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.681902 #962] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin agent_data with class MCollective::Data::Agent_data single_instance: false
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.681965 #962] DEBUG -- : pluginmanager.rb:167:in `loadclass' Loading MCollective::Data::Fstat_data from mcollective/data/fstat_data.rb
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.682202 #962] DEBUG -- : pluginmanager.rb:44:in `<<' Registering plugin fstat_data with class MCollective::Data::Fstat_data single_instance: false
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.682275 #962] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin fstat_data with class MCollective::Data::Fstat_data
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.682349 #962] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'data/fstat_data'
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.682577 #962] DEBUG -- : base.rb:93:in `findddlfile' Found fstat_data ddl at /usr/libexec/mcollective/mcollective/data/fstat_data.ddl
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.682933 #962] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin agent_data with class MCollective::Data::Agent_data
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.685273 #962] DEBUG -- : cache.rb:117:in `ttl' Cache miss on 'ddl' key 'data/agent_data'
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.685379 #962] DEBUG -- : base.rb:93:in `findddlfile' Found agent_data ddl at /usr/libexec/mcollective/mcollective/data/agent_data.ddl
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.685570 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.685631 #962] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /topic/mcollective.mcollective.command
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.685714 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.685809 #962] DEBUG -- : stomp.rb:241:in `subscribe' Subscribing to /queue/mcollective.c4ca4238a0b923820dcc509a6f75849b
+2013-01-16T12:26:37 debug: D, [2013-01-16T12:26:37.685883 #962] DEBUG -- : stomp.rb:197:in `receive' Waiting for a message from Stomp
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.222263 #962] DEBUG -- : runnerstats.rb:49:in `received' Incrementing total stat
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.222338 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.222419 #962] DEBUG -- : runnerstats.rb:38:in `validated' Incrementing validated stat
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.222469 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.222546 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.222626 #962] DEBUG -- : base.rb:117:in `validate_filter?' Passing based on agent rpcutil
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.222675 #962] DEBUG -- : base.rb:117:in `validate_filter?' Passing based on agent rpcutil
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.222723 #962] DEBUG -- : base.rb:153:in `validate_filter?' Message passed the filter checks
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.222764 #962] DEBUG -- : runnerstats.rb:26:in `passed' Incrementing passed stat
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.222806 #962] DEBUG -- : runner.rb:80:in `agentmsg' Handling message for agent 'discovery' on collective 'mcollective'
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.222853 #962] DEBUG -- : agents.rb:119:in `dispatch' Dispatching a message to agent discovery
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.222943 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin discovery_agent with class MCollective::Agent::Discovery
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.223018 #962] DEBUG -- : stomp.rb:197:in `receive' Waiting for a message from Stomp
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.223190 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.223394 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.223463 #962] DEBUG -- : base.rb:168:in `create_reply' Encoded a message for request c4252a6973535a958349627872a4f6b2
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.223580 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.223646 #962] DEBUG -- : stomp.rb:230:in `publish' Sending a broadcast message to STOMP target '/topic/mcollective.discovery.reply'
+2013-01-16T12:29:47 debug: D, [2013-01-16T12:29:47.223902 #962] DEBUG -- : runnerstats.rb:56:in `sent' Incrementing replies stat
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.207332 #962] DEBUG -- : runnerstats.rb:49:in `received' Incrementing total stat
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.207419 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.207502 #962] DEBUG -- : runnerstats.rb:38:in `validated' Incrementing validated stat
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.207558 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.207625 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.207697 #962] DEBUG -- : base.rb:117:in `validate_filter?' Passing based on agent rpcutil
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.207747 #962] DEBUG -- : base.rb:117:in `validate_filter?' Passing based on agent rpcutil
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.207796 #962] DEBUG -- : base.rb:153:in `validate_filter?' Message passed the filter checks
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.207839 #962] DEBUG -- : runnerstats.rb:26:in `passed' Incrementing passed stat
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.207883 #962] DEBUG -- : runner.rb:80:in `agentmsg' Handling message for agent 'rpcutil' on collective 'mcollective'
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.207926 #962] DEBUG -- : agents.rb:119:in `dispatch' Dispatching a message to agent rpcutil
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.208034 #962] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin rpcutil_agent with class MCollective::Agent::Rpcutil
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.208099 #962] DEBUG -- : stomp.rb:197:in `receive' Waiting for a message from Stomp
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.208265 #962] DEBUG -- : cache.rb:105:in `read' Cache hit on 'ddl' key 'agent/rpcutil'
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.209068 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.209135 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.209211 #962] DEBUG -- : base.rb:168:in `create_reply' Encoded a message for request 865fb61cf4bc5dd08b2152f494c1d9f8
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.209334 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.209411 #962] DEBUG -- : stomp.rb:230:in `publish' Sending a broadcast message to STOMP target '/topic/mcollective.rpcutil.reply'
+2013-01-16T12:29:49 debug: D, [2013-01-16T12:29:49.209685 #962] DEBUG -- : runnerstats.rb:56:in `sent' Incrementing replies stat
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.236481 #962] DEBUG -- : runnerstats.rb:49:in `received' Incrementing total stat
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.236566 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.236644 #962] DEBUG -- : runnerstats.rb:38:in `validated' Incrementing validated stat
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.236698 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.236766 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.236835 #962] DEBUG -- : base.rb:117:in `validate_filter?' Passing based on agent rpcutil
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.236883 #962] DEBUG -- : base.rb:117:in `validate_filter?' Passing based on agent rpcutil
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.236932 #962] DEBUG -- : base.rb:153:in `validate_filter?' Message passed the filter checks
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.236973 #962] DEBUG -- : runnerstats.rb:26:in `passed' Incrementing passed stat
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.237040 #962] DEBUG -- : runner.rb:80:in `agentmsg' Handling message for agent 'discovery' on collective 'mcollective'
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.237083 #962] DEBUG -- : agents.rb:119:in `dispatch' Dispatching a message to agent discovery
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.237175 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin discovery_agent with class MCollective::Agent::Discovery
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.237232 #962] DEBUG -- : stomp.rb:197:in `receive' Waiting for a message from Stomp
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.237398 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.237608 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.237676 #962] DEBUG -- : base.rb:168:in `create_reply' Encoded a message for request 8d7776d9c45b5f56b87570fce2fbcc27
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.237829 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.237896 #962] DEBUG -- : stomp.rb:230:in `publish' Sending a broadcast message to STOMP target '/topic/mcollective.discovery.reply'
+2013-01-16T12:29:58 debug: D, [2013-01-16T12:29:58.238151 #962] DEBUG -- : runnerstats.rb:56:in `sent' Incrementing replies stat
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.224258 #962] DEBUG -- : runnerstats.rb:49:in `received' Incrementing total stat
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.224345 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.224423 #962] DEBUG -- : runnerstats.rb:38:in `validated' Incrementing validated stat
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.224478 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.224544 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.224614 #962] DEBUG -- : base.rb:117:in `validate_filter?' Passing based on agent rpcutil
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.224663 #962] DEBUG -- : base.rb:117:in `validate_filter?' Passing based on agent rpcutil
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.224711 #962] DEBUG -- : base.rb:153:in `validate_filter?' Message passed the filter checks
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.224753 #962] DEBUG -- : runnerstats.rb:26:in `passed' Incrementing passed stat
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.224802 #962] DEBUG -- : runner.rb:80:in `agentmsg' Handling message for agent 'rpcutil' on collective 'mcollective'
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.224844 #962] DEBUG -- : agents.rb:119:in `dispatch' Dispatching a message to agent rpcutil
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.224933 #962] DEBUG -- : pluginmanager.rb:88:in `[]' Returning new plugin rpcutil_agent with class MCollective::Agent::Rpcutil
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.225004 #962] DEBUG -- : stomp.rb:197:in `receive' Waiting for a message from Stomp
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.225162 #962] DEBUG -- : cache.rb:105:in `read' Cache hit on 'ddl' key 'agent/rpcutil'
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.225500 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.225567 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin security_plugin with class MCollective::Security::Psk
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.225644 #962] DEBUG -- : base.rb:168:in `create_reply' Encoded a message for request abe36a613826518fb19cda0e2226dd6a
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.225807 #962] DEBUG -- : pluginmanager.rb:83:in `[]' Returning cached plugin connector_plugin with class MCollective::Connector::Stomp
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.225880 #962] DEBUG -- : stomp.rb:230:in `publish' Sending a broadcast message to STOMP target '/topic/mcollective.rpcutil.reply'
+2013-01-16T12:30:00 debug: D, [2013-01-16T12:30:00.226246 #962] DEBUG -- : runnerstats.rb:56:in `sent' Incrementing replies stat

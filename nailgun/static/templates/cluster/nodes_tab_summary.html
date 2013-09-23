@@ -1,0 +1,21 @@
+<div class="navbar summary">
+  <div class="navbar-inner">
+     <ul class="nav">
+      <% var modes = {'singlenode': 'Single-node', 'multinode': 'Multi-node', 'ha': 'Multi-node with HA'} %>
+      <% var types = {'both': 'Compute and Cinder', 'compute': 'Compute only', 'cinder': 'Cinder only'} %>
+      <% var configurable = !cluster.task('deploy', 'running') && cluster.canChangeMode()  %>
+      <li class="btn btn-link summary-settings-btn change-cluster-mode-btn <%= configurable ? '' : 'disabled' %>">
+        <b>Deployment Mode: </b><%- modes[cluster.get('mode')] %> <%- false && cluster.get('mode') != 'singlenode' ? '(' + types[cluster.get('type')] + ')' : '' %>
+      </li>
+      <li class="btn btn-link summary-settings-btn disabled">
+        <b>OpenStack Release: </b>
+        <% release = cluster.get('release') %>
+        <%- release.get('name') %> (<%- release.get('version') %>)
+      </li>
+      <li class="btn btn-link summary-settings-btn disabled">
+        <% var statuses = {'new': 'New', 'deployment': 'Deploying', 'operational': 'Operational', 'error': 'Error', 'remove': 'Removing'} %>
+        <b>Environment Status: </b><%= statuses[cluster.get('status')] %>
+      </li>
+    </ul>
+  </div>
+</div>

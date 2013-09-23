@@ -1,0 +1,298 @@
+[
+    {
+        "pk": 2,
+        "model": "nailgun.release",
+        "fields": {
+            "name": "RHOS 3.0 for RHEL 6.4",
+            "version": "2013.1.2",
+            "operating_system": "RHEL",
+            "description": "This option will install the Red Hat Enterprise Linux OpenStack Platform using RHEL as a base operating system.  With high availability features built in, you are getting a robust enterprise-grade OpenStack deployment.",
+            "state": "not_available",
+            "networks_metadata": [
+                {"name": "floating", "access": "public"},
+                {"name": "public", "access": "public"},
+                {"name": "management", "access": "private192"},
+                {"name": "storage", "access": "private192"},
+                {"name": "fixed", "access": "private10"}
+            ],
+            "volumes_metadata": {
+                "volumes_roles_mapping": {
+                    "controller": ["os", "image"],
+                    "compute": ["os", "vm"],
+                    "cinder": ["os", "cinder"]
+                },
+                "volumes": [
+                    {
+                        "id": "os",
+                        "type": "vg",
+                        "min_size": {"generator": "calc_min_os_size"},
+                        "label": "Base System",
+                        "volumes": [
+                            {
+                                "mount": "/",
+                                "type": "lv",
+                                "name": "root",
+                                "size": {"generator": "calc_total_root_vg"}
+                            },
+                            {
+                                "mount": "swap",
+                                "type": "lv",
+                                "name": "swap",
+                                "size": {"generator": "calc_swap_size"}
+                            }
+                        ]
+                    },
+                    {
+                        "id": "vm",
+                        "type": "vg",
+                        "min_size": {"generator": "calc_min_vm_size"},
+                        "label": "Virtual Storage",
+                        "volumes": [
+                            {
+                                "mount": "{{settings.NOVA_STATE_PATH}}",
+                                "type": "lv",
+                                "name": "nova",
+                                "size": {
+                                    "generator": "calc_total_vg",
+                                    "generator_args": ["vm"]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "image",
+                        "type": "vg",
+                        "min_size": {"generator": "calc_min_glance_size"},
+                        "label": "Image Storage",
+                        "volumes": [
+                            {
+                                "mount": "/var/lib/glance",
+                                "type": "lv",
+                                "name": "glance",
+                                "size": {
+                                    "generator": "calc_total_vg",
+                                    "generator_args": ["image"]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "id": "cinder",
+                        "type": "vg",
+                        "label": "Cinder",
+                        "min_size": {"generator": "calc_min_cinder_size"},
+                        "volumes": []
+                    }
+                ]
+            },
+            "attributes_metadata": {
+                "editable": {
+                    "access": {
+                        "user": {
+                            "value": "admin",
+                            "label": "username",
+                            "description": "Username for Administrator",
+                            "weight": 10,
+                            "type": "text"
+                        },
+                        "email": {
+                            "value": "admin@example.org",
+                            "label": "email",
+                            "description": "Email address for Administrator",
+                            "weight": 40,
+                            "type": "text"
+                        },
+                        "tenant": {
+                            "value": "admin",
+                            "label": "tenant",
+                            "description": "Tenant (project) name for Administrator",
+                            "weight": 30,
+                            "type": "text"
+                        },
+                        "password": {
+                            "value": "admin",
+                            "label": "password",
+                            "description": "Password for Administrator",
+                            "weight": 20,
+                            "type": "password"
+                        }
+                    },
+                    "common": {
+                        "auto_assign_floating_ip": {
+                            "value": false,
+                            "label": "Auto assign floating IP",
+                            "description": "If true, OpenStack will automatically assign a floating IP to a new instance",
+                            "weight": 40,
+                            "type": "checkbox"
+                        },
+                        "libvirt_type": {
+                            "value": "qemu",
+                            "values": [
+                                {
+                                    "data": "kvm",
+                                    "display_name": "KVM",
+                                    "description": "Choose this type of hypervisor if you run OpenStack on hardware"
+                                },
+                                {
+                                    "data": "qemu",
+                                    "display_name": "QEMU",
+                                    "description": "Choose this type of hypervisor if you run OpenStack on virtual hosts."
+                                }
+                            ],
+                            "label": "Hypervisor type",
+                            "weight": 10,
+                            "type": "radio"
+                        },
+                        "start_guests_on_host_boot": {
+                            "value": true,
+                            "label": "Start guests on host boot",
+                            "description": "Whether to (re-)start guests when the host reboots. If enabled, this option causes guests assigned to the host to be unconditionally restarted when nova-compute starts. If the guest is found to be stopped, it starts. If it is found to be running, it reboots.",
+                            "weight": 50,
+                            "type": "checkbox"
+                        },
+                        "use_cow_images": {
+                            "value": true,
+                            "label": "Use qcow format for images",
+                            "description": "For most cases you will want qcow format. If it's set to false, raw image format will be used to run VMs. OpenStack with raw format currently does not support snapshotting.",
+                            "weight": 30,
+                            "type": "checkbox"
+                        },
+                        "compute_scheduler_driver": {
+                            "value": "nova.scheduler.filter_scheduler.FilterScheduler",
+                            "values": [
+                                {
+                                    "data": "nova.scheduler.filter_scheduler.FilterScheduler",
+                                    "display_name": "Filter scheduler",
+                                    "description": "Currently the most advanced OpenStack scheduler. See the OpenStack documentation for details."
+                                },
+                                {
+                                    "data": "nova.scheduler.simple.SimpleScheduler",
+                                    "display_name": "Simple scheduler",
+                                    "description": "This is 'naive' scheduler which tries to find the least loaded host"
+                                }
+                            ],
+                            "label": "Scheduler driver",
+                            "weight": 20,
+                            "type": "radio"
+                        },
+                        "auth_key": {
+                            "value": "",
+                            "label": "Public Key",
+                            "description": "Public key(s) to include in authorized_keys on deployed nodes",
+                            "weight": 60,
+                            "type": "text"
+                        }
+                    },
+                    "glance": {
+                        "image_cache_max_size": {
+                            "value": "10737418240",
+                            "label": "Glance image cache maximum size (in bytes) ",
+                            "weight": 70,
+                            "type": "text"
+                        }
+                    },
+                    "syslog": {
+                        "syslog_transport": {
+                            "value": "udp",
+                            "values": [
+                                {
+                                    "data": "udp",
+                                    "display_name": "UDP",
+                                    "description": ""
+                                },
+                                {
+                                    "data": "tcp",
+                                    "display_name": "TCP",
+                                    "description": ""
+                                }
+                            ],
+                            "label": "Syslog transport protocol",
+                            "weight": 30,
+                            "type": "radio"
+                        },
+                        "syslog_server": {
+                            "value": "",
+                            "label": "Hostname",
+                            "description": "Remote syslog hostname",
+                            "weight": 10,
+                            "type": "text"
+                        },
+                        "syslog_port": {
+                            "value": "514",
+                            "label": "Port",
+                            "description": "Remote syslog port",
+                            "weight": 20,
+                            "type": "text"
+                        }
+                    }
+                },
+                "generated": {
+                    "mysql": {
+                        "root_password": {
+                            "generator": "password"
+                        }
+                    },
+                    "keystone": {
+                        "db_password": {
+                            "generator": "password"
+                        },
+                        "admin_token": {
+                            "generator": "password"
+                        }
+                    },
+                    "glance": {
+                        "db_password": {
+                            "generator": "password"
+                        },
+                        "user_password": {
+                            "generator": "password"
+                        }
+                    },
+                    "nova": {
+                        "db_password": {
+                            "generator": "password"
+                        },
+                        "user_password": {
+                            "generator": "password"
+                        },
+                        "state_path": "{{settings.NOVA_STATE_PATH}}"
+                    },
+                    "rabbit": {
+                        "password": {
+                            "generator": "password"
+                        }
+                    },
+                    "swift": {
+                        "user_password": {
+                            "generator": "password"
+                        }
+                    },
+                    "cinder": {
+                        "db_password": {
+                            "generator": "password"
+                        },
+                        "user_password": {
+                            "generator": "password"
+                        }
+                    },
+                    "base_syslog": {
+                        "syslog_server": {
+                            "generator": "ip",
+                            "generator_arg": "admin"
+                        },
+                        "syslog_port": {
+                            "generator": "identical",
+                            "generator_arg": "514"
+                        }
+                    },
+                    "cobbler": {
+                        "profile": {
+                            "generator": "identical",
+                            "generator_arg": "rhel-x86_64"
+                        }
+                    }
+                }
+            }
+        }
+    }
+]

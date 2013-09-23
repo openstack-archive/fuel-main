@@ -1,0 +1,27 @@
+<div class="edit-node-disks wrapper <%= locked ? 'changes-locked' : '' %>">
+  <% if (node) { %>
+    <h3 class="span12">Configure <%- node.get('name') %> node disk<%= node.get('meta').disks.length == 1 ? '' : 's' %></h3>
+  <% } %>
+
+  <div class="row node-disks">
+    <div class="span4"></div>
+    <div class="span4">
+      <div class="progress progress-striped progress-success active">
+        <div class="bar" style="width: 100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- page-control box -->
+  <div class="row">
+    <div class="page-control-box">
+      <div class="back-button pull-left">
+        <button class="btn btn-return">Back To Node List</button>
+      </div>
+      <div class="page-control-button-placeholder">
+        <button class="btn btn-defaults" <%= locked ? 'disabled' : '' %>>Load Defaults</button>
+        <button class="btn btn-revert-changes" disabled>Cancel Changes</button>
+        <button class="btn btn-success btn-apply" disabled>Apply</button>
+      </div>
+    </div>
+  </div>

@@ -72,7 +72,6 @@ include $(SOURCE_DIR)/rules.mk
 include $(SOURCE_DIR)/sandbox.mk
 
 # Modules
-include $(SOURCE_DIR)/repos.mk
 include $(SOURCE_DIR)/mirror/module.mk
 include $(SOURCE_DIR)/packages/module.mk
 include $(SOURCE_DIR)/bootstrap/module.mk

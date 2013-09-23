@@ -104,8 +104,7 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 		$(BUILD_DIR)/packages/rpm/build.done \
 		$(BUILD_DIR)/bootstrap/prepare-initram-root.done \
 		$(call find-files,$(SOURCE_DIR)/bootstrap/sync) \
-		$(BUILD_DIR)/repos/nailgun.done \
-		$(call find-files,$(BUILD_DIR)/repos/nailgun/bin/send2syslog.py) \
+		$(SOURCE_DIR)/bin/send2syslog.py \
 		$(SOURCE_DIR)/bootstrap/ssh/id_rsa.pub \
 		$(BUILD_DIR)/bootstrap/etc/yum.conf \
 		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo
@@ -118,7 +117,7 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 
 	# Copying custom files
 	sudo rsync -aK $(SOURCE_DIR)/bootstrap/sync/ $(INITRAMROOT)
-	sudo cp -r $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py $(INITRAMROOT)/usr/bin
+	sudo cp -r $(SOURCE_DIR)/bin/send2syslog.py $(INITRAMROOT)/usr/bin
 
 	# Enabling pre-init boot interface discovery
 	sudo chroot $(INITRAMROOT) chkconfig setup-bootdev on
