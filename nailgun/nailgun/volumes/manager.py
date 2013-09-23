@@ -278,7 +278,7 @@ class Disk(object):
         self.create_service_partitions()
 
     def set_volumes(self, volumes):
-        """Assing volumes and reduce free space
+        """Add volumes and reduce free space
         """
         self.volumes = volumes
         for volume in volumes:
