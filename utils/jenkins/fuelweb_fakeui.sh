@@ -2,7 +2,7 @@
 
 $WORKSPACE/utils/jenkins/common.sh
 
-$WORKSPACE/utils/git-helper/review.py --master-repo $master_repo --master-branch $master_branch --repo $repo --branch $branch --check
+topdir=$WORKSPACE/utils/jenkins
 
 sudo ln -sf $topdir/init.d/nailgun /etc/init.d/nailgun
 sudo WORKSPACE=$WORKSPACE /etc/init.d/nailgun stop
@@ -10,7 +10,9 @@ sudo WORKSPACE=$WORKSPACE /etc/init.d/nailgun stop
 # Installing nailgun dependencies
 nailgun_deps
 
-cd $WORKSPACE/local_repo/nailgun
+make $WORKSPACE/build/repos/nailgun.done
+
+cd $WORKSPACE/build/repos/nailgun/nailgun
 # Cleaning database
 ./manage.py dropdb
 

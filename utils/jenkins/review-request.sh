@@ -1,6 +1,6 @@
 #!/bin/bash
 
-$WORKSPACE/utils/jenkins/common.sh
+. $WORKSPACE/utils/jenkins/common.sh
 
 $WORKSPACE/utils/git-helper/review.py --master-repo $master_repo --master-branch $master_branch --repo $repo --branch $branch --check
 
