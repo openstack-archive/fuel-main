@@ -20,6 +20,7 @@ default_messages = {
     # common errors
     "InvalidData": "Invalid data received",
     "AlreadyExists": "Object already exists",
+    "DumpRunning": "Dump already running",
 
     # node discovering errors
     "InvalidInterfacesInfo": "Invalid interfaces info",

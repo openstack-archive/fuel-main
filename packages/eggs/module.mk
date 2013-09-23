@@ -1,9 +1,11 @@
 include $(SOURCE_DIR)/nailgun/module.mk
+include $(SOURCE_DIR)/shotgun/module.mk
 
-.PHONY: nailgun nailgun_version
+.PHONY: nailgun nailgun_version shotgun shotgun_version
 
 $(BUILD_DIR)/packages/eggs/build.done: \
-		$(BUILD_DIR)/packages/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz
+		$(BUILD_DIR)/packages/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz \
+		$(BUILD_DIR)/packages/eggs/Shotgun-$(SHOTGUN_VERSION).tar.gz
 	mkdir -p $(LOCAL_MIRROR_EGGS)
 	find $(BUILD_DIR)/packages/eggs/ -maxdepth 1 -type f ! -name "build.done" \
 	    -exec cp {} $(LOCAL_MIRROR_EGGS) \;
@@ -30,3 +32,7 @@ $(eval $(call build_egg,GateOne,bb003114b4e84e9425fd02fd1ee615d4dd2113e7,gateone
 nailgun: $(BUILD_DIR)/packages/eggs/Nailgun-$(NAILGUN_VERSION).tar.gz
 nailgun_version:
 	@echo $(NAILGUN_VERSION)
+
+shotgun: $(BUILD_DIR)/packages/eggs/Shotgun-$(SHOTGUN_VERSION).tar.gz
+shotgun_version:
+	@echo $(SHOTGUN_VERSION)

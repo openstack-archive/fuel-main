@@ -18,6 +18,7 @@ import collections
 import itertools
 import json
 import netifaces
+import os
 import traceback
 
 
@@ -801,3 +802,25 @@ class NailgunReceiver(object):
         # TODO(NAME): remove this ugly checks
         if error_message != 'Task aborted':
             notifier.notify('error', error_message)
+
+    @classmethod
+    def dump_environment_resp(cls, **kwargs):
+        logger.info(
+            "RPC method dump_environment_resp received: %s" %
+            json.dumps(kwargs)
+        )
+        task_uuid = kwargs.get('task_uuid')
+        status = kwargs.get('status')
+        progress = kwargs.get('progress')
+        error = kwargs.get('error')
+        msg = kwargs.get('msg')
+        if status == 'error':
+            notifier.notify('error', error)
+            TaskHelper.update_task_status(task_uuid, status, 100, error)
+        elif status == 'ready':
+            dumpfile = os.path.basename(msg)
+            notifier.notify('done', 'Snapshot is ready. '
+                            'Visit Support page to download')
+            TaskHelper.update_task_status(
+                task_uuid, status, progress,
+                '/dump/{1}'.format(dumpfile))

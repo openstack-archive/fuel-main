@@ -24,6 +24,7 @@ from sqlalchemy.orm import object_mapper
 from nailgun.api.models import NetworkGroup
 from nailgun.api.models import Node
 from nailgun.api.models import NodeNICInterface
+from nailgun.api.models import RedHatAccount
 from nailgun.api.models import Release
 from nailgun.db import db
 from nailgun.errors import errors
@@ -577,7 +578,7 @@ class CheckBeforeDeploymentTask(object):
     @classmethod
     def __format_network_error(cls, nodes_count):
         return 'Not enough IP addresses. Public network must have at least '\
-            '{nodes_count} IP addresses '.format(nodes_count=nodes_count) +\
+            '{nodes_count} IP addresses '.format(nodes_count=nodes_count) + \
             'for the current environment.'
 
 
@@ -656,3 +657,57 @@ class RedHatCheckLicensesTask(RedHatTask):
         if nodes:
             msg['args']['nodes'] = nodes
         return msg
+
+
+class DumpTask(object):
+    @classmethod
+    def conf(cls):
+        logger.debug("Preparing config for snapshot")
+        nodes = db().query(Node).filter(
+            Node.status.in_(['ready', 'provisioned', 'deploying', 'error'])
+        ).all()
+
+        dump_conf = settings.DUMP
+        dump_conf['dump_roles']['slave'] = [n.fqdn for n in nodes]
+        logger.debug("Dump slave nodes: %s",
+                     ", ".join(dump_conf['dump_roles']['slave']))
+
+        """
+        here we try to filter out sensitive data from logs
+        """
+        rh_accounts = db().query(RedHatAccount).all()
+        for num, obj in enumerate(dump_conf['dump_objects']['master']):
+            if obj['type'] == 'subs' and obj['path'] == '/var/log/remote':
+                for fieldname in ("username", "password"):
+                    for fieldvalue in [getattr(acc, fieldname)
+                                       for acc in rh_accounts]:
+                        obj['subs'][fieldvalue] = ('substituted_{0}'
+                                                   ''.format(fieldname))
+        logger.debug("Dump conf: %s", str(dump_conf))
+        return dump_conf
+
+    @classmethod
+    def execute(cls, task):
+        logger.debug("DumpTask: task=%s" % task.uuid)
+        message = {
+            'method': 'dump_environment',
+            'respond_to': 'dump_environment_resp',
+            'args': {
+                'task_uuid': task.uuid,
+                'lastdump': settings.DUMP["lastdump"]
+            }
+        }
+        task.cache = message
+        db().add(task)
+        db().commit()
+        rpc.cast('naily', message)
+
+
+def dump():
+    """Entry point dump script."""
+    from shotgun.config import Config as ShotgunConfig
+    from shotgun.manager import Manager as ShotgunManager
+    logger.debug("Starting snapshot procedure")
+    conf = ShotgunConfig(DumpTask.conf())
+    manager = ShotgunManager(conf)
+    print(manager.snapshot())

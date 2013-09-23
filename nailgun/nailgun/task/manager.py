@@ -516,3 +516,26 @@ class RedHatSetupTaskManager(TaskManager):
         rpc.cast('naily', messages)
 
         return supertask
+
+
+class DumpTaskManager(TaskManager):
+    def execute(self):
+        logger.info("Trying to start dump_environment task")
+        current_tasks = db().query(Task).filter_by(
+            name="dump"
+        )
+        for task in current_tasks:
+            if task.status == "running":
+                raise errors.DumpRunning()
+            elif task.status in ("ready", "error"):
+                db().delete(task)
+                db().commit()
+
+        task = Task(name="dump")
+        db().add(task)
+        db().commit()
+        self._call_silently(
+            task,
+            tasks.DumpTask,
+        )
+        return task

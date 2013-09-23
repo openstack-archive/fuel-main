@@ -103,6 +103,12 @@ module Naily
       report_result(result, reporter)
     end
 
+    def dump_environment(data)
+      task_id = data['args']['task_uuid']
+      reporter = Naily::Reporter.new(@producer, data['respond_to'], task_id)
+      @orchestrator.dump_environment(reporter, task_id, data['args']['lastdump'])
+    end
+
     def remove_nodes(data)
       reporter = Naily::Reporter.new(@producer, data['respond_to'], data['args']['task_uuid'])
       nodes = data['args']['nodes']
