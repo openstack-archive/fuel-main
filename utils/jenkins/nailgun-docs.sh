@@ -4,6 +4,7 @@
 
 nailgun_deps
 
+make clean
 make $WORKSPACE/build/repos/nailgun.done
 
 cd $WORKSPACE/build/repos/nailgun/docs
