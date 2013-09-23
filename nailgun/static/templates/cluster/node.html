@@ -20,6 +20,7 @@
       </div>
     </div>
     <div class="node-logo <%- node.get('manufacturer') ? 'manufacturer-' + node.get('manufacturer').toLowerCase() : '' %>"></div>
+    <div class="node-details"></div>
     <div class="node-hardware">
       <ul>
       <li>CPU: <%= node.resource('cores') || '?' %></li>
@@ -52,6 +53,6 @@
           <% } %>
         </ul>
       </div>
-     </div>
-   </div>
- </div>
+    </div>
+  </div>
+</div>
