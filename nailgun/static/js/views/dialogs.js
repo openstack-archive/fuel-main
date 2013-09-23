@@ -28,7 +28,6 @@ define(
     'text!templates/dialogs/create_cluster_wizard/additional.html',
     'text!templates/dialogs/create_cluster_wizard/ready.html',
     'text!templates/dialogs/rhel_license.html',
-    'text!templates/dialogs/change_cluster_mode.html',
     'text!templates/dialogs/discard_changes.html',
     'text!templates/dialogs/display_changes.html',
     'text!templates/dialogs/remove_cluster.html',
@@ -37,7 +36,7 @@ define(
     'text!templates/dialogs/dismiss_settings.html',
     'text!templates/dialogs/delete_nodes.html'
 ],
-function(require, utils, models, simpleMessageTemplate, createClusterWizardTemplate, clusterNameAndReleasePaneTemplate, clusterModePaneTemplate, clusterComputePaneTemplate, clusterNetworkPaneTemplate, clusterStoragePaneTemplate, clusterAdditionalServicesPaneTemplate, clusterReadyPaneTemplate, rhelCredentialsDialogTemplate, changeClusterModeDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate, discardSettingsChangesTemplate, deleteNodesTemplate) {
+function(require, utils, models, simpleMessageTemplate, createClusterWizardTemplate, clusterNameAndReleasePaneTemplate, clusterModePaneTemplate, clusterComputePaneTemplate, clusterNetworkPaneTemplate, clusterStoragePaneTemplate, clusterAdditionalServicesPaneTemplate, clusterReadyPaneTemplate, rhelCredentialsDialogTemplate, discardChangesDialogTemplate, displayChangesDialogTemplate, removeClusterDialogTemplate, errorMessageTemplate, showNodeInfoTemplate, discardSettingsChangesTemplate, deleteNodesTemplate) {
     'use strict';
 
     var views = {};
@@ -438,33 +437,6 @@ function(require, utils, models, simpleMessageTemplate, createClusterWizardTempl
             return this;
         }
     }, rhelCredentialsMixin));
-
-    views.ChangeClusterModeDialog = views.Dialog.extend({
-        template: _.template(changeClusterModeDialogTemplate),
-        events: {
-            'change input[name=mode]': 'toggleTypes',
-            'click .apply-btn:not(.disabled)': 'apply'
-        },
-        apply: function() {
-            var cluster = this.model;
-            var mode = this.$('input[name=mode]:checked').val();
-            if (cluster.get('mode') == mode) {
-                this.$el.modal('hide');
-            } else {
-                this.$('.apply-btn').addClass('disabled');
-                cluster.save({mode: mode}, {patch: true, wait: true}).fail(_.bind(this.displayErrorMessage, this));
-            }
-        },
-        toggleTypes: function() {
-            this.$('.mode-description').addClass('hide');
-            this.$('.help-mode-' + this.$('input[name=mode]:checked').val()).removeClass('hide');
-        },
-        render: function() {
-            this.constructor.__super__.render.call(this, {cluster: this.model});
-            this.toggleTypes();
-            return this;
-        }
-    });
 
     views.DiscardChangesDialog = views.Dialog.extend({
         template: _.template(discardChangesDialogTemplate),

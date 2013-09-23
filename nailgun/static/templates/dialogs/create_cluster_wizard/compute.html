@@ -1,6 +1,6 @@
-<form class="form-horizontal" style="margin:0" onsubmit="return false">
+<form class="form-horizontal compute-step" onsubmit="return false">
   <fieldset>
-    <div class="control-group" style="margin:0">
+    <div class="control-group">
       <% var hypervisors = ['kvm', 'qemu'] %>
       <% var descriptions = {
         kvm: 'Choose this type of hypervisor if you run OpenStack on hardware',
@@ -14,7 +14,7 @@
               <!-- [if !IE |(gte IE 9)]> --><span>&nbsp;</span><!-- <![endif] -->
             </div>
           </div>
-          <div class="parameter-name" style="text-transform: uppercase"><%- hypervisor %></div>
+          <div class="parameter-name"><%- hypervisor %></div>
         </label>
         <div class="modal-parameter-description"><%- descriptions[hypervisor] %></div>
       <% }) %>

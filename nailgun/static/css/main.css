@@ -4426,3 +4426,11 @@ input.input-append {
   background: url(../img/support_icons.png) no-repeat 0px -236px;
   margin: 10px 0px 0px 20px;
 }
+
+.compute-step {
+  margin:0;
+}
+
+.compute-step .parameter-name {
+  text-transform: uppercase;
+}
