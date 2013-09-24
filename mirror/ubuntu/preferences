@@ -1,0 +1,3 @@
+Package: *
+Pin: origin download.mirantis.com
+Pin-Priority: 1001
