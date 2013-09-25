@@ -36,6 +36,7 @@ cinder-api
 cinder-common
 cinder-scheduler
 cinder-volume
+cirros-testvm
 cluster-glue
 command-not-found
 command-not-found-data
