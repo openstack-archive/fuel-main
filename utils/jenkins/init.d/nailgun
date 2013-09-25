@@ -21,7 +21,7 @@ pidfile="/var/run/${prog}.pid"
 
 start() {
     echo -n $"Starting $prog: "
-    su -l jenkins --shell=/bin/bash -c "cd $WORKSPACE/nailgun && nohup python manage.py run -p 8001 --fake-tasks 2>&1 | grep --line-buffered -v -e HTTP -e '^$' >> /var/log/nailgun.log &"
+    su -l jenkins --shell=/bin/bash -c "cd $WORKSPACE/build/repos/nailgun/nailgun && nohup python manage.py run -p 8001 --fake-tasks 2>&1 | grep --line-buffered -v -e HTTP -e '^$' >> /var/log/nailgun.log &"
     retval=$?
     echo
     return $retval
