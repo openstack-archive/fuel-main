@@ -15,8 +15,7 @@ $(BUILD_DIR)/repos/$1.done:
 	# Clone repo and checkout required commit
 	mkdir -p $(BUILD_DIR)/repos
 	rm -rf $(BUILD_DIR)/repos/$1
-	git clone $2 $(BUILD_DIR)/repos/$1
-	cd $(BUILD_DIR)/repos/$1 && git reset --hard $3
+	git clone --depth 1 --branch $3 $2 $(BUILD_DIR)/repos/$1
 	# Update versions.yaml
 	touch $(BUILD_DIR)/repos/version.yaml
 	sed -i '/^  $1_sha:/d' $(BUILD_DIR)/repos/version.yaml
