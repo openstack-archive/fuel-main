@@ -28,7 +28,7 @@ logger = logging.getLogger('integration')
 
 class CiFuelWeb(CiBase):
     hostname = 'nailgun'
-    domain = 'mirantis.com'
+    domain = 'test.domain.local'
     installation_timeout = 1800
     deployment_timeout = 1800
     puppet_timeout = 1000
