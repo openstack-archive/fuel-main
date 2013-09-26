@@ -39,10 +39,10 @@ NO_UI_OPTIMIZE:=0
 CACHE_RHEL:=0
 
 # Repos and versions
-FUELLIB_COMMIT?=origin/master
-NAILGUN_COMMIT?=origin/master
-ASTUTE_COMMIT?=origin/master
-OSTF_COMMIT?=origin/master
+FUELLIB_COMMIT?=master
+NAILGUN_COMMIT?=master
+ASTUTE_COMMIT?=master
+OSTF_COMMIT?=master
 
 FUELLIB_REPO?=https://github.com/Mirantis/fuel.git
 NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
