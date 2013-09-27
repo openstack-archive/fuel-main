@@ -23,6 +23,8 @@ pip==1.2.1
 psycopg2==2.4.6
 pycrypto==2.6
 python-heatclient==0.2.2
+python-muranoclient==0.2
+prettytable==0.6.1
 simplejson==2.6.2
 six==1.1.0
 tornado==3.0
