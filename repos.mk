@@ -28,5 +28,4 @@ endef
 $(eval $(call build_repo,nailgun,$(NAILGUN_REPO),$(NAILGUN_COMMIT)))
 $(eval $(call build_repo,astute,$(ASTUTE_REPO),$(ASTUTE_COMMIT)))
 $(eval $(call build_repo,fuellib,$(FUELLIB_REPO),$(FUELLIB_COMMIT)))
-$(eval $(call build_repo,ostf_tests,$(OSTF_TESTS_REPO),$(OSTF_TESTS_COMMIT)))
-$(eval $(call build_repo,ostf_plugin,$(OSTF_PLUGIN_REPO),$(OSTF_PLUGIN_COMMIT)))
+$(eval $(call build_repo,ostf,$(OSTF_REPO),$(OSTF_COMMIT)))
