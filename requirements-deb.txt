@@ -21,6 +21,7 @@ bash
 bash-completion
 bind9-host
 binutils
+bridge-utils
 bsdmainutils
 bsdutils
 btrfs-tools
@@ -152,6 +153,7 @@ initscripts
 insserv
 install-info
 installation-report
+intel-microcode
 iproute
 iptables
 iptables-persistent
@@ -165,6 +167,7 @@ isc-dhcp-common
 iso-codes
 jfsutils
 kbd
+kdump-tools
 keyboard-configuration
 keystone
 klibc-utils
@@ -441,7 +444,7 @@ libusb-0.1-4
 libusb-1.0-0
 libuuid1
 libv8-3.7.12.22
-libvirt0
+libvirt-bin
 libvorbis0a
 libvorbisenc2
 libvotequorum4
@@ -475,11 +478,10 @@ libxslt1.1
 libyajl1
 libyaml-0-2
 linux-firmware
+linux-firmware-nonfree
 linux-headers-3.5.0-40
 linux-headers-3.5.0-40-generic
-linux-headers-server
 linux-image-3.5.0-40-generic
-linux-image-server
 linux-libc-dev
 linux-server
 lksctp-tools
@@ -499,6 +501,8 @@ man-db
 manpages
 manpages-dev
 mawk
+mc
+mcelog
 mcollective
 mcollective-common
 memcached
@@ -523,11 +527,13 @@ ncurses-bin
 net-tools
 netbase
 netcat-openbsd
+nginx
 node-less
 nodejs
 nova-api
 nova-cert
 nova-common
+nova-compute-qemu
 nova-conductor
 nova-consoleauth
 nova-novncproxy
@@ -616,6 +622,7 @@ python-keystone
 python-keystoneclient
 python-kombu
 python-ldap
+python-libvirt
 python-libxml2
 python-lockfile
 python-lxml
@@ -750,6 +757,7 @@ tcpdump
 telnet
 tgt
 time
+traceroute
 ttf-dejavu-core
 tzdata
 ubuntu-keyring
@@ -767,6 +775,7 @@ usbutils
 util-linux
 uuid-runtime
 vgabios
+vim
 vim-common
 vim-tiny
 vlan

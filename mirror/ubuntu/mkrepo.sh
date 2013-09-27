@@ -1,6 +1,9 @@
 #!/bin/bash
-# Make structure
-mkdir -p /repo/dists/precise/main/binary-i386 /repo/dists/precise/main/binary-amd64 /repo/dists/precise/main/debian-installer/binary-amd64 
+# Make structure and mocks for multiarch
+for dir in binary-i386 binary-amd64; do 
+	mkdir -p /repo/dists/precise/main/$dir /repo/dists/precise/main/debian-installer/$dir
+	touch /repo/dists/precise/main/$dir/Packages /repo/dists/precise/main/debian-installer/$dir/Packages
+done
 mkdir -p /repo/pool/debian-installer /repo/pool/main
 cd /repo/pool/debian-installer
 # Grab every udeb
@@ -37,4 +40,4 @@ apt-ftparchive -c apt-ftparchive-release.conf generate apt-ftparchive-deb.conf
 apt-ftparchive -c apt-ftparchive-release.conf generate apt-ftparchive-udeb.conf
 apt-ftparchive -c apt-ftparchive-release.conf release dists/precise/ > dists/precise/Release
 # some cleanup...
-rm -rf apt-ftparchive*conf Release-amd64 Release-amd64 mkrepo.sh 
+rm -rf apt-ftparchive*conf Release-amd64 Release-i386 mkrepo.sh 
