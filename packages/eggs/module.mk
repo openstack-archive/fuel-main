@@ -34,8 +34,7 @@ $(BUILD_DIR)/packages/eggs/$3-$4.tar.gz: $(LOCAL_MIRROR_SRC)/$2.zip
 endef
 
 # OSTF eggs version are hardcoded here and in fuel/deployment/puppet/nailgun/manifests/ostf.pp
-$(eval $(call build_repo_egg,ostf_tests,ostf_tests,0.1))
-$(eval $(call build_repo_egg,ostf_plugin,testing_adapter,0.2))
+$(eval $(call build_repo_egg,ostf,fuel_ostf,0.1))
 $(eval $(call build_egg,GateOne,bb003114b4e84e9425fd02fd1ee615d4dd2113e7,gateone,1.2.0))
 
 nailgun: $(BUILD_DIR)/packages/eggs/nailgun.done
