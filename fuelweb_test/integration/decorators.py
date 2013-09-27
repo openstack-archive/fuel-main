@@ -22,12 +22,12 @@ import urllib2
 from fuelweb_test.settings import LOGS_DIR
 
 
-def save_logs(ip, filename):
+def save_logs(url, filename):
     logging.info('Saving logs to "%s" file' % filename)
     try:
         with open(filename, 'w') as f:
             f.write(
-                urllib2.urlopen("http://%s:8000/api/logs/package" % ip).read()
+                urllib2.urlopen(url).read()
             )
     except urllib2.HTTPError, e:
         logging.error(e)
@@ -45,8 +45,15 @@ def fetch_logs(func):
             if LOGS_DIR:
                 if not os.path.exists(LOGS_DIR):
                     os.makedirs(LOGS_DIR)
+
+                test_case = args[0]
+                task = test_case.client.generate_logs()
+                task = test_case._task_wait(task, 60 * 5)
+                url = "http://%s:8000%s" % \
+                      (test_case.get_admin_node_ip(), task['message'])
+
                 save_logs(
-                    args[0].get_admin_node_ip(),
+                    url,
                     os.path.join(LOGS_DIR, '%s-%d.tar.gz' % (
                         func.__name__,
                         time.time())))
