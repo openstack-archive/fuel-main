@@ -42,15 +42,12 @@ CACHE_RHEL:=0
 NAILGUN_COMMIT?=origin/master
 ASTUTE_COMMIT?=origin/master
 FUELLIB_COMMIT?=origin/master
-OSTF_TESTS_COMMIT?=92b4e5e8d10f1a45f7433d06eb3a5936adb4050e
-OSTF_PLUGIN_COMMIT?=f1c7870793a3aa724673c30391d3255a0d9465d5
+FUEL_OSTF_COMMIT?=origin/master
 
 NAILGUN_REPO?=https://github.com/Mirantis/fuelweb.git
 ASTUTE_REPO?=https://github.com/Mirantis/astute.git
 FUELLIB_REPO?=https://github.com/Mirantis/fuel.git
-OSTF_TESTS_REPO?=https://github.com/Mirantis/fuel-ostf-tests.git
-OSTF_PLUGIN_REPO?=https://github.com/Mirantis/fuel-ostf-plugin.git
-
+FUEL_OSTF_REPO?=https://github.com/Mirantis/fuel-ostf-tests.git
 
 LOCAL_MIRROR_SRC:=$(LOCAL_MIRROR)/src
 LOCAL_MIRROR_EGGS:=$(LOCAL_MIRROR)/eggs
