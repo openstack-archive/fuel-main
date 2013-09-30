@@ -101,7 +101,7 @@ class CiBase(object):
     def describe_admin_node(self, name, networks, memory=1024):
         node = self.add_node(memory=memory, name=name, boot=['hd', 'cdrom'])
         self.create_interfaces(networks, node)
-        self.add_empty_volume(node, name + '-system')
+        self.add_empty_volume(node, name + '-system', capacity=5 * 1024 * 1024 * 1024 * 1024)
         self.add_empty_volume(
             node, name + '-iso', capacity=_get_file_size(ISO_PATH),
             format='raw', device='cdrom', bus='ide')
@@ -110,8 +110,8 @@ class CiBase(object):
     def describe_empty_node(self, name, networks, memory=1024):
         node = self.add_node(memory, name)
         self.create_interfaces(networks, node)
-        self.add_empty_volume(node, name + '-system')
-        self.add_empty_volume(node, name + '-cinder')
+        self.add_empty_volume(node, name + '-system', capacity=5 * 1024 * 1024 * 1024 * 1024)
+        self.add_empty_volume(node, name + '-cinder', capacity=5 * 1024 * 1024 * 1024 * 1024)
         self.add_empty_volume(node, name + '-swift')
         return node
 
