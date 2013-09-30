@@ -38,7 +38,7 @@ done
 # Master node settings
 vm_master_cpu_cores=1
 vm_master_memory_mb=1024
-vm_master_disk_mb=16384
+vm_master_disk_mb=25600
 
 # Master node access to the internet through the host system, using VirtualBox NAT adapter
 vm_master_nat_network=192.168.200/24
