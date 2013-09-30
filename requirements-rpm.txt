@@ -258,9 +258,9 @@ openstack-nova-network-2013.1.3.fuel3.2-mira.1
 openstack-nova-novncproxy-2013.1.3.fuel3.2-mira.1
 openstack-nova-objectstore-2013.1.3.fuel3.2-mira.1
 openstack-nova-scheduler-2013.1.3.fuel3.2-mira.1
-openstack-quantum-2013.1.3.fuel3.2-mira.1
-openstack-quantum-linuxbridge-2013.1.3.fuel3.2-mira.1
-openstack-quantum-openvswitch-2013.1.3.fuel3.2-mira.1
+openstack-quantum
+openstack-quantum-linuxbridge
+openstack-quantum-openvswitch
 openstack-savanna-virtualenv-savanna
 openstack-swift-1.8.0.fuel3.2-mira.1
 openstack-swift-account-1.8.0.fuel3.2-mira.1
@@ -371,7 +371,7 @@ python-py-1.4.15-1.el6
 python-pygments-1.1.1-1.el6
 python-pyudev-0.15-1.el6
 python-qpid-qmf-0.14-14.el6_3
-python-quantum-2013.1.3.fuel3.2-mira.1
+python-quantum
 python-quantumclient-2.2.1.fuel3.2-mira.1
 python-requests-0.14.1-4.el6
 python-rhsm-1.1.8-mira.1
