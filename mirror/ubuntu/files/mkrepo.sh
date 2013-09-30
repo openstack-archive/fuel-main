@@ -40,4 +40,4 @@ apt-ftparchive -c apt-ftparchive-release.conf generate apt-ftparchive-deb.conf
 apt-ftparchive -c apt-ftparchive-release.conf generate apt-ftparchive-udeb.conf
 apt-ftparchive -c apt-ftparchive-release.conf release dists/precise/ > dists/precise/Release
 # some cleanup...
-rm -rf apt-ftparchive*conf Release-amd64 Release-i386 mkrepo.sh 
+rm -rf apt-ftparchive*conf Release-amd64 Release-i386 mkrepo.sh preferences
