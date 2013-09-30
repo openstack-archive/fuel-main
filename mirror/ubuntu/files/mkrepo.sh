@@ -8,7 +8,7 @@ mkdir -p /repo/pool/debian-installer /repo/pool/main
 cd /repo/pool/debian-installer
 # Grab every udeb
 for udeb in $(wget -qO - http://mirror.yandex.ru/ubuntu/dists/precise/main/debian-installer/binary-amd64/Packages.bz2 | bzip2 -cd | sed -ne 's/^Filename: //p'); do
-        wget http://mirror.yandex.ru/ubuntu/$udeb
+        wget -N http://mirror.yandex.ru/ubuntu/$udeb
 done
 # Get rid of urlencoded names
 for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; done
@@ -24,7 +24,7 @@ for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; don
 mkdir -p /repo/indices
 cd /repo/indices
 for idx in override.precise.main override.precise.extra.main override.precise.main.debian-installer ; do
-	wget http://mirror.yandex.ru/ubuntu/indices/$idx
+	wget -N http://mirror.yandex.ru/ubuntu/indices/$idx
 done
 cd /repo
 # Just because apt scan will produce crap
