@@ -106,6 +106,7 @@ bind-utils
 cronie
 crontabs
 curl
+fuelmenu
 man
 mlocate
 ntp
@@ -260,6 +261,15 @@ cp ${SOURCE}/version.yaml /etc/nailgun/version.yaml
 
 # Generete Fuel UUID
 uuidgen > /etc/fuel-uuid
+
+###Run fuel menu
+[ -z "$showmenu" ] && showmenu="no"
+cat > /root/.showfuelmenu << EOF
+#Set to yes to run Fuel Setup 
+#Set to no to accept default settings
+showmenu=$showmenu
+EOF
+
 
 
 # Prepare custom /etc/issue logon banner and script for changing IP in it

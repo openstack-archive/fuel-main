@@ -71,6 +71,24 @@ $(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: \
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
 
+
+$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
+$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done: export SANDBOX_UP:=$(SANDBOX_UP)
+$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
+$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done: \
+               $(BUILD_DIR)/packages/rpm/prep.done \
+               $(SOURCE_DIR)/packages/rpm/specs/fuelmenu.spec \
+               $(call find-files,$(BUILD_DIR)/repos/nailgun/fuelmenu)
+	sudo sh -c "$${SANDBOX_UP}"
+	sudo mkdir -p $(SANDBOX)/tmp/SOURCES/fuelmenu
+	sudo cp -r $(BUILD_DIR)/repos/nailgun/fuelmenu/* $(SANDBOX)/tmp/SOURCES/fuelmenu
+	cd $(SANDBOX)/tmp/SOURCES/fuelmenu && sudo python setup.py sdist -d $(SANDBOX)/tmp/SOURCES
+	sudo cp $(SOURCE_DIR)/packages/rpm/specs/fuelmenu.spec $(SANDBOX)/tmp
+	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/fuelmenu.spec
+	cp $(SANDBOX)/tmp/RPMS/noarch/fuelmenu-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
+	sudo sh -c "$${SANDBOX_DOWN}"
+	$(ACTION.TOUCH)
+
 $(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
 $(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
@@ -121,7 +139,8 @@ $(BUILD_DIR)/packages/rpm/repo.done: \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-redhat-license.done \
 		$(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done \
 		$(BUILD_DIR)/packages/rpm/rpm-mcollective.done \
-		$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done
+		$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done \
+		$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
