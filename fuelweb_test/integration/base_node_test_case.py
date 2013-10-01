@@ -191,7 +191,7 @@ class BaseNodeTestCase(BaseTestCase):
                     set_result['tests']
                 )
             )
-        self.assertEqual(passed, should_pass, 'Passed tests')
+        self.assertGreaterEqual(passed, should_pass, 'Passed tests')
         self.assertEqual(failed, should_fail, 'Failed tests')
 
     @logwrap
