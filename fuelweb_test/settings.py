@@ -33,12 +33,13 @@ REDHAT_ACTIVATION_KEY = os.environ.get('REDHAT_ACTIVATION_KEY')
 INTERFACE_ORDER = ('internal', 'public', 'private', 'nat')
 
 PUBLIC_FORWARD = os.environ.get('PUBLIC_FORWARD', None)
+NAT_FORWARD = os.environ.get('NAT_FORWARD', 'nat')
 
 FORWARDING = {
     'public': PUBLIC_FORWARD,
     'internal': None,
     'private': None,
-    'nat': 'nat',
+    'nat': NAT_FORWARD,
 }
 
 DHCP = {
