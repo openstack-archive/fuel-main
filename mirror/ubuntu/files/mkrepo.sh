@@ -15,7 +15,7 @@ for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; don
 rm -f debootstrap*
 #
 # Borrow right one...
-wget http://srv08-srt.srt.mirantis.net/ubuntu-repo/precise-grizzly-fuel-3.2/pool/main/d/debootstrap/debootstrap-udeb_1.0.39_all.udeb
+wget http://download.mirantis.com/precise-grizzly-fuel-3.2/pool/main/d/debootstrap/debootstrap-udeb_1.0.39_all.udeb
 # Move all stuff to the our package pool
 mv /var/cache/apt/archives/*deb /repo/pool/main
 cd /repo/pool/main
