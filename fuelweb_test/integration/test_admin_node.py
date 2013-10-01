@@ -18,7 +18,7 @@ import unittest
 import xmlrpclib
 from devops.helpers.helpers import wait, tcp_ping, http
 from nose.plugins.attrib import attr
-from fuelweb_test.integration.base_test_case import BaseTestCase
+from fuelweb_test.integration.base_node_test_case import BaseNodeTestCase
 from fuelweb_test.integration.decorators import debug, fetch_logs
 from fuelweb_test.settings import CLEAN
 
@@ -26,8 +26,9 @@ logger = logging.getLogger(__name__)
 logwrap = debug(logger)
 
 
-class TestAdminNode(BaseTestCase):
+class TestAdminNode(BaseNodeTestCase):
     def setUp(self):
+        BaseNodeTestCase.setUp(self)
         if CLEAN:
             self.ci().get_empty_environment()
 
