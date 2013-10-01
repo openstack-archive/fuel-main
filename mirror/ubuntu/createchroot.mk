@@ -5,10 +5,10 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 #	echo deb $(MIRROR_FUEL_UBUNTU) $(UBUNTU_RELEASE) main | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list.d/mirantis.list
 	echo deb http://srv08-srt.srt.mirantis.net/ubuntu-repo/precise-grizzly-fuel-3.2 $(UBUNTU_RELEASE) main | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list.d/mirantis.list
 	echo 'APT::Get::AllowUnauthenticated 1;' | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/apt.conf.d/02mirantis-unauthenticated
-	sudo cp -a $(SOURCE_DIR)/mirror/ubuntu/preferences $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt
+	sudo cp -a $(SOURCE_DIR)/mirror/ubuntu/files/preferences $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "apt-get update && apt-get -dy install $(shell echo $(REQUIRED_DEBS) | tr '\n' ' ')"
 	sudo mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo
-	sudo cp -a $(SOURCE_DIR)/mirror/ubuntu/mkrepo.sh $(SOURCE_DIR)/mirror/ubuntu/apt-ftparchive-deb.conf $(SOURCE_DIR)/mirror/ubuntu/apt-ftparchive-udeb.conf $(SOURCE_DIR)/mirror/ubuntu/apt-ftparchive-release.conf $(SOURCE_DIR)/mirror/ubuntu/Release-amd64 $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo
+	sudo rsync -a $(SOURCE_DIR)/mirror/ubuntu/files/ $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "chmod +x /repo/mkrepo.sh && /repo/mkrepo.sh"
 	sudo mv -f $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/* $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ && sudo rm -rf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/
 	$(ACTION.TOUCH)
