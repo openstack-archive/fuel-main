@@ -536,6 +536,7 @@ nova-common
 nova-compute-qemu
 nova-conductor
 nova-consoleauth
+nova-network
 nova-novncproxy
 nova-objectstore
 nova-scheduler
