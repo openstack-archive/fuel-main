@@ -340,6 +340,13 @@ RunTest() {
   fi
   ec=$?
 
+  # remove previous garbage
+  if [ "${DRY_RUN}" = "yes" ]; then
+    echo dos.py destroy "${ENV_NAME}"
+  else
+    dos.py destroy "${ENV_NAME}"
+  fi
+
   exit "${ec}"
 }
 
