@@ -35,21 +35,21 @@ logwrap = debug(logger)
 class TestNode(BaseNodeTestCase):
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_2')
+    @attr(releases=['centos', 'redhat'], test_thread='thread_1')
     def test_release_upload(self):
         self.prepare_environment()
         self._upload_sample_release()
 
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_2')
+    @attr(releases=['centos', 'redhat'], test_thread='thread_1')
     def test_http_returns_no_error(self):
         self.prepare_environment()
         self.client.get_root()
 
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_2')
+    @attr(releases=['centos', 'redhat'], test_thread='thread_1')
     def test_create_empty_cluster(self):
         self.prepare_environment()
         self.create_cluster(name='empty')
@@ -57,7 +57,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_2')
+    @attr(releases=['centos', 'redhat'], test_thread='thread_1')
     def test_node_deploy(self):
         self.prepare_environment()
         self.bootstrap_nodes(self.nodes().slaves[:1])
@@ -65,7 +65,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_2')
+    @attr(releases=['centos', 'redhat'], test_thread='thread_1')
     def test_updating_nodes_in_cluster(self):
         self.prepare_environment()
         cluster_id = self.create_cluster(name='empty')
@@ -167,7 +167,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_2')
+    @attr(releases=['centos', 'redhat'], test_thread='thread_1')
     def test_network_verify_with_blocked_vlan(self):
         self.prepare_environment()
         cluster_name = 'net_verify'
@@ -190,7 +190,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_2')
+    @attr(releases=['centos', 'redhat'], test_thread='thread_1')
     def test_multinic_bootstrap_booting(self):
         self.prepare_environment()
         slave = self.nodes().slaves[0]
@@ -213,7 +213,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_2')
+    @attr(releases=['centos', 'redhat'], test_thread='thread_1')
     def test_simple_cluster_with_cinder(self):
         cluster_id = self.prepare_environment(settings={
             'nodes': {
@@ -345,7 +345,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_2')
+    @attr(releases=['centos', 'redhat'], test_thread='thread_1')
     def test_node_multiple_interfaces(self):
         self.prepare_environment()
         cluster_name = 'node interfaces'
@@ -381,7 +381,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_2')
+    @attr(releases=['centos', 'redhat'], test_thread='thread_1')
     def test_untagged_network(self):
         cluster_name = 'simple_untagged'
 
@@ -432,7 +432,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_2')
+    @attr(releases=['centos', 'redhat'], test_thread='thread_3')
     def test_multirole_controller_cinder(self):
         cluster_id = self.prepare_environment(settings={
             'nodes': {
@@ -447,7 +447,7 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_2')
+    @attr(releases=['centos', 'redhat'], test_thread='thread_3')
     def test_multirole_compute_cinder(self):
         cluster_id = self.prepare_environment(settings={
             'nodes': {
