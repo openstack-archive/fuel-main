@@ -11,6 +11,8 @@ license_check
 
 [ -d $WORKSPACE/local_repo/nailgun ] && nailgun_checks
 
+[ -d $WORKSPACE/local_repo/shotgun ] && shotgun_checks
+
 [ -d $WORKSPACE/local_repo/asute ] && ruby_checks
 
 # Push the branch into master

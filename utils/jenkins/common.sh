@@ -26,6 +26,14 @@ function nailgun_checks {
     ./run_tests.sh --with-xunit # --no-ui-tests
 }
 
+function shotgun_checks {
+    nailgun_deps
+    cd $WORKSPACE/local_repo/shotgun
+
+    # ***** Running Python unit tests, includes pep8 check of nailgun *****
+    ./run_tests.sh --with-xunit # --no-ui-tests
+}
+
 function ruby_checks {
     cd $WORKSPACE/local_repo/astute
     WORKSPACE=$WORKSPACE/local_repo/astute ./run_tests.sh
