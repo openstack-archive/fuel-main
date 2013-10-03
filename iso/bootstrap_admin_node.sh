@@ -2,13 +2,9 @@
 
 function countdown() {
   local i
-  printf %s "$1"
   sleep 1
   for ((i=$1-1; i>=1; i--)); do
-    if [ $1 -lt 10 ]; then
-      i=" $i"
-    fi
-    printf '\b\b%d' "$i"
+    printf '\b\b%%02d' "$i"
     sleep 1
   done
 }
@@ -26,10 +22,13 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
   #Give user 30 seconds to enter fuelmenu or else continue
   echo
   echo -n "${bold}${red}Press any key to enter Fuel Setup... "
-  countdown 30 & pid=$!
+  countdown 10 & pid=$!
   if ! read -s -n 1 -t 30; then
     echo
     echo -e "\n${normal}Skipping Fuel Setup..."
+    echo -n "Applying default Fuel setings..." 
+    fuelmenu --save-only --iface=eth0
+    echo "Done!"
   else
     kill "$pid"
     echo -e "\n${normal}Entering Fuel Setup..."

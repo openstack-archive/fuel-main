@@ -1,5 +1,5 @@
 %define name fuelmenu
-%define version 0.2
+%define version 0.3
 %define unmangled_version 0.1
 %define release 1
 
@@ -38,6 +38,7 @@ python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUIL
 mkdir -p $RPM_BUILD_ROOT/etc
 install -m 0600 fuelmenu/naily.facts.default $RPM_BUILD_ROOT/etc/naily.facts.default
 install -m 0600 fuelmenu/naily.facts.default $RPM_BUILD_ROOT/etc/naily.facts
+install -m 0600 fuelmenu/settings.yaml $RPM_BUILD_ROOT/etc/astute.yaml
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -45,3 +46,4 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %config /etc/naily.facts.default
 %config(noreplace) /etc/naily.facts
+%config(noreplace) /etc/astute.yaml
