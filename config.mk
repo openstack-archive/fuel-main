@@ -39,15 +39,15 @@ NO_UI_OPTIMIZE:=0
 CACHE_RHEL:=0
 
 # Repos and versions
+FUELLIB_COMMIT?=origin/master
 NAILGUN_COMMIT?=origin/master
 ASTUTE_COMMIT?=origin/master
-FUELLIB_COMMIT?=origin/master
 OSTF_COMMIT?=origin/master
 
-NAILGUN_REPO?=https://github.com/Mirantis/fuelweb.git
-ASTUTE_REPO?=https://github.com/Mirantis/astute.git
 FUELLIB_REPO?=https://github.com/Mirantis/fuel.git
-OSTF_REPO?=https://github.com/Mirantis/fuel-ostf-tests.git
+NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
+ASTUTE_REPO?=https://github.com/stackforge/fuel-astute.git
+OSTF_REPO?=https://github.com/stackforge/fuel-ostf-tests.git
 
 LOCAL_MIRROR_SRC:=$(LOCAL_MIRROR)/src
 LOCAL_MIRROR_EGGS:=$(LOCAL_MIRROR)/eggs
