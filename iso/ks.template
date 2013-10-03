@@ -270,8 +270,6 @@ cat > /root/.showfuelmenu << EOF
 showmenu=$showmenu
 EOF
 
-
-
 # Prepare custom /etc/issue logon banner and script for changing IP in it
 cat > /etc/issue << EOF
 #########################################
