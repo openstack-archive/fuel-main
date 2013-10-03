@@ -21,18 +21,26 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
   else
   #Give user 30 seconds to enter fuelmenu or else continue
   echo
-  echo -n "${bold}${red}Press any key to enter Fuel Setup... 15"
+  echo -n "${bold}${red}Press a key to enter Fuel Setup (or press ESC to skip)... 15"
   countdown 15 & pid=$!
-  if ! read -s -n 1 -t 30; then
+  if ! read -s -n 1 -t 15 key; then
     echo
     echo -e "\n${normal}Skipping Fuel Setup..."
-    echo -n "Applying default Fuel setings..." 
+    echo -n "Applying default Fuel setings..."
     fuelmenu --save-only --iface=eth0
     echo "Done!"
   else
-    kill "$pid"
-    echo -e "\n${normal}Entering Fuel Setup..."
-    fuelmenu
+    case "$key" in
+      $'\e')  echo "Skipping Fuel Setup.."
+              echo -n "Applying default Fuel setings..."
+              fuelmenu --save-only --iface=eth0
+              echo "Done!"
+              ;;
+      *)      kill "$pid"
+              echo -e "\n${normal}Entering Fuel Setup..."
+              fuelmenu
+              ;;
+    esac
   fi
 fi
 #Reread /etc/sysconfig/network to inform puppet of changes
