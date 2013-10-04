@@ -134,7 +134,7 @@ MIRROR_RHEL?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-6-server-rpms
 MIRROR_RHEL_BOOT?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-server-6.4-x86_64
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
-MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-3.2-stable/
+MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-3.2-stable/centos/
 MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-3.2-stable/
 # It can be any a list of links (--find-links) or a pip index (--index-url).
 MIRROR_EGGS?=http://pypi.python.org/simple
