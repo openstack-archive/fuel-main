@@ -59,6 +59,7 @@ debconf
 debconf-i18n
 debconf-utils
 debianutils
+dhcp-checker
 diffutils
 discover
 discover-data
@@ -141,6 +142,10 @@ grub2-common
 guestmount
 gzip
 haproxy
+heat-api-cfn
+heat-api-cloudwatch
+heat-api
+heat-engine
 hdparm
 hicolor-icon-theme
 hostname
