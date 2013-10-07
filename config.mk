@@ -47,7 +47,7 @@ OSTF_COMMIT?=origin/master
 FUELLIB_REPO?=https://github.com/Mirantis/fuel.git
 NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
 ASTUTE_REPO?=https://github.com/stackforge/fuel-astute.git
-OSTF_REPO?=https://github.com/stackforge/fuel-ostf-tests.git
+OSTF_REPO?=https://github.com/stackforge/fuel-ostf.git
 
 LOCAL_MIRROR_SRC:=$(LOCAL_MIRROR)/src
 LOCAL_MIRROR_EGGS:=$(LOCAL_MIRROR)/eggs
