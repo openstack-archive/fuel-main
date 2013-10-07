@@ -1,6 +1,5 @@
 $(BUILD_DIR)/mirror/ubuntu/createchroot.done: 
 	mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot
-	#sudo debootstrap --include=wget --components=main,universe,multiverse,restricted $(UBUNTU_RELEASE) $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot http://mirror.yandex.ru/ubuntu
 	sudo debootstrap --no-check-gpg --include=wget --components=main,universe,multiverse,restricted $(UBUNTU_RELEASE) $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot $(MIRROR_UBUNTU)
 	echo deb $(MIRROR_FUEL_UBUNTU) $(UBUNTU_RELEASE) main | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list.d/mirantis.list
 	echo 'APT::Get::AllowUnauthenticated 1;' | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/apt.conf.d/02mirantis-unauthenticated
