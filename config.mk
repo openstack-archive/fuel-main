@@ -69,7 +69,7 @@ ifeq ($(USE_MIRROR),ext)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://download.mirantis.com/fuelweb-repo/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu/main
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
@@ -78,7 +78,7 @@ ifeq ($(USE_MIRROR),srt)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu/main
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
@@ -87,7 +87,7 @@ ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://srv11-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu/main
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
@@ -96,7 +96,7 @@ ifeq ($(USE_MIRROR),usa)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://product-vm.vm.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu/main
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
@@ -114,7 +114,7 @@ endif
 ifeq ($(USE_MIRROR),osci)
 YUM_REPOS?=proprietary fuel
 MIRROR_FUEL?=http://download.mirantis.com/epel-fuel-grizzly-3.2/
-MIRROR_FUEL_UBUNTU?=http://download.mirantis.com/epel-fuel-grizzly-3.2/
+MIRROR_FUEL_UBUNTU?=http://download.mirantis.com/precise-grizzly-fuel-3.2
 MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
@@ -132,7 +132,7 @@ MIRROR_RHEL_BOOT?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-server-6.4-x86_64
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
 MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-3.2-stable/centos/
-MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-3.2-stable/
+MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-3.2-stable/reprepro
 # It can be any a list of links (--find-links) or a pip index (--index-url).
 MIRROR_EGGS?=http://pypi.python.org/simple
 # NOTE(mihgen): removed gemcutter - it redirects to rubygems.org and has issues w/certificate now
