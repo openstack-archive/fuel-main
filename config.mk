@@ -61,7 +61,7 @@ LOCAL_MIRROR_RHEL:=$(LOCAL_MIRROR)/rhel
 BUILD_MIRROR_GEMS:=$(BUILD_DIR)/packages/gems
 
 # Use download.mirantis.com mirror by default. Other possible values are
-# 'msk', 'srt', 'usa'.
+# 'msk', 'srt', 'usa', 'hrk'.
 # Setting any other value or removing of this variable will cause
 # download of all the packages directly from internet
 USE_MIRROR?=ext
@@ -97,6 +97,15 @@ YUM_REPOS?=proprietary
 MIRROR_BASE?=http://product-vm.vm.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu/main
+MIRROR_EGGS?=$(MIRROR_BASE)/eggs
+MIRROR_GEMS?=$(MIRROR_BASE)/gems
+MIRROR_SRC?=$(MIRROR_BASE)/src
+endif
+ifeq ($(USE_MIRROR),hrk)
+YUM_REPOS?=proprietary
+MIRROR_BASE?=http://ostf-mirror.kha.mirantis.net/fwm/$(PRODUCT_VERSION)
+MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
