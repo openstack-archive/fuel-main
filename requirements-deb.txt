@@ -539,6 +539,7 @@ nodejs
 nova-api
 nova-cert
 nova-common
+nova-compute-kvm
 nova-compute-qemu
 nova-conductor
 nova-consoleauth
