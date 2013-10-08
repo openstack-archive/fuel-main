@@ -27,6 +27,8 @@ for idx in override.precise.main override.precise.extra.main override.precise.ma
 	wget -N http://mirror.yandex.ru/ubuntu/indices/$idx
 done
 cd /repo
+# Very dirty hack because of conflicting provides
+apt-get -dy install nova-compute-qemu
 # Just because apt scan will produce crap
 cp -a Release-amd64 Release-i386
 sed -i 's/amd64/i386/g' Release-i386
