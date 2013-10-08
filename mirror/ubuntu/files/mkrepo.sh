@@ -1,5 +1,8 @@
 #!/bin/bash
 # Make structure and mocks for multiarch
+for pkg in (cat /requirements-deb.txt); do
+	apt-get -dy install $pkg
+done
 for dir in binary-i386 binary-amd64; do 
 	mkdir -p /repo/dists/precise/main/$dir /repo/dists/precise/main/debian-installer/$dir
 	touch /repo/dists/precise/main/$dir/Packages /repo/dists/precise/main/debian-installer/$dir/Packages
@@ -27,8 +30,6 @@ for idx in override.precise.main override.precise.extra.main override.precise.ma
 	wget -N http://mirror.yandex.ru/ubuntu/indices/$idx
 done
 cd /repo
-# Very dirty hack because of conflicting provides
-apt-get -dy install nova-compute-qemu
 # Just because apt scan will produce crap
 cp -a Release-amd64 Release-i386
 sed -i 's/amd64/i386/g' Release-i386
