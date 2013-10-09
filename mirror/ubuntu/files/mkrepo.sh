@@ -23,6 +23,8 @@ wget http://download.mirantis.com/precise-grizzly-fuel-3.2/pool/main/d/debootstr
 # Move all stuff to the our package pool
 mv /var/cache/apt/archives/*deb /repo/pool/main
 cd /repo/pool/main
+rm python-keystoneclient*
+wget http://ubuntu-cloud.archive.canonical.com/ubuntu/pool/main/p/python-keystoneclient/python-keystoneclient_0.2.3-0ubuntu2.2~cloud0_all.deb
 # urlencode again
 for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; done
 mkdir -p /repo/indices
