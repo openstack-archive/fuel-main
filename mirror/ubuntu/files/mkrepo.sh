@@ -1,8 +1,9 @@
 #!/bin/bash
-# Make structure and mocks for multiarch
+apt-get update
 for pkg in $(cat /requirements-deb.txt); do
 	apt-get -dy install $pkg
 done
+# Make structure and mocks for multiarch
 for dir in binary-i386 binary-amd64; do 
 	mkdir -p /repo/dists/precise/main/$dir /repo/dists/precise/main/debian-installer/$dir
 	touch /repo/dists/precise/main/$dir/Packages /repo/dists/precise/main/debian-installer/$dir/Packages
