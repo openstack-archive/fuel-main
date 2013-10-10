@@ -30,14 +30,15 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
     fuelmenu --save-only --iface=eth0
     echo "Done!"
   else
+    kill "$pid"
+    echo
     case "$key" in
       $'\e')  echo "Skipping Fuel Setup.."
               echo -n "Applying default Fuel setings..."
               fuelmenu --save-only --iface=eth0
               echo "Done!"
               ;;
-      *)      kill "$pid"
-              echo -e "\n${normal}Entering Fuel Setup..."
+      *)      echo -e "\n${normal}Entering Fuel Setup..."
               fuelmenu
               ;;
     esac
