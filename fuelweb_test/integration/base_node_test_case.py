@@ -199,7 +199,7 @@ class BaseNodeTestCase(BaseTestCase):
                  should_fail=0, should_pass=0):
         test_sets = test_sets \
             if test_sets is not None \
-            else ['fuel_smoke', 'fuel_sanity']
+            else ['smoke', 'sanity']
 
         self.client.ostf_run_tests(cluster_id, test_sets)
         self.assertOSTFRunSuccess(cluster_id, should_fail=should_fail,
