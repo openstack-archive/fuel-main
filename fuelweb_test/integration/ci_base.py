@@ -19,7 +19,7 @@ from devops.manager import Manager
 from ipaddr import IPNetwork
 import hashlib
 from fuelweb_test.node_roles import Nodes
-from fuelweb_test.settings import EMPTY_SNAPSHOT, ISO_PATH
+from fuelweb_test.settings import EMPTY_SNAPSHOT, ISO_PATH, USE_ALL_DISKS
 
 
 class CiBase(object):
@@ -111,8 +111,11 @@ class CiBase(object):
         node = self.add_node(memory, name)
         self.create_interfaces(networks, node)
         self.add_empty_volume(node, name + '-system')
-        self.add_empty_volume(node, name + '-cinder')
-        self.add_empty_volume(node, name + '-swift')
+
+        if USE_ALL_DISKS:
+            self.add_empty_volume(node, name + '-cinder')
+            self.add_empty_volume(node, name + '-swift')
+
         return node
 
     @abstractmethod

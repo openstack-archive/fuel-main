@@ -81,3 +81,5 @@ NETWORK_MANAGERS = {
 
 CLEAN = os.environ.get('CLEAN', 'true') == 'true'
 LOGS_DIR = os.environ.get('LOGS_DIR')
+
+USE_ALL_DISKS = os.environ.get('USE_ALL_DISKS', 'true') == 'true'
