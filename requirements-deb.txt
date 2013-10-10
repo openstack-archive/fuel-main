@@ -357,6 +357,7 @@ libnl-3-200
 libnl-genl-3-200
 libnspr4
 libnss3
+libnss3-tools
 libnuma1
 libodbc1
 libogg0
