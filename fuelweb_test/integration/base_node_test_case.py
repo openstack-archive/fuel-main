@@ -485,3 +485,6 @@ class BaseNodeTestCase(BaseTestCase):
             if release["name"].find(release_name) != -1:
                 self.assertEqual(release['state'], state)
                 return release["id"]
+
+    def create_custom_cluster(self, data={}):
+        return self.client.create_cluster(data=data)

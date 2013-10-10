@@ -33,6 +33,30 @@ class TestNode(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
+    def test_ha_neutron_gre(self):
+        cluster_name = 'ha_neutron_gre'
+        cluster_mode = 'ha_compact'
+        cluster_net_provider = 'neutron'
+        cluster_segment_type = 'gre'
+
+        data={
+            "nodes": [],
+            "tasks": [],
+            "name": cluster_name,
+            "release": 1,
+            "mode": cluster_mode,
+            "net_provider": cluster_net_provider,
+            "net_segment_type": cluster_segment_type
+        }
+
+        cluster = self.create_custom_cluster(data=data)
+
+        self.assertEqual(str(cluster['net_provider']), cluster_net_provider)
+
+
+    @snapshot_errors
+    @logwrap
+    @fetch_logs
     @attr(releases=['centos', 'redhat'], test_thread='thread_3')
     def test_ha_cluster_vlan(self):
         self.prepare_environment()
