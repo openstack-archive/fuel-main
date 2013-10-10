@@ -24,20 +24,21 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
   echo -n "${bold}${red}Press a key to enter Fuel Setup (or press ESC to skip)... 15"
   countdown 15 & pid=$!
   if ! read -s -n 1 -t 15 key; then
-    echo
+    echo "$normal"
     echo -e "\n${normal}Skipping Fuel Setup..."
     echo -n "Applying default Fuel setings..."
     fuelmenu --save-only --iface=eth0
     echo "Done!"
   else
+    { kill "$pid"; wait $!; } 2>/dev/null
+    echo "$normal"
     case "$key" in
       $'\e')  echo "Skipping Fuel Setup.."
               echo -n "Applying default Fuel setings..."
               fuelmenu --save-only --iface=eth0
               echo "Done!"
               ;;
-      *)      kill "$pid"
-              echo -e "\n${normal}Entering Fuel Setup..."
+      *)      echo -e "\n${normal}Entering Fuel Setup..."
               fuelmenu
               ;;
     esac
