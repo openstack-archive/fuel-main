@@ -19,6 +19,7 @@ from paramiko import RSAKey
 import re
 import hashlib
 from fuelweb_test.helpers import Ebtables
+from fuelweb_test.integration.decorators import upload_manifests
 from fuelweb_test.integration.base_test_case import BaseTestCase
 from fuelweb_test.integration.decorators import debug
 from fuelweb_test.nailgun_client import NailgunClient
@@ -487,6 +488,7 @@ class BaseNodeTestCase(BaseTestCase):
             net_manager=NETWORK_MANAGERS['vlan'])
 
     @logwrap
+    @upload_manifests
     def get_ready_environment(self):
         if self.ci().get_state(READY_SNAPSHOT):
             self.environment().resume(verbose=False)

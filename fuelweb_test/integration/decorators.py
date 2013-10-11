@@ -19,7 +19,10 @@ import logging
 import os
 import time
 import urllib2
-from fuelweb_test.settings import LOGS_DIR
+from fuelweb_test.settings import LOGS_DIR,UPLOAD_MANIFESTS,SITEPP_FOR_UPLOAD,UPLOAD_MANIFESTS_PATH
+from devops.helpers.helpers import SSHClient
+
+
 
 
 def save_logs(url, filename):
@@ -81,6 +84,23 @@ def snapshot_errors(func):
             raise
     return wrapper
 
+def upload_manifests(func):
+    @functools.wraps(func)
+    def wrapper(*args,**kwargs):
+        result = func(*args,**kwargs)
+        try:
+            if UPLOAD_MANIFESTS:
+                logging.info("Uploading new manifests from %s" % (UPLOAD_MANIFESTS_PATH))
+                remote = SSHClient(args[0].get_admin_node_ip(), username='root', password='r00tme')
+                remote.execute('rm -rf /etc/puppet/modules/*')
+                remote.upload(UPLOAD_MANIFESTS_PATH,'/etc/puppet/modules/')
+                logging.info("Copying new site.pp from %s" %  SITEPP_FOR_UPLOAD)
+                remote.execute("cp %s /etc/puppet/manifests" % SITEPP_FOR_UPLOAD)
+        except:
+            logging.error("Could not upload manifests")
+            raise
+        return result
+    return wrapper
 
 def debug(logger):
     def wrapper(func):
