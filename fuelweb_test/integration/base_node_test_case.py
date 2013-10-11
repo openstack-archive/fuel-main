@@ -144,6 +144,9 @@ class BaseNodeTestCase(BaseTestCase):
             if 'nodes' in settings:
                 cluster_id = self.create_cluster(name=name, mode=mode)
                 self.basic_provisioning(cluster_id, settings['nodes'])
+            else:
+                cluster_id = self.create_cluster(name=name, mode=mode, settings=settings)
+
             self.ci().snapshot_state(name, settings)
 
         # return id of last created cluster
@@ -234,18 +237,20 @@ class BaseNodeTestCase(BaseTestCase):
         return release_id
 
     @logwrap
-    def get_or_create_cluster(self, name, release_id, mode="multinode"):
+    def get_or_create_cluster(self, name, release_id, mode="multinode", settings=None):
         if not release_id:
             release_id = self._upload_sample_release()
         cluster_id = self.client.get_cluster_id(name)
         if not cluster_id:
-            self.client.create_cluster(
-                data={
-                    "name": name,
-                    "release": str(release_id),
-                    "mode": mode
-                }
-            )
+            data = {
+                "name": name,
+                "release": str(release_id),
+                "mode": mode
+            }
+            if settings is not None:
+                data.update(settings)
+
+            self.client.create_cluster(data=data)
             cluster_id = self.client.get_cluster_id(name)
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
@@ -253,14 +258,14 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def create_cluster(self, name='default', release_id=None,
-                       mode="multinode"):
+                       mode="multinode", settings=None):
         """
         :param name:
         :param release_id:
         :param mode:
         :return: cluster_id
         """
-        return self.get_or_create_cluster(name, release_id, mode)
+        return self.get_or_create_cluster(name, release_id, mode, settings)
 
     @logwrap
     def update_nodes(self, cluster_id, nodes_dict,
