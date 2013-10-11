@@ -16,10 +16,19 @@ for udeb in $(wget -qO - http://mirror.yandex.ru/ubuntu/dists/precise/main/debia
 done
 # Get rid of urlencoded names
 for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; done
-rm -f debootstrap*
+rm -f debootstrap-udeb*
+rm -f busybox-udeb*
+
 #
 # Borrow right one...
+wget http://download.mirantis.com/precise-grizzly-fuel-3.2/pool/main/b/busybox/busybox-udeb_1.18.5-1ubuntu4.1_amd64.udeb
 wget http://download.mirantis.com/precise-grizzly-fuel-3.2/pool/main/d/debootstrap/debootstrap-udeb_1.0.39_all.udeb
+
+# Busybox has enabled base64 in the config
+#
+# Debootstrap has solution to split base-passwd and base-files stages
+# as in https://bugs.launchpad.net/ubuntu/+source/debootstrap/+bug/1001131
+
 # Move all stuff to the our package pool
 mv /var/cache/apt/archives/*deb /repo/pool/main
 cd /repo/pool/main
