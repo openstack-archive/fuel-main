@@ -190,6 +190,7 @@ libaio1
 libalgorithm-diff-perl
 libalgorithm-diff-xs-perl
 libalgorithm-merge-perl
+libapache2-mod-fastcgi
 libapache2-mod-wsgi
 libapparmor1
 libapr1
