@@ -51,8 +51,9 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def verify_networks(self, cluster_id, networks):
+        net_provider = self.get_cluster(cluster_id)['net_provider']
         return self.client.put(
-            "/api/clusters/%d/network_configuration/verify/" % cluster_id,
+            "/api/clusters/%d/network_configuration/%s/verify/" % (cluster_id, net_provider),
             {'networks': networks}
         )
 
