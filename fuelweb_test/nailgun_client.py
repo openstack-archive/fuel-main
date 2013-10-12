@@ -183,7 +183,7 @@ class NailgunClient(object):
         for test_set in test_sets_list:
             data.append(
                 {
-                    'metadata': {'cluster_id': cluster_id, 'config': {}},
+                    'metadata': {'cluster_id': str(cluster_id), 'config': {}},
                     'testset': test_set
                 }
             )
