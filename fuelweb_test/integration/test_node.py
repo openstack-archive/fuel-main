@@ -162,7 +162,6 @@ class TestNode(BaseNodeTestCase):
             nodes[0]),
             timeout=3 * 60
         )
-        self.run_OSTF(cluster_id=cluster_id, should_fail=23, should_pass=1)
 
     @snapshot_errors
     @logwrap
