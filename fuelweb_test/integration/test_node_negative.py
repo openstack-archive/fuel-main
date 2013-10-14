@@ -17,6 +17,7 @@ import logging
 import unittest
 from devops.helpers.helpers import wait
 from nose.plugins.attrib import attr
+from nose.plugins.skip import SkipTest
 from fuelweb_test.helpers import Ebtables
 from fuelweb_test.integration.base_node_test_case import BaseNodeTestCase
 from fuelweb_test.integration.decorators import snapshot_errors, \
@@ -38,6 +39,7 @@ class TestNodeNegative(BaseNodeTestCase):
     @fetch_logs
     @attr(releases=['centos', 'redhat'], test_thread='thread_1')
     def test_untagged_networks_negative(self):
+        raise SkipTest()
         cluster_name = 'simple_untagged'
 
         vlan_turn_off = {'vlan_start': None}
