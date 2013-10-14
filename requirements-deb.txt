@@ -670,6 +670,7 @@ python-apt-common
 python-babel
 python-boto
 python-carrot
+python-ceph
 python-chardet
 python-cheetah
 python-cinder
