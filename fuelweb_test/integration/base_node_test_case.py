@@ -285,7 +285,8 @@ class BaseNodeTestCase(BaseTestCase):
             node_data = {'cluster_id': cluster_id, 'id': node['id'],
                          'pending_addition': pending_addition,
                          'pending_deletion': pending_deletion,
-                         'pending_roles': nodes_dict[node_name]}
+                         'pending_roles': nodes_dict[node_name],
+                         'name': '%s_%s' % (self.ci().environment().name, devops_node.name)}
             nodes_data.append(node_data)
 
         # assume nodes are going to be updated for one cluster only
