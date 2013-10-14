@@ -53,6 +53,7 @@ debootstrap
 deltaiso-3.5-0.5.20090913git.el6
 deltarpm-3.5-0.5.20090913git.el6
 dhclient-4.1.1-34.P1.el6_4.1
+disktype
 dmidecode-2.11-2.el6
 dnsmasq-2.65-5.el6
 dnsmasq-utils-2.65-5.el6
@@ -129,6 +130,7 @@ gperftools-libs-2.0-11.el6.3
 haproxy-1.4.19-1.el6
 hdparm-9.16-3.4.el6
 hiera-1.2.0-1.el6
+htop
 http-parser-2.0-4.20121128gitcd01361.el6
 httpd-2.2.15-15.el6.1
 httpd-tools-2.2.15-15.el6.1
@@ -333,6 +335,7 @@ python-glance
 python-glanceclient
 python-greenlet-0.3.1-12.el6
 python-greenlet-devel-0.3.1-12.el6
+python-heatclient
 python-httplib2-0.7.7-1.el6
 python-importlib-1.0.2-1.el6
 python-ipaddr-2.1.9-1.el6
@@ -503,6 +506,7 @@ tcpdump-4.0.0-3.20090921gitdf3cb4.2.el6
 tftp-server-0.49-7.el6
 time-1.7-37.1.el6
 tinyproxy
+tmux
 unzip-6.0-1.el6
 usermode-1.102-3.el6
 v8-3.14.5.7-3.el6

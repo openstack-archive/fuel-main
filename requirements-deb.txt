@@ -63,6 +63,7 @@ dhcp-checker
 diffutils
 discover
 discover-data
+disktype
 dmidecode
 dmsetup
 dnsmasq-base
@@ -149,6 +150,7 @@ heat-engine
 hdparm
 hicolor-icon-theme
 hostname
+htop
 ifenslave-2.6
 ifupdown
 info
@@ -698,6 +700,7 @@ python-glance
 python-glanceclient
 python-gnupginterface
 python-greenlet
+python-heatclient
 python-httplib2
 python-iso8601
 python-json-patch
@@ -845,6 +848,7 @@ tcpdump
 telnet
 tgt
 time
+tmux
 traceroute
 ttf-dejavu-core
 tzdata
