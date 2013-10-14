@@ -143,6 +143,7 @@ class BaseNodeTestCase(BaseTestCase):
 
             if 'nodes' in settings:
                 cluster_id = self.create_cluster(name=name, mode=mode)
+                self.other_cluster_settings(cluster_id, settings)
                 self.basic_provisioning(cluster_id, settings['nodes'])
             self.ci().snapshot_state(name, settings)
 
@@ -151,6 +152,17 @@ class BaseNodeTestCase(BaseTestCase):
         if len(clusters) > 0:
             return clusters.pop()['id']
         return None
+
+    @logwrap
+    def other_cluster_settings(self, cluster_id, settings):
+        if 'savanna' in settings:
+            attributes = self.client.get_cluster_attributes(cluster_id)
+            attributes["editable"]["additional_components"]["savanna"]["value"] = settings['savanna']
+            self.client.update_cluster_attributes(cluster_id, attributes)
+        if 'murano' in settings:
+            attributes = self.client.get_cluster_attributes(cluster_id)
+            attributes["editable"]["additional_components"]["murano"]["value"] = settings['murano']
+            self.client.update_cluster_attributes(cluster_id, attributes)
 
     @logwrap
     def get_nailgun_node_roles(self, nodes_dict):
@@ -485,3 +497,29 @@ class BaseNodeTestCase(BaseTestCase):
             if release["name"].find(release_name) != -1:
                 self.assertEqual(release['state'], state)
                 return release["id"]
+
+
+    @logwrap
+    def assert_murano_service(self, node_name):
+        ip = self.get_node_by_devops_node(self.ci().environment().node_by_name(node_name))['ip']
+        remote = SSHClient(ip, username='root', password='r00tme', private_keys=self.get_private_keys())
+        ps_output = remote.execute('ps ax')['stdout']
+
+        murano_api = filter(lambda x: 'murano-api' in x, ps_output)
+        logging.debug("Found %d murano-api processes: %s" % murano_api)
+        self.assertEqual(len(murano_api), 1)
+
+        muranoconductor = filter(lambda x: 'muranoconductor' in x, ps_output)
+        logging.debug("Found %d muranoconductor processes: %s" % muranoconductor)
+        self.assertEqual(len(muranoconductor), 1)
+
+    @logwrap
+    def assert_savanna_service(self, node_name):
+        ip = self.get_node_by_devops_node(self.ci().environment().node_by_name(node_name))['ip']
+        remote = SSHClient(ip, username='root', password='r00tme', private_keys=self.get_private_keys())
+        ps_output = remote.execute('ps ax')['stdout']
+
+        savanna_api = filter(lambda x: 'savanna-api' in x, ps_output)
+        logging.debug("Found savanna-api processes: %s" % savanna_api)
+        self.assertEquals(len(savanna_api), 1)
+
