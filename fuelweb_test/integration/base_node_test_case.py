@@ -141,8 +141,19 @@ class BaseNodeTestCase(BaseTestCase):
             if settings is None:
                 return None
 
+            net_provider=None
+            net_segment_type=None
+
+            if 'net_provider' in settings:
+                net_provider = settings['net_provider']
+
+            if 'net_segment_type' in settings:
+                net_segment_type = settings['net_segment_type']
+
+
             if 'nodes' in settings:
-                cluster_id = self.create_cluster(name=name, mode=mode)
+                cluster_id = self.create_cluster(name=name, mode=mode,
+                                                 net_provider=net_provider, net_segment_type=net_segment_type)
                 self.other_cluster_settings(cluster_id, settings)
                 self.basic_provisioning(cluster_id, settings['nodes'])
             self.ci().snapshot_state(name, settings)
@@ -246,18 +257,25 @@ class BaseNodeTestCase(BaseTestCase):
         return release_id
 
     @logwrap
-    def get_or_create_cluster(self, name, release_id, mode="multinode"):
+    def get_or_create_cluster(self, name, release_id, mode="multinode",
+                              net_provider=None, net_segment_type=None):
         if not release_id:
             release_id = self._upload_sample_release()
         cluster_id = self.client.get_cluster_id(name)
         if not cluster_id:
-            self.client.create_cluster(
-                data={
-                    "name": name,
-                    "release": str(release_id),
-                    "mode": mode
-                }
+            data = {
+                "name": name,
+                "release": str(release_id),
+                "mode": mode
+            }
 
+            if net_provider:
+                data.update(
+                    {'net_provider': net_provider, 'net_segment_type': net_segment_type}
+                )
+
+            self.client.create_cluster(
+                data=data
             )
             cluster_id = self.client.get_cluster_id(name)
         if not cluster_id:
@@ -266,14 +284,15 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def create_cluster(self, name='default', release_id=None,
-                       mode="multinode"):
+                       mode="multinode", net_provider=None, net_segment_type=None):
         """
         :param name:
         :param release_id:
         :param mode:
         :return: cluster_id
         """
-        return self.get_or_create_cluster(name, release_id, mode)
+        return self.get_or_create_cluster(name, release_id, mode,
+                                          net_provider=net_provider, net_segment_type=net_segment_type)
 
     @logwrap
     def update_nodes(self, cluster_id, nodes_dict,
