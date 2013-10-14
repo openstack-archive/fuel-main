@@ -506,11 +506,9 @@ class BaseNodeTestCase(BaseTestCase):
         ps_output = remote.execute('ps ax')['stdout']
 
         murano_api = filter(lambda x: 'murano-api' in x, ps_output)
-        logging.debug("Found %d murano-api processes: %s" % murano_api)
         self.assertEqual(len(murano_api), 1)
 
         muranoconductor = filter(lambda x: 'muranoconductor' in x, ps_output)
-        logging.debug("Found %d muranoconductor processes: %s" % muranoconductor)
         self.assertEqual(len(muranoconductor), 1)
 
     @logwrap
@@ -520,6 +518,5 @@ class BaseNodeTestCase(BaseTestCase):
         ps_output = remote.execute('ps ax')['stdout']
 
         savanna_api = filter(lambda x: 'savanna-api' in x, ps_output)
-        logging.debug("Found savanna-api processes: %s" % savanna_api)
         self.assertEquals(len(savanna_api), 1)
 
