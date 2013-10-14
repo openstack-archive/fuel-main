@@ -165,13 +165,13 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
-    def get_ostf_test_sets(self):
-        return self.client.get("/ostf/testsets")
+    def get_ostf_test_sets(self, cluster_id):
+        return self.client.get("/ostf/testsets/%s" % cluster_id)
 
     @logwrap
     @json_parse
-    def get_ostf_tests(self):
-        return self.client.get("/ostf/tests")
+    def get_ostf_tests(self, cluster_id):
+        return self.client.get("/ostf/tests/%s" % cluster_id)
 
     @logwrap
     @json_parse
@@ -189,6 +189,8 @@ class NailgunClient(object):
                     'testset': test_set
                 }
             )
+        # get tests otherwise 500 error will be thrown
+        self.get_ostf_tests(cluster_id)
         return self.client.post("/ostf/testruns", data)
 
     @logwrap
