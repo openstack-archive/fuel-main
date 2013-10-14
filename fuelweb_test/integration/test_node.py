@@ -479,6 +479,48 @@ class TestNode(BaseNodeTestCase):
         self.assert_savanna_service(self.nodes().slaves[0].name)
         self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
 
+    @snapshot_errors
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos', 'redhat'], test_thread='thread_3')
+    def test_savanna(self):
+        cluster_id = self.prepare_environment(settings={
+            'nodes': {
+                'slave-01': ['controller'],
+                'slave-02': ['compute'],
+                'slave-03': ['compute'],
+                'slave-04': ['compute'],
+                'slave-05': ['cinder']
+            },
+            'savanna': True
+
+        })
+
+        self.assertClusterReady('slave-01', smiles_count=6, networks_count=1, timeout=500)
+        self.assert_savanna_service(self.nodes().slaves[0].name)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
+
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos', 'redhat'], test_thread='thread_3')
+    def test_murano(self):
+        cluster_id = self.prepare_environment(settings={
+            'nodes': {
+                'slave-01': ['controller'],
+                'slave-02': ['compute'],
+                'slave-03': ['compute'],
+                'slave-04': ['compute'],
+                'slave-05': ['cinder']
+            },
+            'murano': True,
+
+        })
+
+        self.assertClusterReady('slave-01', smiles_count=6, networks_count=1, timeout=500)
+        self.assert_murano_service(self.nodes().slaves[0].name)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
+
+
 
 if __name__ == '__main__':
     unittest.main()
