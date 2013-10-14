@@ -882,3 +882,7 @@ xz-utils
 zerofree
 zfs-fuse
 zlib1g
+python-heatclient
+disktype
+htop
+tmux
