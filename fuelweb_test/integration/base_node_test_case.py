@@ -246,7 +246,7 @@ class BaseNodeTestCase(BaseTestCase):
         return release_id
 
     @logwrap
-    def get_or_create_cluster(self, name, release_id, mode="multinode"):
+    def get_or_create_cluster(self, name, release_id, mode="multinode", net_provider="Nova", net_segment=None):
         if not release_id:
             release_id = self._upload_sample_release()
         cluster_id = self.client.get_cluster_id(name)
@@ -257,6 +257,7 @@ class BaseNodeTestCase(BaseTestCase):
                     "release": str(release_id),
                     "mode": mode
                 }
+
             )
             cluster_id = self.client.get_cluster_id(name)
         if not cluster_id:
@@ -507,11 +508,9 @@ class BaseNodeTestCase(BaseTestCase):
         ps_output = remote.execute('ps ax')['stdout']
 
         murano_api = filter(lambda x: 'murano-api' in x, ps_output)
-        logging.debug("Found %d murano-api processes: %s" % murano_api)
         self.assertEqual(len(murano_api), 1)
 
         muranoconductor = filter(lambda x: 'muranoconductor' in x, ps_output)
-        logging.debug("Found %d muranoconductor processes: %s" % muranoconductor)
         self.assertEqual(len(muranoconductor), 1)
 
     @logwrap
@@ -521,6 +520,5 @@ class BaseNodeTestCase(BaseTestCase):
         ps_output = remote.execute('ps ax')['stdout']
 
         savanna_api = filter(lambda x: 'savanna-api' in x, ps_output)
-        logging.debug("Found savanna-api processes: %s" % savanna_api)
         self.assertEquals(len(savanna_api), 1)
 
