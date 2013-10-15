@@ -157,7 +157,7 @@ GetoptsVariables() {
       d)
         DRY_RUN="yes"
         ;;
-     h)
+      h)
         ShowHelp
         exit 0
         ;;
@@ -295,16 +295,18 @@ MakeISO() {
 }
 
 CdWorkSpace() {
-  # chdir into workspace or fail if could not
-  if [ "${DRY_RUN}" != "yes" ]; then
-    cd "${WORKSPACE}"
-    ec=$?
+    # chdir into workspace or fail if could not
+    if [ "${DRY_RUN}" != "yes" ]; then
+        cd "${WORKSPACE}"
+        ec=$?
 
-    if [ "${ec}" -gt "0" ]; then
-      echo "Error! Cannot cd to WORKSPACE!"
-      exit $CDWORKSPACE_ERR
+        if [ "${ec}" -gt "0" ]; then
+            echo "Error! Cannot cd to WORKSPACE!"
+            exit $CDWORKSPACE_ERR
+        fi
+    else
+        echo cd "${WORKSPACE}"
     fi
-  fi
 }
 
 RunCustomTest() {
@@ -316,68 +318,71 @@ RunCustomTest() {
 }
 
 RunTest() {
-  # Run test selected by task name
+    # Run test selected by task name
 
-  # check if iso file exists
-  if [ ! -f "${ISO_PATH}" -a "${DRY_RUN}" != "yes" ];
-      if [ -z "${ISO_URL}" ]; then
-          echo "Error! File ${ISO_PATH} not found and no ISO_URL (-U key) for downloading!"
-          exit $NOISOFOUND_ERR
-      else
-          echo "No ${ISO_PATH} found. Trying to download file."
-          wget -c ${ISO_URL} -O ${ISO_PATH}
-          rc=$?
-          if [ $rc -ne 0 ];
-              echo "Failed to fetch ISO from ${ISO_URL}"
-              exit $ISODOWNLOAD_ERR 
-          fi
-      fi
+    # check if iso file exists
+    if [ ! -f "${ISO_PATH}" ]; then
+        if [ -z "${ISO_URL}" -a "${DRY_RUN}" != "yes" ]; then
+            echo "Error! File ${ISO_PATH} not found and no ISO_URL (-U key) for downloading!"
+            exit $NOISOFOUND_ERR
+        else
+            if [ "${DRY_RUN}" = "yes" ]; then
+                echo wget -c ${ISO_URL} -O ${ISO_PATH}
+            else
+                echo "No ${ISO_PATH} found. Trying to download file."
+                wget -c ${ISO_URL} -O ${ISO_PATH}
+                rc=$?
+                if [ $rc -ne 0 ]; then
+                    echo "Failed to fetch ISO from ${ISO_URL}"
+                    exit $ISODOWNLOAD_ERR
+                fi
+            fi
+        fi
+    fi
 
-  fi
+    # run python virtualenv
+    if [ "${DRY_RUN}" = "yes" ]; then
+        echo . ~/venv-nailgun-tests/bin/activate
+    else
+        . ~/venv-nailgun-tests/bin/activate
+    fi
 
-  # run python virtualenv
-  if [ "${DRY_RUN}" = "yes" ]; then
-    echo . ~/venv-nailgun-tests/bin/activate
-  else
-    . ~/venv-nailgun-tests/bin/activate
-  fi
+    export ENV_NAME="${JOB_NAME}_system_test"
+    export LOGS_DIR="${WORKSPACE}/logs"
+    export ISO_PATH
 
-  export ENV_NAME="${JOB_NAME}_system_test"
-  export LOGS_DIR="${WORKSPACE}/logs"
-  export ISO_PATH
+    # remove previous garbage
+    if [ "${DRY_RUN}" = "yes" ]; then
+        echo dos.py erase "${ENV_NAME}"
+    else
+        dos.py erase "${ENV_NAME}"
+    fi
 
-  # remove previous garbage
-  if [ "${DRY_RUN}" = "yes" ]; then
-    echo dos.py erase "${ENV_NAME}"
-  else
-    dos.py erase "${ENV_NAME}"
-  fi
+    # gather additional option for this nose test run
+    OPTS=""
+    if [ -n "${NOSE_ATTR}" ]; then
+        OPTS="${OPTS} -a ${NOSE_ATTR}"
+    fi
+    if [ -n "${NOSE_EVAL_ATTR}" ]; then
+        OPTS="${OPTS} -A ${NOSE_EVAL_ATTR}"
+    fi
 
-  # gather additional option for this nose test run
-  OPTS=""
-  if [ -n "${NOSE_ATTR}" ]; then
-    OPTS="${OPTS} -a ${NOSE_ATTR}"
-  fi
-  if [ -n "${NOSE_EVAL_ATTR}" ]; then
-    OPTS="${OPTS} -A ${NOSE_EVAL_ATTR}"
-  fi
+    # run python test set to create environments, deploy and test product
+    if [ "${DRY_RUN}" = "yes" ]; then
+        echo nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit "${1}"
+    else
+        nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit "${1}"
+    fi
+    ec=$?
 
-  # run python test set to create environments, deploy and test product
-  if [ "${DRY_RUN}" = "yes" ]; then
-    echo nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit "${1}"
-  else
-    nosetests -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit "${1}"
-  fi
-  ec=$?
+    # remove previous garbage
+    if [ "${DRY_RUN}" = "yes" ]; then
+        echo dos.py destroy "${ENV_NAME}"
+    else
+        dos.py destroy "${ENV_NAME}"
+    fi
 
-  # remove previous garbage
-  if [ "${DRY_RUN}" = "yes" ]; then
-    echo dos.py destroy "${ENV_NAME}"
-  else
-    dos.py destroy "${ENV_NAME}"
-  fi
-
-  exit "${ec}"
+    exit "${ec}"
 }
 
 RouteTasks() {
