@@ -488,9 +488,8 @@ libyajl1
 libyaml-0-2
 linux-firmware
 linux-firmware-nonfree
-linux-headers-3.5.0-40
-linux-headers-3.5.0-40-generic
-linux-image-3.5.0-40-generic
+linux-image-3.8
+linux-headers-3.8
 linux-libc-dev
 linux-server
 lksctp-tools
