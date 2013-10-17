@@ -216,8 +216,12 @@ class BaseNodeTestCase(BaseTestCase):
                     set_result['tests']
                 )
             )
-        self.assertGreaterEqual(passed, should_pass, 'Passed tests')
-        self.assertLessEqual(failed, should_fail, 'Failed tests')
+        self.assertGreaterEqual(
+            passed, should_pass, 'Passed tests, pass: {}'.format(passed)
+        )
+        self.assertLessEqual(
+            failed, should_fail, 'Failed tests,  fails: {}'.format(failed)
+        )
 
     @logwrap
     def run_OSTF(self, cluster_id, test_sets=None,

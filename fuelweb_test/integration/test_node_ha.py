@@ -68,7 +68,11 @@ class TestNode(BaseNodeTestCase):
         self.get_ebtables(cluster_id, self.nodes().slaves[:5]).restore_vlans()
         task = self._run_network_verify(cluster_id)
         self.assertTaskSuccess(task, 60 * 2)
-        self.run_OSTF(cluster_id=cluster_id, should_fail=6, should_pass=18)
+        self.run_OSTF(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=4, should_pass=24
+        )
 
 if __name__ == '__main__':
     unittest.main()
