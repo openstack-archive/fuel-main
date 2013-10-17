@@ -473,7 +473,8 @@ class TestNode(BaseNodeTestCase):
 
         })
 
-        self.assertClusterReady('slave-01', smiles_count=6, networks_count=1, timeout=300)
+        self.assertClusterReady(
+            'slave-01', smiles_count=6, networks_count=1, timeout=300)
         self.assert_murano_service(self.nodes().slaves[0].name)
         self.assert_savanna_service(self.nodes().slaves[0].name)
         self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
@@ -495,7 +496,8 @@ class TestNode(BaseNodeTestCase):
 
         })
 
-        self.assertClusterReady('slave-01', smiles_count=8, networks_count=1, timeout=500)
+        self.assertClusterReady(
+            'slave-01', smiles_count=8, networks_count=1, timeout=500)
         self.assert_savanna_service(self.nodes().slaves[0].name)
         self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
 
@@ -515,10 +517,10 @@ class TestNode(BaseNodeTestCase):
 
         })
 
-        self.assertClusterReady('slave-01', smiles_count=8, networks_count=1, timeout=500)
+        self.assertClusterReady(
+            'slave-01', smiles_count=8, networks_count=1, timeout=500)
         self.assert_murano_service(self.nodes().slaves[0].name)
         self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
-
 
 
 if __name__ == '__main__':

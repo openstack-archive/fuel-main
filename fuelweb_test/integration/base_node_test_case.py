@@ -141,8 +141,8 @@ class BaseNodeTestCase(BaseTestCase):
             if settings is None:
                 return None
 
-            net_provider=None
-            net_segment_type=None
+            net_provider = None
+            net_segment_type = None
 
             if 'net_provider' in settings:
                 net_provider = settings['net_provider']
@@ -150,11 +150,12 @@ class BaseNodeTestCase(BaseTestCase):
             if 'net_segment_type' in settings:
                 net_segment_type = settings['net_segment_type']
 
-
             if 'nodes' in settings:
-                cluster_id = self.create_cluster(name=name, mode=mode,
-                                                 net_provider=net_provider,
-                                                 net_segment_type=net_segment_type)
+                cluster_id = self.create_cluster(
+                    name=name, mode=mode,
+                    net_provider=net_provider,
+                    net_segment_type=net_segment_type
+                )
                 self.other_cluster_settings(cluster_id, settings)
                 self.basic_provisioning(cluster_id, settings['nodes'])
             self.ci().snapshot_state(name, settings)
@@ -167,14 +168,14 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def other_cluster_settings(self, cluster_id, settings):
+        attributes = self.client.get_cluster_attributes(cluster_id)
+        additional_components = attributes["editable"]["additional_components"]
         if 'savanna' in settings:
-            attributes = self.client.get_cluster_attributes(cluster_id)
-            attributes["editable"]["additional_components"]["savanna"]["value"] = settings['savanna']
-            self.client.update_cluster_attributes(cluster_id, attributes)
+            additional_components["savanna"]["value"] = settings['savanna']
         if 'murano' in settings:
-            attributes = self.client.get_cluster_attributes(cluster_id)
-            attributes["editable"]["additional_components"]["murano"]["value"] = settings['murano']
-            self.client.update_cluster_attributes(cluster_id, attributes)
+            additional_components["murano"]["value"] = settings['murano']
+
+        self.client.update_cluster_attributes(cluster_id, attributes)
 
     @logwrap
     def get_nailgun_node_roles(self, nodes_dict):
@@ -272,7 +273,10 @@ class BaseNodeTestCase(BaseTestCase):
 
             if net_provider:
                 data.update(
-                    {'net_provider': net_provider, 'net_segment_type': net_segment_type}
+                    {
+                        'net_provider': net_provider,
+                        'net_segment_type': net_segment_type
+                    }
                 )
 
             self.client.create_cluster(
@@ -285,7 +289,8 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def create_cluster(self, name='default', release_id=None,
-                       mode="multinode", net_provider=None, net_segment_type=None):
+                       mode="multinode", net_provider=None,
+                       net_segment_type=None):
         """
         :param name:
         :param release_id:
@@ -308,7 +313,8 @@ class BaseNodeTestCase(BaseTestCase):
                          'pending_addition': pending_addition,
                          'pending_deletion': pending_deletion,
                          'pending_roles': nodes_dict[node_name],
-                         'name': '%s_%s' % (self.ci().environment().name, devops_node.name)}
+                         'name': '%s_%s' % (self.ci().environment().name,
+                                            devops_node.name)}
             nodes_data.append(node_data)
 
         # assume nodes are going to be updated for one cluster only
@@ -521,11 +527,13 @@ class BaseNodeTestCase(BaseTestCase):
                 self.assertEqual(release['state'], state)
                 return release["id"]
 
-
     @logwrap
     def assert_murano_service(self, node_name):
-        ip = self.get_node_by_devops_node(self.ci().environment().node_by_name(node_name))['ip']
-        remote = SSHClient(ip, username='root', password='r00tme', private_keys=self.get_private_keys())
+        ip = self.get_node_by_devops_node(
+            self.ci().environment().node_by_name(node_name))['ip']
+        remote = SSHClient(
+            ip, username='root', password='r00tme',
+            private_keys=self.get_private_keys())
         ps_output = remote.execute('ps ax')['stdout']
 
         murano_api = filter(lambda x: 'murano-api' in x, ps_output)
@@ -536,10 +544,12 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def assert_savanna_service(self, node_name):
-        ip = self.get_node_by_devops_node(self.ci().environment().node_by_name(node_name))['ip']
-        remote = SSHClient(ip, username='root', password='r00tme', private_keys=self.get_private_keys())
+        ip = self.get_node_by_devops_node(
+            self.ci().environment().node_by_name(node_name))['ip']
+        remote = SSHClient(
+            ip, username='root', password='r00tme',
+            private_keys=self.get_private_keys())
         ps_output = remote.execute('ps ax')['stdout']
 
         savanna_api = filter(lambda x: 'savanna-api' in x, ps_output)
         self.assertEquals(len(savanna_api), 1)
-

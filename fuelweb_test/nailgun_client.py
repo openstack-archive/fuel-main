@@ -47,14 +47,16 @@ class NailgunClient(object):
     def get_networks(self, cluster_id):
         net_provider = self.get_cluster(cluster_id)['net_provider']
         return self.client.get(
-            "/api/clusters/%d/network_configuration/%s" % (cluster_id, net_provider))
+            "/api/clusters/%d/network_configuration/%s" %
+            (cluster_id, net_provider))
 
     @logwrap
     @json_parse
     def verify_networks(self, cluster_id, networks):
         net_provider = self.get_cluster(cluster_id)['net_provider']
         return self.client.put(
-            "/api/clusters/%d/network_configuration/%s/verify/" % (cluster_id, net_provider),
+            "/api/clusters/%d/network_configuration/%s/verify/" %
+            (cluster_id, net_provider),
             {'networks': networks}
         )
 
@@ -203,7 +205,8 @@ class NailgunClient(object):
         if net_manager is not None:
             data.update({'net_manager': net_manager})
         return self.client.put(
-            "/api/clusters/%d/network_configuration/%s" % (cluster_id, net_provider), data
+            "/api/clusters/%d/network_configuration/%s" %
+            (cluster_id, net_provider), data
         )
 
     @logwrap

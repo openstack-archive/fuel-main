@@ -36,10 +36,12 @@ class TestNode(BaseNodeTestCase):
     @attr(release=['centos', 'ubuntu'], test_thread='thread_1')
     def test_neutron_gre(self):
         self.prepare_environment()
-        cluster_id = self.create_cluster(name='test_neutron_gre', mode='ha_compact',
-                                         net_provider='neutron',
-                                         net_segment_type='gre')
-
+        cluster_id = self.create_cluster(
+            name='test_neutron_gre',
+            mode='ha_compact',
+            net_provider='neutron',
+            net_segment_type='gre'
+        )
         cluster = self.client.get_cluster(cluster_id)
         self.assertEqual(str(cluster['net_provider']), 'neutron')
         self.assertEqual(str(cluster['net_segment_type']), 'gre')
