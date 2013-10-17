@@ -129,7 +129,7 @@ class CiFuelWeb(CiBase):
         admin.disk_devices.get(device='cdrom').volume.upload(ISO_PATH)
         self.environment().start(self.nodes().admins)
         # update network parameters at boot screen
-        time.sleep(20)
+        time.sleep(30)
         admin.send_keys(self.get_keys(admin))
         # wait while installation complete
         admin.await('internal', timeout=10 * 60)
