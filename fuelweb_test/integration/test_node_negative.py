@@ -37,7 +37,7 @@ class TestNodeNegative(BaseNodeTestCase):
 
     @logwrap
     @fetch_logs
-    @attr(releases=['centos', 'redhat'], test_thread='thread_1')
+    @attr(releases=['centos', 'redhat', "ubuntu"], test_thread='thread_1')
     def test_untagged_networks_negative(self):
         raise SkipTest()
         cluster_name = 'simple_untagged'
