@@ -39,7 +39,7 @@ class TestNode(BaseNodeTestCase):
 
         self.prepare_environment()
         cluster_id = self.create_cluster(
-            name='test_neutron_vlan_deployment', mode="multinode",
+            name='test_neutron_gre', mode="multinode",
             net_provider='neutron', net_segment_type=segment_type)
         self.basic_provisioning(cluster_id=cluster_id, nodes_dict={
             'slave-01': ['controller'],
@@ -60,10 +60,56 @@ class TestNode(BaseNodeTestCase):
 
         self.prepare_environment()
         cluster_id = self.create_cluster(
-            name='test_neutron_vlan_deployment', mode="multinode",
+            name='test_neutron_vlan', mode="multinode",
             net_provider='neutron', net_segment_type=segment_type)
         self.basic_provisioning(cluster_id=cluster_id, nodes_dict={
             'slave-01': ['controller'],
+            'slave-04': ['compute'],
+            'slave-05': ['compute']
+        })
+
+        cluster = self.client.get_cluster(cluster_id)
+        self.assertEqual(str(cluster['net_provider']), 'neutron')
+        self.assertEqual(str(cluster['net_segment_type']), segment_type)
+
+    @snapshot_errors
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos', 'ubuntu'], test_thread='thread_3')
+    def test_neutron_gre_ha(self):
+        segment_type = 'gre'
+
+        self.prepare_environment()
+        cluster_id = self.create_cluster(
+            name='test_neutron_gre_ha', mode="ha_compact",
+            net_provider='neutron', net_segment_type=segment_type)
+        self.basic_provisioning(cluster_id=cluster_id, nodes_dict={
+            'slave-01': ['controller'],
+            'slave-02': ['controller'],
+            'slave-03': ['controller'],
+            'slave-04': ['compute'],
+            'slave-05': ['compute']
+        })
+
+        cluster = self.client.get_cluster(cluster_id)
+        self.assertEqual(str(cluster['net_provider']), 'neutron')
+        self.assertEqual(str(cluster['net_segment_type']), segment_type)
+
+    @snapshot_errors
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos', 'ubuntu'], test_thread='thread_3')
+    def test_neutron_vlan_ha(self):
+        segment_type = 'vlan'
+
+        self.prepare_environment()
+        cluster_id = self.create_cluster(
+            name='test_neutron_vlan_ha', mode="ha_compact",
+            net_provider='neutron', net_segment_type=segment_type)
+        self.basic_provisioning(cluster_id=cluster_id, nodes_dict={
+            'slave-01': ['controller'],
+            'slave-02': ['controller'],
+            'slave-03': ['controller'],
             'slave-04': ['compute'],
             'slave-05': ['compute']
         })
