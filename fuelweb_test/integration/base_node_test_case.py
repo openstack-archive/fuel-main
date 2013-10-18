@@ -135,7 +135,7 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def prepare_environment(self, name='cluster_name', mode="multinode",
-                            settings=None):
+                            settings=None, save_state=True):
         if not(self.ci().revert_to_state(settings)):
             self.get_ready_environment()
             if settings is None:
@@ -158,7 +158,9 @@ class BaseNodeTestCase(BaseTestCase):
                 )
                 self.other_cluster_settings(cluster_id, settings)
                 self.basic_provisioning(cluster_id, settings['nodes'])
-            self.ci().snapshot_state(name, settings)
+
+            if save_state:
+                self.ci().snapshot_state(name, settings)
 
         # return id of last created cluster
         clusters = self.client.list_clusters()
@@ -169,11 +171,14 @@ class BaseNodeTestCase(BaseTestCase):
     @logwrap
     def other_cluster_settings(self, cluster_id, settings):
         attributes = self.client.get_cluster_attributes(cluster_id)
-        additional_components = attributes["editable"]["additional_components"]
-        if 'savanna' in settings:
-            additional_components["savanna"]["value"] = settings['savanna']
-        if 'murano' in settings:
-            additional_components["murano"]["value"] = settings['murano']
+        for option in settings:
+            section = False
+            if option in ('savanna', 'murano'):
+                section = 'additional_components'
+            if option in ('volumes_ceph', 'images_ceph'):
+                section = 'storage'
+            if section:
+                attributes['editable'][section][option]['value'] = settings[option]
 
         self.client.update_cluster_attributes(cluster_id, attributes)
 
@@ -407,6 +412,12 @@ class BaseNodeTestCase(BaseTestCase):
         ip = self.get_node_by_devops_node(
             self.ci().environment().node_by_name(node_name))['ip']
         return self._get_remote(ip)
+
+    @logwrap
+    def _get_remote_for_role(self, nodes_dict, role):
+        node_name = filter(lambda name: role in nodes_dict[name],
+                           nodes_dict.keys()).sorted()[0]
+        return self._get_remote_for_node(node_name)
 
     @logwrap
     def get_cluster_status(self, ip, smiles_count, networks_count=1):
