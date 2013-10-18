@@ -65,6 +65,7 @@ diffutils
 discover
 discover-data
 disktype
+dkms
 dmidecode
 dmsetup
 dnsmasq-base
@@ -639,6 +640,7 @@ openstack-savanna-virtualenv-python-sqlalchemy
 openstack-savanna-virtualenv-python-webob
 openstack-savanna-virtualenv-python-werkzeug
 openstack-savanna-virtualenv-savanna
+openvswitch-datapath-lts-raring-dkms
 openvswitch-switch
 os-prober
 pacemaker
