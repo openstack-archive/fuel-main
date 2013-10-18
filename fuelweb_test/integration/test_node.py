@@ -501,6 +501,7 @@ class TestNode(BaseNodeTestCase):
         self.assert_savanna_service(self.nodes().slaves[0].name)
         self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
 
+    @snapshot_errors
     @logwrap
     @fetch_logs
     @attr(releases=['centos', "ubuntu"], test_thread='thread_1')
