@@ -418,8 +418,8 @@ class BaseNodeTestCase(BaseTestCase):
 
     @logwrap
     def _get_remote_for_role(self, nodes_dict, role):
-        node_name = filter(lambda name: role in nodes_dict[name],
-                           nodes_dict.keys()).sorted()[0]
+        node_name = sorted(filter(lambda name: role in nodes_dict[name],
+                           nodes_dict.keys()))[0]
         return self._get_remote_for_node(node_name)
 
     @logwrap
