@@ -130,7 +130,6 @@ class BaseNodeTestCase(BaseTestCase):
 
         task = self.deploy_cluster(cluster_id)
         self.assertTaskSuccess(task)
-        self.check_role_file(nodes_dict)
         return cluster_id
 
     @logwrap
