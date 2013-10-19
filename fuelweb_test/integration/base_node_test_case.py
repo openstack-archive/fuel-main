@@ -26,6 +26,8 @@ from fuelweb_test.settings import CLEAN, NETWORK_MANAGERS, EMPTY_SNAPSHOT, \
     REDHAT_USERNAME, REDHAT_PASSWORD, REDHAT_SATELLITE_HOST, \
     REDHAT_ACTIVATION_KEY, OPENSTACK_RELEASE, OPENSTACK_RELEASE_REDHAT, \
     REDHAT_LICENSE_TYPE, READY_SNAPSHOT
+from urllib2 import URLError
+import time
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
@@ -36,7 +38,19 @@ class BaseNodeTestCase(BaseTestCase):
     environment_states = {}
 
     def setUp(self):
-        self.client = NailgunClient(self.get_admin_node_ip())
+        maxtries=10
+        for i in range(0,maxtries):
+            while True:
+                try:
+                    self.client = NailgunClient(self.get_admin_node_ip())
+                except URLError as e:
+                    if re.match('/\s*Connection\s+refused\s*/',e.message):
+                        if i>=maxtries:
+                            raise
+                        time.sleep(5)
+                        maxtries+=1
+                        continue
+                break
 
     @logwrap
     def get_interface_description(self, ctrl_ssh, interface_short_name):
