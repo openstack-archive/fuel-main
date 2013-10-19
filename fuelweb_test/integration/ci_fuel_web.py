@@ -32,6 +32,7 @@ class CiFuelWeb(CiBase):
     installation_timeout = 1800
     deployment_timeout = 1800
     puppet_timeout = 1000
+    nat_interface = 'eth3'
 
     def node_roles(self):
         return NodeRoles(
@@ -79,7 +80,8 @@ class CiFuelWeb(CiBase):
             'ip': node.get_ip_address_by_network_name('internal'),
             'mask': self.internal_net_mask(),
             'gw': self.internal_router(),
-            'hostname': '.'.join((self.hostname, self.domain))
+            'hostname': '.'.join((self.hostname, self.domain)),
+            'nat_interface': self.nat_interface,
         }
         keys = (
             "<Esc><Enter>\n"
@@ -90,6 +92,7 @@ class CiFuelWeb(CiBase):
             " gw=%(gw)s\n"
             " dns1=%(gw)s\n"
             " hostname=%(hostname)s\n"
+            " dhcp_interface=%(nat_interface)s\n"
             " <Enter>\n"
         ) % params
         return keys
@@ -97,9 +100,8 @@ class CiFuelWeb(CiBase):
     def enable_nat_for_admin_node(self):
         remote = self.nodes().admin.remote('internal', 'root', 'r00tme')
 
-        nat_interface_id = 5
         file_name = \
-            '/etc/sysconfig/network-scripts/ifcfg-eth%s' % nat_interface_id
+            '/etc/sysconfig/network-scripts/ifcfg-%s' % self.nat_interface
         hwaddr = \
             ''.join(remote.execute('grep HWADDR %s' % file_name)['stdout'])
         uuid = ''.join(remote.execute('grep UUID %s' % file_name)['stdout'])
@@ -109,19 +111,26 @@ class CiFuelWeb(CiBase):
 
         remote.execute('echo -e "%s'
                        '%s'
-                       'DEVICE=eth%s\\n'
+                       'DEVICE=%s\\n'
                        'TYPE=Ethernet\\n'
                        'ONBOOT=yes\\n'
                        'NM_CONTROLLED=no\\n'
                        'BOOTPROTO=dhcp\\n'
                        'PEERDNS=no" > %s'
-                       % (hwaddr, uuid, nat_interface_id, file_name))
+                       % (hwaddr, uuid, self.nat_interface, file_name))
         remote.execute(
             'sed "s/GATEWAY=.*/GATEWAY="%s"/g" -i /etc/sysconfig/network'
             % self.nat_router())
         remote.execute('echo -e "%s" > /etc/dnsmasq.upstream' % nameserver)
         remote.execute('service network restart >/dev/null 2>&1')
         remote.execute('service dnsmasq restart >/dev/null 2>&1')
+
+    def sync_time_admin_node(self):
+        remote = self.nodes().admin.remote('internal', 'root', 'r00tme')
+
+        remote.execute('hwclock --htosys >/dev/null 2>&1 0<&1')
+        remote.execute('ntpd -g -u ntp:ntp >/dev/null 2>&1')
+        remote.execute('hwclock -w >/dev/null 2>&1')
 
     def setup_environment(self):
         # start admin node
@@ -136,3 +145,4 @@ class CiFuelWeb(CiBase):
         self.wait_bootstrap()
         time.sleep(10)
         self.enable_nat_for_admin_node()
+        self.sync_time_admin_node()
