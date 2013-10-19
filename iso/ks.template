@@ -143,7 +143,6 @@ function save_cfg {
     scrFile="/etc/sysconfig/network-scripts/ifcfg-$device"
     sed -i -e 's#^\(HOSTNAME=\).*$#\1'"$hostname"'#' /etc/sysconfig/network
     grep -q "^\s*$ip\s+$hostname" /etc/hosts || echo "$ip $hostname" >> /etc/hosts
-    echo GATEWAY=$gw >> /etc/sysconfig/network
     echo "nameserver 127.0.0.1" > /etc/resolv.conf
     [ $dns1 ] && echo "nameserver $dns1" > /etc/dnsmasq.upstream
     [ $dns2 ] && echo "nameserver $dns2" >> /etc/dnsmasq.upstream
@@ -161,7 +160,17 @@ function save_cfg {
     else
         echo BOOTPROTO=dhcp >> $scrFile
     fi
-        }
+    scrDHCPFile="/etc/sysconfig/network-scripts/ifcfg-$dhcp_interface"
+    #Ignore gateway and set up DHCP if it is used, otherwise apply it 
+    if [ $dhcp_interface ] && [ "$dhcp_interface" != "$device" ]; then
+        echo "DEVICE=$dhcp_interface" > $scrDHCPFile
+        echo "BOOTPROTO=dhcp" >> $scrDHCPFile
+        echo "ONBOOT=yes" >> $scrDHCPFile
+        echo "USERCTL=no" >> $scrDHCPFile
+    else
+        echo GATEWAY=$gw >> /etc/sysconfig/network
+    fi
+}
 
 # Default FQDN
 hostname="nailgun.mirantis.com"
@@ -173,7 +182,7 @@ netmask=$netmask
 gw=$gw
 device="eth0"
 hwaddr=`ifconfig $device | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
-
+dhcp_interface=$dhcp_interface
 save_cfg
 
 # Mounting installation source

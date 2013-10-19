@@ -1,5 +1,5 @@
 %define name fuelmenu
-%define version 0.3
+%define version 0.1
 %define unmangled_version 0.1
 %define release 1
 
@@ -8,14 +8,16 @@ Name: %{name}
 Version: %{version}
 Release: %{release}
 Source0: %{name}-%{unmangled_version}.tar.gz
-License: UNKNOWN
+License: Apache
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
 Vendor: Matthew Mosesohn <mmosesohn@mirantis.com>
-Requires: nailgun-net-check
+Requires: bind-utils
 Requires: dhcp_checker
+Requires: nailgun-net-check
+Requires: ntp
 Requires: python-setuptools
 Requires: python-netaddr
 Requires: python-netifaces

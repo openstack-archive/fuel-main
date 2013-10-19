@@ -456,6 +456,13 @@ class BaseNodeTestCase(BaseTestCase):
         return keys
 
     @logwrap
+    def sync_node_time(self, node_name):
+        remote = self._get_remote_for_node(node_name)
+        ret = remote.execute('hwclock --htosys >/dev/null 2>&1 0<&1')
+        ret = remote.execute('ntpd -g -u ntp:ntp >/dev/null 2>&1')
+        ret = remote.execute('hwclock -w >/dev/null 2>&1')
+
+    @logwrap
     def update_node_networks(self, node_id, interfaces_dict):
         interfaces = self.client.get_node_interfaces(node_id)
         for interface in interfaces:
