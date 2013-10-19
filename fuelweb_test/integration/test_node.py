@@ -330,15 +330,15 @@ class TestNode(BaseNodeTestCase):
             str_block_devices = self.get_cluster_block_devices(node_name)
             self.assertRegexpMatches(
                 str_block_devices,
-                'vda\s+252:0\s+0\s+20G\s+0\s+disk'
+                'vda\s+\d+:\d+\s+0\s+20G\s+0\s+disk'
             )
             self.assertRegexpMatches(
                 str_block_devices,
-                'vdb\s+252:16\s+0\s+20G\s+0\s+disk'
+                'vdb\s+\d+:\d+\s+0\s+20G\s+0\s+disk'
             )
             self.assertRegexpMatches(
                 str_block_devices,
-                'vdc\s+252:32\s+0\s+20G\s+0\s+disk'
+                'vdc\s+\d+:\d+\s+0\s+20G\s+0\s+disk'
             )
 
     @snapshot_errors
