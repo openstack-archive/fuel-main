@@ -89,5 +89,171 @@ class TestNode(BaseNodeTestCase):
             test_sets=['ha', 'smoke', 'sanity'],
             should_fail=4, should_pass=24)
 
+    @snapshot_errors
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos', "ubuntu"], test_thread='thread_3')
+    def test_ha_murano_savanna(self):
+        cluster_id = self.prepare_environment(
+            name="ha_murano_savanna",
+            mode="ha_compact", settings={
+            'nodes': {
+                'slave-01': ['controller'],
+                'slave-02': ['controller'],
+                'slave-03': ['controller'],
+                'slave-04': ['compute']
+            },
+            'savanna': True,
+            'murano': True,
+
+            })
+
+        self.assertClusterReady(
+            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+        self.assert_murano_service(self.nodes().slaves[0].name)
+        self.assert_savanna_service(self.nodes().slaves[0].name)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
+
+    @snapshot_errors
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos', "ubuntu"], test_thread='thread_1')
+    def test_ha_savanna(self):
+        cluster_id = self.prepare_environment(
+            name="ha_savanna",
+            mode="ha_compact", settings={
+                'nodes': {
+                    'slave-01': ['controller'],
+                    'slave-02': ['controller'],
+                    'slave-03': ['controller'],
+                    'slave-04': ['compute']
+                },
+            'savanna': True
+
+        })
+
+        self.assertClusterReady(
+            'slave-01', smiles_count=10, networks_count=1, timeout=500)
+        self.assert_savanna_service(self.nodes().slaves[0].name)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
+
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos', "ubuntu"], test_thread='thread_1')
+    def test_ha_murano(self):
+        cluster_id = self.prepare_environment(
+            name="ha_murano",
+            mode="ha_compact", settings={
+                'nodes': {
+                    'slave-01': ['controller'],
+                    'slave-02': ['controller'],
+                    'slave-03': ['controller'],
+                    'slave-04': ['compute']
+                },
+            'murano': True,
+
+            })
+
+        self.assertClusterReady(
+            'slave-01', smiles_count=10, networks_count=1, timeout=500)
+        self.assert_murano_service(self.nodes().slaves[0].name)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
+
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos', "ubuntu"], test_thread='thread_1')
+    def test_ha_murano_quantum_gre(self):
+        cluster_id = self.prepare_environment(
+            name="ha_murano_gre",
+            mode="ha_compact", settings={
+                'net_provider': 'neutron',
+                'net_segment_type': 'gre',
+                'nodes': {
+                    'slave-01': ['controller'],
+                    'slave-02': ['controller'],
+                    'slave-03': ['controller'],
+                    'slave-04': ['compute']
+                },
+                'murano': True,
+
+                })
+
+        self.assertClusterReady(
+            'slave-01', smiles_count=10, networks_count=1, timeout=500)
+        self.assert_murano_service(self.nodes().slaves[0].name)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
+
+
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos', "ubuntu"], test_thread='thread_1')
+    def test_ha_savanna_quantum_gre(self):
+        cluster_id = self.prepare_environment(
+            name="ha_savanna_gre",
+            mode="ha_compact", settings={
+                'net_provider': 'neutron',
+                'net_segment_type': 'gre',
+                'nodes': {
+                    'slave-01': ['controller'],
+                    'slave-02': ['controller'],
+                    'slave-03': ['controller'],
+                    'slave-04': ['compute']
+                },
+                'savanna': True
+
+            })
+        self.assertClusterReady(
+            'slave-01', smiles_count=10, networks_count=1, timeout=500)
+        self.assert_savanna_service(self.nodes().slaves[0].name)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
+
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos', "ubuntu"], test_thread='thread_1')
+    def test_ha_murano_quantum_vlan(self):
+        cluster_id = self.prepare_environment(
+            name="ha_murano_vlan",
+            mode="ha_compact", settings={
+                'net_provider': 'neutron',
+                'net_segment_type': 'vlan',
+                'nodes': {
+                    'slave-01': ['controller'],
+                    'slave-02': ['controller'],
+                    'slave-03': ['controller'],
+                    'slave-04': ['compute']
+                },
+                'murano': True,
+
+                })
+
+        self.assertClusterReady(
+            'slave-01', smiles_count=10, networks_count=1, timeout=500)
+        self.assert_murano_service(self.nodes().slaves[0].name)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
+
+
+    @logwrap
+    @fetch_logs
+    @attr(releases=['centos', "ubuntu"], test_thread='thread_1')
+    def test_ha_savanna_quantum_vlan(self):
+        cluster_id = self.prepare_environment(
+            name="ha_savanna_vlan",
+            mode="ha_compact", settings={
+                'net_provider': 'neutron',
+                'net_segment_type': 'vlan',
+                'nodes': {
+                    'slave-01': ['controller'],
+                    'slave-02': ['controller'],
+                    'slave-03': ['controller'],
+                    'slave-04': ['compute']
+                },
+                'savanna': True
+
+            })
+        self.assertClusterReady(
+            'slave-01', smiles_count=10, networks_count=1, timeout=500)
+        self.assert_savanna_service(self.nodes().slaves[0].name)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=19)
+
 if __name__ == '__main__':
     unittest.main()
