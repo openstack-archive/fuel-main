@@ -32,12 +32,12 @@ logwrap = debug(logger)
 class TestCeph(BaseNodeTestCase):
 
     @logwrap
-    def deploy_ceph_cluster(self, nodes):
-        cluster_id = self.prepare_environment(settings={
-                'nodes': nodes,
-                'volumes_ceph': True,
-                'images_ceph': True
-            }, save_state=False)
+    def deploy_ceph_cluster(self, nodes, mode="multinode"):
+        cluster_id = self.prepare_environment(settings={'nodes': nodes,
+                                                        'volumes_ceph': True,
+                                                        'images_ceph': True},
+                                              save_state=False,
+                                              mode=mode)
         return cluster_id
 
     @logwrap
@@ -93,7 +93,7 @@ class TestCeph(BaseNodeTestCase):
                  'slave-04': ['compute', 'ceph-osd'],
                  'slave-05': ['compute', 'ceph-osd'],
                  'slave-06': ['cinder', 'ceph-osd']}
-        cluster_id = self.deploy_ceph_cluster(nodes)
+        cluster_id = self.deploy_ceph_cluster(nodes, mode="ha_compact")
         self.check_ceph_ostf(cluster_id)
         self.check_ceph_health(nodes)
 
