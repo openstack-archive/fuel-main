@@ -93,9 +93,6 @@ class CiBase(object):
 
     def create_interfaces(self, networks, node):
         for network in networks:
-            if network.name == 'internal':
-                self.manager.interface_create(network, node=node)
-                self.manager.interface_create(network, node=node)
             self.manager.interface_create(network, node=node)
 
     def describe_admin_node(self, name, networks, memory=1024):
