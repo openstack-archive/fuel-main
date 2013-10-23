@@ -106,14 +106,14 @@ class Actor(object):
         env = os.environ
         env["PATH"] = "/bin:/usr/bin:/sbin:/usr/sbin"
         p = Popen(command, shell=False, env=env, stdout=PIPE)
-        p.wait()
+        output, err = p.communicate()
         if p.returncode not in expected_exit_codes:
             raise ActorException(
                 self.logger,
                 "Command exited with error: %s: %s" % (" ".join(command),
                                                        p.returncode)
             )
-        return p.stdout
+        return output.split('\n')
 
     def _viface_by_iface_vid(self, iface, vid):
         return (self._try_viface_create(iface, vid) or "%s.%d" % (iface, vid))
