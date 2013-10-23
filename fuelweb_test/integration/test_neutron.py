@@ -51,6 +51,15 @@ class TestNode(BaseNodeTestCase):
         self.assertEqual(str(cluster['net_provider']), 'neutron')
         self.assertEqual(str(cluster['net_segment_type']), segment_type)
 
+        task = self._run_network_verify(cluster_id)
+        self.assertTaskSuccess(task, 60 * 2)
+
+        self.run_OSTF(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=4, should_pass=24)
+
+
     @snapshot_errors
     @logwrap
     @fetch_logs
@@ -71,6 +80,14 @@ class TestNode(BaseNodeTestCase):
         cluster = self.client.get_cluster(cluster_id)
         self.assertEqual(str(cluster['net_provider']), 'neutron')
         self.assertEqual(str(cluster['net_segment_type']), segment_type)
+
+        task = self._run_network_verify(cluster_id)
+        self.assertTaskSuccess(task, 60 * 2)
+
+        self.run_OSTF(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=4, should_pass=24)
 
     @snapshot_errors
     @logwrap
@@ -95,6 +112,15 @@ class TestNode(BaseNodeTestCase):
         self.assertEqual(str(cluster['net_provider']), 'neutron')
         self.assertEqual(str(cluster['net_segment_type']), segment_type)
 
+        task = self._run_network_verify(cluster_id)
+        self.assertTaskSuccess(task, 60 * 2)
+
+        self.run_OSTF(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=4, should_pass=24)
+
+
     @snapshot_errors
     @logwrap
     @fetch_logs
@@ -117,3 +143,11 @@ class TestNode(BaseNodeTestCase):
         cluster = self.client.get_cluster(cluster_id)
         self.assertEqual(str(cluster['net_provider']), 'neutron')
         self.assertEqual(str(cluster['net_segment_type']), segment_type)
+
+        task = self._run_network_verify(cluster_id)
+        self.assertTaskSuccess(task, 60 * 2)
+
+        self.run_OSTF(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=4, should_pass=24)
