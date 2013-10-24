@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: Mike Scherbakov <mihgen@gmail.com>
+Code-Review+2: Mike Scherbakov <mihgen@gmail.com>
+Code-Review+1: Nikita Prikazchikov <nprikazchikov@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 24 Oct 2013 12:00:42 +0000
+Reviewed-on: https://review.openstack.org/53570
+Project: stackforge/fuel-main
+Branch: refs/heads/master
