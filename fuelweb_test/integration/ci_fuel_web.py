@@ -78,7 +78,7 @@ class CiFuelWeb(CiBase):
         params = {
             'ip': node.get_ip_address_by_network_name('internal'),
             'mask': self.internal_net_mask(),
-            'gw': self.nat_router(),
+            'gw': self.internal_router(),
             'hostname': '.'.join((self.hostname, self.domain))
         }
         keys = (
