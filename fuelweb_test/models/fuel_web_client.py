@@ -366,8 +366,7 @@ class FuelWebClient(object):
                         in interfaces_dict[interface_name]:
                     interface['assigned_networks'].append(allowed_network)
 
-        self.client.put_node_interfaces(
-            [{'id': node_id, 'interfaces': interfaces}])
+        self.client.put_node_interfaces(node_id, interfaces)
 
     @logwrap
     def update_redhat_credentials(
