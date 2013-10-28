@@ -17,12 +17,12 @@ import logging
 from devops.helpers.helpers import SSHClient, wait, _wait
 from paramiko import RSAKey
 import re
-import hashlib
 from fuelweb_test.helpers import Ebtables
 from fuelweb_test.integration.base_test_case import BaseTestCase
 from fuelweb_test.integration.decorators import debug
 from fuelweb_test.nailgun_client import NailgunClient
-from fuelweb_test.settings import CLEAN, NETWORK_MANAGERS, EMPTY_SNAPSHOT, \
+from fuelweb_test.integration.decorators import upload_manifests
+from fuelweb_test.settings import NETWORK_MANAGERS, \
     REDHAT_USERNAME, REDHAT_PASSWORD, REDHAT_SATELLITE_HOST, \
     REDHAT_ACTIVATION_KEY, OPENSTACK_RELEASE, OPENSTACK_RELEASE_REDHAT, \
     REDHAT_LICENSE_TYPE, READY_SNAPSHOT
@@ -486,6 +486,7 @@ class BaseNodeTestCase(BaseTestCase):
             net_manager=NETWORK_MANAGERS['vlan'])
 
     @logwrap
+    @upload_manifests
     def get_ready_environment(self):
         if self.ci().get_state(READY_SNAPSHOT):
             self.environment().resume(verbose=False)
