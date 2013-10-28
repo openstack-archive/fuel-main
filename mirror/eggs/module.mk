@@ -39,7 +39,7 @@ $(BUILD_DIR)/mirror/eggs/build.done: \
 		sudo chroot $(SANDBOX) pip-python install \
 		--index-url $(MIRROR_EGGS) \
 		--find-links $(MIRROR_EGGS) \
-		pip==1.2.1
+		pip==1.2.1 pbr==0.5.21
 
 	# Downloading required pip packages.
 	sudo chroot $(SANDBOX) pip install \
