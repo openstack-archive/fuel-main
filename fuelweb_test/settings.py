@@ -47,7 +47,7 @@ DHCP = {
     'public': False,
     'internal': False,
     'private': False,
-    'nat': True,
+    'nat': False,
 }
 
 INTERFACES = {
