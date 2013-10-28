@@ -19,6 +19,7 @@ import os
 import time
 import urllib2
 from proboscis import SkipTest
+from datetime import datetime
 from fuelweb_test.settings import *
 from devops.helpers.helpers import SSHClient
 
@@ -48,7 +49,8 @@ def log_snapshot_on_error(func):
             pass
         except:
             status = "fail"
-            name = 'error_%s' % func.__name__
+            d = datetime.now()
+            name = '%serror_%s' % (d.strftime('%d%H%M%S'), func.__name__)
             description = "Failed in method '%s'." % func.__name__
             logging.debug("=" * 100)
             logging.debug("{} Make snapshot: {}".format(description, name))
