@@ -84,3 +84,7 @@ CLEAN = os.environ.get('CLEAN', 'true') == 'true'
 LOGS_DIR = os.environ.get('LOGS_DIR')
 
 USE_ALL_DISKS = os.environ.get('USE_ALL_DISKS', 'true') == 'true'
+
+UPLOAD_MANIFESTS = os.environ.get('UPLOAD_MANIFESTS', 'false') == 'true'
+UPLOAD_MANIFESTS_PATH = os.environ.get('UPLOAD_MANIFESTS_PATH', '~/git/fuel/deployment/puppet/')
+SITEPP_FOR_UPLOAD = os.environ.get('SITEPP_PATH', '/etc/puppet/modules/osnailyfacter/examples/site.pp')
