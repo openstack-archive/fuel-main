@@ -64,8 +64,12 @@ vm_slave_memory_mb[1]=768   # for controller node 768 MB should be sufficient
 vm_slave_memory_mb[2]=1024  # for compute node 1GB is recommended, otherwise VM instances in OpenStack may not boot
 vm_slave_memory_mb[3]=768   # for a dedicated Cinder node 768 MB should be sufficient
 
-# This section allows you to define HDD size in MB for all the slaves nodes.
-# All the slaves will have identical disk configuration. Each slave will have three disks of the following sizes.
+# Within demo cluster created by this script, all slaves (controller
+# and compute nodes) will have identical disk configuration. Each 
+# slave will have three disks of the following sizes. In a disk configuration
+# dialog you will be able to allocate the whole disk or it's part for
+# operating system (Base OS), VMs (Virtual Storage), Ceph or other function,
+# depending on the roles applied to the server.
 vm_slave_first_disk_mb=16384
 vm_slave_second_disk_mb=32768
 vm_slave_third_disk_mb=65536
