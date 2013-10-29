@@ -12,67 +12,68 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
 import logging
-import unittest
 import xmlrpclib
 from devops.helpers.helpers import wait, tcp_ping, http
-from nose.plugins.attrib import attr
-from fuelweb_test.integration.base_node_test_case import BaseNodeTestCase
-from fuelweb_test.integration.decorators import debug, fetch_logs
-from fuelweb_test.settings import CLEAN
+
+from proboscis import test, SkipTest
+from proboscis.asserts import assert_equal
+
+from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
+from fuelweb_test.settings import OPENSTACK_RELEASE, OPENSTACK_RELEASE_CENTOS
+from fuelweb_test.tests.base_test_case import SetupEnvironment, TestBasic
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
 
 
-class TestAdminNode(BaseNodeTestCase):
-    def setUp(self):
-        BaseNodeTestCase.setUp(self)
-        if CLEAN:
-            self.ci().get_empty_environment()
+@test
+class TestAdminNode(TestBasic):
 
-    @logwrap
-    @attr(releases=['centos'], test_thread='thread_1')
-    def test_puppetmaster_alive(self):
+    @test(groups=["thread_1"], depends_on=[SetupEnvironment.setup_master])
+    def test_puppet_master_alive(self):
+        if OPENSTACK_RELEASE != OPENSTACK_RELEASE_CENTOS:
+            raise SkipTest()
+        self.env.revert_snapshot("empty")
         wait(
-            lambda: tcp_ping(self.get_admin_node_ip(), 8140),
+            lambda: tcp_ping(self.env.get_admin_node_ip(), 8140),
             timeout=5
         )
-        ps_output = self.remote().execute('ps ax')['stdout']
+        ps_output = self.env.get_admin_remote().execute('ps ax')['stdout']
         pm_processes = filter(
             lambda x: '/usr/sbin/puppetmasterd' in x,
             ps_output
         )
         logging.debug("Found puppet master processes: %s" % pm_processes)
-        self.assertEquals(len(pm_processes), 4)
+        assert_equal(len(pm_processes), 4)
 
-    @logwrap
-    @attr(releases=['centos'], test_thread='thread_1')
+    @test(groups=["thread_1"], depends_on=[SetupEnvironment.setup_master])
     def test_cobbler_alive(self):
+        if OPENSTACK_RELEASE != OPENSTACK_RELEASE_CENTOS:
+            raise SkipTest()
+        self.env.revert_snapshot("empty")
         wait(
-            lambda: http(host=self.get_admin_node_ip(), url='/cobbler_api',
+            lambda: http(host=self.env.get_admin_node_ip(), url='/cobbler_api',
                          waited_code=502),
             timeout=60
         )
         server = xmlrpclib.Server(
-            'http://%s/cobbler_api' % self.get_admin_node_ip())
+            'http://%s/cobbler_api' % self.env.get_admin_node_ip())
         # raises an error if something isn't right
         server.login('cobbler', 'cobbler')
 
-    @logwrap
-    @fetch_logs
-    @attr(releases=['centos'], test_thread='thread_1')
+    @log_snapshot_on_error
+    @test(groups=["thread_1"], depends_on=[SetupEnvironment.setup_master])
     def test_nailyd_alive(self):
-        ps_output = self.remote().execute('ps ax')['stdout']
+        if OPENSTACK_RELEASE != OPENSTACK_RELEASE_CENTOS:
+            raise SkipTest()
+        self.env.revert_snapshot("empty")
+        ps_output = self.env.get_admin_remote().execute('ps ax')['stdout']
         naily_master = filter(lambda x: 'naily master' in x, ps_output)
         logging.debug("Found naily processes: %s" % naily_master)
-        self.assertEquals(len(naily_master), 1)
+        assert_equal(len(naily_master), 1)
         naily_workers = filter(lambda x: 'naily worker' in x, ps_output)
         logging.debug(
             "Found %d naily worker processes: %s" %
             (len(naily_workers), naily_workers))
-        self.assertEqual(True, len(naily_workers) > 1)
-
-if __name__ == '__main__':
-    unittest.main()
+        assert_equal(True, len(naily_workers) > 1)
