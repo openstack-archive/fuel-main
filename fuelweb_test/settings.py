@@ -15,11 +15,9 @@
 
 import os
 
-ENV_NAME = os.environ.get('ENV_NAME', 'fuelweb')
+ENV_NAME = os.environ.get("ENV_NAME", "fuel_system_test")
 
 ISO_PATH = os.environ.get('ISO_PATH')
-EMPTY_SNAPSHOT = os.environ.get('EMPTY_SNAPSHOT', 'empty')
-READY_SNAPSHOT = os.environ.get('READY_SNAPSHOT', 'ready')
 
 OPENSTACK_RELEASE_CENTOS = 'Grizzly on CentOS 6.4'
 OPENSTACK_RELEASE_UBUNTU = 'Grizzly on Ubuntu 12.04'
@@ -37,6 +35,15 @@ INTERFACE_ORDER = ('internal', 'public', 'private', 'nat')
 
 PUBLIC_FORWARD = os.environ.get('PUBLIC_FORWARD', None)
 NAT_FORWARD = os.environ.get('NAT_FORWARD', 'nat')
+
+ADMIN_NODE_SETUP_TIMEOUT = os.environ.get("ADMIN_NODE_SETUP_TIMEOUT", 30)
+
+HARDWARE = {
+    "admin_node_memory": os.environ.get("ADMIN_NODE_MEMORY", 1024),
+    "admin_node_cpu": os.environ.get("ADMIN_NODE_CPU", 1),
+    "slave_node_memory": os.environ.get("SLAVE_NODE_MEMORY", 1024),
+    "slave_node_cpu": os.environ.get("SLAVE_NODE_CPU", 1),
+}
 
 FORWARDING = {
     'public': PUBLIC_FORWARD,
@@ -82,11 +89,11 @@ NETWORK_MANAGERS = {
     'vlan': 'VlanManager'
 }
 
-CLEAN = os.environ.get('CLEAN', 'true') == 'true'
 LOGS_DIR = os.environ.get('LOGS_DIR')
-
 USE_ALL_DISKS = os.environ.get('USE_ALL_DISKS', 'true') == 'true'
 
 UPLOAD_MANIFESTS = os.environ.get('UPLOAD_MANIFESTS', 'false') == 'true'
-UPLOAD_MANIFESTS_PATH = os.environ.get('UPLOAD_MANIFESTS_PATH', '~/git/fuel/deployment/puppet/')
-SITEPP_FOR_UPLOAD = os.environ.get('SITEPP_PATH', '/etc/puppet/modules/osnailyfacter/examples/site.pp')
+UPLOAD_MANIFESTS_PATH = os.environ.get(
+    'UPLOAD_MANIFESTS_PATH', '~/git/fuel/deployment/puppet/')
+SITEPP_FOR_UPLOAD = os.environ.get(
+    'SITEPP_PATH', '/etc/puppet/modules/osnailyfacter/examples/site.pp')
