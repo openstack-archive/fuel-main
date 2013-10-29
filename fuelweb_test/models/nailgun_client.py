@@ -14,9 +14,10 @@
 
 
 import logging
-from fuelweb_test.helpers import HTTPClient
-from fuelweb_test.integration.decorators import debug, json_parse
+
 from fuelweb_test.settings import OPENSTACK_RELEASE
+from fuelweb_test.helpers.decorators import debug, json_parse
+from fuelweb_test.helpers.http import HTTPClient
 
 
 logger = logging.getLogger(__name__)
@@ -24,8 +25,8 @@ logwrap = debug(logger)
 
 
 class NailgunClient(object):
-    def __init__(self, ip):
-        self.client = HTTPClient(url="http://%s:8000" % ip)
+    def __init__(self, admin_node_ip):
+        self.client = HTTPClient(url="http://{}:8000".format(admin_node_ip))
         super(NailgunClient, self).__init__()
 
     @logwrap
@@ -40,51 +41,58 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def list_cluster_nodes(self, cluster_id):
-        return self.client.get("/api/nodes/?cluster_id=%s" % cluster_id)
+        return self.client.get("/api/nodes/?cluster_id={}".format(cluster_id))
 
     @logwrap
     @json_parse
     def get_networks(self, cluster_id):
         net_provider = self.get_cluster(cluster_id)['net_provider']
         return self.client.get(
-            "/api/clusters/%d/network_configuration/%s" %
-            (cluster_id, net_provider))
+            "/api/clusters/{}/network_configuration/{}".format(
+                cluster_id, net_provider
+            )
+        )
 
     @logwrap
     @json_parse
     def verify_networks(self, cluster_id, networks):
         net_provider = self.get_cluster(cluster_id)['net_provider']
         return self.client.put(
-            "/api/clusters/%d/network_configuration/%s/verify/" %
-            (cluster_id, net_provider),
-            {'networks': networks}
+            "/api/clusters/{}/network_configuration/{}/verify/".format(
+                cluster_id, net_provider
+            ),
+            {
+                'networks': networks
+            }
         )
 
     @logwrap
     @json_parse
     def get_cluster_attributes(self, cluster_id):
         return self.client.get(
-            "/api/clusters/%s/attributes/" % cluster_id
+            "/api/clusters/{}/attributes/".format(cluster_id)
         )
 
     @logwrap
     @json_parse
     def update_cluster_attributes(self, cluster_id, attrs):
         return self.client.put(
-            "/api/clusters/%s/attributes/" % cluster_id, attrs
+            "/api/clusters/{}/attributes/".format(cluster_id),
+            attrs
         )
 
     @logwrap
     @json_parse
     def get_cluster(self, cluster_id):
         return self.client.get(
-            "/api/clusters/%s" % cluster_id)
+            "/api/clusters/{}".format(cluster_id)
+        )
 
     @logwrap
     @json_parse
     def update_cluster(self, cluster_id, data):
         return self.client.put(
-            "/api/clusters/%s/" % cluster_id,
+            "/api/clusters/{}/".format(cluster_id),
             data
         )
 
@@ -92,14 +100,14 @@ class NailgunClient(object):
     @json_parse
     def delete_cluster(self, cluster_id):
         return self.client.delete(
-            "/api/clusters/%s/" % cluster_id
+            "/api/clusters/{}/".format(cluster_id)
         )
 
     @logwrap
     @json_parse
     def update_node(self, node_id, data):
         return self.client.put(
-            "/api/nodes/%s/" % node_id, data
+            "/api/nodes/{}/".format(node_id), data
         )
 
     @logwrap
@@ -113,13 +121,13 @@ class NailgunClient(object):
     @json_parse
     def deploy_cluster_changes(self, cluster_id):
         return self.client.put(
-            "/api/clusters/%d/changes/" % cluster_id
+            "/api/clusters/{}/changes/".format(cluster_id)
         )
 
     @logwrap
     @json_parse
     def get_task(self, task_id):
-        return self.client.get("/api/tasks/%s" % task_id)
+        return self.client.get("/api/tasks/{}".format(task_id))
 
     @logwrap
     @json_parse
@@ -134,7 +142,7 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def get_node_disks(self, disk_id):
-        return self.client.get("/api/nodes/%s/disks" % disk_id)
+        return self.client.get("/api/nodes/{}/disks".format(disk_id))
 
     @logwrap
     def get_release_id(self, release_name=OPENSTACK_RELEASE):
@@ -145,7 +153,7 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def get_node_interfaces(self, node_id):
-        return self.client.get("/api/nodes/%s/interfaces" % node_id)
+        return self.client.get("/api/nodes/{}/interfaces".format(node_id))
 
     @logwrap
     @json_parse
@@ -168,17 +176,17 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def get_ostf_test_sets(self, cluster_id):
-        return self.client.get("/ostf/testsets/%s" % cluster_id)
+        return self.client.get("/ostf/testsets/{}".format(cluster_id))
 
     @logwrap
     @json_parse
     def get_ostf_tests(self, cluster_id):
-        return self.client.get("/ostf/tests/%s" % cluster_id)
+        return self.client.get("/ostf/tests/{}".format(cluster_id))
 
     @logwrap
     @json_parse
     def get_ostf_test_run(self, cluster_id):
-        return self.client.get("/ostf/testruns/last/%s" % cluster_id)
+        return self.client.get("/ostf/testruns/last/{}".format(cluster_id))
 
     @logwrap
     @json_parse
@@ -205,8 +213,10 @@ class NailgunClient(object):
         if net_manager is not None:
             data.update({'net_manager': net_manager})
         return self.client.put(
-            "/api/clusters/%d/network_configuration/%s" %
-            (cluster_id, net_provider), data
+            "/api/clusters/{}/network_configuration/{}".format(
+                cluster_id, net_provider
+            ),
+            data
         )
 
     @logwrap
@@ -225,12 +235,7 @@ class NailgunClient(object):
         self.update_cluster_attributes(cluster_id, attributes)
 
     @logwrap
-    def clean_clusters(self):
-        for cluster in self.list_clusters():
-            self.delete_cluster(cluster["id"])
-
-    @logwrap
-    def _get_cluster_vlans(self, cluster_id):
+    def get_cluster_vlans(self, cluster_id):
         cluster_vlans = []
         for network in self.get_networks(cluster_id)['networks']:
             if not network['vlan_start'] is None:
