@@ -33,8 +33,8 @@ if you do need to override them.
               Made from iso dir and name if not set.
 -t (name)   - Name of task this script should perform. Should be one of defined ones.
               Taken from Jenkins' job's suffix if not set.
--T (class)  - Overrides what tests should be ran insted of using task system.
-              Set if you want to run custom test.
+-o (str)    - Allows you any extra command line option to run test job if you
+              want to use some parameters.
 -a (str)    - Allows you to path NOSE_ATTR to the test job if you want
               to use some parameters.
 -A (str)    - Allows you to path  NOSE_EVAL_ATTR if you want to enter attributes
@@ -119,7 +119,7 @@ GlobalVariables() {
 }
 
 GetoptsVariables() {
-  while getopts ":w:j:i:t:T:a:A:m:U:r:b:dh" opt; do
+  while getopts ":w:j:i:t:o:a:A:m:U:r:b:dh" opt; do
     case $opt in
       w)
         WORKSPACE="${OPTARG}"
@@ -133,8 +133,8 @@ GetoptsVariables() {
       t)
         TASK_NAME="${OPTARG}"
         ;;
-      T)
-        TEST_NAME="${OPTARG}"
+      o)
+        TEST_OPTIONS="${TEST_OPTIONS} ${OPTARG}"
         ;;
       a)
         NOSE_ATTR="${OPTARG}"
@@ -309,14 +309,6 @@ CdWorkSpace() {
     fi
 }
 
-RunCustomTest() {
-  # if TEST_NAME is set we override task selector and run this test instead
-  if [ -n "${TEST_NAME}" ]; then
-    RunTest "${TEST_NAME}"
-    exit 0
-  fi
-}
-
 RunTest() {
     # Run test selected by task name
 
@@ -366,12 +358,19 @@ RunTest() {
     if [ -n "${NOSE_EVAL_ATTR}" ]; then
         OPTS="${OPTS} -A ${NOSE_EVAL_ATTR}"
     fi
+    if [ -n "${TEST_OPTIONS}" ]; then
+        OPTS="${OPTS} ${TEST_OPTIONS}"
+    fi
 
     # run python test set to create environments, deploy and test product
     if [ "${DRY_RUN}" = "yes" ]; then
-        echo nosetests -v -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit "${1}"
+        echo export PYTHONPATH="${WORKSPACE}/ ${PYTHONPATH}"
+        echo python fuelweb_test/run_tests.py -v -s --with-xunit ${OPTS}
     else
-        nosetests -v -w "fuelweb_test" -s -l DEBUG ${OPTS} --with-xunit "${1}"
+        export PYTHONPATH=${WORKSPACE} ${PYTHONPATH}
+        echo ${PYTHONPATH}
+        python fuelweb_test/run_tests.py -v -s --with-xunit ${OPTS}
+
     fi
     ec=$?
 
@@ -418,9 +417,6 @@ CheckVariables
 
 # first we chdir into our working directory unless we dry run
 CdWorkSpace
-
-# run custom test if TEST_NAME is set
-RunCustomTest
 
 # finally we can choose what to do according to TASK_NAME
 RouteTasks
