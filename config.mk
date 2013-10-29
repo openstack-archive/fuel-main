@@ -111,27 +111,6 @@ MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 
-#
-# OSCI team requirement: build an iso with our srv08 mirror,
-# but use their repo for fuel packages. This section is quick
-# way to implement it.
-# Limitation of the solution: osci repo will be mixed with srv08 mirror.
-# If package is missed in osci repo - it will be taken from srv08.
-# If package have the same version in osci and in srv08 repos - any copy
-# of it will be taken randomly.
-#
-ifeq ($(USE_MIRROR),osci)
-YUM_REPOS?=proprietary fuel
-MIRROR_FUEL?=http://download.mirantis.com/epel-fuel-grizzly-3.2/
-MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-3.2-stable/reprepro
-MIRROR_BASE?=http://srv08-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
-MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
-MIRROR_EGGS?=$(MIRROR_BASE)/eggs
-MIRROR_GEMS?=$(MIRROR_BASE)/gems
-MIRROR_SRC?=$(MIRROR_BASE)/src
-endif
-
 MIRROR_CENTOS?=http://mirror.yandex.ru/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 MIRROR_UBUNTU?=http://mirror.yandex.ru/ubuntu/
@@ -140,8 +119,8 @@ MIRROR_RHEL?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-6-server-rpms
 MIRROR_RHEL_BOOT?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-server-6.4-x86_64
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
-MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-3.2-stable/centos/
-MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-3.2-stable/reprepro
+MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-stable/centos/
+MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-stable/reprepro
 # It can be any a list of links (--find-links) or a pip index (--index-url).
 MIRROR_EGGS?=http://pypi.python.org/simple
 # NOTE(mihgen): removed gemcutter - it redirects to rubygems.org and has issues w/certificate now
