@@ -54,6 +54,7 @@ cron
 cryptsetup
 cryptsetup-bin
 curl
+daemonize
 dash
 dbus
 debconf
