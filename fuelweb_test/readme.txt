@@ -1,4 +1,5 @@
-==========================  For Ubuntu 12.10  ================================================
+==========================  For Ubuntu 12.10 server  =============================
+-------------------------------  For tests   -------------------------------------
 sudo apt-get install python-pip postgresql postgresql-server-dev-all python-dev
 sudo pip install virtualenv
 virtualenv ../fuelweb_test --system-site-packages
@@ -13,3 +14,7 @@ export ENV_NAME="fuelweb_test" # Or any other name you need
 dos.py erase $ENV_NAME
 nosetests -w fuelweb_test
 
+------------------------------- For 'make iso' -----------------------------------
+sudo apt-get install yum yum-utils debootstrap bundler libmysqlclient-dev ruby-builder unzip npm python-yaml python-jinja2 mkisofs isomd5sum
+sudo npm -g install requirejs
+sudo ln -s /usr/bin/nodejs /usr/local/bin/node
