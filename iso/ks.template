@@ -8,7 +8,7 @@ rootpw r00tme
 timezone --utc Etc/UTC
 firewall --disabled
 selinux --disabled
-zerombr
+# NEVER ever place zerombr here
 %include /tmp/bootloader.ks
 %include /tmp/partition.ks
 
