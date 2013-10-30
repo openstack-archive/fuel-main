@@ -126,6 +126,10 @@ class BaseNodeTestCase(BaseTestCase):
             cluster_id, self.ci().get_host_node_ip(), port)
 
         self.bootstrap_nodes(self.devops_nodes_by_names(nodes_dict.keys()))
+
+        for node in self.devops_nodes_by_names(nodes_dict.keys()):
+                self.sync_node_time(node.name)
+
         self.configure_cluster(cluster_id, nodes_dict)
 
         task = self.deploy_cluster(cluster_id)
