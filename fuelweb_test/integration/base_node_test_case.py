@@ -15,8 +15,11 @@
 
 import logging
 from devops.helpers.helpers import SSHClient, wait, _wait
-from paramiko import RSAKey
+from paramiko import RSAKey, SFTPClient
 import re
+import urllib
+import hashlib
+import os.path
 from fuelweb_test.helpers import Ebtables
 from fuelweb_test.integration.base_test_case import BaseTestCase
 from fuelweb_test.integration.decorators import debug
@@ -579,3 +582,36 @@ class BaseNodeTestCase(BaseTestCase):
 
         savanna_api = filter(lambda x: 'savanna-api' in x, ps_output)
         self.assertEquals(len(savanna_api), 1)
+
+    @logwrap
+    def assert_savanna_image_import(self, node_name):
+        ip = self.get_node_by_devops_node(
+            self.ci().environment().node_by_name(node_name))['ip']
+
+        server_url = "http://savanna-files.mirantis.com"
+        savanna_image = "savanna-0.2-vanilla-1.1.2-ubuntu-12.10.qcow2"
+        savanna_url = "%s/%s" % (server_url, savanna_image)
+        savanna_local_path = "/tmp/%s" % savanna_image
+        savanna_md5 = '10856243711041fac360b1840ccb51dd'
+
+        if not os.path.isfile(savanna_local_path):
+            urllib.urlretrieve(savanna_url, savanna_local_path)
+        if (hashlib.md5(open(savanna_local_path).read()).hexdigest()
+                != savanna_md5):
+            urllib.urlretrieve(savanna_url, savanna_local_path)
+        remote = SSHClient(
+            ip, username='root', password='r00tme',
+            private_keys=self.get_private_keys())
+        remote.upload(savanna_local_path, savanna_local_path)
+        remote.execute('. /root/openrc; glance image-create --name savanna '
+                       '--disk-format qcow2 --file %s '
+                       '--container-format bare' % savanna_local_path)['stdout']
+        remote.execute(". /root/openrc; nova image-meta savanna set "
+                       "'_savanna_tag_1.1.2'=True  "
+                       "'_savanna_tag_vanilla'=True "
+                       "'_savanna_username'='ubuntu'")
+        nova_out = remote.execute('. /root/openrc; nova image-show savanna '
+                                  '| grep _savanna_username | grep ubuntu')['stdout']
+        print(nova_out)
+        self.assertTrue(nova_out)
+
