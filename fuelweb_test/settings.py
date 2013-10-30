@@ -15,6 +15,8 @@
 
 import os
 
+ENV_NAME = os.environ.get('ENV_NAME', 'fuelweb')
+
 ISO_PATH = os.environ.get('ISO_PATH')
 EMPTY_SNAPSHOT = os.environ.get('EMPTY_SNAPSHOT', 'empty')
 READY_SNAPSHOT = os.environ.get('READY_SNAPSHOT', 'ready')
