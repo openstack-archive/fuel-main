@@ -27,6 +27,8 @@ if you do need to override them.
 
 -w (dir)    - Path to workspace where fuelweb git repository was checked out.
               Uses Jenkins' WORKSPACE if not set
+-e (name)   - Directly specify environment name used in tests
+              Uses ENV_NAME variable is set.
 -j (name)   - Name of this job. Determines ISO name, Task name and used by tests.
               Uses Jenkins' JOB_NAME if not set
 -i (file)   - Full path to ISO file to build or use for tests.
@@ -48,6 +50,8 @@ if you do need to override them.
 -b (num)    - Allows you to override Jenkins' build number if you need to.
 -d          - Dry run mode. Only show what would be done and do nothing.
               Useful for debugging.
+-k          - Keep previously created test environment before tests run
+-K          - Keep test environment after tests are finished
 -h          - Show this help page
 
 Most variables uses guesing from Jenkins' job name but can be overriden
@@ -119,7 +123,7 @@ GlobalVariables() {
 }
 
 GetoptsVariables() {
-  while getopts ":w:j:i:t:T:a:A:m:U:r:b:dh" opt; do
+  while getopts ":w:j:i:t:T:a:A:m:U:r:b:dkKe:h" opt; do
     case $opt in
       w)
         WORKSPACE="${OPTARG}"
@@ -153,6 +157,15 @@ GetoptsVariables() {
         ;;
       b)
         BUILD_NUMBER="${OPTARG}"
+        ;;
+      k)
+        KEEP_BEFORE="yes"
+        ;;
+      K)
+        KEEP_AFTER="yes"
+        ;;
+      e)
+        ENV_NAME="${OPTARG}"
         ;;
       d)
         DRY_RUN="yes"
@@ -347,15 +360,21 @@ RunTest() {
         . ~/venv-nailgun-tests/bin/activate
     fi
 
-    export ENV_NAME="${JOB_NAME}_system_test"
+    if [ "${ENV_NAME}" = "" ]; then
+      ENV_NAME="${JOB_NAME}_system_test"
+    fi
+
+    export ENV_NAME
     export LOGS_DIR="${WORKSPACE}/logs"
     export ISO_PATH
 
-    # remove previous garbage
-    if [ "${DRY_RUN}" = "yes" ]; then
+    if [ "${KEEP_BEFORE}" != "yes" ]; then
+      # remove previous environment
+      if [ "${DRY_RUN}" = "yes" ]; then
         echo dos.py erase "${ENV_NAME}"
-    else
+      else
         dos.py erase "${ENV_NAME}"
+      fi
     fi
 
     # gather additional option for this nose test run
@@ -375,11 +394,13 @@ RunTest() {
     fi
     ec=$?
 
-    # remove previous garbage
-    if [ "${DRY_RUN}" = "yes" ]; then
+    if [ "${KEEP_AFTER}" != "yes" ]; then
+      # remove environment after tests
+      if [ "${DRY_RUN}" = "yes" ]; then
         echo dos.py destroy "${ENV_NAME}"
-    else
+      else
         dos.py destroy "${ENV_NAME}"
+      fi
     fi
 
     exit "${ec}"
