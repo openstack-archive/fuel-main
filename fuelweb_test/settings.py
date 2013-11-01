@@ -37,6 +37,10 @@ INTERFACE_ORDER = ('internal', 'public', 'private', 'nat')
 
 PUBLIC_FORWARD = os.environ.get('PUBLIC_FORWARD', None)
 NAT_FORWARD = os.environ.get('NAT_FORWARD', 'nat')
+NAT_USE_DHCP = os.environ.get('NAT_USE_DHCP', "no")
+
+# Simple test to sanitize string to bool
+NAT_USE_DHCP = NAT_USE_DHCP.lower() in ['true', 'y', 'yes', '1']
 
 FORWARDING = {
     'public': PUBLIC_FORWARD,
@@ -49,7 +53,7 @@ DHCP = {
     'public': False,
     'internal': False,
     'private': False,
-    'nat': False,
+    'nat': NAT_USE_DHCP,
 }
 
 INTERFACES = {
