@@ -42,7 +42,7 @@ class TestCeph(BaseNodeTestCase):
 
     @logwrap
     def check_ceph_ostf(self, cluster_id):
-        self.run_OSTF(cluster_id=cluster_id, should_pass=20, should_fail=4)
+        self.run_OSTF(cluster_id=cluster_id, should_pass=18, should_fail=4)
         self._ostf_test_wait(cluster_id, 60*6)
 
     @logwrap
