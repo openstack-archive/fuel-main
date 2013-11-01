@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 logwrap = debug(logger)
 
 
-class TestNode(BaseNodeTestCase):
+class TestNeutron(BaseNodeTestCase):
     @snapshot_errors
     @logwrap
     @fetch_logs
