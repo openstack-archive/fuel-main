@@ -1,7 +1,15 @@
-Name:      nailgun-net-check
+%define __python /usr/bin/python2.6
+%{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+%{!?pyver: %define pyver %(%{__python} -c "import sys ; print sys.version[:3]")}
+
+%define name nailgun-net-check
+%define version 0.0.2
+%define release 1
+
+Name:      %{name}
 Summary:   Network checking package for CentOS6.2
-Version:   0.0.2
-Release:   1
+Version:   %{version}
+Release:   %{release}
 License:   GPLv2
 Source0:   http://pypcap.googlecode.com/files/pypcap-%{pypcapver}.tar.gz
 Source1:   http://www.tcpdump.org/release/libpcap-%{libpcapver}.tar.gz
@@ -34,16 +42,21 @@ cd libpcap-%{libpcapver}
 make
 cd ../pypcap-%{pypcapver}
 make all
+cd ../%{name}-%{version}
+%{__python} setup.py build
 
 %install
-mkdir -p %{buildroot}/usr/bin
-cp %{_sourcedir}/net_probe.py %{buildroot}/usr/bin
+rm -rf $RPM_BUILD_ROOT
+cd %{name}-%{version}
+%{__python} setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT
 cd pypcap-%{pypcapver}
 python setup.py install --root=%{buildroot}
 
 %files
 %defattr(0755,root,root,-)
 /usr/bin/net_probe.py
+%{python_sitelib}/%{name}
+%{python_sitelib}/%{name}-%{version}-py2.6.egg-info
 %defattr(0644,root,root,-)
 /usr/lib64/python2.6/site-packages/pcap*
 
