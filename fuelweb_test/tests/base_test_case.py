@@ -33,15 +33,23 @@ logwrap = debug(logger)
 
 
 class TestBasic(object):
+    """
+    Basic test case class for all system tests.
+    Initializes EnvironmentModel and FuelWebModel.
+
+    """
 
     def __init__(self):
         self.env = EnvironmentModel()
         self.fuel_web = self.env.fuel_web
 
     def check_run(self, snapshot_name):
-        """
-        Checks if run of current test is required.
-        Raise SkipTest in case there is snapshot with provided name
+        """Checks if run of current test is required.
+
+        :param snapshot_name: Name of the snapshot the function should make
+        :type snapshot_name: str
+        :raises: SkipTest
+
         """
         if snapshot_name != "" and snapshot_name is not None:
             if self.env.get_virtual_environment().has_snapshot(snapshot_name):
@@ -52,12 +60,26 @@ class TestBasic(object):
 class SetupEnvironment(TestBasic):
     @test(groups=["setup"])
     def setup_master(self):
+        """Create environment and set up master node
+
+        Snapshot: empty
+
+        """
         self.check_run("empty")
         self.env.setup_environment()
         self.env.make_snapshot("empty")
 
     @test(depends_on=[setup_master])
     def prepare_release(self):
+        """Prepare master node
+
+        Scenario:
+            1. Revert snapshot "empty"
+            2. Download the release if needed. Uploads custom manifest.
+
+        Snapshot: ready
+
+        """
         self.check_run("ready")
         self.env.revert_snapshot("empty")
 
@@ -88,6 +110,15 @@ class SetupEnvironment(TestBasic):
 
     @test(depends_on=[prepare_release])
     def prepare_slaves_3(self):
+        """Bootstrap 3 slave nodes
+
+        Scenario:
+            1. Revert snapshot "ready"
+            2. Start 3 slave nodes
+
+        Snapshot: ready_with_3_slaves
+
+        """
         self.check_run("ready_with_3_slaves")
         self.env.revert_snapshot("ready")
         self.env.bootstrap_nodes(self.env.nodes().slaves[:3])
@@ -95,6 +126,15 @@ class SetupEnvironment(TestBasic):
 
     @test(depends_on=[prepare_release])
     def prepare_slaves_5(self):
+        """Bootstrap 5 slave nodes
+
+        Scenario:
+            1. Revert snapshot "ready"
+            2. Start 5 slave nodes
+
+        Snapshot: ready_with_5_slaves
+
+        """
         self.check_run("ready_with_5_slaves")
         self.env.revert_snapshot("ready")
         self.env.bootstrap_nodes(self.env.nodes().slaves[:5])

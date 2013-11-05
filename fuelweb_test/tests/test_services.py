@@ -31,6 +31,19 @@ class SavannaSimple(TestBasic):
           groups=["deploy_savanna_simple"])
     @log_snapshot_on_error
     def deploy_savanna_simple(self):
+        """Deploy cluster in simple mode with Savanna
+
+        Scenario:
+            1. Create cluster. Set install Savanna option
+            2. Add 1 node with controller role
+            3. Add 3 nodes with compute role
+            4. Add 1 node with cinder role
+            4. Deploy the cluster
+            5. Verify savanna services
+
+        Snapshot: deploy_savanna_simple
+
+        """
         self.env.revert_snapshot("ready_with_5_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
@@ -59,6 +72,13 @@ class SavannaSimple(TestBasic):
           groups=["deploy_savanna_simple_ostf"])
     @log_snapshot_on_error
     def deploy_savanna_simple_ostf(self):
+        """Run OSTF tests on cluster in simple mode with Savanna
+
+        Scenario:
+            1. Revert snapshot "deploy_savanna_simple"
+            2. Run OSTF
+
+        """
         self.env.revert_snapshot("deploy_savanna_simple")
 
         self.fuel_web.run_ostf(
@@ -74,6 +94,19 @@ class MuranoSimple(TestBasic):
           groups=["deploy_murano_simple"])
     @log_snapshot_on_error
     def deploy_murano_simple(self):
+        """Deploy cluster in simple mode with Murano
+
+        Scenario:
+            1. Create cluster. Set install Murano option
+            2. Add 1 node with controller role
+            3. Add 3 nodes with compute role
+            4. Add 1 node with cinder role
+            4. Deploy the cluster
+            5. Verify murano services
+
+        Snapshot: deploy_murano_simple
+
+        """
         self.env.revert_snapshot("ready_with_5_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
@@ -102,6 +135,13 @@ class MuranoSimple(TestBasic):
           groups=["deploy_murano_simple_ostf"])
     @log_snapshot_on_error
     def deploy_murano_simple_ostf(self):
+        """Run OSTF tests on cluster in simple mode with Murano
+
+        Scenario:
+            1. Revert snapshot "deploy_murano_simple"
+            2. Run OSTF
+
+        """
         self.env.revert_snapshot("deploy_murano_simple")
 
         self.fuel_web.run_ostf(
