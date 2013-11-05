@@ -74,5 +74,11 @@ class TestAdminNode(BaseNodeTestCase):
             (len(naily_workers), naily_workers))
         self.assertEqual(True, len(naily_workers) > 1)
 
+    @logwrap
+    @fetch_logs
+    def test_pull(self):
+        self.get_ready_environment()
+
+
 if __name__ == '__main__':
     unittest.main()
