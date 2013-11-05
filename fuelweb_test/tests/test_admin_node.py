@@ -32,6 +32,13 @@ class TestAdminNode(TestBasic):
 
     @test(depends_on=[SetupEnvironment.setup_master])
     def test_puppet_master_alive(self):
+        """Test current installation has correctly working puppet master
+
+        Scenario:
+            1. Revert snapshot "empty"
+            2. Search for puppet master process on master node
+
+        """
         if OPENSTACK_RELEASE != OPENSTACK_RELEASE_CENTOS:
             raise SkipTest()
         self.env.revert_snapshot("empty")
@@ -49,6 +56,15 @@ class TestAdminNode(TestBasic):
 
     @test(depends_on=[SetupEnvironment.setup_master])
     def test_cobbler_alive(self):
+        """Test current installation has correctly setup cobbler
+
+        API and cobbler HTTP server are alive
+
+        Scenario:
+            1. Revert snapshot "empty"
+            2. test cobbler API and HTTP server through send http request
+
+        """
         if OPENSTACK_RELEASE != OPENSTACK_RELEASE_CENTOS:
             raise SkipTest()
         self.env.revert_snapshot("empty")
@@ -65,6 +81,13 @@ class TestAdminNode(TestBasic):
     @test(depends_on=[SetupEnvironment.setup_master])
     @log_snapshot_on_error
     def test_nailyd_alive(self):
+        """Test naily master and worker processes are alive on master node
+
+        Scenario:
+            1. Revert snapshot "empty"
+            2. Search for master and child processes
+
+        """
         if OPENSTACK_RELEASE != OPENSTACK_RELEASE_CENTOS:
             raise SkipTest()
         self.env.revert_snapshot("empty")

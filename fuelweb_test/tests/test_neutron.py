@@ -33,7 +33,18 @@ class NeutronGre(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3])
     @log_snapshot_on_error
     def deploy_neutron_gre(self):
+        """Deploy cluster in simple mode with Neutron GRE
 
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 2 nodes with compute role
+            4. Deploy the cluster
+            5. Validate cluster network
+
+        Snapshot: deploy_neutron_gre
+
+        """
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
@@ -67,12 +78,26 @@ class NeutronGre(TestBasic):
     @test(depends_on=[deploy_neutron_gre])
     @log_snapshot_on_error
     def deploy_neutron_gre_verify_networks(self):
+        """Verify network on cluster in simple mode with Neutron GRE
+
+        Scenario:
+            1. Revert snapshot "deploy_neutron_gre"
+            2. Run network verification
+
+        """
         self.env.revert_snapshot("deploy_neutron_gre")
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
     @test(depends_on=[deploy_neutron_gre])
     @log_snapshot_on_error
     def deploy_neutron_gre_ostf(self):
+        """Run OSTF tests on cluster in simple mode with Neutron GRE
+
+        Scenario:
+            1. Revert snapshot "deploy_neutron_gre"
+            2. Run OSTF
+
+        """
         self.env.revert_snapshot("deploy_neutron_gre")
 
         self.fuel_web.run_ostf(
@@ -87,7 +112,18 @@ class NeutronVlan(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3])
     @log_snapshot_on_error
     def deploy_neutron_vlan(self):
+        """Deploy cluster in simple mode with Neutron VLAN
 
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 2 nodes with compute role
+            4. Deploy the cluster
+            5. Validate cluster network
+
+        Snapshot: deploy_neutron_vlan
+
+        """
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
@@ -121,12 +157,26 @@ class NeutronVlan(TestBasic):
     @test(depends_on=[deploy_neutron_vlan])
     @log_snapshot_on_error
     def deploy_neutron_vlan_verify_networks(self):
+        """Verify network on cluster in simple mode with Neutron VLAN
+
+        Scenario:
+            1. Revert snapshot "deploy_neutron_vlan"
+            2. Run network verification
+
+        """
         self.env.revert_snapshot("deploy_neutron_vlan")
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
     @test(depends_on=[deploy_neutron_vlan])
     @log_snapshot_on_error
     def deploy_neutron_vlan_ostf(self):
+        """Run OSTF tests on cluster in simple mode with Neutron VLAN
+
+        Scenario:
+            1. Revert snapshot "deploy_neutron_vlan"
+            2. Run OSTF
+
+        """
         self.env.revert_snapshot("deploy_neutron_vlan")
 
         self.fuel_web.run_ostf(
@@ -141,7 +191,18 @@ class NeutronGreHa(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_5])
     @log_snapshot_on_error
     def deploy_neutron_gre_ha(self):
+        """Deploy cluster in HA mode with Neutron GRE
 
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with controller role
+            3. Add 2 nodes with compute role
+            4. Deploy the cluster
+            5. Validate cluster network
+
+        Snapshot: deploy_neutron_gre_ha
+
+        """
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
@@ -177,12 +238,26 @@ class NeutronGreHa(TestBasic):
     @test(depends_on=[deploy_neutron_gre_ha])
     @log_snapshot_on_error
     def deploy_neutron_gre_ha_verify_networks(self):
+        """Verify network on cluster in HA mode with Neutron GRE
+
+        Scenario:
+            1. Revert snapshot "deploy_neutron_gre_ha"
+            2. Run network verification
+
+        """
         self.env.revert_snapshot("deploy_neutron_gre_ha")
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
     @test(depends_on=[deploy_neutron_gre_ha])
     @log_snapshot_on_error
     def deploy_neutron_gre_ha_ostf(self):
+        """Run OSTF tests on cluster in HA mode with Neutron GRE
+
+        Scenario:
+            1. Revert snapshot "deploy_neutron_gre_ha"
+            2. Run OSTF
+
+        """
         self.env.revert_snapshot("deploy_neutron_gre_ha")
 
         self.fuel_web.run_ostf(
@@ -197,7 +272,18 @@ class NeutronVlanHa(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_5])
     @log_snapshot_on_error
     def deploy_neutron_vlan_ha(self):
+        """Deploy cluster in HA mode with Neutron VLAN
 
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with controller role
+            3. Add 2 nodes with compute role
+            4. Deploy the cluster
+            5. Validate cluster network
+
+        Snapshot: deploy_neutron_vlan_ha
+
+        """
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
@@ -233,12 +319,26 @@ class NeutronVlanHa(TestBasic):
     @test(depends_on=[deploy_neutron_vlan_ha])
     @log_snapshot_on_error
     def deploy_neutron_vlan_ha_verify_networks(self):
+        """Verify network on cluster in HA mode with Neutron VLAN
+
+        Scenario:
+            1. Revert snapshot "deploy_neutron_vlan_ha"
+            2. Run network verification
+
+        """
         self.env.revert_snapshot("deploy_neutron_vlan_ha")
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
     @test(depends_on=[deploy_neutron_vlan_ha])
     @log_snapshot_on_error
     def deploy_neutron_vlan_ha_ostf(self):
+        """Run OSTF tests on cluster in HA mode with Neutron VLAN
+
+        Scenario:
+            1. Revert snapshot "deploy_neutron_vlan_ha"
+            2. Run OSTF
+
+        """
         self.env.revert_snapshot("deploy_neutron_vlan_ha")
 
         self.fuel_web.run_ostf(
