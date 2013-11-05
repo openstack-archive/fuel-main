@@ -33,7 +33,18 @@ class CephCompact(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3])
     @log_snapshot_on_error
     def ceph_multinode_compact(self):
+        """Deploy ceph in simple mode
 
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller and ceph OSD roles
+            3. Add 1 node with compute and ceph OSD roles
+            4. Deploy the cluster
+            5. Check ceph status
+
+        Snapshot: ceph_multinode_compact
+
+        """
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
@@ -62,7 +73,13 @@ class CephCompact(TestBasic):
     @test(depends_on=[ceph_multinode_compact])
     @log_snapshot_on_error
     def ceph_multinode_compact_ostf(self):
+        """Run OSTF on deployed cluster with ceph in simple mode
 
+        Scenario:
+            1. Revert snapshot: ceph_multinode_compact
+            2. Run OSTF
+
+        """
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
@@ -80,7 +97,19 @@ class CephCompactWithCinder(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_release])
     @log_snapshot_on_error
     def ceph_multinode_with_cinder(self):
+        """Deploy ceph with cinder in simple mode
 
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller and ceph OSD roles
+            3. Add 1 node with compute role
+            4. Add 2 nodes with cinder and ceph OSD roles
+            5. Deploy the cluster
+            6. Check ceph status
+
+        Snapshot: ceph_multinode_with_cinder
+
+        """
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
@@ -112,7 +141,13 @@ class CephCompactWithCinder(TestBasic):
     @test(depends_on=[ceph_multinode_with_cinder])
     @log_snapshot_on_error
     def ceph_multinode_with_cinder_ostf(self):
+        """Run OSTF on deployed cluster with ceph and cider in simple mode
 
+        Scenario:
+            1. Revert snapshot: ceph_multinode_compact
+            2. Run OSTF
+
+        """
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
@@ -130,7 +165,19 @@ class CephHA(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_release])
     @log_snapshot_on_error
     def ceph_ha(self):
+        """Deploy ceph with cinder in HA mode
 
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with controller and ceph OSD roles
+            3. Add 1 node with cinder and ceph OSD roles
+            4. Add 2 nodes with compute and ceph OSD roles
+            5. Deploy the cluster
+            6. Check ceph status
+
+        Snapshot: ceph_ha
+
+        """
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
@@ -164,7 +211,13 @@ class CephHA(TestBasic):
     @test(depends_on=[ceph_ha])
     @log_snapshot_on_error
     def ceph_ha_ostf(self):
+        """Run OSTF on deployed cluster with ceph and cider in HA mode
 
+        Scenario:
+            1. Revert snapshot: ceph_ha
+            2. Run OSTF
+
+        """
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
@@ -178,7 +231,15 @@ class CephHA(TestBasic):
     @test(depends_on=[ceph_ha])
     @log_snapshot_on_error
     def ceph_ha_destroy_osd(self):
+        """Destroy OSD node for ceph HA
 
+        Scenario:
+            1. Revert snapshot: ceph_ha
+            2. Destroy cinder + ceph osd node
+            3. Check ceph status
+            4. Run OSTF
+
+        """
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
@@ -195,7 +256,15 @@ class CephHA(TestBasic):
     @test(depends_on=[ceph_ha])
     @log_snapshot_on_error
     def ceph_ha_destroy_controller(self):
+        """Destroy OSD node for ceph HA
 
+        Scenario:
+            1. Revert snapshot: ceph_ha
+            2. Destroy first controller + ceph OSD node
+            3. Check ceph status
+            4. Run OSTF
+
+        """
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
