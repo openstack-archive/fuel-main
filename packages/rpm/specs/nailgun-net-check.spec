@@ -11,6 +11,9 @@ URL:       http://github.com/Mirantis
 Requires:  vconfig
 Requires:  scapy
 Requires:  python-argparse
+Requires: python-pypcap
+Requires: libpcap
+Requires: libpcap-devel
 
 %define pypcapver 1.1
 %define libpcapver 1.3.0
@@ -24,28 +27,14 @@ between hosts in network.
 %prep
 rm -rf %{name}-%{version}
 mkdir %{name}-%{version}
-tar zxf %{_sourcedir}/pypcap-%{pypcapver}.tar.gz
-tar zxf %{_sourcedir}/libpcap-%{libpcapver}.tar.gz
-%patch1 -p1
-
-%build
-cd libpcap-%{libpcapver}
-%configure
-make
-cd ../pypcap-%{pypcapver}
-make all
 
 %install
 mkdir -p %{buildroot}/usr/bin
 cp %{_sourcedir}/net_probe.py %{buildroot}/usr/bin
-cd pypcap-%{pypcapver}
-python setup.py install --root=%{buildroot}
 
 %files
 %defattr(0755,root,root,-)
 /usr/bin/net_probe.py
-%defattr(0644,root,root,-)
-/usr/lib64/python2.6/site-packages/pcap*
 
 %clean
 rm -rf %{buildroot}
