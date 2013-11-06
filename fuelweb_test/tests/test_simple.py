@@ -579,6 +579,39 @@ class MultinicBootstrap(TestBasic):
                 Ebtables.restore_mac(mac)
 
 
+@test(groups=["thread_2", "test"])
+class DeleteEnvironment(TestBasic):
+
+    @test(depends_on=[SimpleFlat.deploy_simple_flat])
+    @log_snapshot_on_error
+    def delete_environment(self):
+        """Delete existing environment
+        and verify nodes returns to unallocated state
+
+        Scenario:
+            1. Revert snapshot "deploy_simple_flat"
+            2. Delete environment
+            3. Verify node returns to unallocated pull
+
+        """
+        self.env.revert_snapshot("deploy_simple_flat")
+
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        self.fuel_web.client.delete_cluster(cluster_id)
+        nailgun_nodes = self.fuel_web.client.list_nodes()
+        nodes = filter(lambda x: x["pending_deletion"] is True, nailgun_nodes)
+        assert_true(
+            len(nodes) == 2, "Verify 2 node has pending deletion status"
+        )
+        wait(
+            lambda:
+            self.fuel_web.is_node_discovered(nodes[0]) and
+            self.fuel_web.is_node_discovered(nodes[1]),
+            timeout=3 * 60,
+            interval=15
+        )
+
+
 @test(groups=["thread_1"])
 class UntaggedNetworksNegative(TestBasic):
 
