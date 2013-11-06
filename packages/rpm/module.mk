@@ -62,12 +62,12 @@ $(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: \
 		$(SOURCE_DIR)/packages/rpm/specs/dhcp-checker.spec \
 		$(call find-files,$(BUILD_DIR)/repos/nailgun/dhcp-checker)
 	sudo sh -c "$${SANDBOX_UP}"
-	sudo mkdir -p $(SANDBOX)/tmp/SOURCES
-	sudo cp $(LOCAL_MIRROR_SRC)/* $(SANDBOX)/tmp/SOURCES
-	sudo cp -r $(BUILD_DIR)/repos/nailgun/dhcp-checker/* $(SANDBOX)/tmp/SOURCES/
+	sudo mkdir -p $(SANDBOX)/tmp/SOURCES/dhcp_checker
+	sudo cp -r $(BUILD_DIR)/repos/nailgun/dhcp-checker/* $(SANDBOX)/tmp/SOURCES/dhcp_checker
+	cd $(SANDBOX)/tmp/SOURCES/dhcp_checker && sudo python setup.py sdist -d $(SANDBOX)/tmp/SOURCES
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/dhcp-checker.spec $(SANDBOX)/tmp
 	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/dhcp-checker.spec
-	cp $(SANDBOX)/tmp/RPMS/noarch/dhcp_checker-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
+	cp $(SANDBOX)/tmp/RPMS/x86_64/dhcp_checker-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
 
