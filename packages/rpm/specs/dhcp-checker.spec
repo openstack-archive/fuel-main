@@ -22,6 +22,8 @@ Url:            http://github.com/Mirantis/
 
 Requires: python-cliff-tablib
 Requires: scapy
+Requires: python-pypcap
+Requires: libpcap
 
 
 %description
