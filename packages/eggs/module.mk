@@ -1,8 +1,9 @@
-.PHONY: nailgun shotgun
+.PHONY: nailgun shotgun fuel-cli
 
 $(BUILD_DIR)/packages/eggs/build.done: \
 		$(BUILD_DIR)/packages/eggs/nailgun.done \
-		$(BUILD_DIR)/packages/eggs/shotgun.done
+		$(BUILD_DIR)/packages/eggs/shotgun.done \
+		$(BUILD_DIR)/packages/eggs/fuel-cli.done
 	mkdir -p $(LOCAL_MIRROR_EGGS)
 	find $(BUILD_DIR)/packages/eggs/ -maxdepth 1 -type f ! -name "build.done" \
 	    -exec cp {} $(LOCAL_MIRROR_EGGS) \;
@@ -39,6 +40,7 @@ $(eval $(call build_egg,GateOne,bb003114b4e84e9425fd02fd1ee615d4dd2113e7,gateone
 
 nailgun: $(BUILD_DIR)/packages/eggs/nailgun.done
 shotgun: $(BUILD_DIR)/packages/eggs/shotgun.done
+fuel-cli: $(BUILD_DIR)/packages/eggs/fuel-cli.done
 
 $(BUILD_DIR)/packages/eggs/nailgun.done: $(call depv,NO_UI_OPTIMIZE) \
 		$(call find-files,$(BUILD_DIR)/repos/nailgun/nailgun) \
@@ -64,6 +66,11 @@ $(BUILD_DIR)/packages/eggs/shotgun.done: \
 		$(call find-files,$(BUILD_DIR)/repos/nailgun/shotgun) \
 		$(BUILD_DIR)/repos/nailgun.done
 	cd $(BUILD_DIR)/repos/nailgun/shotgun && \
+		python setup.py sdist --dist-dir $(BUILD_DIR)/packages/eggs
+
+$(BUILD_DIR)/packages/eggs/fuel-cli.done: \
+		$(call find-files,$(BUILD_DIR)/repos/nailgun/fuel-cli)
+	cd $(BUILD_DIR)/repos/nailgun/fuel-cli && \
 		python setup.py sdist --dist-dir $(BUILD_DIR)/packages/eggs
 
 test-unit: test-unit-nailgun
