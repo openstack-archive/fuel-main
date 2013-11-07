@@ -790,6 +790,7 @@ quantum-common
 quantum-dhcp-agent
 quantum-l3-agent
 quantum-metadata-agent
+quantum-ovs-cleanup
 quantum-plugin-openvswitch
 quantum-plugin-openvswitch-agent
 quantum-server
