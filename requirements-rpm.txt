@@ -39,6 +39,7 @@ cobbler-2.2.3-2.el6
 cobbler-web-2.2.3-2.el6
 corosync-1.4.3-26.2
 corosynclib-1.4.3-26.2
+cpufreq-init
 crmsh-1.2.5-55.2
 cronie-1.4.4-7.el6
 cronie-anacron-1.4.4-7.el6
