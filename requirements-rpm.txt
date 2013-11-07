@@ -137,12 +137,12 @@ htop
 http-parser-2.0-4.20121128gitcd01361.el6
 httpd-2.2.15-15.el6.1
 httpd-tools-2.2.15-15.el6.1
-iproute-2.6.32-23.el6.netns.3
+iproute-2.6.32-130.el6.netns.2.mira1
 keepalived-1.2.4-1.el6
-kernel-2.6.32-358.118.1.openstack.el6
-kernel-devel-2.6.32-358.118.1.openstack.el6
-kernel-firmware-2.6.32-358.118.1.openstack.el6
-kernel-headers-2.6.32-358.118.1.openstack.el6
+kernel-2.6.32-358.123.2.openstack.el6
+kernel-devel-2.6.32-358.123.2.openstack.el6
+kernel-firmware-2.6.32-358.123.2.openstack.el6
+kernel-headers-2.6.32-358.123.2.openstack.el6
 leveldb-1.7.0-2.el6
 libaio-0.3.107-10.el6
 libcephfs1
