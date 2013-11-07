@@ -84,7 +84,7 @@ class TestNeutron(BaseNodeTestCase):
 
         self.run_OSTF(
             cluster_id=cluster_id,
-            should_fail=4, should_pass=24)
+            should_fail=4, should_pass=18)
 
     @snapshot_errors
     @logwrap
