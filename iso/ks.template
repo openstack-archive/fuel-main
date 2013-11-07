@@ -121,6 +121,7 @@ vim-enhanced
 rubygem-netaddr
 rubygem-openstack
 wget
+gdisk
 yum
 
 %include /tmp/post_partition.ks
