@@ -70,6 +70,6 @@ vm_slave_memory_mb[3]=768   # for a dedicated Cinder node 768 MB should be suffi
 # dialog you will be able to allocate the whole disk or it's part for
 # operating system (Base OS), VMs (Virtual Storage), Ceph or other function,
 # depending on the roles applied to the server.
-vm_slave_first_disk_mb=16384
+vm_slave_first_disk_mb=32768
 vm_slave_second_disk_mb=32768
 vm_slave_third_disk_mb=65536
