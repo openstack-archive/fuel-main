@@ -49,6 +49,7 @@ cpio
 cpp
 cpp-4.6
 cpu-checker
+cpufrequtils
 crda
 cron
 cryptsetup
