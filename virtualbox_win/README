@@ -1,0 +1,19 @@
+In order to successfully run Fuel Web under VirtualBox, you need to:
+- download the official release (.iso) and place it under 'iso' directory
+- edit "config.vbs" and provide iso_path parameter with proper .iso file name
+- run "./launch.vbs". it will automatically pick up the iso, and will spin up master node and slave nodes
+
+If there are any errors, the script will report them and abort.
+
+If you want to change settings (number of OpenStack nodes, CPU, RAM, HDD), please refer to "config.vbs".
+
+
+
+
+Todo:
+1. вызовы внешних утилит (netsh, ping) обрамить обработкой ошибок.
+2. перед исполнением netsh проверить существование этой утилиты
+3. в functions\vm сделать проверку инициализации переменной VBoxManagePath
+4. в functions\vm вывести вызов vboxmanage в одну функцию
+5+ в functions\product вывести вызов plink в одну функцию
+6. научить actions запускаться из подпапки и автоматом подгружать нужные либы, если не подгружались
