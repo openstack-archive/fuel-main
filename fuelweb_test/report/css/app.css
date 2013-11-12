@@ -1,0 +1,19 @@
+.table th.centered,
+.table td.centered {
+    text-align: center;
+    vertical-align: middle;
+}
+.table.centered th,
+.table.centered td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table.centered th.left-aligned,
+.table.centered td.left-aligned {
+    text-align: left;
+}
+
+.pointer {
+    cursor: pointer;
+}

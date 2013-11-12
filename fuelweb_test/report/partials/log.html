@@ -1,0 +1,53 @@
+<script type="text/ng-template" id="testStepTemplate">
+    <div class="col-md-12 pull-left" style="margin-top: 2px">
+        <div class="row">
+            <div class="col-md-10">
+                <span ng-init="show_children = testStep.status=='fail'"
+                      ng-click="show_children = !show_children"
+                      ng-class="getStatusIcon(testStep, show_children)"></span>
+                <strong ng-class="getTextClass(testStep.status)">{{ $index + 1 }}. {{ testStep.name }}</strong>
+            </div>
+
+            <div class="col-md-2">
+                <div class="btn btn-xs btn-block" ng-class="getBtnClass(testStep.status)"
+                     ng-init="show_children = testStep.status=='fail'"
+                     ng-click="show_children = !show_children">{{ testStep.status }}
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-left: 0" ng-show="show_children" ng-repeat="testStep in testStep.steps"
+             ng-include="'testStepTemplate'"></div>
+    </div>
+</script>
+
+<div class="col-md-2">
+    <button ng-click="back()" class="btn btn-primary btn-block"><span class="glyphicon glyphicon-arrow-left"></span>
+        Back
+    </button>
+</div>
+<div class="col-md-10">
+    <!--<h3>Test case execution log</h3>-->
+    <p class="lead">Test case: {{ testCase.name }}</p>
+</div>
+<div class="col-md-3">
+    <div class="well">
+        <dl>
+            <dt>Status</dt>
+            <dd>{{ testCase.status }}</dd>
+            <dt>Environment</dt>
+            <dd>{{ testCase.environment }}</dd>
+            <dt>Tags</dt>
+            <dd>{{ testCase.tags.join(", ") }}</dd>
+            <dt>Start time</dt>
+            <dd>{{ testCase.start_time }}</dd>
+            <dt>End time</dt>
+            <dd>{{ testCase.start_time }}</dd>
+            <dt>Duration</dt>
+            <dd>{{ testCase.duration }}</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="col-md-9">
+    <div class="row" ng-repeat="testStep in testCase.steps" ng-include="'testStepTemplate'"></div>
+</div>

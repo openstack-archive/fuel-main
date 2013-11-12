@@ -1,0 +1,61 @@
+<div class="col-md-2">
+    <a href="#/view" class="btn btn-primary btn-block"><span class="glyphicon glyphicon-arrow-left"></span> Back</a>
+</div>
+<div class="col-md-10">
+    <h3>Test cases</h3>
+</div>
+
+<div class="col-md-2">
+    <div class="well col-md-12">
+        <div class="form-inline">
+            <label for="tag">Tag</label>
+            <select class="form-control" id="tag"
+                    ng-model="testCaseFilter.tags"
+                    ng-options="tag for tag in tags"
+                    ng-change="testCaseFilter.tags = fixValue(testCaseFilter.tags)"
+                    >
+                <option value=''>All</option>
+            </select>
+            <label for="status">Status</label>
+            <select class="form-control" id="status"
+                    ng-model="testCaseFilter.status"
+                    ng-options="status for status in statusList"
+                    ng-change="testCaseFilter.status = fixValue(testCaseFilter.status)"
+                    >
+                <option value=''>All</option>
+            </select>
+            <label for="environment">Environment</label>
+            <select class="form-control" id="environment"
+                    ng-model="testCaseFilter.environment"
+                    ng-options="environment for environment in environmentList"
+                    ng-change="testCaseFilter.environment = fixValue(testCaseFilter.environment)"
+                    >
+                <option value=''>All</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-10">
+    <table class="table table-condensed table-hover table-bordered table-centered">
+        <tr>
+            <th>Name</th>
+            <th>Environment</th>
+            <th>Tags</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Log</th>
+        </tr>
+        <tr ng-repeat="testCase in testCaseList | filter:testCaseFilter | orderBy:'name' ">
+            <td>{{ testCase.name }}</td>
+            <td>{{ testCase.environment }}</td>
+            <td>{{ testCase.tags.join(", ") }}</td>
+            <td>{{ testCase.duration }}</td>
+            <td>{{ testCase.status }}</td>
+            <td>
+                <div class="btn btn-link btn-xs" ng-click='showLog(testCase.id)'><span
+                        class="glyphicon glyphicon-list-alt"></span></div>
+            </td>
+        </tr>
+    </table>
+</div>

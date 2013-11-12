@@ -1,0 +1,58 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="col-md-12">
+            <h3>Test cycle test results</h3>
+        </div>
+        <div class="col-md-12">
+            <table class="table table-bordered table-condensed centered">
+                <thead>
+                <tr>
+                    <th>Status</th>
+                    <th ng-repeat="environment in environmentList">{{environment}}</th>
+                    <th>Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="status in statusList">
+                    <td class="left-aligned">{{ status }}</td>
+                    <td ng-repeat="environment in environmentList" class="pointer" ng-click="showDetails(status, false, environment)">
+                        {{ (testCaseList | filter:{status:status, environment:environment}).length }}
+                    </td>
+                    <td class="pointer" ng-click="showDetails(status, false, false)">{{ (testCaseList | filter:{status:status}).length }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-md-12">
+        <div class="col-md-12">
+            <h4>Tags</h4>
+        </div>
+        <div class="col-md-12">
+            <table class="table table-bordered table-condensed table-hover centered">
+                <tr>
+                    <th rowspan="2">Tag</th>
+                    <th colspan="{{statusList.length }}" ng-repeat="environment in environmentList">
+                        {{environment}}
+                    </th>
+                    <th colspan="{{statusList.length }}">Total</th>
+                </tr>
+                <tr>
+                    <th ng-repeat="env in statusListForEnvironments">{{ env.status }}</th>
+                    <th ng-repeat="status in statusList">{{ status }}</th>
+                </tr>
+                <tr ng-repeat="tag in tags">
+                    <td>{{tag}}</td>
+                    <td class="pointer" ng-repeat="env in statusListForEnvironments"
+                        ng-click="showDetails(env.status, tag, env.environment)">
+                        {{ (testCaseList | filter:{status:env.status, tags:tag, environment: env.environment}).length}}
+                    </td>
+                    <td class="pointer" ng-repeat="status in statusList" ng-click="showDetails(status, tag, false)">
+                        {{ (testCaseList | filter:{status:status, tags:tag}).length}}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
