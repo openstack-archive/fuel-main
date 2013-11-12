@@ -2,11 +2,14 @@
 
 RAEMON_VERSION:=0.3.0
 RAEMON_COMMIT:=b78eaae57c8e836b8018386dd96527b8d9971acc
+MCOLLECTIVE_COMMIT:=91e368df18d7f11dc224b579671cd7c12e8df6fb
+MCOLLECTIVE_VERSION:=2.3.3
 
 $(BUILD_DIR)/packages/gems/build.done: \
 		$(call depv,BUILD_MIRROR_GEMS) \
 		$(BUILD_DIR)/packages/gems/naily.done \
 		$(BUILD_DIR)/packages/gems/astute.done \
+		$(BUILD_DIR)/packages/gems/mcollective.done \
 		$(BUILD_DIR)/packages/gems/raemon-$(RAEMON_VERSION).gem
 	mkdir -p $(BUILD_MIRROR_GEMS)/gems
 	cp $(BUILD_DIR)/packages/gems/*.gem $(BUILD_MIRROR_GEMS)/gems
@@ -24,6 +27,15 @@ $(BUILD_DIR)/packages/gems/raemon-$(RAEMON_VERSION).gem: \
 	mv $(BUILD_DIR)/packages/gems/raemon-$(RAEMON_COMMIT) $(BUILD_DIR)/packages/gems/raemon
 	(cd $(BUILD_DIR)/packages/gems/raemon && gem build raemon.gemspec)
 	cp $(BUILD_DIR)/packages/gems/raemon/raemon-$(RAEMON_VERSION).gem $(BUILD_DIR)/packages/gems
+
+$(BUILD_DIR)/packages/gems/mcollective.done: \
+		$(BUILD_DIR)/mirror/build.done
+	unzip -q $(LOCAL_MIRROR_SRC)/$(MCOLLECTIVE_COMMIT).zip -d $(BUILD_DIR)/packages/gems
+	rm -rf $(BUILD_DIR)/packages/gems/marionette-collective
+	mv $(BUILD_DIR)/packages/gems/marionette-collective-$(MCOLLECTIVE_COMMIT) $(BUILD_DIR)/packages/gems/marionette-collective
+	- (cd $(BUILD_DIR)/packages/gems/marionette-collective && rake gem)
+	cp $(BUILD_DIR)/packages/gems/marionette-collective/pkg/mcollective-client-*.gem $(BUILD_DIR)/packages/gems
+	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/packages/gems/astute.done: \
 		$(BUILD_DIR)/repos/astute.done \
