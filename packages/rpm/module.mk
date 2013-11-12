@@ -104,24 +104,6 @@ $(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: \
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
 
-MCOLLECTIVE_COMMIT:=9f8d2ec75ba326d2a37884224698f3f96ff01629
-$(BUILD_DIR)/packages/rpm/rpm-mcollective.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
-$(BUILD_DIR)/packages/rpm/rpm-mcollective.done: export SANDBOX_UP:=$(SANDBOX_UP)
-$(BUILD_DIR)/packages/rpm/rpm-mcollective.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
-$(BUILD_DIR)/packages/rpm/rpm-mcollective.done: \
-		$(BUILD_DIR)/packages/rpm/prep.done
-	sudo sh -c "$${SANDBOX_UP}"
-	sudo rm -rf $(SANDBOX)/tmp/marionette-collective-$(MCOLLECTIVE_COMMIT)
-	unzip -q $(LOCAL_MIRROR_SRC)/$(MCOLLECTIVE_COMMIT).zip -d $(SANDBOX)/tmp
-	sudo chroot $(SANDBOX) sh -c "mkdir -p ~/rpmbuild/SOURCES ~/rpmbuild/SPECS"
-	sudo chroot $(SANDBOX) sh -c "cd /tmp/marionette-collective-$(MCOLLECTIVE_COMMIT) && rake rpm && rake gem"
-	cp $(SANDBOX)/tmp/marionette-collective-$(MCOLLECTIVE_COMMIT)/build/*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
-	mkdir -p $(BUILD_MIRROR_GEMS)/gems
-	cp $(SANDBOX)/tmp/marionette-collective-$(MCOLLECTIVE_COMMIT)/build/*.gem $(BUILD_MIRROR_GEMS)/gems/
-	(cd $(BUILD_MIRROR_GEMS) && gem generate_index gems)
-	sudo sh -c "$${SANDBOX_DOWN}"
-	$(ACTION.TOUCH)
-
 $(BUILD_DIR)/packages/rpm/rpm-nailgun-redhat-license.done: \
 		$(BUILD_DIR)/packages/rpm/prep.done \
 		$(SOURCE_DIR)/packages/rpm/specs/nailgun-redhat-license.spec \
@@ -138,7 +120,6 @@ $(BUILD_DIR)/packages/rpm/repo.done: \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-redhat-license.done \
 		$(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done \
-		$(BUILD_DIR)/packages/rpm/rpm-mcollective.done \
 		$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done \
 		$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
