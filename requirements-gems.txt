@@ -35,3 +35,4 @@ systemu 2.5.2
 treetop 1.4.10
 uuidtools 2.1.2
 yajl-ruby 1.1.0
+mcollective-client 2.3.3
