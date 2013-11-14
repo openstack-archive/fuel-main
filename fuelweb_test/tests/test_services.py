@@ -27,7 +27,8 @@ logwrap = debug(logger)
 @test(groups=["thread_1", "services", "services.savanna"])
 class SavannaSimple(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_savanna_simple"])
     @log_snapshot_on_error
     def deploy_savanna_simple(self):
         self.env.revert_snapshot("ready_with_5_slaves")
@@ -54,7 +55,8 @@ class SavannaSimple(TestBasic):
         verify_savanna_service(self.env.get_ssh_to_remote_by_name("slave-01"))
         self.env.make_snapshot("deploy_savanna_simple")
 
-    @test(depends_on=[deploy_savanna_simple])
+    @test(depends_on=[deploy_savanna_simple],
+          groups=["deploy_savanna_simple_ostf"])
     @log_snapshot_on_error
     def deploy_savanna_simple_ostf(self):
         self.env.revert_snapshot("deploy_savanna_simple")
@@ -68,7 +70,8 @@ class SavannaSimple(TestBasic):
 @test(groups=["thread_1", "services", "services.murano"])
 class MuranoSimple(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_murano_simple"])
     @log_snapshot_on_error
     def deploy_murano_simple(self):
         self.env.revert_snapshot("ready_with_5_slaves")
@@ -95,7 +98,8 @@ class MuranoSimple(TestBasic):
         verify_murano_service(self.env.get_ssh_to_remote_by_name("slave-01"))
         self.env.make_snapshot("deploy_murano_simple")
 
-    @test(depends_on=[deploy_murano_simple])
+    @test(depends_on=[deploy_murano_simple],
+          groups=["deploy_murano_simple_ostf"])
     @log_snapshot_on_error
     def deploy_murano_simple_ostf(self):
         self.env.revert_snapshot("deploy_murano_simple")

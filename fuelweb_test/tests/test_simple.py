@@ -29,7 +29,8 @@ logwrap = debug(logger)
 @test(groups=["thread_2"])
 class OneNodeDeploy(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_release])
+    @test(depends_on=[SetupEnvironment.prepare_release],
+          groups=["deploy_one_node"])
     @log_snapshot_on_error
     def deploy_one_node(self):
         self.env.revert_snapshot("ready")
@@ -51,9 +52,8 @@ class OneNodeDeploy(TestBasic):
 @test(groups=["thread_2"])
 class SimpleFlat(TestBasic):
 
-    @test(
-        groups=["smoke"],
-        depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["smoke", "deploy_simple_flat"])
     @log_snapshot_on_error
     def deploy_simple_flat(self):
 
@@ -76,7 +76,8 @@ class SimpleFlat(TestBasic):
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
         self.env.make_snapshot("deploy_simple_flat")
 
-    @test(groups=["smoke"], depends_on=[deploy_simple_flat])
+    @test(depends_on=[deploy_simple_flat],
+          groups=["smoke", "simple_flat_verify_networks"])
     @log_snapshot_on_error
     def simple_flat_verify_networks(self):
         self.env.revert_snapshot("deploy_simple_flat")
@@ -87,7 +88,8 @@ class SimpleFlat(TestBasic):
             self.fuel_web.get_last_created_cluster())
         self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
 
-    @test(groups=["smoke"], depends_on=[deploy_simple_flat])
+    @test(depends_on=[deploy_simple_flat],
+          groups=["smoke", "simple_flat_ostf"])
     @log_snapshot_on_error
     def simple_flat_ostf(self):
         self.env.revert_snapshot("deploy_simple_flat")
@@ -97,14 +99,16 @@ class SimpleFlat(TestBasic):
             should_fail=5, should_pass=17
         )
 
-    @test(depends_on=[deploy_simple_flat])
+    @test(depends_on=[deploy_simple_flat],
+          groups=["simple_flat_network_configuration"])
     @log_snapshot_on_error
     def simple_flat_network_configuration(self):
         self.env.revert_snapshot("deploy_simple_flat")
 
         self.env.verify_network_configuration("slave-01")
 
-    @test(depends_on=[deploy_simple_flat])
+    @test(depends_on=[deploy_simple_flat],
+          groups=["simple_flat_node_deletion"])
     @log_snapshot_on_error
     def simple_flat_node_deletion(self):
         self.env.revert_snapshot("deploy_simple_flat")
@@ -123,7 +127,8 @@ class SimpleFlat(TestBasic):
             timeout=3 * 60
         )
 
-    @test(depends_on=[deploy_simple_flat])
+    @test(depends_on=[deploy_simple_flat],
+          groups=["simple_flat_blocked_vlan"])
     @log_snapshot_on_error
     def simple_flat_blocked_vlan(self):
         self.env.revert_snapshot("deploy_simple_flat")
@@ -139,7 +144,8 @@ class SimpleFlat(TestBasic):
         finally:
             ebtables.restore_first_vlan()
 
-    @test(depends_on=[deploy_simple_flat])
+    @test(depends_on=[deploy_simple_flat],
+          groups=["simple_flat_add_compute"])
     @log_snapshot_on_error
     def simple_flat_add_compute(self):
         self.env.revert_snapshot("deploy_simple_flat")
@@ -159,7 +165,8 @@ class SimpleFlat(TestBasic):
 
         self.env.make_snapshot("simple_flat_add_compute")
 
-    @test(depends_on=[simple_flat_add_compute])
+    @test(depends_on=[simple_flat_add_compute],
+          groups=["simple_flat_add_compute_ostf"])
     @log_snapshot_on_error
     def simple_flat_add_compute_ostf(self):
         self.env.revert_snapshot("simple_flat_add_compute")
@@ -173,7 +180,8 @@ class SimpleFlat(TestBasic):
 @test(groups=["thread_2"])
 class SimpleVlan(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["deploy_simple_vlan"])
     @log_snapshot_on_error
     def deploy_simple_vlan(self):
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -196,7 +204,8 @@ class SimpleVlan(TestBasic):
             'slave-01', smiles_count=6, networks_count=8, timeout=300)
         self.env.make_snapshot("deploy_simple_vlan")
 
-    @test(depends_on=[deploy_simple_vlan])
+    @test(depends_on=[deploy_simple_vlan],
+          groups=["simple_vlan_verify_networks"])
     @log_snapshot_on_error
     def simple_vlan_verify_networks(self):
         self.env.revert_snapshot("deploy_simple_vlan")
@@ -205,7 +214,8 @@ class SimpleVlan(TestBasic):
             self.fuel_web.get_last_created_cluster())
         self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
 
-    @test(depends_on=[deploy_simple_vlan])
+    @test(depends_on=[deploy_simple_vlan],
+          groups=["simple_vlan_ostf"])
     @log_snapshot_on_error
     def simple_vlan_ostf(self):
         self.env.revert_snapshot("deploy_simple_vlan")
@@ -219,7 +229,8 @@ class SimpleVlan(TestBasic):
 @test(groups=["thread_3", "multirole"])
 class MultiroleControllerCinder(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["deploy_multirole_controller_cinder"])
     @log_snapshot_on_error
     def deploy_multirole_controller_cinder(self):
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -239,13 +250,15 @@ class MultiroleControllerCinder(TestBasic):
 
         self.env.make_snapshot("deploy_multirole_controller_cinder")
 
-    @test(depends_on=[deploy_multirole_controller_cinder])
+    @test(depends_on=[deploy_multirole_controller_cinder],
+          groups=["deploy_multirole_controller_cinder_verify_networks"])
     @log_snapshot_on_error
     def deploy_multirole_controller_cinder_verify_networks(self):
         self.env.revert_snapshot("deploy_multirole_controller_cinder")
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[deploy_multirole_controller_cinder])
+    @test(depends_on=[deploy_multirole_controller_cinder],
+          groups=["deploy_multirole_controller_cinder_ostf"])
     @log_snapshot_on_error
     def deploy_multirole_controller_cinder_ostf(self):
         self.env.revert_snapshot("deploy_multirole_controller_cinder")
@@ -259,7 +272,8 @@ class MultiroleControllerCinder(TestBasic):
 @test(groups=["thread_3", "multirole"])
 class MultiroleComputeCinder(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["deploy_multirole_compute_cinder"])
     @log_snapshot_on_error
     def deploy_multirole_compute_cinder(self):
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -279,13 +293,15 @@ class MultiroleComputeCinder(TestBasic):
 
         self.env.make_snapshot("deploy_multirole_compute_cinder")
 
-    @test(depends_on=[deploy_multirole_compute_cinder])
+    @test(depends_on=[deploy_multirole_compute_cinder],
+          groups=["deploy_multirole_compute_cinder_verify_networks"])
     @log_snapshot_on_error
     def deploy_multirole_compute_cinder_verify_networks(self):
         self.env.revert_snapshot("deploy_multirole_compute_cinder")
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[deploy_multirole_compute_cinder])
+    @test(depends_on=[deploy_multirole_compute_cinder],
+          groups=["deploy_multirole_compute_cinder_ostf"])
     @log_snapshot_on_error
     def deploy_multirole_compute_cinder_ostf(self):
         self.env.revert_snapshot("deploy_multirole_compute_cinder")
@@ -299,7 +315,8 @@ class MultiroleComputeCinder(TestBasic):
 @test(groups=["thread_2"])
 class UntaggedNetwork(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["prepare_untagged_network"])
     @log_snapshot_on_error
     def prepare_untagged_network(self):
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -336,13 +353,15 @@ class UntaggedNetwork(TestBasic):
 
         self.env.make_snapshot("prepare_untagged_network")
 
-    @test(depends_on=[prepare_untagged_network])
+    @test(depends_on=[prepare_untagged_network],
+          groups=["untagged_network_verify_networks"])
     @log_snapshot_on_error
     def untagged_network_verify_networks(self):
         self.env.revert_snapshot("prepare_untagged_network")
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[prepare_untagged_network])
+    @test(depends_on=[prepare_untagged_network],
+          groups=["deploy_untagged_network"])
     @log_snapshot_on_error
     def deploy_untagged_network(self):
         self.env.revert_snapshot("prepare_untagged_network")
@@ -353,7 +372,8 @@ class UntaggedNetwork(TestBasic):
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
         self.env.make_snapshot("deploy_untagged_network")
 
-    @test(depends_on=[deploy_untagged_network])
+    @test(depends_on=[deploy_untagged_network],
+          groups=["deploy_untagged_network_verify_networks"])
     @log_snapshot_on_error
     def deploy_untagged_network_verify_networks(self):
         self.env.revert_snapshot("deploy_untagged_network")
@@ -363,7 +383,8 @@ class UntaggedNetwork(TestBasic):
 @test(groups=["thread_2"])
 class FloatingIPs(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["deploy_floating_ips"])
     @log_snapshot_on_error
     def deploy_floating_ips(self):
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -404,7 +425,8 @@ class FloatingIPs(TestBasic):
 
         self.env.make_snapshot("deploy_floating_ips")
 
-    @test(depends_on=[deploy_floating_ips])
+    @test(depends_on=[deploy_floating_ips],
+          groups=["deploy_floating_ips_ostf"])
     @log_snapshot_on_error
     def deploy_floating_ips_ostf(self):
         self.env.revert_snapshot("deploy_floating_ips")
@@ -418,7 +440,8 @@ class FloatingIPs(TestBasic):
 @test(groups=["thread_1"])
 class SimpleCinder(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["deploy_simple_cinder"])
     @log_snapshot_on_error
     def deploy_simple_cinder(self):
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -440,7 +463,8 @@ class SimpleCinder(TestBasic):
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
         self.env.make_snapshot("deploy_simple_cinder")
 
-    @test(depends_on=[deploy_simple_cinder])
+    @test(depends_on=[deploy_simple_cinder],
+          groups=["simple_cinder_ostf"])
     @log_snapshot_on_error
     def simple_cinder_ostf(self):
         self.env.revert_snapshot("deploy_simple_cinder")
@@ -454,7 +478,8 @@ class SimpleCinder(TestBasic):
 @test(groups=["thread_1"])
 class NodeMultipleInterfaces(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["deploy_node_multiple_interfaces"])
     @log_snapshot_on_error
     def deploy_node_multiple_interfaces(self):
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -488,7 +513,8 @@ class NodeMultipleInterfaces(TestBasic):
 
         self.env.make_snapshot("deploy_node_multiple_interfaces")
 
-    @test(depends_on=[deploy_node_multiple_interfaces])
+    @test(depends_on=[deploy_node_multiple_interfaces],
+          groups=["deploy_node_multiple_interfaces_verify_networks"])
     @log_snapshot_on_error
     def deploy_node_multiple_interfaces_verify_networks(self):
         self.env.revert_snapshot("deploy_node_multiple_interfaces")
@@ -501,7 +527,8 @@ class NodeMultipleInterfaces(TestBasic):
 @test(groups=["thread_1"])
 class NodeDiskSizes(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["check_nodes_notifications"])
     @log_snapshot_on_error
     def check_nodes_notifications(self):
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -524,7 +551,8 @@ class NodeDiskSizes(TestBasic):
             for disk in disks:
                 assert_equal(disk['size'], 19980, 'Disk size')
 
-    @test(depends_on=[SimpleCinder.deploy_simple_cinder])
+    @test(depends_on=[SimpleCinder.deploy_simple_cinder],
+          groups=["check_nodes_disks"])
     @log_snapshot_on_error
     def check_nodes_disks(self):
         self.env.revert_snapshot("deploy_simple_cinder")
@@ -556,7 +584,8 @@ class NodeDiskSizes(TestBasic):
 @test(groups=["thread_2"])
 class MultinicBootstrap(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_release])
+    @test(depends_on=[SetupEnvironment.prepare_release],
+          groups=["multinic_bootstrap_booting"])
     @log_snapshot_on_error
     def multinic_bootstrap_booting(self):
         self.env.revert_snapshot("ready")
@@ -584,6 +613,7 @@ class UntaggedNetworksNegative(TestBasic):
 
     @test(
         depends_on=[SetupEnvironment.prepare_slaves_3],
+        groups=["untagged_networks_negative"],
         enabled=False)
     @log_snapshot_on_error
     def untagged_networks_negative(self):

@@ -30,7 +30,8 @@ logwrap = debug(logger)
 @test(groups=["thread_1", "ceph"])
 class CephCompact(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["ceph_multinode_compact"])
     @log_snapshot_on_error
     def ceph_multinode_compact(self):
 
@@ -59,7 +60,8 @@ class CephCompact(TestBasic):
 
         self.env.make_snapshot("ceph_multinode_compact")
 
-    @test(depends_on=[ceph_multinode_compact])
+    @test(depends_on=[ceph_multinode_compact],
+          groups=["ceph_multinode_compact_ostf"])
     @log_snapshot_on_error
     def ceph_multinode_compact_ostf(self):
 
@@ -77,7 +79,8 @@ class CephCompact(TestBasic):
 @test(groups=["thread_1", "ceph"])
 class CephCompactWithCinder(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_release])
+    @test(depends_on=[SetupEnvironment.prepare_release],
+          groups=["ceph_multinode_with_cinder"])
     @log_snapshot_on_error
     def ceph_multinode_with_cinder(self):
 
@@ -109,7 +112,8 @@ class CephCompactWithCinder(TestBasic):
 
         self.env.make_snapshot("ceph_multinode_with_cinder")
 
-    @test(depends_on=[ceph_multinode_with_cinder])
+    @test(depends_on=[ceph_multinode_with_cinder],
+          groups=["ceph_multinode_with_cinder_ostf"])
     @log_snapshot_on_error
     def ceph_multinode_with_cinder_ostf(self):
 
@@ -127,7 +131,8 @@ class CephCompactWithCinder(TestBasic):
 @test(groups=["thread_1", "ceph"])
 class CephHA(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_release])
+    @test(depends_on=[SetupEnvironment.prepare_release],
+          groups=["ceph_ha"])
     @log_snapshot_on_error
     def ceph_ha(self):
 
@@ -161,7 +166,7 @@ class CephHA(TestBasic):
 
         self.env.make_snapshot("ceph_ha")
 
-    @test(depends_on=[ceph_ha])
+    @test(depends_on=[ceph_ha], groups=["ceph_ha_ostf"])
     @log_snapshot_on_error
     def ceph_ha_ostf(self):
 
@@ -175,7 +180,7 @@ class CephHA(TestBasic):
             should_fail=4, should_pass=18
         )
 
-    @test(depends_on=[ceph_ha])
+    @test(depends_on=[ceph_ha], groups=["ceph_ha_destroy_osd"])
     @log_snapshot_on_error
     def ceph_ha_destroy_osd(self):
 
@@ -192,7 +197,7 @@ class CephHA(TestBasic):
             should_fail=4, should_pass=18
         )
 
-    @test(depends_on=[ceph_ha])
+    @test(depends_on=[ceph_ha], groups=["ceph_ha_destroy_controller"])
     @log_snapshot_on_error
     def ceph_ha_destroy_controller(self):
 
