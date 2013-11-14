@@ -287,7 +287,7 @@ class TestNode(BaseNodeTestCase):
                        ['240.0.0.%s' % i for i in range(20, 26, 1)] + \
                        ['240.0.0.%s' % i for i in range(30, 36, 1)]
         self.assert_cluster_floating_list('slave-02', expected_ips)
-        self.run_OSTF(cluster_id=cluster_id, should_fail=5, should_pass=17)
+        self.run_OSTF(cluster_id=cluster_id, should_fail=6, should_pass=17)
 
     @snapshot_errors
     @logwrap
