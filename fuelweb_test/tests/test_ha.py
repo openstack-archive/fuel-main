@@ -26,7 +26,8 @@ logwrap = debug(logger)
 @test(groups=["thread_3", "ha"])
 class TestHaVLAN(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_ha_vlan"])
     @log_snapshot_on_error
     def deploy_ha_vlan(self):
         self.env.revert_snapshot("ready_with_5_slaves")
@@ -53,7 +54,8 @@ class TestHaVLAN(TestBasic):
             'slave-01', smiles_count=16, networks_count=8, timeout=300)
         self.env.make_snapshot("deploy_ha_vlan")
 
-    @test(depends_on=[deploy_ha_vlan])
+    @test(depends_on=[deploy_ha_vlan],
+          groups=["deploy_ha_vlan_verify_networks"])
     @log_snapshot_on_error
     def deploy_ha_vlan_verify_networks(self):
         self.env.revert_snapshot("deploy_ha_vlan")
@@ -64,7 +66,8 @@ class TestHaVLAN(TestBasic):
             self.fuel_web.get_last_created_cluster())
         self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
 
-    @test(depends_on=[deploy_ha_vlan])
+    @test(depends_on=[deploy_ha_vlan],
+          groups=["revert_snapshot"])
     @log_snapshot_on_error
     def deploy_ha_vlan_ostf(self):
         self.env.revert_snapshot("deploy_ha_vlan")
@@ -79,7 +82,8 @@ class TestHaVLAN(TestBasic):
 @test(groups=["thread_4", "ha"])
 class TestHaFlat(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_ha_flat"])
     @log_snapshot_on_error
     def deploy_ha_flat(self):
         self.env.revert_snapshot("ready_with_5_slaves")
@@ -103,7 +107,8 @@ class TestHaFlat(TestBasic):
             'slave-01', smiles_count=16, networks_count=8, timeout=300)
         self.env.make_snapshot("deploy_ha_flat")
 
-    @test(depends_on=[deploy_ha_flat])
+    @test(depends_on=[deploy_ha_flat],
+          groups=["deploy_ha_flat_verify_networks"])
     @log_snapshot_on_error
     def deploy_ha_flat_verify_networks(self):
         self.env.revert_snapshot("deploy_ha_flat")
@@ -112,7 +117,8 @@ class TestHaFlat(TestBasic):
             self.fuel_web.get_last_created_cluster())
         self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
 
-    @test(depends_on=[deploy_ha_flat])
+    @test(depends_on=[deploy_ha_flat],
+          groups=["deploy_ha_flat_ostf"])
     @log_snapshot_on_error
     def deploy_ha_flat_ostf(self):
         self.env.revert_snapshot("deploy_ha_flat")
@@ -127,7 +133,8 @@ class TestHaFlat(TestBasic):
 @test(groups=["thread_4", "ha"])
 class TestHaFlatAddCompute(TestBasic):
 
-    @test(depends_on=[TestHaFlat.deploy_ha_flat])
+    @test(depends_on=[TestHaFlat.deploy_ha_flat],
+          groups=["ha_flat_add_compute"])
     @log_snapshot_on_error
     def ha_flat_add_compute(self):
         self.env.revert_snapshot("deploy_ha_flat")
@@ -140,7 +147,8 @@ class TestHaFlatAddCompute(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.env.make_snapshot("ha_flat_add_compute")
 
-    @test(depends_on=[ha_flat_add_compute])
+    @test(depends_on=[ha_flat_add_compute],
+          groups=["ha_flat_add_compute_verify_networks"])
     @log_snapshot_on_error
     def ha_flat_add_compute_verify_networks(self):
         self.env.revert_snapshot("ha_flat_add_compute")
@@ -149,7 +157,8 @@ class TestHaFlatAddCompute(TestBasic):
             self.fuel_web.get_last_created_cluster())
         self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
 
-    @test(depends_on=[ha_flat_add_compute])
+    @test(depends_on=[ha_flat_add_compute],
+          groups=["ha_flat_add_compute_ostf"])
     @log_snapshot_on_error
     def ha_flat_add_compute_ostf(self):
         self.env.revert_snapshot("ha_flat_add_compute")

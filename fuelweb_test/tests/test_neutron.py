@@ -30,7 +30,8 @@ logwrap = debug(logger)
 @test(groups=["thread_3", "neutron"])
 class NeutronGre(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["deploy_neutron_gre"])
     @log_snapshot_on_error
     def deploy_neutron_gre(self):
 
@@ -64,13 +65,15 @@ class NeutronGre(TestBasic):
 
         self.env.make_snapshot("deploy_neutron_gre")
 
-    @test(depends_on=[deploy_neutron_gre])
+    @test(depends_on=[deploy_neutron_gre],
+          groups=["deploy_neutron_gre_verify_networks"])
     @log_snapshot_on_error
     def deploy_neutron_gre_verify_networks(self):
         self.env.revert_snapshot("deploy_neutron_gre")
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[deploy_neutron_gre])
+    @test(depends_on=[deploy_neutron_gre],
+          groups=["deploy_neutron_gre_ostf"])
     @log_snapshot_on_error
     def deploy_neutron_gre_ostf(self):
         self.env.revert_snapshot("deploy_neutron_gre")
@@ -84,7 +87,8 @@ class NeutronGre(TestBasic):
 @test(groups=["thread_3", "neutron"])
 class NeutronVlan(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["deploy_neutron_vlan"])
     @log_snapshot_on_error
     def deploy_neutron_vlan(self):
 
@@ -118,13 +122,15 @@ class NeutronVlan(TestBasic):
 
         self.env.make_snapshot("deploy_neutron_vlan")
 
-    @test(depends_on=[deploy_neutron_vlan])
+    @test(depends_on=[deploy_neutron_vlan],
+          groups=["deploy_neutron_vlan_verify_networks"])
     @log_snapshot_on_error
     def deploy_neutron_vlan_verify_networks(self):
         self.env.revert_snapshot("deploy_neutron_vlan")
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[deploy_neutron_vlan])
+    @test(depends_on=[deploy_neutron_vlan],
+          groups=["deploy_neutron_vlan_ostf"])
     @log_snapshot_on_error
     def deploy_neutron_vlan_ostf(self):
         self.env.revert_snapshot("deploy_neutron_vlan")
@@ -138,7 +144,8 @@ class NeutronVlan(TestBasic):
 @test(groups=["thread_3", "neutron"])
 class NeutronGreHa(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_neutron_gre_ha"])
     @log_snapshot_on_error
     def deploy_neutron_gre_ha(self):
 
@@ -174,13 +181,15 @@ class NeutronGreHa(TestBasic):
 
         self.env.make_snapshot("deploy_neutron_gre_ha")
 
-    @test(depends_on=[deploy_neutron_gre_ha])
+    @test(depends_on=[deploy_neutron_gre_ha],
+          groups=["deploy_neutron_gre_ha_verify_networks"])
     @log_snapshot_on_error
     def deploy_neutron_gre_ha_verify_networks(self):
         self.env.revert_snapshot("deploy_neutron_gre_ha")
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[deploy_neutron_gre_ha])
+    @test(depends_on=[deploy_neutron_gre_ha],
+          groups=["deploy_neutron_gre_ha_ostf"])
     @log_snapshot_on_error
     def deploy_neutron_gre_ha_ostf(self):
         self.env.revert_snapshot("deploy_neutron_gre_ha")
@@ -194,7 +203,8 @@ class NeutronGreHa(TestBasic):
 @test(groups=["thread_3", "neutron"])
 class NeutronVlanHa(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_neutron_vlan_ha"])
     @log_snapshot_on_error
     def deploy_neutron_vlan_ha(self):
 
@@ -230,13 +240,15 @@ class NeutronVlanHa(TestBasic):
 
         self.env.make_snapshot("deploy_neutron_vlan_ha")
 
-    @test(depends_on=[deploy_neutron_vlan_ha])
+    @test(depends_on=[deploy_neutron_vlan_ha],
+          groups=["deploy_neutron_vlan_ha_verify_networks"])
     @log_snapshot_on_error
     def deploy_neutron_vlan_ha_verify_networks(self):
         self.env.revert_snapshot("deploy_neutron_vlan_ha")
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[deploy_neutron_vlan_ha])
+    @test(depends_on=[deploy_neutron_vlan_ha],
+          groups=["deploy_neutron_vlan_ha_ostf"])
     @log_snapshot_on_error
     def deploy_neutron_vlan_ha_ostf(self):
         self.env.revert_snapshot("deploy_neutron_vlan_ha")
