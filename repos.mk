@@ -3,6 +3,9 @@
 repos: $(BUILD_DIR)/repos/repos.done
 
 $(BUILD_DIR)/repos/repos.done:
+	sed -i '/^  fuelmain_sha:/d' $(BUILD_DIR)/repos/version.yaml
+	/bin/echo -n "  fuelmain_sha: " >> $(BUILD_DIR)/repos/version.yaml
+	git rev-parse --verify HEAD >> $(BUILD_DIR)/repos/version.yaml
 	$(ACTION.TOUCH)
 
 # Usage:
