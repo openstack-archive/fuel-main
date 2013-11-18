@@ -340,8 +340,11 @@ class EnvironmentModel(object):
 
     def revert_snapshot(self, name):
         if self.get_virtual_environment().has_snapshot(name):
+            logging.info('We have snapshot with such name %s' % name)
             self.get_virtual_environment().revert(name)
+            logging.info('Starting snapshot reverting ....')
             self.get_virtual_environment().resume()
+            logging.info('Starting snapshot resuming ...')
             return True
         return False
 

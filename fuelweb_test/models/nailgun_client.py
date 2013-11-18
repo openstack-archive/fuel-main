@@ -27,6 +27,7 @@ logwrap = debug(logger)
 class NailgunClient(object):
     def __init__(self, admin_node_ip):
         self.client = HTTPClient(url="http://{}:8000".format(admin_node_ip))
+        logger.info('Init of client by url %s' % "http://{}:8000".format(admin_node_ip))
         super(NailgunClient, self).__init__()
 
     @logwrap
@@ -163,10 +164,10 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def create_cluster(self, data):
+        logging.info('Before post to nailgun')
         return self.client.post(
             "/api/clusters",
-            data=data
-        )
+            data=data)
 
     @logwrap
     @json_parse
@@ -216,6 +217,8 @@ class NailgunClient(object):
     def get_cluster_id(self, name):
         for cluster in self.list_clusters():
             if cluster["name"] == name:
+                logging.info('cluster name is %s' % name)
+                logging.info('cluster id is %s' % cluster["id"])
                 return cluster["id"]
 
     @logwrap

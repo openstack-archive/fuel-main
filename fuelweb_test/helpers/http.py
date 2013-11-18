@@ -20,8 +20,9 @@ logger = logging.getLogger(__name__)
 
 
 class HTTPClient(object):
-    def __init__(self, url=""):
+    def __init__(self, url):
         self.url = url
+        logging.info('url from helpers http_client %s' % self.url)
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)
 
     def get(self, endpoint):
@@ -31,6 +32,7 @@ class HTTPClient(object):
     def post(self, endpoint, data=None, content_type="application/json"):
         if not data:
             data = {}
+        logger.info('self url is %s' % self.url)
         req = urllib2.Request(self.url + endpoint, data=json.dumps(data))
         req.add_header('Content-Type', content_type)
         return self._open(req)

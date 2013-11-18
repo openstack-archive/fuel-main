@@ -23,7 +23,7 @@ from fuelweb_test.helpers.checkers import *
 
 from fuelweb_test.helpers.decorators import debug
 from fuelweb_test.models.nailgun_client import NailgunClient
-from fuelweb_test.settings import *
+import fuelweb_test.settings as help_data
 
 
 logger = logging.getLogger(__name__)
@@ -147,7 +147,7 @@ class FuelWebClient(object):
     def create_cluster(self,
                        name,
                        settings=None,
-                       release_name=OPENSTACK_RELEASE,
+                       release_name=help_data.OPENSTACK_RELEASE,
                        mode=DEPLOYMENT_MODE_SIMPLE,
                        port=5514):
         """
@@ -158,13 +158,18 @@ class FuelWebClient(object):
         :param port:
         :return: cluster_id
         """
+        #TODO back
         release_id = self.client.get_release_id(release_name=release_name)
+        logging.info('Release_id is %s' % str(release_id))
 
         if settings is None:
             settings = {}
 
+        logging.info('I pass if with settings')
+
         cluster_id = self.client.get_cluster_id(name)
         if not cluster_id:
+            logging.info('I have no id')
             data = {
                 "name": name,
                 "release": str(release_id),
@@ -371,10 +376,10 @@ class FuelWebClient(object):
 
     @logwrap
     def update_redhat_credentials(
-            self, license_type=REDHAT_LICENSE_TYPE,
-            username=REDHAT_USERNAME, password=REDHAT_PASSWORD,
-            satellite_host=REDHAT_SATELLITE_HOST,
-            activation_key=REDHAT_ACTIVATION_KEY):
+            self, license_type=help_data.REDHAT_LICENSE_TYPE,
+            username=help_data.REDHAT_USERNAME, password=help_data.REDHAT_PASSWORD,
+            satellite_host=help_data.REDHAT_SATELLITE_HOST,
+            activation_key=help_data.REDHAT_ACTIVATION_KEY):
 
         # release name is in environment variable OPENSTACK_RELEASE
         release_id = self.client.get_release_id('RHOS')
@@ -405,7 +410,7 @@ class FuelWebClient(object):
         self.client.update_network(
             cluster_id,
             networks=network_list,
-            net_manager=NETWORK_MANAGERS['vlan'])
+            net_manager=help_data.NETWORK_MANAGERS['vlan'])
 
     @logwrap
     def verify_murano_service(self, node_name):
