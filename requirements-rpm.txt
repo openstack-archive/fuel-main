@@ -317,6 +317,7 @@ python-argparse-1.2.1-2.el6
 python-blockdiag-1.2.4-1
 python-boto-2.5.2-3.el6
 python-ceilometer
+python-ceilometerclient
 python-ceph
 python-cheetah-2.4.1-1.el6
 python-cinder
@@ -408,6 +409,7 @@ python-warlock
 python-webcolors-1.4-1
 python-webob
 python-websockify
+python-werkzeug
 python-wsgilog-0.3-1
 python-wsgiref-0.1.2-6.el6
 pyxattr-0.5.0-1.el6
