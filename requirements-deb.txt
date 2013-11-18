@@ -31,6 +31,11 @@ busybox-initramfs
 busybox-static
 bzip2
 ca-certificates
+ceilometer-agent-compute
+ceilometer-agent-central
+ceilometer-api
+ceilometer-collector
+ceilometer-common
 ceph
 ceph-deploy
 ceph-mds
@@ -652,6 +657,8 @@ python-apt-common
 python-babel
 python-boto
 python-carrot
+python-ceilometer
+python-ceilometerclient
 python-ceph
 python-chardet
 python-cheetah
@@ -756,6 +763,7 @@ python-urllib3
 python-utidylib
 python-warlock
 python-webob
+python-werkzeug
 python-xapian
 python-xattr
 python-yaml
