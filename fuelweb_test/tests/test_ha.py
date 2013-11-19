@@ -143,7 +143,7 @@ class TestHaFlat(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=16, networks_count=8, timeout=300)
+            'slave-01', smiles_count=16, networks_count=1, timeout=300)
         self.env.make_snapshot("deploy_ha_flat")
 
     @test(depends_on=[deploy_ha_flat],
