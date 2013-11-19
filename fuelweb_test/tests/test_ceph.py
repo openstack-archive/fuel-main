@@ -249,7 +249,7 @@ class CephHA(TestBasic):
             raise SkipTest()
 
         self.env.revert_snapshot("ceph_ha")
-        self.nodes().slaves[-1].destroy()
+        self.env.nodes().slaves[-1].destroy()
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
@@ -274,7 +274,7 @@ class CephHA(TestBasic):
             raise SkipTest()
 
         self.env.revert_snapshot("ceph_ha")
-        self.nodes().slaves[1].destroy()
+        self.env.nodes().slaves[1].destroy()
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
