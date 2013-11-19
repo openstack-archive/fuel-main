@@ -93,9 +93,9 @@ def verify_network_configuration(remote, node):
 def verify_network_list(networks_count, remote):
     ret = remote.check_call('/usr/bin/nova-manage network list')
     logger.debug("network list: \\n: {}".format(ret['stdout']))
-    assert_equal(len(ret['stdout']), networks_count + 1,
+    assert_equal(len(ret['stdout'][1:]), networks_count,
                  "Actual network list {} not equal to expected {}".format(
-                     len(ret['stdout']), networks_count + 1))
+                     len(ret['stdout']), networks_count))
 
 
 @logwrap
