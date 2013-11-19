@@ -349,7 +349,7 @@ RunTest() {
     fi
 
     if [ -z "${VENV_PATH}" ]; then
-        VENV_PATH="~/venv-nailgun-tests"
+        VENV_PATH="/home/jenkins/venv-nailgun-tests"
     fi
 
     # run python virtualenv
