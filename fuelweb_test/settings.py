@@ -35,12 +35,18 @@ DEPLOYMENT_MODE_HA = "ha_compact"
 
 ADMIN_NODE_SETUP_TIMEOUT = os.environ.get("ADMIN_NODE_SETUP_TIMEOUT", 30)
 
-HARDWARE = {
-    "admin_node_memory": os.environ.get("ADMIN_NODE_MEMORY", 1024),
-    "admin_node_cpu": os.environ.get("ADMIN_NODE_CPU", 1),
-    "slave_node_memory": os.environ.get("SLAVE_NODE_MEMORY", 1024),
-    "slave_node_cpu": os.environ.get("SLAVE_NODE_CPU", 1),
+ADMIN_NODE_HARDWARE = {
+    "memory": os.environ.get("ADMIN_NODE_MEMORY", 1024),
+    "cpu": os.environ.get("ADMIN_NODE_CPU", 1)
 }
+SLAVE_NODES_HARDWARE = [{
+    "memory": os.environ.get("SLAVE_NODE_MEMORY", 1024),
+    "cpu": os.environ.get("SLAVE_NODE_CPU", 1),
+} for x in range(1, 10)]
+SLAVE_NODES_HARDWARE.append({
+    "memory": 2048,
+    "cpu": 1,
+})
 
 ADMIN_FORWARD = os.environ.get('ADMIN_FORWARD', 'nat')
 PUBLIC_FORWARD = os.environ.get('PUBLIC_FORWARD', 'nat')

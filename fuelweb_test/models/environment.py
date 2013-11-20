@@ -47,6 +47,11 @@ class EnvironmentModel(object):
         self._virtual_environment = None
         self._keys = None
         self.manager = Manager()
+        self.node_roles = NodeRoles(
+            admin_names=['admin'],
+            other_names=['slave-%02d' % i for i in
+                         range(1, len(SLAVE_NODES_HARDWARE) + 1)]
+        )
         self._fuel_web = FuelWebClient(self.get_admin_node_ip(), self)
 
     def _get_or_create(self):
@@ -70,13 +75,6 @@ class EnvironmentModel(object):
         :rtype: FuelWebClient
         """
         return self._fuel_web
-
-    @property
-    def node_roles(self):
-        return NodeRoles(
-            admin_names=['admin'],
-            other_names=['slave-%02d' % x for x in range(1, 10)]
-        )
 
     @property
     def env_name(self):
@@ -144,8 +142,10 @@ class EnvironmentModel(object):
 
         for name in self.node_roles.admin_names:
             self.describe_admin_node(name, networks)
-        for name in self.node_roles.other_names:
-            self.describe_empty_node(name, networks)
+        for i, name in enumerate(self.node_roles.other_names):
+            self.describe_empty_node(name, networks,
+                                     SLAVE_NODES_HARDWARE[i].get('memory'),
+                                     SLAVE_NODES_HARDWARE[i].get('cpu'))
         return environment
 
     def devops_nodes_by_names(self, devops_node_names):
@@ -156,10 +156,10 @@ class EnvironmentModel(object):
 
     @logwrap
     def describe_admin_node(self, name, networks):
-        node = self.add_node(memory=HARDWARE.get("admin_node_memory", 1024),
-                             vcpu=HARDWARE.get("admin_node_cpu", 1),
-                             name=name,
-                             boot=['hd', 'cdrom'])
+        node = self.add_node(
+            memory=ADMIN_NODE_HARDWARE.get("memory"),
+            vcpu=ADMIN_NODE_HARDWARE.get("cpu"),
+            name=name, boot=['hd', 'cdrom'])
         self.create_interfaces(networks, node)
         self.add_empty_volume(node, name + '-system')
         self.add_empty_volume(node,
@@ -170,10 +170,11 @@ class EnvironmentModel(object):
                               bus='ide')
         return node
 
-    def describe_empty_node(self, name, networks):
-        node = self.add_node(name=name,
-                             memory=HARDWARE.get("slave_node_memory", 1024),
-                             vcpu=HARDWARE.get("slave_node_cpu", 1))
+    def describe_empty_node(self, name, networks, memory=1024, vcpu=1):
+        node = self.add_node(
+            name=name,
+            memory=memory,
+            vcpu=vcpu)
         self.create_interfaces(networks, node)
         self.add_empty_volume(node, name + '-system')
 
