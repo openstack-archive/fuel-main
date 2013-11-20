@@ -98,7 +98,7 @@ class TestHaVLAN(TestBasic):
         """
         self.env.revert_snapshot("deploy_ha_vlan")
 
-        self.run_OSTF(
+        self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             test_sets=['ha', 'smoke', 'sanity'],
             should_fail=4, should_pass=24
@@ -174,7 +174,7 @@ class TestHaFlat(TestBasic):
         """
         self.env.revert_snapshot("deploy_ha_flat")
 
-        self.run_OSTF(
+        self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             test_sets=['ha', 'smoke', 'sanity'],
             should_fail=4, should_pass=24
@@ -200,7 +200,7 @@ class TestHaFlatAddCompute(TestBasic):
         """
         self.env.revert_snapshot("deploy_ha_flat")
 
-        self.env.bootstrap_nodes(self.nodes().slaves[5:6])
+        self.env.bootstrap_nodes(self.env.nodes().slaves[5:6])
         cluster_id = self.fuel_web.get_last_created_cluster()
         self.fuel_web.update_nodes(
             cluster_id, {'slave-06': ['compute']}, True, False
@@ -235,7 +235,7 @@ class TestHaFlatAddCompute(TestBasic):
         """
         self.env.revert_snapshot("ha_flat_add_compute")
 
-        self.run_OSTF(
+        self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             test_sets=['ha', 'smoke', 'sanity'],
             should_fail=4, should_pass=24
