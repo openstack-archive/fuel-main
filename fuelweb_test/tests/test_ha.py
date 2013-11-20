@@ -16,7 +16,7 @@ import logging
 from proboscis import test
 
 from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
-from fuelweb_test.models.fuel_web_client import DEPLOYMENT_MODE_HA
+from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
 
 logger = logging.getLogger(__name__)

@@ -7,7 +7,6 @@ def run_tests():
     from tests import test_services
     from tests import test_simple
 
-    # Run Proboscis and exit.
     TestProgram().run_and_exit()
 
 if __name__ == '__main__':
