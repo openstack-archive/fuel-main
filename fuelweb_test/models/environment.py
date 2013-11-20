@@ -47,6 +47,11 @@ class EnvironmentModel(object):
         self._virtual_environment = None
         self._keys = None
         self.manager = Manager()
+        self.node_roles = NodeRoles(
+            admin_names=['admin'],
+            other_names=['slave-%02d' % i for i in
+                         range(1, len(settings.SLAVE_NODES_HARDWARE) + 1)]
+        )
         self._fuel_web = FuelWebClient(self.get_admin_node_ip(), self)
 
     def _get_or_create(self):
@@ -72,19 +77,10 @@ class EnvironmentModel(object):
         return self._fuel_web
 
     @property
-    def node_roles(self):
-        return NodeRoles(
-            admin_names=['admin'],
-            other_names=['slave-%02d' % x for x in range(1, int(
-                settings.NODES_COUNT))]
-        )
-
-    @property
     def env_name(self):
         return settings.ENV_NAME
 
-    def add_empty_volume(self, node, name,
-                         capacity=settings.NODE_VOLUME_SIZE*1024*1024*1024,
+    def add_empty_volume(self, node, name, capacity,
                          device='disk', bus='virtio', format='qcow2'):
         self.manager.node_attach_volume(
             node=node,
@@ -149,8 +145,12 @@ class EnvironmentModel(object):
 
         for name in self.node_roles.admin_names:
             self.describe_admin_node(name, networks)
-        for name in self.node_roles.other_names:
-            self.describe_empty_node(name, networks)
+        for i, name in enumerate(self.node_roles.other_names):
+            self.describe_empty_node(
+                name, networks,
+                settings.SLAVE_NODES_HARDWARE[i].get('memory'),
+                settings.SLAVE_NODES_HARDWARE[i].get('cpu'),
+                settings.SLAVE_NODES_HARDWARE[i].get('volume_size'))
         return environment
 
     def devops_nodes_by_names(self, devops_node_names):
@@ -162,12 +162,13 @@ class EnvironmentModel(object):
     @logwrap
     def describe_admin_node(self, name, networks):
         node = self.add_node(
-            memory=settings.HARDWARE.get("admin_node_memory", 1024),
-            vcpu=settings.HARDWARE.get("admin_node_cpu", 1),
-            name=name,
-            boot=['hd', 'cdrom'])
+            memory=settings.ADMIN_NODE_HARDWARE.get("memory"),
+            vcpu=settings.ADMIN_NODE_HARDWARE.get("cpu"),
+            name=name, boot=['hd', 'cdrom'])
         self.create_interfaces(networks, node)
-        self.add_empty_volume(node, name + '-system')
+        self.add_empty_volume(
+            node, name + '-system',
+            settings.ADMIN_NODE_HARDWARE.get("volume_size"))
         self.add_empty_volume(
             node,
             name + '-iso',
@@ -177,17 +178,18 @@ class EnvironmentModel(object):
             bus='ide')
         return node
 
-    def describe_empty_node(self, name, networks):
+    def describe_empty_node(self, name, networks, memory=1024, vcpu=1,
+                            volume_size=20 * 1024 * 1024 * 1024):
         node = self.add_node(
             name=name,
-            memory=settings.HARDWARE.get("slave_node_memory", 1024),
-            vcpu=settings.HARDWARE.get("slave_node_cpu", 1))
+            memory=memory,
+            vcpu=vcpu)
         self.create_interfaces(networks, node)
-        self.add_empty_volume(node, name + '-system')
+        self.add_empty_volume(node, name + '-system', volume_size)
 
         if settings.USE_ALL_DISKS:
-            self.add_empty_volume(node, name + '-cinder')
-            self.add_empty_volume(node, name + '-swift')
+            self.add_empty_volume(node, name + '-cinder', volume_size)
+            self.add_empty_volume(node, name + '-swift', volume_size)
 
         return node
 
