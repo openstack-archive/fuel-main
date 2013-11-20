@@ -70,7 +70,7 @@ class NeutronGre(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        cluster = self.client.get_cluster(cluster_id)
+        cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
@@ -152,25 +152,28 @@ class NeutronVlan(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        cluster = self.client.get_cluster(cluster_id)
+        cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
         self.env.make_snapshot("deploy_neutron_vlan")
 
-    @test(depends_on=[deploy_neutron_vlan],
-          groups=["deploy_neutron_vlan_verify_networks"])
-    @log_snapshot_on_error
-    def deploy_neutron_vlan_verify_networks(self):
-        """Verify network on cluster in simple mode with Neutron VLAN
-
-        Scenario:
-            1. Revert snapshot "deploy_neutron_vlan"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("deploy_neutron_vlan")
-        self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
+    # TODO uncomment when fuel/+spec/network-checker-neutron-vlan
+    # will be implemented
+    # @test(depends_on=[deploy_neutron_vlan],
+    #       groups=["deploy_neutron_vlan_verify_networks"])
+    # @log_snapshot_on_error
+    # def deploy_neutron_vlan_verify_networks(self):
+    #     """Verify network on cluster in simple mode with Neutron VLAN
+    #
+    #     Scenario:
+    #         1. Revert snapshot "deploy_neutron_vlan"
+    #         2. Run network verification
+    #
+    #     """
+    #     self.env.revert_snapshot("deploy_neutron_vlan")
+    #
+    #     self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
     @test(depends_on=[deploy_neutron_vlan],
           groups=["deploy_neutron_vlan_ostf"])
@@ -236,7 +239,7 @@ class NeutronGreHa(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        cluster = self.client.get_cluster(cluster_id)
+        cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
@@ -320,25 +323,28 @@ class NeutronVlanHa(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        cluster = self.client.get_cluster(cluster_id)
+        cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
         self.env.make_snapshot("deploy_neutron_vlan_ha")
 
-    @test(depends_on=[deploy_neutron_vlan_ha],
-          groups=["deploy_neutron_vlan_ha_verify_networks"])
-    @log_snapshot_on_error
-    def deploy_neutron_vlan_ha_verify_networks(self):
-        """Verify network on cluster in HA mode with Neutron VLAN
+    # TODO uncomment when fuel/+spec/network-checker-neutron-vlan
+    # will be implemented
 
-        Scenario:
-            1. Revert snapshot "deploy_neutron_vlan_ha"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("deploy_neutron_vlan_ha")
-        self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
+    # @test(depends_on=[deploy_neutron_vlan_ha],
+    #       groups=["deploy_neutron_vlan_ha_verify_networks"])
+    # @log_snapshot_on_error
+    # def deploy_neutron_vlan_ha_verify_networks(self):
+    #     """Verify network on cluster in HA mode with Neutron VLAN
+    #
+    #     Scenario:
+    #         1. Revert snapshot "deploy_neutron_vlan_ha"
+    #         2. Run network verification
+    #
+    #     """
+    #     self.env.revert_snapshot("deploy_neutron_vlan_ha")
+    #     self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
     @test(depends_on=[deploy_neutron_vlan_ha],
           groups=["deploy_neutron_vlan_ha_ostf"])
