@@ -15,7 +15,7 @@
 import logging
 import re
 from devops.helpers.helpers import wait
-from proboscis import test, SkipTest
+from proboscis import test
 from proboscis.asserts import assert_true, assert_equal
 
 from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error

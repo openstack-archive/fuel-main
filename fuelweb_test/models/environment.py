@@ -13,7 +13,6 @@
 #    under the License.
 
 
-import os
 import time
 import logging
 from ipaddr import IPNetwork
@@ -41,7 +40,8 @@ class EnvironmentModel(object):
     installation_timeout = 1800
     deployment_timeout = 1800
     puppet_timeout = 1000
-    nat_interface = 'eth3'
+    nat_interface = INTERFACES.get('admin')
+    admin_net = 'admin'
 
     def __init__(self):
         self._virtual_environment = None
@@ -57,7 +57,8 @@ class EnvironmentModel(object):
             self._virtual_environment.define()
             return self._virtual_environment
 
-    def _router(self, router_name):
+    def router(self, router_name=None):
+        router_name = router_name or self.admin_net
         return str(
             IPNetwork(
                 self.get_virtual_environment().network_by_name(router_name).
@@ -85,11 +86,12 @@ class EnvironmentModel(object):
                          device='disk', bus='virtio', format='qcow2'):
         self.manager.node_attach_volume(
             node=node,
-            volume=self.manager.volume_create(
-                name=name, capacity=capacity,
-                environment=self.get_virtual_environment(),
-                format=format),
-            device=device, bus=bus)
+            volume=self.manager.volume_create(name=name,
+                                              capacity=capacity,
+                                              environment=self.get_virtual_environment(),
+                                              format=format),
+            device=device,
+            bus=bus)
 
     def add_node(self, memory, name, vcpu=1, boot=None):
         return self.manager.node_create(
@@ -100,7 +102,7 @@ class EnvironmentModel(object):
             boot=boot)
 
     @logwrap
-    def add_syslog_server(self, cluster_id, nodes_dict, port=5514):
+    def add_syslog_server(self, cluster_id, port=5514):
         self.fuel_web.add_syslog_server(
             cluster_id, self.get_host_node_ip(), port)
 
@@ -131,11 +133,14 @@ class EnvironmentModel(object):
         for name in INTERFACE_ORDER:
             ip_networks = [IPNetwork(x) for x in POOLS.get(name)[0].split(',')]
             new_prefix = int(POOLS.get(name)[1])
-            pool = self.manager.create_network_pool(
-                networks=ip_networks, prefix=int(new_prefix))
+            pool = self.manager.create_network_pool(networks=ip_networks,
+                                                    prefix=int(new_prefix))
             networks.append(self.manager.network_create(
-                name=name, environment=environment, pool=pool,
-                forward=FORWARDING.get(name), has_dhcp_server=DHCP.get(name)))
+                name=name,
+                environment=environment,
+                pool=pool,
+                forward=FORWARDING.get(name),
+                has_dhcp_server=DHCP.get(name)))
 
         for name in self.node_roles.admin_names:
             self.describe_admin_node(name, networks)
@@ -149,52 +154,26 @@ class EnvironmentModel(object):
             self.get_virtual_environment().node_by_name(name),
             devops_node_names)
 
-    def enable_nat_for_admin_node(self):
-        remote = self.get_admin_remote()
-
-        file_name = \
-            '/etc/sysconfig/network-scripts/ifcfg-%s' % self.nat_interface
-        hwaddr = \
-            ''.join(remote.execute('grep HWADDR %s' % file_name)['stdout'])
-        uuid = ''.join(remote.execute('grep UUID %s' % file_name)['stdout'])
-        nameserver = os.popen(
-            "grep '^nameserver' /etc/resolv.conf | "
-            "grep -v 'nameserver\s\s*127.' | head -3").read()
-
-        remote.execute('echo -e "%s'
-                       '%s'
-                       'DEVICE=%s\\n'
-                       'TYPE=Ethernet\\n'
-                       'ONBOOT=yes\\n'
-                       'NM_CONTROLLED=no\\n'
-                       'BOOTPROTO=dhcp\\n'
-                       'PEERDNS=no" > %s'
-                       % (hwaddr, uuid, self.nat_interface, file_name))
-        remote.execute(
-            'sed "s/GATEWAY=.*/GATEWAY="%s"/g" -i /etc/sysconfig/network'
-            % self.nat_router())
-        remote.execute('echo -e "%s" > /etc/dnsmasq.upstream' % nameserver)
-        remote.execute('service network restart >/dev/null 2>&1')
-        remote.execute('service dnsmasq restart >/dev/null 2>&1')
-
     @logwrap
     def describe_admin_node(self, name, networks):
-        node = self.add_node(
-            memory=HARDWARE.get("admin_node_memory", 1024),
-            vcpu=HARDWARE.get("admin_node_cpu", 1),
-            name=name, boot=['hd', 'cdrom'])
+        node = self.add_node(memory=HARDWARE.get("admin_node_memory", 1024),
+                             vcpu=HARDWARE.get("admin_node_cpu", 1),
+                             name=name,
+                             boot=['hd', 'cdrom'])
         self.create_interfaces(networks, node)
         self.add_empty_volume(node, name + '-system')
-        self.add_empty_volume(
-            node, name + '-iso', capacity=_get_file_size(ISO_PATH),
-            format='raw', device='cdrom', bus='ide')
+        self.add_empty_volume(node,
+                              name + '-iso',
+                              capacity=_get_file_size(ISO_PATH),
+                              format='raw',
+                              device='cdrom',
+                              bus='ide')
         return node
 
     def describe_empty_node(self, name, networks):
-        node = self.add_node(
-            name=name,
-            memory=HARDWARE.get("slave_node_memory", 1024),
-            vcpu=HARDWARE.get("slave_node_cpu", 1))
+        node = self.add_node(name=name,
+                             memory=HARDWARE.get("slave_node_memory", 1024),
+                             vcpu=HARDWARE.get("slave_node_cpu", 1))
         self.create_interfaces(networks, node)
         self.add_empty_volume(node, name + '-system')
 
@@ -209,32 +188,32 @@ class EnvironmentModel(object):
         """
         :rtype : SSHClient
         """
-        return self.nodes().admin.remote(
-            'internal',
-            login='root',
-            password='r00tme')
+        return self.nodes().admin.remote(self.admin_net,
+                                         login='root',
+                                         password='r00tme')
 
     @logwrap
     def get_admin_node_ip(self):
         return str(
-            self.nodes().admin.get_ip_address_by_network_name('internal'))
+            self.nodes().admin.get_ip_address_by_network_name(self.admin_net))
 
     @logwrap
     def get_ebtables(self, cluster_id, devops_nodes):
-        return Ebtables(
-            self.get_target_devs(devops_nodes),
-            self.fuel_web.client.get_cluster_vlans(cluster_id))
+        return Ebtables(self.get_target_devs(devops_nodes),
+                        self.fuel_web.client.get_cluster_vlans(cluster_id))
 
     def get_host_node_ip(self):
-        return self.internal_router()
+        return self.router()
 
     def get_keys(self, node):
         params = {
-            'ip': node.get_ip_address_by_network_name('internal'),
-            'mask': self.internal_net_mask(),
-            'gw': self.internal_router(),
+            'ip': node.get_ip_address_by_network_name(self.admin_net),
+            'mask': self.get_net_mask(self.admin_net),
+            'gw': self.router(),
             'hostname': '.'.join((self.hostname, self.domain)),
-            'nat_interface': self.nat_interface
+            'nat_interface': self.nat_interface,
+            'dns1': '8.8.8.8'
+
         }
         keys = (
             "<Esc><Enter>\n"
@@ -243,7 +222,7 @@ class EnvironmentModel(object):
             " ip=%(ip)s\n"
             " netmask=%(mask)s\n"
             " gw=%(gw)s\n"
-            " dns1=%(gw)s\n"
+            " dns1=%(dns1)s\n"
             " hostname=%(hostname)s\n"
             " dhcp_interface=%(nat_interface)s\n"
             " <Enter>\n"
@@ -262,7 +241,9 @@ class EnvironmentModel(object):
 
     @logwrap
     def get_ssh_to_remote(self, ip):
-        return SSHClient(ip, username='root', password='r00tme',
+        return SSHClient(ip,
+                         username='root',
+                         password='r00tme',
                          private_keys=self.get_private_keys())
 
     @logwrap
@@ -286,24 +267,14 @@ class EnvironmentModel(object):
             self._virtual_environment = self._get_or_create()
         return self._virtual_environment
 
-    def internal_network(self):
+    def get_network(self, net_name):
         return str(
             IPNetwork(
-                self.get_virtual_environment().network_by_name('internal').
+                self.get_virtual_environment().network_by_name(net_name).
                 ip_network))
 
-    def internal_net_mask(self):
-        return str(IPNetwork(
-            self.get_virtual_environment().network_by_name('internal').
-            ip_network).netmask)
-
-    def internal_router(self):
-        return self._router('internal')
-
-    def internal_virtual_ip(self):
-        return str(IPNetwork(
-            self.get_virtual_environment().network_by_name('internal').
-            ip_network)[-2])
+    def get_net_mask(self, net_name):
+        return str(IPNetwork(self.get_virtual_environment().network_by_name(net_name).ip_network).netmask)
 
     def make_snapshot(self, snapshot_name):
         self.get_virtual_environment().suspend(verbose=False)
@@ -315,28 +286,8 @@ class EnvironmentModel(object):
             devops_nodes
         )
 
-    def nat_router(self):
-        return self._router('nat')
-
     def nodes(self):
         return Nodes(self.get_virtual_environment(), self.node_roles)
-
-    def public_net_mask(self):
-        return str(IPNetwork(
-            self.get_virtual_environment().network_by_name('public').
-            ip_network).netmask)
-
-    def public_network(self):
-        return str(
-            IPNetwork(
-                self.get_virtual_environment().network_by_name('public').
-                ip_network))
-
-    def public_router(self):
-        return str(
-            IPNetwork(
-                self.get_virtual_environment().network_by_name('public').
-                ip_network)[1])
 
     def revert_snapshot(self, name):
         if self.get_virtual_environment().has_snapshot(name):
@@ -357,10 +308,9 @@ class EnvironmentModel(object):
         time.sleep(float(ADMIN_NODE_SETUP_TIMEOUT))
         admin.send_keys(self.get_keys(admin))
         # wait while installation complete
-        admin.await('internal', timeout=10 * 60)
+        admin.await(self.admin_net, timeout=10 * 60)
         self.wait_bootstrap()
         time.sleep(10)
-        self.enable_nat_for_admin_node()
         self.sync_time_admin_node()
 
     @logwrap

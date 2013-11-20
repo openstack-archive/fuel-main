@@ -13,7 +13,6 @@
 #    under the License.
 
 import logging
-from devops.helpers.helpers import SSHClient
 from proboscis.asserts import assert_true, assert_false, assert_equal
 from fuelweb_test.helpers.decorators import debug
 

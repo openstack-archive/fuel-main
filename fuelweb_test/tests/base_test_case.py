@@ -13,10 +13,9 @@
 #    under the License.
 
 import logging
-import unittest
 from devops.helpers.helpers import SSHClient
 
-from proboscis import test, before_class, SkipTest
+from proboscis import test, SkipTest
 
 from fuelweb_test.models.environment import EnvironmentModel
 from fuelweb_test.helpers.decorators import debug
@@ -33,12 +32,11 @@ logwrap = debug(logger)
 
 
 class TestBasic(object):
-    """
-    Basic test case class for all system tests.
+    """Basic test case class for all system tests.
+
     Initializes EnvironmentModel and FuelWebModel.
 
     """
-
     def __init__(self):
         self.env = EnvironmentModel()
         self.fuel_web = self.env.fuel_web

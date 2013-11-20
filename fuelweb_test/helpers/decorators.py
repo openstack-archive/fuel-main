@@ -20,7 +20,6 @@ import time
 import urllib2
 from proboscis import SkipTest
 from fuelweb_test.settings import *
-from devops.helpers.helpers import SSHClient
 
 
 def save_logs(url, filename):

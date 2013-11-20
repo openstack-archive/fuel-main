@@ -199,13 +199,15 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
-    def update_network(self, cluster_id, networks=None, net_manager=None):
+    def update_network(self, cluster_id, networks=None, net_manager=None, all_set=False):
         data = {}
         net_provider = self.get_cluster(cluster_id)['net_provider']
         if networks is not None:
             data.update({'networks': networks})
         if net_manager is not None:
             data.update({'net_manager': net_manager})
+        if all_set:
+            data = networks
         return self.client.put(
             "/api/clusters/{}/network_configuration/{}".format(
                 cluster_id, net_provider
