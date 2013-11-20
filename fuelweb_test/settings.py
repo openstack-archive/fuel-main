@@ -22,8 +22,7 @@ ISO_PATH = os.environ.get('ISO_PATH')
 OPENSTACK_RELEASE_CENTOS = 'Havana on CentOS 6.4'
 OPENSTACK_RELEASE_UBUNTU = 'Havana on Ubuntu 12.04'
 OPENSTACK_RELEASE_REDHAT = 'RHOS 3.0 for RHEL 6.4'
-OPENSTACK_RELEASE = os.environ.get(
-    'OPENSTACK_RELEASE', OPENSTACK_RELEASE_CENTOS)
+OPENSTACK_RELEASE = os.environ.get('OPENSTACK_RELEASE', OPENSTACK_RELEASE_CENTOS)
 
 REDHAT_LICENSE_TYPE = os.environ.get('REDHAT_LICENSE_TYPE')
 REDHAT_USERNAME = os.environ.get('REDHAT_USERNAME')
@@ -31,10 +30,8 @@ REDHAT_PASSWORD = os.environ.get('REDHAT_PASSWORD')
 REDHAT_SATELLITE_HOST = os.environ.get('REDHAT_SATELLITE_HOST')
 REDHAT_ACTIVATION_KEY = os.environ.get('REDHAT_ACTIVATION_KEY')
 
-INTERFACE_ORDER = ('internal', 'public', 'private', 'nat')
-
-PUBLIC_FORWARD = os.environ.get('PUBLIC_FORWARD', None)
-NAT_FORWARD = os.environ.get('NAT_FORWARD', 'nat')
+DEPLOYMENT_MODE_SIMPLE = "multinode"
+DEPLOYMENT_MODE_HA = "ha_compact"
 
 ADMIN_NODE_SETUP_TIMEOUT = os.environ.get("ADMIN_NODE_SETUP_TIMEOUT", 30)
 
@@ -45,48 +42,67 @@ HARDWARE = {
     "slave_node_cpu": os.environ.get("SLAVE_NODE_CPU", 1),
 }
 
+ADMIN_FORWARD = os.environ.get('ADMIN_FORWARD', 'nat')
+PUBLIC_FORWARD = os.environ.get('PUBLIC_FORWARD', 'nat')
+
+
+INTERFACE_ORDER = ('admin', 'public', 'management', 'private', 'storage')
+
 FORWARDING = {
+    'admin': ADMIN_FORWARD,
     'public': PUBLIC_FORWARD,
-    'internal': None,
+    'management': None,
     'private': None,
-    'nat': NAT_FORWARD,
+    'storage': None,
 }
 
 DHCP = {
+    'admin': False,
     'public': False,
-    'internal': False,
+    'management': False,
     'private': False,
-    'nat': False,
+    'storage': False
 }
 
 INTERFACES = {
-    'internal': 'eth0',
+    'admin': 'eth0',
     'public': 'eth1',
-    'private': 'eth2',
-    'nat': 'eth3',
+    'management': 'eth2',
+    'private': 'eth3',
+    'storage': 'eth4',
 }
 
 DEFAULT_POOLS = {
+    'admin': '10.108.0.0/16:24',
     'public': '10.108.0.0/16:24',
+    'management': '10.108.0.0/16:24',
     'private': '10.108.0.0/16:24',
-    'internal': '10.108.0.0/16:24',
-    'nat': '10.108.0.0/16:24',
+    'storage': '10.108.0.0/16:24',
 }
 
 POOLS = {
+    'admin': os.environ.get('PUBLIC_POOL',
+                            DEFAULT_POOLS.get('admin')).split(':'),
     'public': os.environ.get('PUBLIC_POOL',
                              DEFAULT_POOLS.get('public')).split(':'),
-    'private': os.environ.get('PRIVATE_POOL',
-                              DEFAULT_POOLS.get('private')).split(':'),
-    'internal': os.environ.get('INTERNAL_POOL',
-                               DEFAULT_POOLS.get('internal')).split(':'),
-    'nat': os.environ.get('NAT_POOL',
-                          DEFAULT_POOLS.get('nat')).split(':'),
+    'management': os.environ.get('PRIVATE_POOL',
+                              DEFAULT_POOLS.get('management')).split(':'),
+    'private': os.environ.get('INTERNAL_POOL',
+                               DEFAULT_POOLS.get('private')).split(':'),
+    'storage': os.environ.get('NAT_POOL',
+                          DEFAULT_POOLS.get('storage')).split(':'),
 }
 
 NETWORK_MANAGERS = {
     'flat': 'FlatDHCPManager',
     'vlan': 'VlanManager'
+}
+
+NEUTRON = 'neutron'
+
+NEUTRON_SEGMENT = {
+    'gre': 'gre',
+    'vlan': 'vlan'
 }
 
 LOGS_DIR = os.environ.get('LOGS_DIR')

@@ -13,7 +13,7 @@
 #    under the License.
 
 import logging
-from proboscis import test, SkipTest
+from proboscis import test
 
 from fuelweb_test.helpers.checkers \
     import verify_savanna_service, verify_murano_service

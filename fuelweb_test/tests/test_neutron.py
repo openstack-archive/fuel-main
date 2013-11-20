@@ -17,10 +17,9 @@ import logging
 from proboscis import test, SkipTest
 
 from proboscis.asserts import assert_equal
-from fuelweb_test.models.fuel_web_client \
-    import DEPLOYMENT_MODE_SIMPLE, DEPLOYMENT_MODE_HA
 from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
-from fuelweb_test.settings import OPENSTACK_RELEASE, OPENSTACK_RELEASE_REDHAT
+from fuelweb_test.settings import OPENSTACK_RELEASE, OPENSTACK_RELEASE_REDHAT, \
+    DEPLOYMENT_MODE_SIMPLE, DEPLOYMENT_MODE_HA
 from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
 
 logger = logging.getLogger(__name__)
