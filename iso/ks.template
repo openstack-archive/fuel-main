@@ -127,15 +127,28 @@ yum
 %include /tmp/post_partition.ks
 
 # Mount installation media in chroot
-%post --nochroot
+%post --nochroot --log=/mnt/sysimage/root/anaconda-post-before-chroot.log
 #!/bin/sh
 
-if [ -d /mnt/source ] ; then
-    mkdir -p /mnt/sysimage/tmp/source
-    mount -o bind /mnt/source /mnt/sysimage/tmp/source
-fi
+SOURCE="/mnt/sysimage/tmp/source"
 
-%post --log=/root/anaconda-post.log
+for I in `cat /proc/cmdline`; do case "$I" in *=*) eval $I;; esac ; done
+
+mkdir -p "${SOURCE}"
+
+case "${repo}" in
+  nfs:*)
+    nfs_url="${repo#nfs:}"
+    mount -t nfs "${nfs_url}" "${SOURCE}"
+  ;;
+  *)
+    if [ -d "/mnt/source" ]; then
+      mount -o bind "/mnt/source" "${SOURCE}"
+    fi
+  ;;
+esac
+
+%post --log=/root/anaconda-post-after-chroot.log
 #!/bin/sh
 
 set -x
