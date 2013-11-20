@@ -18,9 +18,7 @@ from proboscis import test, SkipTest
 
 from fuelweb_test.helpers.checkers import check_ceph_health
 from fuelweb_test.helpers.decorators import log_snapshot_on_error, debug
-from fuelweb_test.models.fuel_web_client \
-    import DEPLOYMENT_MODE_SIMPLE, DEPLOYMENT_MODE_HA
-from fuelweb_test.settings import OPENSTACK_RELEASE, OPENSTACK_RELEASE_REDHAT
+from fuelweb_test.settings import OPENSTACK_RELEASE, OPENSTACK_RELEASE_REDHAT, DEPLOYMENT_MODE_SIMPLE, DEPLOYMENT_MODE_HA
 from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
 
 logger = logging.getLogger(__name__)

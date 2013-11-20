@@ -17,20 +17,19 @@ import logging
 import re
 from devops.error import TimeoutError
 
-from devops.helpers.helpers import SSHClient, wait, _wait
-from proboscis.asserts import assert_true, assert_false, assert_equal
+from devops.helpers.helpers import wait, _wait
+from ipaddr import IPNetwork
+from proboscis.asserts import assert_true, assert_equal
 from fuelweb_test.helpers.checkers import *
 
 from fuelweb_test.helpers.decorators import debug
 from fuelweb_test.models.nailgun_client import NailgunClient
+from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE, NEUTRON, NEUTRON_SEGMENT
 import fuelweb_test.settings as help_data
 
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
-
-DEPLOYMENT_MODE_SIMPLE = "multinode"
-DEPLOYMENT_MODE_HA = "ha_compact"
 
 
 class FuelWebClient(object):
@@ -200,6 +199,7 @@ class FuelWebClient(object):
                         settings[option]
 
             self.client.update_cluster_attributes(cluster_id, attributes)
+            self.update_network_configuration(cluster_id)
 
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
@@ -356,6 +356,9 @@ class FuelWebClient(object):
         cluster_node_ids = map(lambda _node: str(_node['id']), nailgun_nodes)
         assert_true(
             all([node_id in cluster_node_ids for node_id in node_ids]))
+
+        self.update_nodes_interfaces(cluster_id)
+
         return nailgun_nodes
 
     @logwrap
@@ -430,3 +433,82 @@ class FuelWebClient(object):
             self.environment.get_virtual_environment().
             node_by_name(node_name))['ip']
         verify_savanna_service(self.environment.get_ssh_to_remote(ip))
+
+    @logwrap
+    def update_nodes_interfaces(self, cluster_id):
+        cluster = self.client.get_cluster(cluster_id)
+        net_provider = self.client.get_cluster(cluster_id)['net_provider']
+        if NEUTRON == net_provider:
+            assigned_networks = {
+                    'eth1': ['public'],
+                    'eth2': ['management'],
+                    'eth4': ['storage'],
+            }
+
+            if cluster['net_segment_type'] == NEUTRON_SEGMENT['vlan']:
+                assigned_networks.update({'eth3': ['private']})
+        else:
+            assigned_networks = {
+                'eth1': ['floating', 'public'],
+                'eth2': ['management'],
+                'eth3': ['fixed'],
+                'eth4': ['storage'],
+            }
+
+        nailgun_nodes = self.client.list_cluster_nodes(cluster_id)
+        for node in nailgun_nodes:
+             self.update_node_networks(node['id'], assigned_networks)
+
+    @logwrap
+    def update_network_configuration(self, cluster_id):
+        net_config = self.client.get_networks(cluster_id)
+        net_provider = self.client.get_cluster(cluster_id)['net_provider']
+
+        self.client.update_network(cluster_id=cluster_id,
+                                   networks=self.update_net_settings(net_config,
+                                                                     net_provider),
+                                   all_set=True)
+
+    def update_net_settings(self, network_configuration, net_provider):
+        for net in network_configuration.get('networks'):
+            self.set_network(net_config=net,
+                             net_name=net['name'])
+
+        if NEUTRON == net_provider:
+            neutron_params = network_configuration['neutron_parameters']['predefined_networks']['net04_ext']['L3']
+            neutron_params['cidr'] = self.environment.get_network('public')
+            neutron_params['gateway'] = self.environment.router('public')
+            neutron_params['floating'] = self.get_range(self.environment.get_network('public'), 1)[0]
+
+        print network_configuration
+        return network_configuration
+
+    def set_network(self, net_config, net_name):
+        if 'floating' == net_name:
+            self.net_settings(net_config, 'public', True)
+        elif net_name in ['management', 'storage', 'public']:
+            self.net_settings(net_config, net_name)
+
+    def net_settings(self, net_config, net_name, floating=False):
+        ip_network = IPNetwork(self.environment.get_network(net_name))
+        if 'nova_network':
+            net_config['ip_ranges'] = self.get_range(ip_network, 1) \
+                if floating else self.get_range(ip_network, -1)
+        else:
+            net_config['ip_ranges'] = self.get_range(ip_network)
+
+        net_config['network_size'] = len(list(ip_network))
+        net_config['netmask'] = self.environment.get_net_mask(net_name)
+        net_config['vlan_start'] = None
+        net_config['cidr'] = str(ip_network)
+        net_config['gateway'] = self.environment.router(net_name) #if net_name != "nat" else None
+
+    def get_range(self, ip_network, ip_range=0):
+        net = list(IPNetwork(ip_network))
+        half = len(net)/2
+        if ip_range == 0:
+            return [[str(net[2]), str(net[-2])]]
+        elif ip_range == 1:
+            return [[str(net[half]), str(net[-2])]]
+        elif ip_range == -1:
+            return [[str(net[2]), str(net[half - 1])]]
