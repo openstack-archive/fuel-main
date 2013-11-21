@@ -18,6 +18,7 @@ import os
 ENV_NAME = os.environ.get("ENV_NAME", "fuel_system_test")
 
 ISO_PATH = os.environ.get('ISO_PATH')
+DNS = os.environ.get('DNS', '8.8.8.8')
 
 OPENSTACK_RELEASE_CENTOS = 'Havana on CentOS 6.4'
 OPENSTACK_RELEASE_UBUNTU = 'Havana on Ubuntu 12.04'

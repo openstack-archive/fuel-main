@@ -212,7 +212,7 @@ class EnvironmentModel(object):
             'gw': self.router(),
             'hostname': '.'.join((self.hostname, self.domain)),
             'nat_interface': self.nat_interface,
-            'dns1': '8.8.8.8'
+            'dns1': DNS
 
         }
         keys = (
