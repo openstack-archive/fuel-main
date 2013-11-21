@@ -1,0 +1,10 @@
+Verified+2: Jenkins
+Approved+1: Dmitry Pyzhov <dpyzhov@mirantis.com>
+Code-Review+2: Dmitry Pyzhov <dpyzhov@mirantis.com>
+Code-Review+1: Nastya Urlapova <aurlapova@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 21 Nov 2013 09:49:22 +0000
+Reviewed-on: https://review.openstack.org/57631
+Project: stackforge/fuel-main
+Branch: refs/heads/master
