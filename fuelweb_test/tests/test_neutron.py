@@ -75,19 +75,21 @@ class NeutronGre(TestBasic):
 
         self.env.make_snapshot("deploy_neutron_gre")
 
-    @test(depends_on=[deploy_neutron_gre],
-          groups=["deploy_neutron_gre_verify_networks"])
-    @log_snapshot_on_error
-    def deploy_neutron_gre_verify_networks(self):
-        """Verify network on cluster in simple mode with Neutron GRE
-
-        Scenario:
-            1. Revert snapshot "deploy_neutron_gre"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("deploy_neutron_gre")
-        self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
+    # TODO uncomment when fuel/+spec/network-checker-neutron-vlan
+    # will be implemented
+    #@test(depends_on=[deploy_neutron_gre],
+    #      groups=["deploy_neutron_gre_verify_networks"])
+    #@log_snapshot_on_error
+    #def deploy_neutron_gre_verify_networks(self):
+    #    """Verify network on cluster in simple mode with Neutron GRE
+    #
+    #    Scenario:
+    #        1. Revert snapshot "deploy_neutron_gre"
+    #        2. Run network verification
+    #
+    #    """
+    #    self.env.revert_snapshot("deploy_neutron_gre")
+    #    self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
     @test(depends_on=[deploy_neutron_gre],
           groups=["deploy_neutron_gre_ostf"])
@@ -244,19 +246,21 @@ class NeutronGreHa(TestBasic):
 
         self.env.make_snapshot("deploy_neutron_gre_ha")
 
-    @test(depends_on=[deploy_neutron_gre_ha],
-          groups=["deploy_neutron_gre_ha_verify_networks"])
-    @log_snapshot_on_error
-    def deploy_neutron_gre_ha_verify_networks(self):
-        """Verify network on cluster in HA mode with Neutron GRE
-
-        Scenario:
-            1. Revert snapshot "deploy_neutron_gre_ha"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("deploy_neutron_gre_ha")
-        self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
+    # TODO uncomment when fuel/+spec/network-checker-neutron-vlan
+    # will be implemented
+    #@test(depends_on=[deploy_neutron_gre_ha],
+    #      groups=["deploy_neutron_gre_ha_verify_networks"])
+    #@log_snapshot_on_error
+    #def deploy_neutron_gre_ha_verify_networks(self):
+    #    """Verify network on cluster in HA mode with Neutron GRE
+    #
+    #    Scenario:
+    #        1. Revert snapshot "deploy_neutron_gre_ha"
+    #        2. Run network verification
+    #
+    #    """
+    #    self.env.revert_snapshot("deploy_neutron_gre_ha")
+    #    self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
     @test(depends_on=[deploy_neutron_gre_ha],
           groups=["deploy_neutron_gre_ha_ostf"])
