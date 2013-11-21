@@ -49,7 +49,7 @@ class TestBasic(object):
         :raises: SkipTest
 
         """
-        if snapshot_name != "" and snapshot_name is not None:
+        if snapshot_name and not UPLOAD_MANIFESTS:
             if self.env.get_virtual_environment().has_snapshot(snapshot_name):
                 raise SkipTest()
 
