@@ -24,7 +24,7 @@ source config.sh
 source functions/vm.sh
 
 # Create and start slave nodes
-for idx in $(seq 1 $cluster_size); do
+for idx in $(eval echo {1..$cluster_size}); do
     name="${vm_name_prefix}slave-${idx}"
     echo
     delete_vm $name
