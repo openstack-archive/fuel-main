@@ -39,7 +39,7 @@ class TestAdminNode(TestBasic):
             2. Search for puppet master process on master node
 
         """
-        if OPENSTACK_RELEASE != OPENSTACK_RELEASE_CENTOS:
+        if OPENSTACK_RELEASE_CENTOS not in OPENSTACK_RELEASE:
             raise SkipTest()
         self.env.revert_snapshot("empty")
         wait(
@@ -65,7 +65,7 @@ class TestAdminNode(TestBasic):
             2. test cobbler API and HTTP server through send http request
 
         """
-        if OPENSTACK_RELEASE != OPENSTACK_RELEASE_CENTOS:
+        if OPENSTACK_RELEASE_CENTOS not in OPENSTACK_RELEASE:
             raise SkipTest()
         self.env.revert_snapshot("empty")
         wait(
@@ -88,7 +88,7 @@ class TestAdminNode(TestBasic):
             2. Search for master and child processes
 
         """
-        if OPENSTACK_RELEASE != OPENSTACK_RELEASE_CENTOS:
+        if OPENSTACK_RELEASE_CENTOS not in OPENSTACK_RELEASE:
             raise SkipTest()
         self.env.revert_snapshot("empty")
         ps_output = self.env.get_admin_remote().execute('ps ax')['stdout']
