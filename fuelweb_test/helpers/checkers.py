@@ -15,6 +15,7 @@
 import logging
 from proboscis.asserts import assert_true, assert_false, assert_equal
 from fuelweb_test.helpers.decorators import debug
+from time import sleep
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
@@ -110,7 +111,15 @@ def verify_savanna_service(remote):
 def verify_service_list(remote, smiles_count):
     ret = remote.check_call('/usr/bin/nova-manage service list')
     logger.debug("Service list: {}".format(ret['stdout']))
-    assert_equal(
-        smiles_count, ''.join(ret['stdout']).count(":-)"), "Smiles count")
-    assert_equal(
-        0, ''.join(ret['stdout']).count("XXX"), "Broken services count")
+    try:
+        assert_equal(
+            smiles_count, ''.join(ret['stdout']).count(":-)"), "Smiles count")
+        assert_equal(
+            0, ''.join(ret['stdout']).count("XXX"), "Broken services count")
+    except:
+        logger.debug("Services still not read. Sleeping for 60 seconds and retrying")
+        sleep(60)
+        assert_equal(
+            smiles_count, ''.join(ret['stdout']).count(":-)"), "Smiles count")
+        assert_equal(
+            0, ''.join(ret['stdout']).count("XXX"), "Broken services count")
