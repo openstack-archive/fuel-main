@@ -195,7 +195,7 @@ class NeutronVlan(TestBasic):
         )
 
 
-@test(groups=["thread_3", "neutron"])
+@test(groups=["thread_4", "neutron"])
 class NeutronGreHa(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
@@ -281,7 +281,7 @@ class NeutronGreHa(TestBasic):
         )
 
 
-@test(groups=["thread_3", "neutron"])
+@test(groups=["thread_2", "neutron"])
 class NeutronVlanHa(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
