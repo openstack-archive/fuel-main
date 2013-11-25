@@ -49,6 +49,18 @@ NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
 ASTUTE_REPO?=https://github.com/stackforge/fuel-astute.git
 OSTF_REPO?=https://github.com/stackforge/fuel-ostf.git
 
+# Gerrit URLs and commits
+# fuellib gerrit does not exist, just a placeholder
+FUELLIB_GERRIT_URL?=https://review.openstack.org/stackforge/fuellib
+NAILGUN_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-web
+ASTUTE_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-astute
+OSTF_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-ostf
+
+FUELLIB_GERRIT_COMMIT?=none
+NAILGUN_GERRIT_COMMIT?=none
+ASTUTE_GERRIT_COMMIT?=none
+OSTF_GERRIT_COMMIT?=none
+
 LOCAL_MIRROR_SRC:=$(LOCAL_MIRROR)/src
 LOCAL_MIRROR_EGGS:=$(LOCAL_MIRROR)/eggs
 LOCAL_MIRROR_GEMS:=$(LOCAL_MIRROR)/gems
