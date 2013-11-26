@@ -17,19 +17,38 @@
 # This file contains the functions to manage host-only interfaces in the system
 
 get_hostonly_interfaces() {
-    echo -e `VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq` 
+  echo -e `VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`
 }
 
 is_hostonly_interface_present() {
-    name=$1
-    list=$(get_hostonly_interfaces)
-    
-    # Check that the list of interfaces contains the given interface
-    if [[ $list = *$name* ]]; then
-        return 0
-    else
-        return 1
-    fi
+  name=$1
+# String comparison with IF works different in Cygwin, probably due to encoding.
+# So, reduced Case is used. since it works the same way.
+# Default divider character change is mandatory for Cygwin.
+  case "$(uname)" in
+    CYGWIN*)
+      OIFS=$IFS
+      IFS=","
+      ;;
+    *) 
+      ;;
+  esac
+  # Call VBoxManage directly instead of function, due to changed IFS
+  list=(`VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`)
+  # Change default divider back
+  case "$(uname)" in
+	  CYGWIN*)
+      IFS=$OIFS
+      ;;
+	  *)
+	    ;;
+	esac
+  # Check that the list of interfaces contains the given interface
+  if [[ $list = *$name* ]]; then
+    return 0
+  else
+    return 1
+  fi
 }
 
 create_hostonly_interface() {
@@ -39,7 +58,7 @@ create_hostonly_interface() {
     echo "Creating host-only interface (name ip netmask): $name  $ip  $mask"
 
     # Exit if the interface already exists (deleting it here is not safe, as VirtualBox creates hostonly adapters sequentially)
-    if is_hostonly_interface_present $name; then
+    if is_hostonly_interface_present "$name"; then
         echo "Fatal error. Interface $name cannot be created because it already exists. Exiting"
         exit 1
     fi
@@ -47,27 +66,25 @@ create_hostonly_interface() {
     VBoxManage hostonlyif create
 
     # If it does not exist after creation, let's abort
-    if ! is_hostonly_interface_present $name; then
+    if ! is_hostonly_interface_present "$name"; then
         echo "Fatal error. Interface $name does not exist after creation. Exiting"
         exit 1
     fi
 
     # Disable DHCP
     echo "Disabling DHCP server on interface: $name..."
-    VBoxManage dhcpserver remove --ifname $name 2>/dev/null
+    VBoxManage dhcpserver remove --ifname "$name" 2>/dev/null
 
     # Set up IP address and network mask
     echo "Configuring IP address $ip and network mask $mask on interface: $name..."
-    VBoxManage hostonlyif ipconfig $name --ip $ip --netmask $mask
+    VBoxManage hostonlyif ipconfig "$name" --ip $ip --netmask $mask
 }
 
 delete_all_hostonly_interfaces() {
-    list=$(get_hostonly_interfaces)
-
-    # Delete every single hostonly interface in the system
-    for interface in $list; do
-        echo "Deleting host-only interface: $interface..."
-        VBoxManage hostonlyif remove $interface
-    done
+  OIFS=$IFS;IFS=",";list=(`VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`);IFS=$OIFS
+  # Delete every single hostonly interface in the system
+  for interface in "${list[@]}"; do
+    echo "Deleting host-only interface: $interface..."
+    VBoxManage hostonlyif remove "$interface"
+  done
 }
-

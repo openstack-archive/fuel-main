@@ -24,19 +24,21 @@ source config.sh
 source functions/vm.sh
 
 # Create and start slave nodes
-for idx in $(seq 1 $cluster_size); do
+for idx in $(eval echo {1..$cluster_size}); do
     name="${vm_name_prefix}slave-${idx}"
     echo
     delete_vm $name
     vm_ram=${vm_slave_memory_mb[$idx]}
     [ -z $vm_ram ] && vm_ram=$vm_slave_memory_default
     echo
-    create_vm $name ${host_nic_name[0]} $vm_slave_cpu_cores $vm_ram $vm_slave_first_disk_mb
+    create_vm $name "${host_nic_name[0]}" $vm_slave_cpu_cores $vm_ram $vm_slave_first_disk_mb
 
     # Add additional NICs to VM
     echo
-    add_hostonly_adapter_to_vm $name 2 ${host_nic_name[1]}
-    add_hostonly_adapter_to_vm $name 3 ${host_nic_name[2]}
+    add_hostonly_adapter_to_vm $name 2 "${host_nic_name[1]}"
+    add_hostonly_adapter_to_vm $name 3 "${host_nic_name[2]}"
+    add_hostonly_adapter_to_vm $name 4 "${host_nic_name[3]}"
+    add_hostonly_adapter_to_vm $name 5 "${host_nic_name[4]}"
 
     # Add additional disks to VM
     echo
