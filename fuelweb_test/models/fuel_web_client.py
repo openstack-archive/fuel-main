@@ -378,6 +378,20 @@ class FuelWebClient(object):
             [{'id': node_id, 'interfaces': interfaces}])
 
     @logwrap
+    def update_node_disk(self, node_id, disks_dict):
+        disks = self.client.get_node_disks(node_id)
+        for disk in disks:
+            dname = disk['name']
+            if dname not in disks_dict:
+                continue
+            for volume in disk['volumes']:
+                vname = volume['name']
+                if vname in disks_dict[dname]:
+                    volume['size'] = disks_dict[dname][vname]
+
+        self.client.put_node_disks(node_id, disks)
+
+    @logwrap
     def update_redhat_credentials(
             self, license_type=help_data.REDHAT_LICENSE_TYPE,
             username=help_data.REDHAT_USERNAME, password=help_data.REDHAT_PASSWORD,
