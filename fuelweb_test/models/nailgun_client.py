@@ -137,8 +137,13 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
-    def get_node_disks(self, disk_id):
-        return self.client.get("/api/nodes/{}/disks".format(disk_id))
+    def get_node_disks(self, node_id):
+        return self.client.get("/api/nodes/{}/disks".format(node_id))
+
+    @logwrap
+    @json_parse
+    def put_node_disks(self, node_id, data):
+        return self.client.put("/api/nodes/{}/disks".format(node_id), data)
 
     @logwrap
     def get_release_id(self, release_name=OPENSTACK_RELEASE):

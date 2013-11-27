@@ -64,6 +64,19 @@ class CephCompact(TestBasic):
                 'slave-02': ['compute', 'ceph-osd']
             }
         )
+        # configure disks to avoid "group requires minimum xxx" error
+        node = self.fuel_web.get_nailgun_node_by_name('slave-01')
+        self.fuel_web.update_node_disk(node['id'], {
+            'vda': {'os': 19852, 'image': 0},
+            'vdb': {'image': 9000, 'ceph': 10852}
+        })
+
+        node = self.fuel_web.get_nailgun_node_by_name('slave-02')
+        self.fuel_web.update_node_disk(node['id'], {
+            'vda': {'os': 19852, 'vm': 0},
+            'vdb': {'vm': 9000, 'ceph': 10852}
+        })
+
         self.fuel_web.deploy_cluster_wait(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
