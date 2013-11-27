@@ -198,6 +198,7 @@ class FuelWebClient(object):
                     attributes['editable'][section][option]['value'] =\
                         settings[option]
 
+            attributes['editable']['common']['debug']['value'] = True
             self.client.update_cluster_attributes(cluster_id, attributes)
             self.update_network_configuration(cluster_id)
 
