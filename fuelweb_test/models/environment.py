@@ -82,7 +82,7 @@ class EnvironmentModel(object):
     def env_name(self):
         return ENV_NAME
 
-    def add_empty_volume(self, node, name, capacity=20 * 1024 * 1024 * 1024,
+    def add_empty_volume(self, node, name, capacity=50 * 1024 * 1024 * 1024,
                          device='disk', bus='virtio', format='qcow2'):
         self.manager.node_attach_volume(
             node=node,
