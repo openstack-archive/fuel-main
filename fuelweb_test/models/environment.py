@@ -16,6 +16,7 @@
 import time
 import logging
 from ipaddr import IPNetwork
+import time
 
 from paramiko import RSAKey
 
@@ -297,6 +298,7 @@ class EnvironmentModel(object):
             logging.info('Starting snapshot reverting ....')
             self.get_virtual_environment().resume()
             logging.info('Starting snapshot resuming ...')
+            time.sleep(10)
             return True
         return False
 
