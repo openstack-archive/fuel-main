@@ -49,7 +49,9 @@ ifeq ($(NO_UI_OPTIMIZE),0)
 	mkdir -p $(BUILD_DIR)/packages/eggs
 	cp -r $(BUILD_DIR)/repos/nailgun/nailgun $(BUILD_DIR)/packages/eggs
 	cd $(BUILD_DIR)/repos/nailgun/nailgun && \
-		r.js -o build.js dir=$(BUILD_DIR)/packages/eggs/nailgun/static
+		npm install
+	cd $(BUILD_DIR)/repos/nailgun/nailgun && \
+		grunt build --static-dir=$(BUILD_DIR)/packages/eggs/nailgun/static
 	rm -rf $(BUILD_DIR)/packages/eggs/nailgun/static/templates
 	rm -f $(BUILD_DIR)/packages/eggs/nailgun/static/build.txt
 	find $(BUILD_DIR)/packages/eggs/nailgun/static/css -type f ! -name main.css -delete
