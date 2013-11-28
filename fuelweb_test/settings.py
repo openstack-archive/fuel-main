@@ -42,6 +42,7 @@ HARDWARE = {
     "slave_node_memory": os.environ.get("SLAVE_NODE_MEMORY", 1024),
     "slave_node_cpu": os.environ.get("SLAVE_NODE_CPU", 1),
 }
+NODE_VOLUME_SIZE = os.environ.get('NODE_VOLUME_SIZE', 50)
 
 ADMIN_FORWARD = os.environ.get('ADMIN_FORWARD', 'nat')
 PUBLIC_FORWARD = os.environ.get('PUBLIC_FORWARD', 'nat')

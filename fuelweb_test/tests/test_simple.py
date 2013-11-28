@@ -22,6 +22,7 @@ from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
 from fuelweb_test.helpers.eb_tables import Ebtables
 from fuelweb_test.models.fuel_web_client import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
+from fuelweb_test.settings import NODE_VOLUME_SIZE
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
@@ -850,25 +851,28 @@ class NodeDiskSizes(TestBasic):
 
             logger.debug("Block device:\n{}".format(str_block_devices))
 
-            expected_regexp = re.compile("vda\s+\d+:\d+\s+0\s+20G\s+0\s+disk")
+            expected_regexp = re.compile(
+                "vda\s+\d+:\d+\s+0\s+{}G\s+0\s+disk".format(NODE_VOLUME_SIZE))
             assert_true(
                 expected_regexp.search(str_block_devices),
-                "Unable to find vda block device for 20G in: {}".format(
-                    str_block_devices
+                "Unable to find vda block device for {}G in: {}".format(
+                    NODE_VOLUME_SIZE, str_block_devices
                 ))
 
-            expected_regexp = re.compile("vdb\s+\d+:\d+\s+0\s+20G\s+0\s+disk")
+            expected_regexp = re.compile(
+                "vdb\s+\d+:\d+\s+0\s+{}G\s+0\s+disk".format(NODE_VOLUME_SIZE))
             assert_true(
                 expected_regexp.search(str_block_devices),
-                "Unable to find vdb block device for 20G in: {}".format(
-                    str_block_devices
+                "Unable to find vdb block device for {}G in: {}".format(
+                    NODE_VOLUME_SIZE, str_block_devices
                 ))
 
-            expected_regexp = re.compile("vdc\s+\d+:\d+\s+0\s+20G\s+0\s+disk")
+            expected_regexp = re.compile(
+                "vdc\s+\d+:\d+\s+0\s+{}G\s+0\s+disk".format(NODE_VOLUME_SIZE))
             assert_true(
                 expected_regexp.search(str_block_devices),
-                "Unable to find vdc block device for 20G in: {}".format(
-                    str_block_devices
+                "Unable to find vdc block device for {}G in: {}".format(
+                    NODE_VOLUME_SIZE, str_block_devices
                 ))
 
 
