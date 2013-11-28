@@ -14,6 +14,8 @@ make clean
 make $WORKSPACE/build/repos/nailgun.done
 
 cd $WORKSPACE/build/repos/nailgun/nailgun
+npm install
+
 # Cleaning database
 ./manage.py dropdb
 
@@ -23,7 +25,7 @@ cd $WORKSPACE/build/repos/nailgun/nailgun
 ./manage.py loaddata nailgun/fixtures/sample_environment.json
 
 # Compressing javascript
-r.js -o build.js dir=static_compressed
+grunt build --static-dir=static_compressed
 
 # Replace static path with the one pointing to compressed static content folder
 sed 's|_replace_me_static_compressed_path_|'"$WORKSPACE"'/build/repos/nailgun/nailgun/static_compressed|' -i $topdir/nginx/nailgun.conf
