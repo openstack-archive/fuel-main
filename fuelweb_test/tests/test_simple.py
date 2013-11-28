@@ -808,22 +808,25 @@ class NodeDiskSizes(TestBasic):
         self.env.revert_snapshot("ready_with_3_slaves")
 
         # assert /api/nodes
+        disk_size = NODE_VOLUME_SIZE * 1024 ** 3
         nailgun_nodes = self.fuel_web.client.list_nodes()
         for node in nailgun_nodes:
             for disk in node['meta']['disks']:
-                assert_equal(disk['size'], 21474836480, 'Disk size')
+                assert_equal(disk['size'], disk_size, 'Disk size')
 
+        hdd_size = "{} TB HDD".format(float(disk_size * 3 / (10 ** 9)) / 1000)
         notifications = self.fuel_web.client.get_notifications()
         for node in nailgun_nodes:
             # assert /api/notifications
             for notification in notifications:
                 if notification['node_id'] == node['id']:
-                    assert_true('64.0 GB HDD' in notification['message'])
+                    assert_true(hdd_size in notification['message'])
 
             # assert disks
             disks = self.fuel_web.client.get_node_disks(node['id'])
             for disk in disks:
-                assert_equal(disk['size'], 19980, 'Disk size')
+                assert_equal(disk['size'],
+                             NODE_VOLUME_SIZE * 1024 - 500, 'Disk size')
 
     @test(depends_on=[SimpleCinder.deploy_simple_cinder],
           groups=["check_nodes_disks"])
