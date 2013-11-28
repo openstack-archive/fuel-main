@@ -532,7 +532,12 @@ mountall
 msr-tools
 mtr-tiny
 multiarch-support
+murano-api
+murano-common
+murano-conductor
 murano-dashboard
+murano-metadataclient
+murano-repository
 mysql-client
 mysql-common
 mysql-server-wsrep
