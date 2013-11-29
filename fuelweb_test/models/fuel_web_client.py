@@ -123,7 +123,7 @@ class FuelWebClient(object):
                 return release["id"]
 
     @logwrap
-    def assert_task_success(self, task, timeout=90 * 60, interval=5):
+    def assert_task_success(self, task, timeout=110 * 60, interval=5):
         task = self.task_wait(task, timeout, interval)
         assert_equal(
             task['status'], 'ready',
@@ -527,3 +527,4 @@ class FuelWebClient(object):
             return [[str(net[half]), str(net[-2])]]
         elif ip_range == -1:
             return [[str(net[2]), str(net[half - 1])]]
+
