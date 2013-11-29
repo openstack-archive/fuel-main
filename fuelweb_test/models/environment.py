@@ -41,7 +41,7 @@ class EnvironmentModel(object):
     installation_timeout = 1800
     deployment_timeout = 1800
     puppet_timeout = 1000
-    nat_interface = INTERFACES.get('admin')
+    nat_interface = '' #INTERFACES.get('admin')
     admin_net = 'admin'
 
     def __init__(self):
