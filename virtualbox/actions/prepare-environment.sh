@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #    Copyright 2013 Mirantis, Inc.
 #
@@ -61,7 +61,7 @@ delete_vms_multiple $vm_name_prefix
 delete_all_hostonly_interfaces
 
 # Create the required host-only interfaces
-for idx in $(seq 0 2); do
+for idx in $(eval echo {0..2}); do
   create_hostonly_interface ${host_nic_name[$idx]} ${host_nic_ip[$idx]} ${host_nic_mask[$idx]}
 done
 
