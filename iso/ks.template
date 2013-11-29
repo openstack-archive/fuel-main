@@ -164,10 +164,14 @@ function save_cfg {
     scrDHCPFile="/etc/sysconfig/network-scripts/ifcfg-$dhcp_interface"
     #Ignore gateway and set up DHCP if it is used, otherwise apply it 
     if [ $dhcp_interface ] && [ "$dhcp_interface" != "$device" ]; then
-        echo "DEVICE=$dhcp_interface" > $scrDHCPFile
-        echo "BOOTPROTO=dhcp" >> $scrDHCPFile
-        echo "ONBOOT=yes" >> $scrDHCPFile
-        echo "USERCTL=no" >> $scrDHCPFile
+        if ! grep -q "$dhcp_interface" /proc/net/dev; then
+          echo "ERROR: DHCP interface $dhcp_interface configured but does not exist." 1>&2
+        else
+          echo "DEVICE=$dhcp_interface" > $scrDHCPFile
+          echo "BOOTPROTO=dhcp" >> $scrDHCPFile
+          echo "ONBOOT=yes" >> $scrDHCPFile
+          echo "USERCTL=no" >> $scrDHCPFile
+        fi
     else
         echo GATEWAY=$gw >> /etc/sysconfig/network
     fi
