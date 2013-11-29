@@ -269,9 +269,9 @@ class CephHA(TestBasic):
             should_fail=4, should_pass=18
         )
 
-    @test(depends_on=[ceph_ha], groups=["ceph_ha_destroy_controller"])
+    @test(depends_on=[ceph_ha], groups=["ceph_ha_destroy_compute"])
     @log_snapshot_on_error
-    def ceph_ha_destroy_controller(self):
+    def ceph_ha_destroy_compute(self):
         """Destroy OSD node for ceph HA
 
         Scenario:
@@ -285,7 +285,7 @@ class CephHA(TestBasic):
             raise SkipTest()
 
         self.env.revert_snapshot("ceph_ha")
-        self.env.nodes().slaves[1].destroy()
+        self.env.nodes().slaves[4].destroy()
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
