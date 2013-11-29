@@ -123,7 +123,7 @@ class FuelWebClient(object):
                 return release["id"]
 
     @logwrap
-    def assert_task_success(self, task, timeout=90 * 60, interval=5):
+    def assert_task_success(self, task, timeout=115 * 60, interval=5):
         task = self.task_wait(task, timeout, interval)
         assert_equal(
             task['status'], 'ready',
