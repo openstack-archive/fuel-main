@@ -620,10 +620,7 @@ class FloatingIPs(TestBasic):
         networks = self.fuel_web.client.get_networks(cluster_id)
         for interface, network in enumerate(networks['networks']):
             if network['name'] == 'floating':
-                networks['networks'][interface]['ip_ranges'] = [
-                    ['240.0.0.2', '240.0.0.10'],
-                    ['240.0.0.20', '240.0.0.25'],
-                    ['240.0.0.30', '240.0.0.35']]
+                networks['networks'][interface]['ip_ranges'] = self.fuel_web.get_floating_ranges()[0]
                 break
 
         self.fuel_web.client.update_network(
@@ -634,9 +631,7 @@ class FloatingIPs(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         # assert ips
-        expected_ips = ['240.0.0.%s' % i for i in range(2, 11, 1)] + \
-                       ['240.0.0.%s' % i for i in range(20, 26, 1)] + \
-                       ['240.0.0.%s' % i for i in range(30, 36, 1)]
+        expected_ips = self.fuel_web.get_floating_ranges()[1]
         self.fuel_web.assert_cluster_floating_list('slave-02', expected_ips)
 
         self.env.make_snapshot("deploy_floating_ips")
