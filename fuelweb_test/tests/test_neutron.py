@@ -102,6 +102,9 @@ class NeutronGre(TestBasic):
             2. Run OSTF
 
         """
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
         self.env.revert_snapshot("deploy_neutron_gre")
 
         self.fuel_web.run_ostf(
@@ -187,6 +190,9 @@ class NeutronVlan(TestBasic):
             2. Run OSTF
 
         """
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
         self.env.revert_snapshot("deploy_neutron_vlan")
 
         self.fuel_web.run_ostf(
@@ -273,6 +279,9 @@ class NeutronGreHa(TestBasic):
             2. Run OSTF
 
         """
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
         self.env.revert_snapshot("deploy_neutron_gre_ha")
 
         self.fuel_web.run_ostf(
@@ -360,6 +369,9 @@ class NeutronVlanHa(TestBasic):
             2. Run OSTF
 
         """
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+        
         self.env.revert_snapshot("deploy_neutron_vlan_ha")
 
         self.fuel_web.run_ostf(
