@@ -16,6 +16,7 @@
 import logging
 import re
 from devops.error import TimeoutError
+import time
 
 from devops.helpers.helpers import wait, _wait
 from ipaddr import IPNetwork
@@ -298,17 +299,25 @@ class FuelWebClient(object):
 
     @logwrap
     def run_ostf(self, cluster_id, test_sets=None,
-                 should_fail=0, should_pass=0):
+                 should_fail=0, should_pass=0, attempts=3):
         test_sets = test_sets \
             if test_sets is not None \
             else ['smoke', 'sanity']
 
-        self.client.ostf_run_tests(cluster_id, test_sets)
-        self.assert_ostf_run(
-            cluster_id,
-            should_fail=should_fail,
-            should_pass=should_pass
-        )
+        for attempt in range(attempts):
+            try:
+                self.client.ostf_run_tests(cluster_id, test_sets)
+                self.assert_ostf_run(
+                    cluster_id,
+                    should_fail=should_fail,
+                    should_pass=should_pass
+                )
+                return
+            except AssertionError as e:
+                if attempt < attempts:
+                    time.sleep(10)
+                else:
+                    raise e
 
     @logwrap
     def task_wait(self, task, timeout, interval=5):
