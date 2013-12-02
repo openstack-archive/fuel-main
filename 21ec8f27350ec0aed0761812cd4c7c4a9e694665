@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: Mike Scherbakov <mscherbakov@mirantis.com>
+Code-Review+2: Mike Scherbakov <mscherbakov@mirantis.com>
+Code-Review+1: Sergey Vasilenko <svasilenko@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 02 Dec 2013 22:46:05 +0000
+Reviewed-on: https://review.openstack.org/59474
+Project: stackforge/fuel-main
+Branch: refs/heads/3.2-fixes
