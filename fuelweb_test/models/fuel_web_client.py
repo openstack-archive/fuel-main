@@ -16,6 +16,7 @@
 import logging
 import re
 from devops.error import TimeoutError
+import time
 
 from devops.helpers.helpers import wait, _wait
 from ipaddr import IPNetwork
@@ -93,28 +94,37 @@ class FuelWebClient(object):
 
     @logwrap
     def assert_ostf_run(self, cluster_id, should_fail=0, should_pass=0,
-                        timeout=10 * 60):
+                        timeout=10 * 60, attempts=3):
 
-        set_result_list = self._ostf_test_wait(cluster_id, timeout)
+        for attempt in range(attempts):
+            try:
+                set_result_list = self._ostf_test_wait(cluster_id, timeout)
 
-        passed = 0
-        failed = 0
-        for set_result in set_result_list:
-            passed += len(filter(lambda test: test['status'] == 'success',
-                                 set_result['tests']))
-            failed += len(
-                filter(
-                    lambda test: test['status'] == 'failure' or
-                    test['status'] == 'error',
-                    set_result['tests']
-                )
-            )
-        assert_true(
-            passed >= should_pass, 'Passed tests, pass: {} should pass: {}'
-                                   ''.format(passed, should_pass))
-        assert_true(
-            failed <= should_fail, 'Failed tests,  fails: {} should fail: {}'
-                                   ''.format(failed, should_fail))
+                passed = 0
+                failed = 0
+                for set_result in set_result_list:
+                    passed += len(
+                        filter(lambda test: test['status'] == 'success',
+                               set_result['tests']))
+                    failed += len(
+                        filter(
+                            lambda test: test['status'] == 'failure' or
+                            test['status'] == 'error',
+                            set_result['tests']
+                        )
+                    )
+                assert_true(passed >= should_pass,
+                            'Passed tests, pass: {} should pass: {}'
+                            .format(passed, should_pass))
+                assert_true(failed <= should_fail,
+                            'Failed tests,  fails: {} should fail: {}'
+                            .format(failed, should_fail))
+                return
+            except AssertionError as e:
+                if attempt:
+                    time.sleep(10)
+                else:
+                    raise e
 
     def assert_release_state(self, release_name, state='available'):
         for release in self.client.get_releases():
