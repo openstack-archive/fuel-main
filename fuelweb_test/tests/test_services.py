@@ -13,12 +13,13 @@
 #    under the License.
 
 import logging
-from proboscis import test
+from proboscis import test, SkipTest
 
 from fuelweb_test.helpers.checkers \
     import verify_savanna_service, verify_murano_service
 from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
 from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
+from fuelweb_test.settings import *
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
@@ -44,6 +45,9 @@ class SavannaSimple(TestBasic):
         Snapshot: deploy_savanna_simple
 
         """
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
         self.env.revert_snapshot("ready_with_5_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
@@ -79,6 +83,9 @@ class SavannaSimple(TestBasic):
             2. Run OSTF
 
         """
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
         self.env.revert_snapshot("deploy_savanna_simple")
 
         self.fuel_web.run_ostf(
@@ -107,6 +114,9 @@ class MuranoSimple(TestBasic):
         Snapshot: deploy_murano_simple
 
         """
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
         self.env.revert_snapshot("ready_with_5_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
@@ -142,6 +152,9 @@ class MuranoSimple(TestBasic):
             2. Run OSTF
 
         """
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
         self.env.revert_snapshot("deploy_murano_simple")
 
         self.fuel_web.run_ostf(
