@@ -528,3 +528,14 @@ class FuelWebClient(object):
         elif ip_range == -1:
             return [[str(net[2]), str(net[half - 1])]]
 
+    def get_floating_ranges(self):
+        net = list(IPNetwork(self.environment.get_network('public')))
+        ip_ranges, expected_ips = [], []
+
+        for i in [0, -20, -40]:
+            for k in range(10):
+                expected_ips.extend(str(net[-12 + i + k]))
+            e, s = str(net[-12 + i]), str(net[-2 + i])
+            ip_ranges.append([e, s])
+
+        return ip_ranges, expected_ips
