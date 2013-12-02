@@ -120,6 +120,7 @@ friendly-recovery
 ftp
 fuse
 fuse-utils
+fuel-utils
 g++
 g++-4.6
 galera
