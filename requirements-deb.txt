@@ -124,6 +124,7 @@ fontconfig
 fontconfig-config
 friendly-recovery
 ftp
+fuel-utils
 fuse
 fuse-utils
 g++
