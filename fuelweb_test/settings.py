@@ -74,6 +74,9 @@ INTERFACES = {
     'storage': 'eth4',
 }
 
+# May be one of virtio, e1000, pcnet, rtl8139
+INTERFACE_MODEL = 'virtio'
+
 DEFAULT_POOLS = {
     'admin': '10.108.0.0/16:24',
     'public': '10.108.0.0/16:24',
