@@ -248,6 +248,7 @@ openssh-server-5.3p1-84.1.el6
 openssl-devel-1.0.0-27.el6_4.2
 openssl098e-0.9.8e-17.el6.centos.2
 openstack-ceilometer-api
+openstack-ceilometer-alarm
 openstack-ceilometer-central
 openstack-ceilometer-collector
 openstack-ceilometer-common

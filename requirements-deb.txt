@@ -31,6 +31,8 @@ busybox-initramfs
 busybox-static
 bzip2
 ca-certificates
+ceilometer-alarm-evaluator
+ceilometer-alarm-notifier
 ceilometer-agent-compute
 ceilometer-agent-central
 ceilometer-api
