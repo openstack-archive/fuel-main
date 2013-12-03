@@ -22,7 +22,7 @@ from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
 from fuelweb_test.helpers.eb_tables import Ebtables
 from fuelweb_test.models.fuel_web_client import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
-from fuelweb_test.settings import NODE_VOLUME_SIZE
+from fuelweb_test.settings import *
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
@@ -260,6 +260,25 @@ class SimpleFlat(TestBasic):
             should_fail=5, should_pass=17
         )
 
+    @test(depends_on=[simple_flat_ostf], groups=["simple_flat_cold_restart"])
+    @log_snapshot_on_error
+    def simple_flat_cold_restart(self):
+        """Cold restart for simple environment
+
+        Scenario:
+            1. Revert snapshot: deploy_simple_flat
+            2. Turn off all nodes
+            3. Start all nodes
+            4. Run OSTF
+
+        """
+        self.env.revert_snapshot("deploy_simple_flat")
+        self.fuel_web.restart_nodes(self.env.nodes().slaves[:2])
+
+        self.fuel_web.run_ostf(
+            cluster_id=self.fuel_web.get_last_created_cluster(),
+            should_fail=5, should_pass=17
+        )
 
 @test(groups=["thread_2"])
 class SimpleVlan(TestBasic):
