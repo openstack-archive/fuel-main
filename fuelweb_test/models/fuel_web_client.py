@@ -533,8 +533,8 @@ class FuelWebClient(object):
         ip_ranges, expected_ips = [], []
 
         for i in [0, -20, -40]:
-            for k in range(10):
-                expected_ips.extend(str(net[-12 + i + k]))
+            for k in range(11):
+                expected_ips.append(str(net[-12 + i + k]))
             e, s = str(net[-12 + i]), str(net[-2 + i])
             ip_ranges.append([e, s])
 
