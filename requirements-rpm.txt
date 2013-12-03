@@ -144,6 +144,7 @@ kernel-2.6.32-358.123.2.openstack.el6
 kernel-devel-2.6.32-358.123.2.openstack.el6
 kernel-firmware-2.6.32-358.123.2.openstack.el6
 kernel-headers-2.6.32-358.123.2.openstack.el6
+kmod-openvswitch
 leveldb-1.7.0-2.el6
 libaio-0.3.107-10.el6
 libcephfs1
