@@ -26,6 +26,77 @@ logwrap = debug(logger)
 
 
 @test(groups=["thread_1", "ceph"])
+class CephSimple(TestBasic):
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["ceph_multinode"])
+    @log_snapshot_on_error
+    def ceph_multinode(self):
+        """Deploy ceph in simple mode.
+
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller
+            3. Add 1 node with compute
+            4. Add 2 Ceph OSD nodes
+            4. Deploy the cluster
+
+        Snapshot: ceph_multinode_compact
+
+        """
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'volumes_ceph': True,
+                'images_ceph': True
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute'],
+                'slave-03': ['ceph-osd'],
+                'slave-04': ['ceph-osd']
+            }
+        )
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+
+        self.env.make_snapshot("ceph_multinode")
+
+    @test(depends_on=[ceph_multinode],
+          groups=["ceph_multinode_cold_restart"])
+    @log_snapshot_on_error
+    def ceph_multinode_cold_restart(self):
+        """Run OSTF on deployed cluster with ceph in simple mode
+
+        Scenario:
+            1. Revert snapshot: ceph_multinode
+            2. Check ceph status
+            3. Run OSTF
+
+        """
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
+        self.env.revert_snapshot("ceph_multinode")
+
+        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.run_ostf(
+            cluster_id=self.fuel_web.get_last_created_cluster(),
+            should_fail=4, should_pass=18
+        )
+
+
+@test(groups=["thread_1", "ceph"])
 class CephCompact(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
