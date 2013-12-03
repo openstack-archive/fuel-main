@@ -294,11 +294,17 @@ class EnvironmentModel(object):
     def revert_snapshot(self, name):
         if self.get_virtual_environment().has_snapshot(name):
             logging.info('We have snapshot with such name %s' % name)
+
             self.get_virtual_environment().revert(name)
             logging.info('Starting snapshot reverting ....')
+
             self.get_virtual_environment().resume()
             logging.info('Starting snapshot resuming ...')
+
             time.sleep(10)
+            for node in self.nodes().slaves:
+                logging.info('Syncing time for node %s after reverting to snapshot' % node['name'])
+                self.sync_node_time(self.get_ssh_to_remote(node['ip']))
             return True
         return False
 
