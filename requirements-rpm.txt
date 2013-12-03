@@ -327,7 +327,7 @@ python-cliff
 python-cliff-tablib
 python-cloudfiles-1.7.9.3-1.el6
 python-cmd2-0.6.4-7.el6
-python-crypto-2.0.1-22.el6
+python-crypto
 python-d2to1-0.2.10-1.el6
 python-daemon-1.5.2-1.el6
 python-deltarpm-3.5-0.5.20090913git.el6
@@ -375,7 +375,7 @@ python-ordereddict-1.1-2.el6
 python-oslo-config
 python-oslo-config-doc
 python-osnagios-1.1-5.el6
-python-paramiko-1.7.5-2.1.el6
+python-paramiko
 python-passlib-1.5.3-1.el6
 python-paste-1.7.5.1-4.20111221hg1498.el6
 python-paste-deploy1.5-1.5.0-5.el6
