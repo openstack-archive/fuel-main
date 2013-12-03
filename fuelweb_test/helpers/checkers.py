@@ -109,17 +109,17 @@ def verify_savanna_service(remote):
 
 @logwrap
 def verify_service_list(remote, smiles_count):
-    ret = remote.check_call('/usr/bin/nova-manage service list')
-    logger.debug("Service list: {}".format(ret['stdout']))
-    try:
+    def _verify():
+        ret = remote.check_call('/usr/bin/nova-manage service list')
+        logger.debug("Service list: {}".format(ret['stdout']))
         assert_equal(
             smiles_count, ''.join(ret['stdout']).count(":-)"), "Smiles count")
         assert_equal(
             0, ''.join(ret['stdout']).count("XXX"), "Broken services count")
-    except:
+
+    try:
+        _verify()
+    except AssertionError:
         logger.debug("Services still not read. Sleeping for 60 seconds and retrying")
         sleep(60)
-        assert_equal(
-            smiles_count, ''.join(ret['stdout']).count(":-)"), "Smiles count")
-        assert_equal(
-            0, ''.join(ret['stdout']).count("XXX"), "Broken services count")
+        _verify()
