@@ -17,6 +17,7 @@ import time
 import logging
 from ipaddr import IPNetwork
 import time
+import traceback
 
 from paramiko import RSAKey
 
@@ -294,11 +295,23 @@ class EnvironmentModel(object):
     def revert_snapshot(self, name):
         if self.get_virtual_environment().has_snapshot(name):
             logging.info('We have snapshot with such name %s' % name)
+
             self.get_virtual_environment().revert(name)
             logging.info('Starting snapshot reverting ....')
+
             self.get_virtual_environment().resume()
             logging.info('Starting snapshot resuming ...')
+
             time.sleep(10)
+
+            list = self.nodes().slaves
+            for node in list:
+                try:
+                    self.sync_node_time(self.get_ssh_to_remote(
+                        node.get_ip_address_by_network_name(self.admin_net)))
+                except Exception, e:
+                    logging.warn('Exception got: %s' % e)
+                    traceback.print_exc()
             return True
         return False
 
@@ -318,9 +331,9 @@ class EnvironmentModel(object):
 
     @logwrap
     def sync_node_time(self, remote):
-        remote.execute('hwclock --hctosys >/dev/null 2>&1 0<&1')
-        remote.execute('ntpd -g -u ntp:ntp >/dev/null 2>&1')
-        remote.execute('hwclock -w >/dev/null 2>&1')
+        remote.execute('hwclock --hctosys')
+        remote.execute("ntpdate -u $(egrep '^server' /etc/ntp.conf | sed '/^#/d' | awk '{print $2}' | tail -n 1)")
+        remote.execute('hwclock -w')
 
     def sync_time_admin_node(self):
         self.sync_node_time(self.get_admin_remote())
