@@ -294,11 +294,18 @@ class EnvironmentModel(object):
     def revert_snapshot(self, name):
         if self.get_virtual_environment().has_snapshot(name):
             logging.info('We have snapshot with such name %s' % name)
+
             self.get_virtual_environment().revert(name)
             logging.info('Starting snapshot reverting ....')
+
             self.get_virtual_environment().resume()
             logging.info('Starting snapshot resuming ...')
+
             time.sleep(10)
+
+            list = self.nodes().slaves
+            for node in list:
+                self.sync_node_time(self.env.get_ssh_to_remote_by_name(node['name']))
             return True
         return False
 
@@ -318,9 +325,9 @@ class EnvironmentModel(object):
 
     @logwrap
     def sync_node_time(self, remote):
-        remote.execute('hwclock --hctosys >/dev/null 2>&1 0<&1')
-        remote.execute('ntpd -g -u ntp:ntp >/dev/null 2>&1')
-        remote.execute('hwclock -w >/dev/null 2>&1')
+        remote.execute('hwclock --hctosys')
+        remote.execute('service $(ls /etc/init.d | grep "^ntp") restart')
+        remote.execute('hwclock -w')
 
     def sync_time_admin_node(self):
         self.sync_node_time(self.get_admin_remote())
