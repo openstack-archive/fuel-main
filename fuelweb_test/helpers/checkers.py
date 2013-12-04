@@ -24,14 +24,23 @@ logwrap = debug(logger)
 @logwrap
 def check_ceph_health(ssh):
     # Check Ceph node disk configuration:
-    disks = ''.join(ssh.execute(
-        'ceph osd tree | grep osd')['stdout'])
-    logger.debug("Disks output information: \\n{}".format(disks))
-    assert_true('up' in disks, "Some disks are not 'up'")
+    result = None
+    for attempt in range(6):
+        try:
+            disks = ''.join(ssh.execute(
+                'ceph osd tree | grep osd')['stdout'])
+            logger.debug("Disks output information: \\n{}".format(disks))
+            assert_true('up' in disks, "Some disks are not 'up'")
 
-    result = ''.join(ssh.execute('ceph health')['stdout'])
-    assert_true('HEALTH_OK' in result,
-                "Ceph status is '{}' != HEALTH_OK".format(result))
+            result = ''.join(ssh.execute('ceph health')['stdout'])
+            assert_true('HEALTH_OK' in result,
+                        "Ceph status is '{}' != HEALTH_OK".format(result))
+        except Exception, e:
+            logger.warn("Ceph status is != HEALTH_OK, retry in 10 seconds, attempt is %s" % attempt)
+            if attempt == 6:
+                raise Exception(e)
+            sleep(10)
+            continue
 
 
 @logwrap
