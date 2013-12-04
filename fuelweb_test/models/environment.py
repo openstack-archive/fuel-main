@@ -292,6 +292,9 @@ class EnvironmentModel(object):
         return Nodes(self.get_virtual_environment(), self.node_roles)
 
     def revert_snapshot(self, name):
+        """
+        Reverts from snapshot and syncs time after
+        """
         if self.get_virtual_environment().has_snapshot(name):
             logging.info('We have snapshot with such name %s' % name)
 
@@ -306,8 +309,7 @@ class EnvironmentModel(object):
                 self.fuel_web.get_last_created_cluster() or 1
             )
             for node in list:
-                logging.info('Syncing time for node %s after reverting to snapshot' % node['name'])
-                self.sync_node_time(self.get_ssh_to_remote_by_name(node['name']))
+                self.sync_node_time(self.get_ssh_to_remote_by_name(node["name"]))
             return True
         return False
 
@@ -327,6 +329,9 @@ class EnvironmentModel(object):
 
     @logwrap
     def sync_node_time(self, remote):
+        """
+        Syncs time on node via ssh
+        """
         remote.execute('hwclock --hctosys')
         remote.execute('ntpdate -u %s' % self.get_admin_node_ip())
         remote.execute('hwclock -w')
