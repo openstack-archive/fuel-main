@@ -32,6 +32,9 @@ sed 's|_replace_me_static_compressed_path_|'"$WORKSPACE"'/build/repos/nailgun/na
 sed 's|_replace_me_static_path_|'"$WORKSPACE"'/build/repos/nailgun/nailgun/static|' -i $topdir/nginx/nailgun.conf
 sudo ln -sf $topdir/nginx/nailgun.conf /etc/nginx/conf.d/nailgun.conf
 
+# Tell nailgun that UI is compressed and specify UI path
+echo -e "DEVELOPMENT: 0\nSTATIC_DIR: '$WORKSPACE/build/repos/nailgun/nailgun/static_compressed'\nTEMPLATE_DIR: '$WORKSPACE/build/repos/nailgun/nailgun/static_compressed'" > /etc/nailgun/settings.yaml
+
 # Starting fake UI
 sudo WORKSPACE=$WORKSPACE /etc/init.d/nailgun start
 # Reload updated config file
