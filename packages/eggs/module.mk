@@ -52,10 +52,6 @@ ifeq ($(NO_UI_OPTIMIZE),0)
 		npm install
 	cd $(BUILD_DIR)/repos/nailgun/nailgun && \
 		grunt build --static-dir=$(BUILD_DIR)/packages/eggs/nailgun/static
-	rm -rf $(BUILD_DIR)/packages/eggs/nailgun/static/templates
-	rm -f $(BUILD_DIR)/packages/eggs/nailgun/static/build.txt
-	find $(BUILD_DIR)/packages/eggs/nailgun/static/css -type f ! -name main.css -delete
-	find $(BUILD_DIR)/packages/eggs/nailgun/static/js -type f ! -name main.js -and ! -name require.js -delete
 	cd $(BUILD_DIR)/packages/eggs/nailgun && \
 		python setup.py sdist --dist-dir $(BUILD_DIR)/packages/eggs
 else
