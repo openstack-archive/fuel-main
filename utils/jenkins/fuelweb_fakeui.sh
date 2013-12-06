@@ -28,9 +28,17 @@ npm install
 grunt build --static-dir=static_compressed
 
 # Replace static path with the one pointing to compressed static content folder
-sed 's|_replace_me_static_compressed_path_|'"$WORKSPACE"'/build/repos/nailgun/nailgun/static_compressed|' -i $topdir/nginx/nailgun.conf
+STATIC_DIR=$WORKSPACE/build/repos/nailgun/nailgun/static_compressed
+sed 's|_replace_me_static_compressed_path_|'"$STATIC_DIR"'|' -i $topdir/nginx/nailgun.conf
 sed 's|_replace_me_static_path_|'"$WORKSPACE"'/build/repos/nailgun/nailgun/static|' -i $topdir/nginx/nailgun.conf
 sudo ln -sf $topdir/nginx/nailgun.conf /etc/nginx/conf.d/nailgun.conf
+sed 's|^TEMPLATE_DIR:.*$|TEMPLATE_DIR: '"$STATIC_DIR"'|' -i $WORKSPACE/build/repos/nailgun/nailgun/nailgun/settings.yaml
+sed 's|^STATIC_DIR:.*$|STATIC_DIR: '"$STATIC_DIR"'|' -i $WORKSPACE/build/repos/nailgun/nailgun/nailgun/settings.yaml
+sed 's|^DEVELOPMENT:.*$|DEVELOPMENT: false|' -i $WORKSPACE/build/repos/nailgun/nailgun/nailgun/settings.yaml
+
+# Show date and commit hash in ui
+VERSION_TEXT="`git show -s --format=%ci HEAD` `git rev-parse --verify HEAD`"
+sed 's|Unknown version|'"$VERSION_TEXT"'|' -i $WORKSPACE/build/repos/nailgun/nailgun/nailgun/settings.yaml
 
 # Starting fake UI
 sudo WORKSPACE=$WORKSPACE /etc/init.d/nailgun start
