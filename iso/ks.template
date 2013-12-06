@@ -106,22 +106,23 @@ bind-utils
 cronie
 crontabs
 curl
+daemonize
 fuelmenu
+gdisk
 man
 mlocate
 ntp
 openssh-clients
 policycoreutils
 puppet-2.7.19
+rubygem-netaddr
+rubygem-openstack
 selinux-policy-targeted
 subscription-manager
 system-config-firewall-base
 tcpdump
 vim-enhanced
-rubygem-netaddr
-rubygem-openstack
 wget
-gdisk
 yum
 
 %include /tmp/post_partition.ks
