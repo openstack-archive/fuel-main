@@ -123,9 +123,9 @@ class EnvironmentModel(object):
 
         return self.nailgun_nodes(devops_nodes)
 
-    def create_interfaces(self, networks, node):
+    def create_interfaces(self, networks, node, model=INTERFACE_MODEL):
         for network in networks:
-            self.manager.interface_create(network, node=node)
+            self.manager.interface_create(network, node=node, model=model)
 
     def describe_environment(self):
         """
