@@ -29,31 +29,6 @@ logwrap = debug(logger)
 
 @test(groups=["thread_1"])
 class TestAdminNode(TestBasic):
-
-    @test(depends_on=[SetupEnvironment.setup_master])
-    def test_puppet_master_alive(self):
-        """Test current installation has correctly working puppet master
-
-        Scenario:
-            1. Revert snapshot "empty"
-            2. Search for puppet master process on master node
-
-        """
-        if OPENSTACK_RELEASE_CENTOS not in OPENSTACK_RELEASE:
-            raise SkipTest()
-        self.env.revert_snapshot("empty")
-        wait(
-            lambda: tcp_ping(self.env.get_admin_node_ip(), 8140),
-            timeout=5
-        )
-        ps_output = self.env.get_admin_remote().execute('ps ax')['stdout']
-        pm_processes = filter(
-            lambda x: '/usr/sbin/puppetmasterd' in x,
-            ps_output
-        )
-        logging.debug("Found puppet master processes: %s" % pm_processes)
-        assert_equal(len(pm_processes), 4)
-
     @test(depends_on=[SetupEnvironment.setup_master])
     def test_cobbler_alive(self):
         """Test current installation has correctly setup cobbler
