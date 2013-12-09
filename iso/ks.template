@@ -72,8 +72,15 @@ sleep 3
 hdparm -z /dev/${tgtdrive}
 
 # partition
+
+# This adds support for the p seperator required for cciss devices
+if [ `grep -q -e cciss` ] ; then
+    bootdev=${tgtdrive}p
+else
+    bootdev=${tgtdrive}
+fi
 echo > /tmp/partition.ks
-echo "partition /boot --onpart=/dev/${tgtdrive}3" >> /tmp/partition.ks
+echo "partition /boot --onpart=/dev/${bootdev}3" >> /tmp/partition.ks
 echo "partition pv.001 --ondisk=${tgtdrive} --size=1 --grow" >> /tmp/partition.ks
 echo "volgroup os pv.001" >> /tmp/partition.ks
 echo "logvol swap --vgname=os --recommended --name=swap" >> /tmp/partition.ks
