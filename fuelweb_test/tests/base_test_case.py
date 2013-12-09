@@ -49,7 +49,7 @@ class TestBasic(object):
         :raises: SkipTest
 
         """
-        if snapshot_name and not UPLOAD_MANIFESTS:
+        if snapshot_name:
             if self.env.get_virtual_environment().has_snapshot(snapshot_name):
                 raise SkipTest()
 
@@ -88,22 +88,6 @@ class SetupEnvironment(TestBasic):
                 state='available'
             )
 
-        try:
-            if UPLOAD_MANIFESTS:
-                logging.info("Uploading new manifests from %s" %
-                             UPLOAD_MANIFESTS_PATH)
-                remote = SSHClient(self.env.get_admin_node_ip(),
-                                   username='root',
-                                   password='r00tme')
-                remote.execute('rm -rf /etc/puppet/modules/*')
-                remote.upload(UPLOAD_MANIFESTS_PATH, '/etc/puppet/modules/')
-                logging.info("Copying new site.pp from %s" %
-                             SITEPP_FOR_UPLOAD)
-                remote.execute("cp %s /etc/puppet/manifests" %
-                               SITEPP_FOR_UPLOAD)
-        except:
-            logging.error("Could not upload manifests")
-            raise
         self.env.make_snapshot("ready")
 
     @test(depends_on=[prepare_release])

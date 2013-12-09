@@ -22,7 +22,7 @@ from ipaddr import IPNetwork
 from proboscis.asserts import assert_true, assert_equal
 from fuelweb_test.helpers.checkers import *
 
-from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.helpers.decorators import debug, upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE, NEUTRON, NEUTRON_SEGMENT
 import fuelweb_test.settings as help_data
@@ -143,6 +143,7 @@ class FuelWebClient(object):
         )
 
     @logwrap
+    @upload_manifests
     def create_cluster(self,
                        name,
                        settings=None,
