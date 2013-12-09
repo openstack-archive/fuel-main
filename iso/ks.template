@@ -114,7 +114,7 @@ mlocate
 ntp
 openssh-clients
 policycoreutils
-puppet-2.7.19
+puppet
 rubygem-netaddr
 rubygem-openstack
 selinux-policy-targeted
