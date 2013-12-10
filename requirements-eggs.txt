@@ -31,7 +31,7 @@ python-heatclient==0.2.5
 python-keystoneclient==0.4.1
 python-muranoclient==0.2.11
 python-novaclient==2.15.0
-python-savannaclient==0.3
+python-savannaclient==0.2.2
 requests==1.1.0
 simplejson==2.6.2
 six==1.1.0
