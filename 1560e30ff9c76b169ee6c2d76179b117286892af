@@ -1,0 +1,10 @@
+Change-Id: I1560e30ff9c76b169ee6c2d76179b117286892af
+Verified+2: Jenkins
+Approved+1: Vladimir Kuklin <vkuklin@mirantis.com>
+Code-Review+2: Vladimir Kuklin <vkuklin@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 10 Dec 2013 15:04:41 +0000
+Reviewed-on: https://review.openstack.org/61144
+Project: stackforge/fuel-main
+Branch: refs/heads/master
