@@ -17,7 +17,6 @@ import time
 import logging
 from ipaddr import IPNetwork
 import time
-import traceback
 
 from paramiko import RSAKey
 
@@ -310,8 +309,7 @@ class EnvironmentModel(object):
                     self.sync_node_time(self.get_ssh_to_remote(
                         node.get_ip_address_by_network_name(self.admin_net)))
                 except Exception, e:
-                    logging.warn('Exception got: %s' % e)
-                    traceback.print_exc()
+                    logging.warn('Paramiko exception catched while trying to run ntpdate: %s' % e)
             return True
         return False
 
