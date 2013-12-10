@@ -181,6 +181,7 @@ murano-conductor
 murano-dashboard
 murano-metadataclient
 murano-repository
+murano-cirros-testvm
 nagios-3.5.0-1.el6
 nagios-common-3.5.0-1.el6
 nagios-plugins-1.4.16-5.el6
