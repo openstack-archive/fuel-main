@@ -34,7 +34,7 @@ python-novaclient==2.15.0
 python-savannaclient==0.3
 requests==1.1.0
 simplejson==2.6.2
-six==1.4.1
+six==1.1.0
 tornado==3.0
 uWSGI==1.9.18.2
 ujson==1.33
