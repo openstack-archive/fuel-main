@@ -541,7 +541,6 @@ murano-conductor
 murano-dashboard
 murano-metadataclient
 murano-repository
-murano-cirros-testvm
 mysql-client
 mysql-common
 mysql-server-wsrep
