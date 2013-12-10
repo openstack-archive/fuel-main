@@ -16,10 +16,9 @@ jsonschema==2.0.0
 kombu==2.1.8
 netaddr==0.7.10
 netifaces==0.8
-nose2==0.4.1
 nose==1.1.2
 ordereddict==1.1
-oslo.config==1.1.1
+oslo.config==1.2.0
 pbr==0.5.21
 pip==1.2.1
 prettytable==0.6.1
@@ -34,7 +33,7 @@ python-novaclient==2.15.0
 python-savannaclient==0.3
 requests==1.1.0
 simplejson==2.6.2
-six==1.1.0
+six==1.4.1
 tornado==3.0
 uWSGI==1.9.18.2
 ujson==1.33
