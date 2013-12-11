@@ -1,0 +1,38 @@
+- job:
+    name: fuelmain.system_test.centos.thread_4
+    logrotate:
+      daysToKeep: 14
+      numToKeep: 50
+      artifactDaysToKeep: -1
+      artifactNumToKeep: -1
+    keep-dependencies: true
+    node: srv08-srt
+    project-type: freestyle
+    defaults: global
+    disabled: false
+    concurrent: false
+          
+    scm:
+     - git:
+        url: https://github.com/stackforge/fuel-main.git
+        refspec:
+        name:
+        choosing-strategy: default
+        skip-tag: false
+        wipe-workspace: false
+        branches:
+         - "origin/master"
+    builders:
+    - shell: "rm -rf fuel-ci\
+            \ngit clone https://github.com/stackforge/fuel-main.git\
+            \nbash fuel-main/utils/jenkins/fuel-ci/jenkins-product/scripts/fuelmain.system_test.centos.thread_4.sh"
+
+    publishers:
+      - archive:
+          artifacts: '**/nosetests.xml,logs/*'
+      - junit:
+          results: "**/nosetests.xml"
+          keep-long-stdio: false
+      - fingerprint:
+          files: "**/nosetests.xml"
+          record-artifacts: false

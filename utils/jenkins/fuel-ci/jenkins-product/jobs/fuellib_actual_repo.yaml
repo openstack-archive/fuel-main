@@ -1,0 +1,26 @@
+- job:
+    name: fuellib_actual_repo 
+    node: srv11-msk
+    logrotate: 
+      daysToKeep: 5 
+      numToKeep: 10 
+      artifactDaysToKeep: -1 
+      artifactNumToKeep: -1 
+    project-type: freestyle
+    defaults: global
+    description: "<p>Actual version of fuel-main and fuel repos.</p>"
+    disabled: false
+    concurrent: false
+
+    wrappers:
+      - ansicolor:
+          colormap: xterm
+
+    builders:
+    - shell: "rm -rf fuel-ci\
+            \ngit clone https://github.com/stackforge/fuel-main.git\
+            \nbash fuel-main/utils/jenkins/fuel-ci/jenkins-product/scripts/fuellib_actual_repo.sh"
+
+    triggers:
+       - timed: "H * * * *"
+
