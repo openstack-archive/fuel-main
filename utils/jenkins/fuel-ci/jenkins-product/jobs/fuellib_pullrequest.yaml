@@ -1,0 +1,39 @@
+- job:
+    name: fuellib_pullrequest
+    node: srv11-msk
+    logrotate:
+      daysToKeep: 10
+      numToKeep: 10
+      artifactDaysToKeep: -1
+      artifactNumToKeep: -1
+    project-type: freestyle
+    defaults: global
+    disabled: false
+    concurrent: false
+    parameters:
+      - string:
+          name: PULL_REQUEST_ID
+          default:
+          description: "Please, provide your pull request ID for fuel.lib.git"
+
+    wrappers:
+      - ansicolor:
+          colormap: xterm
+
+    scm:
+     - git:
+        url: https://github.com/Mirantis/fuel.git
+        refspec:
+        name:
+        choosing-strategy: default
+        skip-tag: false
+        wipe-workspace: true
+        disable-submodules: true
+        basedir: fuel
+        branches:
+         - "origin/master"
+
+    builders:
+    - shell: "rm -rf fuel-ci\
+            \ngit clone https://github.com/stackforge/fuel-main.git\
+            \nbash fuel-main/utils/jenkins/fuel-ci/jenkins-product/scripts/fuellib_pullrequest.sh"

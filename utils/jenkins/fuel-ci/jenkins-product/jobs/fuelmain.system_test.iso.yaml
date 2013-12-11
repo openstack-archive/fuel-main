@@ -1,0 +1,25 @@
+- job:
+    name: fuelmain.system_test.iso
+    logrotate:
+      daysToKeep: 5
+      numToKeep: 10
+      artifactDaysToKeep: -1
+      artifactNumToKeep: -1
+    node: srv11-msk
+    description: "<p>Good iso image after smoke test.</p>"
+    project-type: freestyle
+    defaults: global
+    disabled: false
+    concurrent: false
+
+    triggers:
+       - timed: "H 21 * * *"
+
+    wrappers:
+      - ansicolor:
+          colormap: xterm
+
+    builders:
+    - shell: "rm -rf fuel-ci\
+            \ngit clone https://github.com/stackforge/fuel-main.git\
+            \nbash fuel-main/utils/jenkins/fuel-ci/jenkins-product/scripts/fuelmain.system_test.iso.sh"
