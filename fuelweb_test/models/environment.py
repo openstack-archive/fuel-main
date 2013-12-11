@@ -16,7 +16,6 @@
 import time
 import logging
 from ipaddr import IPNetwork
-import time
 
 from paramiko import RSAKey
 
@@ -28,7 +27,7 @@ from fuelweb_test.helpers.checkers import *
 from fuelweb_test.helpers.decorators import debug
 from fuelweb_test.helpers.eb_tables import Ebtables
 from fuelweb_test.models.fuel_web_client import FuelWebClient
-from fuelweb_test.settings import *
+from fuelweb_test import settings
 
 
 logger = logging.getLogger('integration')
@@ -41,7 +40,7 @@ class EnvironmentModel(object):
     installation_timeout = 1800
     deployment_timeout = 1800
     puppet_timeout = 1000
-    nat_interface = '' #INTERFACES.get('admin')
+    nat_interface = ''  # INTERFACES.get('admin')
     admin_net = 'admin'
 
     def __init__(self):
@@ -81,17 +80,18 @@ class EnvironmentModel(object):
 
     @property
     def env_name(self):
-        return ENV_NAME
+        return settings.ENV_NAME
 
     def add_empty_volume(self, node, name,
-                         capacity=NODE_VOLUME_SIZE * 1024 * 1024 * 1024,
+                         capacity=settings.NODE_VOLUME_SIZE*1024*1024*1024,
                          device='disk', bus='virtio', format='qcow2'):
         self.manager.node_attach_volume(
             node=node,
-            volume=self.manager.volume_create(name=name,
-                                              capacity=capacity,
-                                              environment=self.get_virtual_environment(),
-                                              format=format),
+            volume=self.manager.volume_create(
+                name=name,
+                capacity=capacity,
+                environment=self.get_virtual_environment(),
+                format=format),
             device=device,
             bus=bus)
 
@@ -122,7 +122,8 @@ class EnvironmentModel(object):
 
         return self.nailgun_nodes(devops_nodes)
 
-    def create_interfaces(self, networks, node, model=INTERFACE_MODEL):
+    def create_interfaces(self, networks, node,
+                          model=settings.INTERFACE_MODEL):
         for network in networks:
             self.manager.interface_create(network, node=node, model=model)
 
@@ -132,17 +133,18 @@ class EnvironmentModel(object):
         """
         environment = self.manager.environment_create(self.env_name)
         networks = []
-        for name in INTERFACE_ORDER:
-            ip_networks = [IPNetwork(x) for x in POOLS.get(name)[0].split(',')]
-            new_prefix = int(POOLS.get(name)[1])
+        for name in settings.INTERFACE_ORDER:
+            ip_networks = [
+                IPNetwork(x) for x in settings.POOLS.get(name)[0].split(',')]
+            new_prefix = int(settings.POOLS.get(name)[1])
             pool = self.manager.create_network_pool(networks=ip_networks,
                                                     prefix=int(new_prefix))
             networks.append(self.manager.network_create(
                 name=name,
                 environment=environment,
                 pool=pool,
-                forward=FORWARDING.get(name),
-                has_dhcp_server=DHCP.get(name)))
+                forward=settings.FORWARDING.get(name),
+                has_dhcp_server=settings.DHCP.get(name)))
 
         for name in self.node_roles.admin_names:
             self.describe_admin_node(name, networks)
@@ -158,28 +160,31 @@ class EnvironmentModel(object):
 
     @logwrap
     def describe_admin_node(self, name, networks):
-        node = self.add_node(memory=HARDWARE.get("admin_node_memory", 1024),
-                             vcpu=HARDWARE.get("admin_node_cpu", 1),
-                             name=name,
-                             boot=['hd', 'cdrom'])
+        node = self.add_node(
+            memory=settings.HARDWARE.get("admin_node_memory", 1024),
+            vcpu=settings.HARDWARE.get("admin_node_cpu", 1),
+            name=name,
+            boot=['hd', 'cdrom'])
         self.create_interfaces(networks, node)
         self.add_empty_volume(node, name + '-system')
-        self.add_empty_volume(node,
-                              name + '-iso',
-                              capacity=_get_file_size(ISO_PATH),
-                              format='raw',
-                              device='cdrom',
-                              bus='ide')
+        self.add_empty_volume(
+            node,
+            name + '-iso',
+            capacity=_get_file_size(settings.ISO_PATH),
+            format='raw',
+            device='cdrom',
+            bus='ide')
         return node
 
     def describe_empty_node(self, name, networks):
-        node = self.add_node(name=name,
-                             memory=HARDWARE.get("slave_node_memory", 1024),
-                             vcpu=HARDWARE.get("slave_node_cpu", 1))
+        node = self.add_node(
+            name=name,
+            memory=settings.HARDWARE.get("slave_node_memory", 1024),
+            vcpu=settings.HARDWARE.get("slave_node_cpu", 1))
         self.create_interfaces(networks, node)
         self.add_empty_volume(node, name + '-system')
 
-        if USE_ALL_DISKS:
+        if settings.USE_ALL_DISKS:
             self.add_empty_volume(node, name + '-cinder')
             self.add_empty_volume(node, name + '-swift')
 
@@ -214,7 +219,7 @@ class EnvironmentModel(object):
             'gw': self.router(),
             'hostname': '.'.join((self.hostname, self.domain)),
             'nat_interface': self.nat_interface,
-            'dns1': DNS
+            'dns1': settings.DNS
 
         }
         keys = (
@@ -276,7 +281,10 @@ class EnvironmentModel(object):
                 ip_network))
 
     def get_net_mask(self, net_name):
-        return str(IPNetwork(self.get_virtual_environment().network_by_name(net_name).ip_network).netmask)
+        return str(
+            IPNetwork(
+                self.get_virtual_environment().network_by_name(
+                    net_name).ip_network).netmask)
 
     def make_snapshot(self, snapshot_name):
         self.get_virtual_environment().suspend(verbose=False)
@@ -309,17 +317,19 @@ class EnvironmentModel(object):
                     self.sync_node_time(self.get_ssh_to_remote(
                         node.get_ip_address_by_network_name(self.admin_net)))
                 except Exception, e:
-                    logging.warn('Paramiko exception catched while trying to run ntpdate: %s' % e)
+                    logging.warn(
+                        'Paramiko exception catched while'
+                        ' trying to run ntpdate: %s' % e)
             return True
         return False
 
     def setup_environment(self):
         # start admin node
         admin = self.nodes().admin
-        admin.disk_devices.get(device='cdrom').volume.upload(ISO_PATH)
+        admin.disk_devices.get(device='cdrom').volume.upload(settings.ISO_PATH)
         self.get_virtual_environment().start(self.nodes().admins)
         # update network parameters at boot screen
-        time.sleep(float(ADMIN_NODE_SETUP_TIMEOUT))
+        time.sleep(float(settings.ADMIN_NODE_SETUP_TIMEOUT))
         admin.send_keys(self.get_keys(admin))
         # wait while installation complete
         admin.await(self.admin_net, timeout=10 * 60)
@@ -330,7 +340,10 @@ class EnvironmentModel(object):
     @logwrap
     def sync_node_time(self, remote):
         remote.execute('hwclock --hctosys')
-        remote.execute("ntpdate -u $(egrep '^server' /etc/ntp.conf | sed '/^#/d' | awk '{print $2}' | tail -n 1)")
+        remote.execute("ntpdate -u "
+                       "$(egrep '^server' /etc/ntp.conf |"
+                       " sed '/^#/d' | awk '{print $2}' |"
+                       " tail -n 1)")
         remote.execute('hwclock -w')
 
     def sync_time_admin_node(self):
