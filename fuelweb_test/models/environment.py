@@ -76,7 +76,7 @@ class EnvironmentModel(object):
     def node_roles(self):
         return NodeRoles(
             admin_names=['admin'],
-            other_names=['slave-%02d' % x for x in range(1, 10)]
+            other_names=['slave-%02d' % x for x in range(1, int(NODES_COUNT))]
         )
 
     @property
