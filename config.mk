@@ -44,7 +44,7 @@ NAILGUN_COMMIT?=master
 ASTUTE_COMMIT?=master
 OSTF_COMMIT?=master
 
-FUELLIB_REPO?=https://github.com/Mirantis/fuel.git
+FUELLIB_REPO?=https://github.com/stackforge/fuel-library.git
 NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
 ASTUTE_REPO?=https://github.com/stackforge/fuel-astute.git
 OSTF_REPO?=https://github.com/stackforge/fuel-ostf.git
