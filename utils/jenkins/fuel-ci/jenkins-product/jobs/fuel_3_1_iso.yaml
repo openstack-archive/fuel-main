@@ -1,0 +1,58 @@
+- job:
+    name: fuel_3_1_iso
+    logrotate:
+      daysToKeep: 14
+      numToKeep: -1
+      artifactDaysToKeep: -1
+      artifactNumToKeep: -1
+    project-type: freestyle
+    defaults: global
+    description: "Build Fuel-3.1-fixes ISO and IMG"
+    disabled: false
+    concurrent: false
+    parameters:
+      - string:
+          name: branch
+          default: master
+          description:
+      - string:
+          name: make_args
+          default:
+          description: Additional make arguments
+      - choice:
+          name: USE_MIRROR
+          choices:
+            - msk
+            - srt
+            - usa
+            - none
+          description:
+      - node:
+          name: "Server for build"
+          description:
+          allowed-slaves:
+            - srv08-srt
+          default-slaves:
+            - srv11-msk
+          trigger-condition: all-cases
+
+    scm:
+     - git:
+        url: git@github.com:Mirantis/fuelweb.git
+        refspec:
+        name:
+        choosing-strategy: default
+        skip-tag: false
+        wipe-workspace: false
+        branches:
+         - "origin/$branch"
+    builders:
+    - shell: "rm -rf fuel-ci\
+            \ngit clone https://github.com/stackforge/fuel-main.git\
+            \nbash fuel-main/utils/jenkins/fuel-ci/jenkins-product/scripts/fuel_3_1_iso.sh"
+
+    publishers:
+      - description-setter:
+          regexp: ".*(<a href=.*a>)"
+      - artifact-deployer:
+          entries:
