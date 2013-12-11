@@ -1,0 +1,50 @@
+- job:
+    name: fuel_syntax_check
+    project-type: freestyle
+    defaults: global
+    disabled: false
+    concurrent: false
+
+    properties:
+      - github:
+          url: https://github.com/Mirantis/fuel/
+    scm:
+     - git:
+        url: https://github.com/Mirantis/fuel.git
+        refspec: +refs/pull/*:refs/remotes/origin/pr/*
+        name: origin
+        wipe-workspace: false
+        clean: true
+        choosing-strategy: default
+        git-config-name: mirantis-jenkins
+        git-config-email: mscherbakov@mirantis.com
+        branches:
+         - "${sha1}"
+        merge:
+          remote: "origin"
+          branch: "${ghprbTargetBranch}" 
+
+    builders:
+    - shell: "/bin/bash -e $WORKSPACE/utils/jenkins/$JOB_NAME.sh"
+
+    triggers:
+      - github
+      - github-pull-request:
+          admin-list:
+            - mihgen
+            - monroid
+            - xdel
+            - aglarendil
+            - dmi-try
+          cron: H/5 * * * *
+          white-list:
+            - dmi-try 
+            - xarses
+            - andrei4ka
+            - r0mik
+          org-list:
+            - Mirantis
+          permit-all: true
+
+    publishers:
+      - github-publisher
