@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #    Copyright 2013 Mirantis, Inc.
 #
@@ -28,11 +28,11 @@ source functions/product.sh
 name="${vm_name_prefix}master"
 delete_vm $name
 echo
-create_vm $name ${host_nic_name[0]} $vm_master_cpu_cores $vm_master_memory_mb $vm_master_disk_mb
+create_vm $name "${host_nic_name[0]}" $vm_master_cpu_cores $vm_master_memory_mb $vm_master_disk_mb
 echo
 
 # Add additional NICs
-add_hostonly_adapter_to_vm $name 2 ${host_nic_name[1]}
+add_hostonly_adapter_to_vm $name 2 "${host_nic_name[1]}"
 
 # Add NAT adapter for internet access
 add_nat_adapter_to_vm $name 3 $vm_master_nat_network
