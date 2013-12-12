@@ -173,6 +173,30 @@ class CephCompactWithCinder(TestBasic):
             should_fail=4, should_pass=18
         )
 
+    @test(depends_on=[ceph_multinode_with_cinder_ostf],
+          groups=["ceph_multinode_with_cinder_cold_restart"])
+    @log_snapshot_on_error
+    def ceph_multinode_with_cinder_cold_restart(self):
+        """Cold restart for Simple environment
+
+        Scenario:
+            1. Revert snapshot: ceph_multinode_with_cinder
+            2. Turn off all nodes
+            3. Start all nodes
+            4. Check ceph status
+
+            5. Run OSTF
+
+        """
+        self.env.revert_snapshot("ceph_multinode_with_cinder")
+        self.fuel_web.restart_nodes(self.env.nodes().slaves[:4])
+
+        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.run_ostf(
+            cluster_id=self.fuel_web.get_last_created_cluster(),
+            should_fail=4, should_pass=18
+        )
+
 
 @test(groups=["thread_1", "ceph"])
 class CephHA(TestBasic):
@@ -289,6 +313,28 @@ class CephHA(TestBasic):
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
+        self.fuel_web.run_ostf(
+            cluster_id=self.fuel_web.get_last_created_cluster(),
+            should_fail=4, should_pass=18
+        )
+
+    @test(depends_on=[ceph_ha_ostf], groups=["ceph_ha_cold_restart"])
+    @log_snapshot_on_error
+    def ceph_ha_cold_restart(self):
+        """Cold restart for HA environment
+
+        Scenario:
+            1. Revert snapshot: ceph_ha
+            2. Turn off all nodes
+            3. Start all nodes
+            4. Check ceph status
+            5. Run OSTF
+
+        """
+        self.env.revert_snapshot("ceph_ha")
+        self.fuel_web.restart_nodes(self.env.nodes().slaves[:6])
+
+        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             should_fail=4, should_pass=18

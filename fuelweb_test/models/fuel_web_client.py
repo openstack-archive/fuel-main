@@ -540,3 +540,16 @@ class FuelWebClient(object):
             ip_ranges.append([e, s])
 
         return ip_ranges, expected_ips
+
+    def restart_nodes(self, devops_nodes):
+        for node in devops_nodes:
+            node.destroy()
+
+        for node in devops_nodes:
+            wait(
+                lambda: not self.get_nailgun_node_by_devops_node(node)['online'])
+            node.create()
+
+        for node in devops_nodes:
+            wait(
+                lambda: self.get_nailgun_node_by_devops_node(node)['online'])
