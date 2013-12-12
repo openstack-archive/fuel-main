@@ -305,6 +305,8 @@ class EnvironmentModel(object):
 
             list = self.nodes().slaves
             for node in list:
+                if not node.driver.node_active(node):
+                    continue
                 try:
                     self.sync_node_time(self.get_ssh_to_remote(
                         node.get_ip_address_by_network_name(self.admin_net)))
