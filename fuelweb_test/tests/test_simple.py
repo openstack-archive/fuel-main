@@ -815,7 +815,9 @@ class NodeDiskSizes(TestBasic):
         for node in nailgun_nodes:
             # assert /api/notifications
             for notification in notifications:
-                if notification['node_id'] == node['id']:
+                discover = notification['topic'] == 'discover'
+                current_node = notification['node_id'] == node['id']
+                if current_node and discover:
                     assert_true(hdd_size in notification['message'])
 
             # assert disks
