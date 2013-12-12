@@ -64,7 +64,7 @@ BUILD_MIRROR_GEMS:=$(BUILD_DIR)/packages/gems
 # 'msk', 'srt', 'usa', 'hrk'.
 # Setting any other value or removing of this variable will cause
 # download of all the packages directly from internet
-USE_MIRROR?=ext
+USE_MIRROR?=usa
 ifeq ($(USE_MIRROR),ext)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://download.mirantis.com/fuelweb-repo/$(PRODUCT_VERSION)
