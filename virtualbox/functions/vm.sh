@@ -56,7 +56,7 @@ create_vm() {
     VBoxManage modifyvm $name --rtcuseutc on --memory $memory_mb --cpus $cpu_cores --vram 16
 
     # Configure main network interface for management/PXE network
-    add_hostonly_adapter_to_vm $name 1 $nic
+    add_hostonly_adapter_to_vm $name 1 "$nic"
 
     # Configure storage controllers
     VBoxManage storagectl $name --name 'IDE' --add ide --hostiocache on
@@ -73,7 +73,7 @@ add_hostonly_adapter_to_vm() {
     echo "Adding hostonly adapter to $name and bridging with host NIC $nic..."
 
     # Add Intel PRO/1000 MT Desktop (82540EM) card to VM. The card is 1Gbps.
-    VBoxManage modifyvm $name --nic${id} hostonly --hostonlyadapter${id} $nic --nictype${id} Am79C970A \
+    VBoxManage modifyvm $name --nic${id} hostonly --hostonlyadapter${id} "$nic" --nictype${id} Am79C973 \
                         --cableconnected${id} on --macaddress${id} auto
     VBoxManage modifyvm  $name  --nicpromisc${id} allow-all
 }
@@ -85,7 +85,7 @@ add_nat_adapter_to_vm() {
     echo "Adding NAT adapter to $name for outbound network access through the host system..."
 
     # Add Intel PRO/1000 MT Desktop (82540EM) card to VM. The card is 1Gbps.
-    VBoxManage modifyvm $name --nic${id} nat --nictype${id} Am79C970A \
+    VBoxManage modifyvm $name --nic${id} nat --nictype${id} Am79C973 \
                         --cableconnected${id} on --macaddress${id} auto --natnet${id} "${nat_network}"
     VBoxManage modifyvm  $name  --nicpromisc${id} allow-all
     VBoxManage controlvm $name setlinkstate${id} on
