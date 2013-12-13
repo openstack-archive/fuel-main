@@ -335,7 +335,13 @@ class FuelWebClient(object):
         for node_name in nodes_dict:
             devops_node = self.environment.get_virtual_environment().\
                 node_by_name(node_name)
+
+            wait(lambda:
+                 self.get_nailgun_node_by_devops_node(devops_node)['online'],
+                 timeout=60 * 2)
             node = self.get_nailgun_node_by_devops_node(devops_node)
+            assert_true(node['online'], 'Node {} is online'.format(node['mac']))
+
             node_data = {
                 'cluster_id': cluster_id,
                 'id': node['id'],
