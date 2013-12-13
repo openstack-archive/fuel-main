@@ -17,7 +17,7 @@
 #
 # This script performs initial check and configuration of the host system. It:
 #   - verifies that all available command-line tools are present on the host system
-#   - check that there is no previous installation of Fuel Web (if there is one, the script deletes it)
+#   - check that there is no previous installation of Mirantis OpenStack (if there is one, the script deletes it)
 #   - creates host-only network interfaces
 #
 # We are avoiding using 'which' because of http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script 
@@ -47,14 +47,14 @@ fi
 echo "OK"
 
 # Check for ISO image to be available
-echo -n "Checking for Fuel Web ISO image... "
+echo -n "Checking for Mirantis OpenStack ISO image... "
 if [ -z $iso_path ]; then
-    echo "Fuel Web image is not found. Please download it and put under 'iso' directory."
+    echo "Mirantis OpenStack image is not found. Please download it and put under 'iso' directory."
     exit 1
 fi
 echo "OK"
 
-# Delete all VMs from the previous Fuel Web installation
+# Delete all VMs from the previous Mirantis OpenStack installation
 delete_vms_multiple $vm_name_prefix
 
 # Delete all host-only interfaces
