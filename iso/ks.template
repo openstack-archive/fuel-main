@@ -8,10 +8,17 @@ rootpw r00tme
 timezone --utc Etc/UTC
 firewall --disabled
 selinux --disabled
+# INSTALL IN TEXT MODE
+text
+# SKIP CONFIGURING X
+skipx
 # NEVER ever place zerombr here, it breaks automated installation
 %include /tmp/bootloader.ks
 %include /tmp/partition.ks
 
+# PREINSTALL SECTION
+# HERE ARE COMMANDS THAT WILL BE LAUNCHED BEFORE
+# INSTALLATION PROCESS ITSELF
 %pre
 #!/bin/sh
 
@@ -106,7 +113,7 @@ echo "cat /tmp/grub.script | chroot /mnt/sysimage /sbin/grub --no-floppy --batch
 
 %end
 
-%packages --nobase --excludedocs
+%packages --nobase --excludedocs --ignoremissing
 @Core
 authconfig
 bind-utils
@@ -118,8 +125,13 @@ fuelmenu
 gdisk
 man
 mlocate
+dhcp_checker
 ntp
+openssh
 openssh-clients
+openssh-server
+ruby-augeas
+rubygem-openstack
 policycoreutils
 puppet
 rubygem-netaddr
@@ -131,8 +143,29 @@ tcpdump
 vim-enhanced
 wget
 yum
+yum-plugin-versionlock
+yum-utils
+perl
+rsync
 
 %include /tmp/post_partition.ks
+
+# POSTINSTALL SECTION
+# HERE ARE COMMANDS THAT WILL BE LAUNCHED JUST AFTER
+# INSTALLATION ITSELF COMPLETED
+%post
+yum versionlock puppet
+yum versionlock kernel
+yum versionlock iproute2
+yum-config-manager --disableplugin=fastestmirror --save &>/dev/null
+
+echo -e "modprobe nf_conntrack_ipv4\nmodprobe nf_conntrack_ipv6" >> /etc/rc.modules
+chmod +x /etc/rc.modules
+echo -e "net.nf_conntrack_max=1048576" >> /etc/sysctl.conf
+mkdir -p /var/log/coredump
+echo -e "kernel.core_pattern=/var/log/coredump/core.%e.%p.%h.%t" >> /etc/sysctl.conf
+chmod 777 /var/log/coredump
+echo -e "* soft core unlimited\n* hard core unlimited" >> /etc/security/limits.conf
 
 # Mount installation media in chroot
 %post --nochroot --log=/mnt/sysimage/root/anaconda-post-before-chroot.log
@@ -277,6 +310,10 @@ EOF
 # Disable subscription-manager plugins
 sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/product-id.conf || :
 sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/subscription-manager.conf || :
+
+# Let's not wait forewer when ssh'ing:
+sed -i --follow-symlinks -e '/UseDNS/d' /etc/ssh/sshd_config
+echo 'UseDNS no' >> /etc/ssh/sshd_config
 
 # Disable GSSAPI in ssh server config
 sed -i -e "/^\s*GSSAPICleanupCredentials yes/d" -e "/^\s*GSSAPIAuthentication yes/d" /etc/ssh/sshd_config
