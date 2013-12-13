@@ -261,3 +261,22 @@ class NailgunClient(object):
     @json_parse
     def generate_logs(self):
         return self.client.put("/api/logs/package")
+
+    @logwrap
+    def provision_nodes(self, cluster_id):
+        return self.do_cluster_action(cluster_id)
+
+    @logwrap
+    def deploy_nodes(self, cluster_id):
+        return self.do_cluster_action(cluster_id, "deploy")
+
+    @logwrap
+    @json_parse
+    def do_cluster_action(self, cluster_id, action="provision"):
+        nailgun_nodes = self.list_cluster_nodes(cluster_id)
+        cluster_node_ids = map(lambda _node: str(_node['id']), nailgun_nodes)
+        return self.client.put(
+            "/api/clusters/{0}/{1}?nodes={2}".format(cluster_id,
+                                                     action,
+                                                     ','.join(cluster_node_ids))
+        )

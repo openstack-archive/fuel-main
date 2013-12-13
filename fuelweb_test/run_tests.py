@@ -6,6 +6,7 @@ def run_tests():
     from tests import test_neutron
     from tests import test_services
     from tests import test_simple
+    from tests import test_pullrequest
 
     # Run Proboscis and exit.
     TestProgram().run_and_exit()
