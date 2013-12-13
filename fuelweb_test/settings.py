@@ -119,3 +119,24 @@ UPLOAD_MANIFESTS_PATH = os.environ.get(
     'UPLOAD_MANIFESTS_PATH', '~/git/fuel/deployment/puppet/')
 SITEPP_FOR_UPLOAD = os.environ.get(
     'SITEPP_PATH', '/etc/puppet/modules/osnailyfacter/examples/site.pp')
+
+#Services tests
+SERVTEST_LOCAL_PATH = '/tmp/'
+SERVTEST_USERNAME = 'admin'
+SERVTEST_PASSWORD = SERVTEST_USERNAME
+SERVTEST_TENANT = SERVTEST_USERNAME
+SERVTEST_SAVANNA_SERVER_URL = 'http://savanna-files.mirantis.com'
+SERVTEST_SAVANNA_IMAGE = 'savanna-0.3-vanilla-1.2.1-ubuntu-13.04.qcow2'
+SERVTEST_SAVANNA_IMAGE_NAME = 'savanna'
+SERVTEST_SAVANNA_IMAGE_MD5 = '9ab37ec9a13bb005639331c4275a308d'
+SERVTEST_SAVANNA_IMAGE_META = {'_savanna_tag_1.2.1': 'True',
+                               '_savanna_tag_vanilla': 'True',
+                               '_savanna_username': 'ubuntu'}
+
+SERVTEST_MURANO_SERVER_URL = "http://murano-files.mirantis.com"
+SERVTEST_MURANO_IMAGE = "cloud-fedora.qcow2"
+SERVTEST_MURANO_IMAGE_MD5 = '6e5e2f149c54b898b3c272f11ae31125'
+SERVTEST_MURANO_IMAGE_NAME = 'murano'
+
+SERVTEST_MURANO_IMAGE_META = {'murano_image_info': {'type': 'linux'}}
+
