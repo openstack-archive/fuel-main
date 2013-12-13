@@ -99,6 +99,11 @@ class FuelWebClient(object):
 
         passed = 0
         failed = 0
+        failed_tests_names = []
+        for set_result in set_result_list:
+            [failed_tests_names.append({test['name']:test['message']})
+             for test in set_result['tests']
+             if (test['status'] == 'failure' or test['status'] == 'error')]
         for set_result in set_result_list:
             passed += len(filter(lambda test: test['status'] == 'success',
                                  set_result['tests']))
@@ -109,12 +114,15 @@ class FuelWebClient(object):
                     set_result['tests']
                 )
             )
+        assert_equal(['test'], failed_tests_names)
         assert_true(
-            passed >= should_pass, 'Passed tests, pass: {} should pass: {}'
-                                   ''.format(passed, should_pass))
+            passed >= should_pass, 'Passed tests, pass: {} should pass: {},'
+                                   ' failed tests names: {}'
+                                   ''.format(passed, should_pass, failed_tests_names))
         assert_true(
-            failed <= should_fail, 'Failed tests,  fails: {} should fail: {}'
-                                   ''.format(failed, should_fail))
+            failed <= should_fail, 'Failed tests,  fails: {} should fail:'
+                                   ' {} failed tests name: {}'
+                                   ''.format(failed, should_fail, failed_tests_names))
 
     def assert_release_state(self, release_name, state='available'):
         for release in self.client.get_releases():
