@@ -5,6 +5,7 @@ INITRAMROOT:=$(BUILD_DIR)/bootstrap/initram-root
 BOOTSTRAP_RPMS:=\
 	bash \
 	byacc \
+	bfa-firmware \
 	cronie-noanacron \
 	crontabs \
 	dhclient \
