@@ -24,7 +24,8 @@ from fuelweb_test.helpers.checkers import *
 
 from fuelweb_test.helpers.decorators import debug, upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE, NEUTRON, NEUTRON_SEGMENT
+from fuelweb_test.settings \
+    import DEPLOYMENT_MODE_SIMPLE, NEUTRON, NEUTRON_SEGMENT
 import fuelweb_test.settings as help_data
 
 
@@ -92,36 +93,62 @@ class FuelWebClient(object):
             timeout=timeout)
 
     @logwrap
-    def assert_ostf_run(self, cluster_id, should_fail=0, timeout=15 * 60):
+    def assert_ostf_run_certain(self, cluster_id, tests_must_be_passed,
+                                timeout=10 * 60):
+        set_result_list = self._ostf_test_wait(cluster_id, timeout)
+        tests_pass_count = 0
+        tests_count = len(tests_must_be_passed)
+        result = False
+        for set_result in set_result_list:
+            success = [test for test in set_result['tests']
+                       if test['status'] == 'success']
+            for test_id in success:
+                for test_class in tests_must_be_passed:
+                    if test_id['id'].find(test_class) > -1:
+                        tests_pass_count += 1
+                        logger.debug('Passed OSTF test {} found'.format(
+                                     test_class))
+        if tests_pass_count == tests_count:
+            result = True
+        assert_true(result)
+
+    @logwrap
+    def assert_ostf_run(self, cluster_id, should_fail=0, should_pass=0,
+                        timeout=10 * 60):
 
         set_result_list = self._ostf_test_wait(cluster_id, timeout)
 
+        passed = 0
         failed = 0
         failed_tests_names = []
 
         for set_result in set_result_list:
-
-            failed += len(
-                filter(
-                    lambda test: test['status'] == 'failure' or
-                    test['status'] == 'error',
-                    set_result['tests']
-                )
-            )
+            passed += len([test for test in set_result['tests']
+                           if test['status'] == 'success'])
+            failed += len([test for test in set_result['tests']
+                           if test['status'] == 'failure' or
+                           test['status'] == 'error'])
 
             [failed_tests_names.append({test['name']:test['message']})
              for test in set_result['tests'] if test['status'] != 'success']
-
+        assert_true(
+            passed >= should_pass, 'Passed tests, pass: {} should pass: {},'
+                                   ' failed tests names: {}'
+                                   ''.format(passed, should_pass,
+                                             failed_tests_names))
         assert_true(
             failed <= should_fail, 'Failed tests,  fails: {} should fail:'
                                    ' {} failed tests name: {}'
-                                   ''.format(failed, should_fail, failed_tests_names))
+                                   ''.format(failed, should_fail,
+                                             failed_tests_names))
 
     def assert_release_state(self, release_name, state='available'):
         for release in self.client.get_releases():
             if release["name"].find(release_name) != -1:
                 assert_equal(release['state'], state)
                 return release["id"]
+
+
 
     @logwrap
     def assert_task_success(self, task, timeout=130 * 60, interval=5):
@@ -299,7 +326,22 @@ class FuelWebClient(object):
             cluster_id, self.client.get_networks(cluster_id)['networks'])
 
     @logwrap
-    def run_ostf(self, cluster_id, test_sets=None, should_fail=0):
+    def run_ostf_certain(self, cluster_id,
+                         tests_must_be_passed,
+                         test_sets=None):
+        test_sets = test_sets \
+            if test_sets is not None \
+            else ['smoke', 'sanity']
+
+        self.client.ostf_run_tests(cluster_id, test_sets)
+        self.assert_ostf_run_certain(
+            cluster_id,
+            tests_must_be_passed,
+        )
+
+    @logwrap
+    def run_ostf(self, cluster_id, test_sets=None,
+                 should_fail=0, should_pass=0):
         test_sets = test_sets \
             if test_sets is not None \
             else ['smoke', 'sanity']
@@ -307,7 +349,9 @@ class FuelWebClient(object):
         self.client.ostf_run_tests(cluster_id, test_sets)
         self.assert_ostf_run(
             cluster_id,
-            should_fail=should_fail)
+            should_fail=should_fail,
+            should_pass=should_pass
+        )
 
     @logwrap
     def task_wait(self, task, timeout, interval=5):
@@ -338,7 +382,8 @@ class FuelWebClient(object):
                  self.get_nailgun_node_by_devops_node(devops_node)['online'],
                  timeout=60 * 2)
             node = self.get_nailgun_node_by_devops_node(devops_node)
-            assert_true(node['online'], 'Node {} is online'.format(node['mac']))
+            assert_true(node['online'],
+                        'Node {} is online'.format(node['mac']))
 
             node_data = {
                 'cluster_id': cluster_id,
@@ -400,7 +445,8 @@ class FuelWebClient(object):
     @logwrap
     def update_redhat_credentials(
             self, license_type=help_data.REDHAT_LICENSE_TYPE,
-            username=help_data.REDHAT_USERNAME, password=help_data.REDHAT_PASSWORD,
+            username=help_data.REDHAT_USERNAME,
+            password=help_data.REDHAT_PASSWORD,
             satellite_host=help_data.REDHAT_SATELLITE_HOST,
             activation_key=help_data.REDHAT_ACTIVATION_KEY):
 
@@ -445,11 +491,9 @@ class FuelWebClient(object):
         cluster = self.client.get_cluster(cluster_id)
         net_provider = self.client.get_cluster(cluster_id)['net_provider']
         if NEUTRON == net_provider:
-            assigned_networks = {
-                    'eth1': ['public'],
-                    'eth2': ['management'],
-                    'eth4': ['storage'],
-            }
+            assigned_networks = {'eth1': ['public'],
+                                 'eth2': ['management'],
+                                 'eth4': ['storage']}
 
             if cluster['net_segment_type'] == NEUTRON_SEGMENT['vlan']:
                 assigned_networks.update({'eth3': ['private']})
@@ -463,7 +507,7 @@ class FuelWebClient(object):
 
         nailgun_nodes = self.client.list_cluster_nodes(cluster_id)
         for node in nailgun_nodes:
-             self.update_node_networks(node['id'], assigned_networks)
+            self.update_node_networks(node['id'], assigned_networks)
 
     @logwrap
     def update_network_configuration(self, cluster_id):
@@ -471,8 +515,8 @@ class FuelWebClient(object):
         net_provider = self.client.get_cluster(cluster_id)['net_provider']
 
         self.client.update_network(cluster_id=cluster_id,
-                                   networks=self.update_net_settings(net_config,
-                                                                     net_provider),
+                                   networks=self.update_net_settings(
+                                       net_config, net_provider),
                                    all_set=True)
 
     def update_net_settings(self, network_configuration, net_provider):
@@ -481,10 +525,13 @@ class FuelWebClient(object):
                              net_name=net['name'])
 
         if NEUTRON == net_provider:
-            neutron_params = network_configuration['neutron_parameters']['predefined_networks']['net04_ext']['L3']
+            neutron_params = \
+                (network_configuration['neutron_parameters']
+                 ['predefined_networks']['net04_ext']['L3'])
             neutron_params['cidr'] = self.environment.get_network('public')
             neutron_params['gateway'] = self.environment.router('public')
-            neutron_params['floating'] = self.get_range(self.environment.get_network('public'), 1)[0]
+            neutron_params['floating'] = \
+                self.get_range(self.environment.get_network('public'), 1)[0]
 
         print network_configuration
         return network_configuration
@@ -507,7 +554,8 @@ class FuelWebClient(object):
         net_config['netmask'] = self.environment.get_net_mask(net_name)
         net_config['vlan_start'] = None
         net_config['cidr'] = str(ip_network)
-        net_config['gateway'] = self.environment.router(net_name) #if net_name != "nat" else None
+        net_config['gateway'] = \
+            self.environment.router(net_name)  # if net_name != "nat" else None
 
     def get_range(self, ip_network, ip_range=0):
         net = list(IPNetwork(ip_network))
@@ -537,7 +585,8 @@ class FuelWebClient(object):
 
         for node in devops_nodes:
             wait(
-                lambda: not self.get_nailgun_node_by_devops_node(node)['online'])
+                lambda: not self.get_nailgun_node_by_devops_node(
+                    node)['online'])
             node.create()
 
         for node in devops_nodes:
