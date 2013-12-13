@@ -23,7 +23,8 @@ DNS = os.environ.get('DNS', '8.8.8.8')
 OPENSTACK_RELEASE_CENTOS = 'CentOS 6.4'
 OPENSTACK_RELEASE_UBUNTU = 'Ubuntu 12.04'
 OPENSTACK_RELEASE_REDHAT = 'RHOS 3.0 for RHEL 6.4'
-OPENSTACK_RELEASE = os.environ.get('OPENSTACK_RELEASE', OPENSTACK_RELEASE_CENTOS)
+OPENSTACK_RELEASE = os.environ.get(
+    'OPENSTACK_RELEASE', OPENSTACK_RELEASE_CENTOS)
 
 REDHAT_LICENSE_TYPE = os.environ.get('REDHAT_LICENSE_TYPE')
 REDHAT_USERNAME = os.environ.get('REDHAT_USERNAME')
@@ -87,16 +88,21 @@ DEFAULT_POOLS = {
 }
 
 POOLS = {
-    'admin': os.environ.get('PUBLIC_POOL',
-                            DEFAULT_POOLS.get('admin')).split(':'),
-    'public': os.environ.get('PUBLIC_POOL',
-                             DEFAULT_POOLS.get('public')).split(':'),
-    'management': os.environ.get('PRIVATE_POOL',
-                              DEFAULT_POOLS.get('management')).split(':'),
-    'private': os.environ.get('INTERNAL_POOL',
-                               DEFAULT_POOLS.get('private')).split(':'),
-    'storage': os.environ.get('NAT_POOL',
-                          DEFAULT_POOLS.get('storage')).split(':'),
+    'admin': os.environ.get(
+        'PUBLIC_POOL',
+        DEFAULT_POOLS.get('admin')).split(':'),
+    'public': os.environ.get(
+        'PUBLIC_POOL',
+        DEFAULT_POOLS.get('public')).split(':'),
+    'management': os.environ.get(
+        'PRIVATE_POOL',
+        DEFAULT_POOLS.get('management')).split(':'),
+    'private': os.environ.get(
+        'INTERNAL_POOL',
+        DEFAULT_POOLS.get('private')).split(':'),
+    'storage': os.environ.get(
+        'NAT_POOL',
+        DEFAULT_POOLS.get('storage')).split(':'),
 }
 
 NETWORK_MANAGERS = {
