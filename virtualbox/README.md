@@ -1,4 +1,4 @@
-In order to successfully run Fuel Web under VirtualBox, you need to:
+In order to successfully run Mirantis OpenStack under VirtualBox, you need to:
 - download the official release (.iso) and place it under 'iso' directory
 - run "./launch.sh". it will automatically pick up the iso, and will spin up master node and slave nodes
 
