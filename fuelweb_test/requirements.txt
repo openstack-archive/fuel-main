@@ -3,3 +3,7 @@ git+https://github.com/stackforge/fuel-devops.git@2.1.1
 anyjson==0.3.1
 paramiko==1.10.1
 proboscis==1.2.6.0
+python-glanceclient>=0.9.0
+python-keystoneclient>=0.3.2
+python-novaclient>=2.15.0
+
