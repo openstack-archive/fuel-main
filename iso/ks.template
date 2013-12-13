@@ -8,10 +8,15 @@ rootpw r00tme
 timezone --utc Etc/UTC
 firewall --disabled
 selinux --disabled
+# SKIP CONFIGURING X
+skipx
 # NEVER ever place zerombr here, it breaks automated installation
 %include /tmp/bootloader.ks
 %include /tmp/partition.ks
 
+# PREINSTALL SECTION
+# HERE ARE COMMANDS THAT WILL BE LAUNCHED BEFORE
+# INSTALLATION PROCESS ITSELF
 %pre
 #!/bin/sh
 
@@ -134,6 +139,18 @@ wget
 yum
 
 %include /tmp/post_partition.ks
+
+# POSTINSTALL SECTION
+# HERE ARE COMMANDS THAT WILL BE LAUNCHED JUST AFTER
+# INSTALLATION ITSELF COMPLETED
+%post
+echo -e "modprobe nf_conntrack_ipv4\nmodprobe nf_conntrack_ipv6" >> /etc/rc.modules
+chmod +x /etc/rc.modules
+echo -e "net.nf_conntrack_max=1048576" >> /etc/sysctl.conf
+mkdir -p /var/log/coredump
+echo -e "kernel.core_pattern=/var/log/coredump/core.%e.%p.%h.%t" >> /etc/sysctl.conf
+chmod 777 /var/log/coredump
+echo -e "* soft core unlimited\n* hard core unlimited" >> /etc/security/limits.conf
 
 # Mount installation media in chroot
 %post --nochroot --log=/mnt/sysimage/root/anaconda-post-before-chroot.log
