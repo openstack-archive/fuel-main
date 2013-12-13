@@ -212,9 +212,15 @@ class FuelWebClient(object):
 
         return cluster_id
 
-    def deploy_cluster_wait(self, cluster_id):
-        task = self.deploy_cluster(cluster_id)
-        self.assert_task_success(task, interval=30)
+    def deploy_cluster_wait(self, cluster_id, is_feature=False):
+        if not is_feature:
+            task = self.deploy_cluster(cluster_id)
+            self.assert_task_success(task, interval=30)
+        else:
+            task = self.client.provision_nodes(cluster_id)
+            self.assert_task_success(task, timeout=50 * 60, interval=30)
+            task = self.client.deploy_nodes(cluster_id)
+            self.assert_task_success(task, timeout=50 * 60, interval=30)
 
     @logwrap
     def deploy_cluster(self, cluster_id):
