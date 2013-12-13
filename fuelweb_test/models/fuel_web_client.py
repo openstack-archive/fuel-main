@@ -24,7 +24,8 @@ from fuelweb_test.helpers.checkers import *
 
 from fuelweb_test.helpers.decorators import debug, upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE, NEUTRON, NEUTRON_SEGMENT
+from fuelweb_test.settings \
+    import DEPLOYMENT_MODE_SIMPLE, NEUTRON, NEUTRON_SEGMENT
 import fuelweb_test.settings as help_data
 
 
@@ -92,6 +93,26 @@ class FuelWebClient(object):
             timeout=timeout)
 
     @logwrap
+    def assert_ostf_run_certain(self, cluster_id, tests_must_be_passed,
+                                timeout=10 * 60):
+        set_result_list = self._ostf_test_wait(cluster_id, timeout)
+        tests_pass_count = 0
+        tests_count = len(tests_must_be_passed)
+        result = False
+        for set_result in set_result_list:
+            success = [test for test in set_result['tests']
+                       if test['status'] == 'success']
+            for test_id in success:
+                for test_class in tests_must_be_passed:
+                    if test_id['id'].find(test_class) > -1:
+                        tests_pass_count += 1
+                        logger.debug('Passed OSTF test {} found'.format(
+                                     test_class))
+        if tests_pass_count == tests_count:
+            result = True
+        assert_true(result)
+
+    @logwrap
     def assert_ostf_run(self, cluster_id, should_fail=0, should_pass=0,
                         timeout=10 * 60):
 
@@ -102,19 +123,14 @@ class FuelWebClient(object):
         failed_tests_names = []
 
         for set_result in set_result_list:
-            passed += len(filter(lambda test: test['status'] == 'success',
-                                 set_result['tests']))
-            failed += len(
-                filter(
-                    lambda test: test['status'] == 'failure' or
-                    test['status'] == 'error',
-                    set_result['tests']
-                )
-            )
+            passed += len([test for test in set_result['tests']
+                           if test['status'] == 'success'])
+            failed += len([test for test in set_result['tests']
+                           if test['status'] == 'failure' or
+                           test['status'] == 'error'])
 
             [failed_tests_names.append({test['name']:test['message']})
              for test in set_result['tests'] if test['status'] != 'success']
-
         assert_true(
             passed >= should_pass, 'Passed tests, pass: {} should pass: {},'
                                    ' failed tests names: {}'
@@ -304,6 +320,21 @@ class FuelWebClient(object):
     def run_network_verify(self, cluster_id):
         return self.client.verify_networks(
             cluster_id, self.client.get_networks(cluster_id)['networks'])
+
+
+    @logwrap
+    def run_ostf_certain(self, cluster_id,
+                         tests_must_be_passed,
+                         test_sets=None):
+        test_sets = test_sets \
+            if test_sets is not None \
+            else ['smoke', 'sanity']
+
+        self.client.ostf_run_tests(cluster_id, test_sets)
+        self.assert_ostf_run_certain(
+            cluster_id,
+            tests_must_be_passed,
+        )
 
     @logwrap
     def run_ostf(self, cluster_id, test_sets=None,
