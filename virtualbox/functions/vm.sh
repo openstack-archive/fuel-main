@@ -53,13 +53,13 @@ create_vm() {
     # Set the real-time clock (RTC) operate in UTC time
     # Set memory and CPU parameters
     # Set video memory to 16MB, so VirtualBox does not complain about "non-optimal" settings in the UI
-    VBoxManage modifyvm $name --rtcuseutc on --memory $memory_mb --cpus $cpu_cores --vram 16
+    VBoxManage modifyvm $name --rtcuseutc on --memory $memory_mb --cpus $cpu_cores --vram 16 --chipset ich9
 
     # Configure main network interface for management/PXE network
     add_hostonly_adapter_to_vm $name 1 $nic
 
     # Configure storage controllers
-    VBoxManage storagectl $name --name 'IDE' --add ide --hostiocache on
+    VBoxManage storagectl $name --name 'IDE' --add ide --hostiocache on --controller ICH6
     VBoxManage storagectl $name --name 'SATA' --add sata --hostiocache on
 
     # Create and attach the main hard drive
