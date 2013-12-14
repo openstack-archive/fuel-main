@@ -18,7 +18,7 @@ from proboscis import test, SkipTest
 
 from fuelweb_test.helpers.checkers import check_ceph_health
 from fuelweb_test.helpers.decorators import log_snapshot_on_error, debug
-from fuelweb_test.settings import OPENSTACK_RELEASE, OPENSTACK_RELEASE_REDHAT, DEPLOYMENT_MODE_SIMPLE, DEPLOYMENT_MODE_HA
+from fuelweb_test import settings
 from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
 
 logger = logging.getLogger(__name__)
@@ -37,21 +37,21 @@ class CephCompact(TestBasic):
         Scenario:
             1. Create cluster
             2. Add 1 node with controller and ceph OSD roles
-            3. Add 1 node with compute and ceph OSD roles
+            3. Add 2 node with compute and ceph OSD roles
             4. Deploy the cluster
             5. Check ceph status
 
         Snapshot: ceph_multinode_compact
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ready_with_3_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True
@@ -61,21 +61,19 @@ class CephCompact(TestBasic):
             cluster_id,
             {
                 'slave-01': ['controller', 'ceph-osd'],
-                'slave-02': ['compute', 'ceph-osd']
+                'slave-02': ['compute', 'ceph-osd'],
+                'slave-03': ['compute', 'ceph-osd']
             }
         )
-        # configure disks to avoid "group requires minimum xxx" error
-        node = self.fuel_web.get_nailgun_node_by_name('slave-01')
-        self.fuel_web.update_node_disk(node['id'], {
-            'vda': {'os': 19852, 'image': 0},
-            'vdb': {'image': 9000, 'ceph': 10852}
-        })
-
-        node = self.fuel_web.get_nailgun_node_by_name('slave-02')
-        self.fuel_web.update_node_disk(node['id'], {
-            'vda': {'os': 19852, 'vm': 0},
-            'vdb': {'vm': 9000, 'ceph': 10852}
-        })
+        # Just to change default configuration of disk
+        for node_name in ['slave-01', 'slave-02', 'slave-03']:
+            node = self.fuel_web.get_nailgun_node_by_name(node_name)
+            self.fuel_web.update_node_disk(
+                node['id'],
+                {
+                    'vda': {'os': 30408, 'image': 0},
+                    'vdb': {'image': 20000, 'ceph': 30572}
+                })
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
@@ -93,14 +91,14 @@ class CephCompact(TestBasic):
             2. Run OSTF
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ceph_multinode_compact")
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
+            should_fail=4, should_pass=19
         )
 
 
@@ -124,7 +122,7 @@ class CephCompactWithCinder(TestBasic):
         Snapshot: ceph_multinode_with_cinder
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ready")
@@ -132,7 +130,7 @@ class CephCompactWithCinder(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True
@@ -163,7 +161,7 @@ class CephCompactWithCinder(TestBasic):
             2. Run OSTF
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ceph_multinode_with_cinder")
@@ -218,7 +216,7 @@ class CephHA(TestBasic):
         Snapshot: ceph_ha
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ready")
@@ -226,7 +224,7 @@ class CephHA(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE_HA,
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True
@@ -258,7 +256,7 @@ class CephHA(TestBasic):
             2. Run OSTF
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ceph_ha")
@@ -280,7 +278,7 @@ class CephHA(TestBasic):
             4. Run OSTF
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ceph_ha")
@@ -305,7 +303,7 @@ class CephHA(TestBasic):
             4. Run OSTF
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ceph_ha")
