@@ -37,7 +37,7 @@ class CephCompact(TestBasic):
         Scenario:
             1. Create cluster
             2. Add 1 node with controller and ceph OSD roles
-            3. Add 1 node with compute and ceph OSD roles
+            3. Add 2 node with compute and ceph OSD roles
             4. Deploy the cluster
             5. Check ceph status
 
@@ -61,7 +61,8 @@ class CephCompact(TestBasic):
             cluster_id,
             {
                 'slave-01': ['controller', 'ceph-osd'],
-                'slave-02': ['compute', 'ceph-osd']
+                'slave-02': ['compute', 'ceph-osd'],
+                'slave-03': ['compute', 'ceph-osd']
             }
         )
         # configure disks to avoid "group requires minimum xxx" error
@@ -72,6 +73,12 @@ class CephCompact(TestBasic):
         })
 
         node = self.fuel_web.get_nailgun_node_by_name('slave-02')
+        self.fuel_web.update_node_disk(node['id'], {
+            'vda': {'os': 19852, 'vm': 0},
+            'vdb': {'vm': 9000, 'ceph': 10852}
+        })
+
+        node = self.fuel_web.get_nailgun_node_by_name('slave-03')
         self.fuel_web.update_node_disk(node['id'], {
             'vda': {'os': 19852, 'vm': 0},
             'vdb': {'vm': 9000, 'ceph': 10852}
@@ -100,7 +107,7 @@ class CephCompact(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
+            should_fail=4, should_pass=19
         )
 
 
