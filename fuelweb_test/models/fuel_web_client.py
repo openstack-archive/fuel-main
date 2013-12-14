@@ -191,7 +191,7 @@ class FuelWebClient(object):
 
             for option in settings:
                 section = False
-                if option in ('savanna', 'murano'):
+                if option in ('savanna', 'murano', 'ceilometer'):
                     section = 'additional_components'
                 if option in ('volumes_ceph', 'images_ceph'):
                     section = 'storage'
@@ -450,11 +450,12 @@ class FuelWebClient(object):
         self.assert_task_success(task, 60 * 2, interval=10)
 
     @logwrap
-    def verify_savanna_service(self, node_name):
+    def verify_service(self, node_name, service_name):
         ip = self.get_nailgun_node_by_devops_node(
             self.environment.get_virtual_environment().
             node_by_name(node_name))['ip']
-        verify_savanna_service(self.environment.get_ssh_to_remote(ip))
+        verify_service(self.environment.get_ssh_to_remote(ip), service_name)
+
 
     @logwrap
     def update_nodes_interfaces(self, cluster_id):
