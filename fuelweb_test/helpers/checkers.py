@@ -51,20 +51,6 @@ def verify_glance_index(remote):
                  "TestVM not found in glance index")
 
 
-@logwrap
-def verify_murano_service(remote):
-    ps_output = remote.execute('ps ax')['stdout']
-
-    murano_api = filter(lambda x: 'murano-api' in x, ps_output)
-    logger.debug("murano-api \\n: {}".format(str(murano_api)))
-    assert_equal(len(murano_api), 1, "murano-api count not equal to 1")
-
-    muranoconductor = filter(lambda x: 'muranoconductor' in x, ps_output)
-    logger.debug("muranoconductor \\n: {}".format(str(murano_api)))
-    assert_equal(len(muranoconductor), 1,
-                 "muranoconductor count not equal to 1")
-
-
 def verify_network_configuration(remote, node):
     for interface in node['network_data']:
         if interface.get('vlan') is None:
@@ -99,12 +85,17 @@ def verify_network_list(networks_count, remote):
 
 
 @logwrap
-def verify_savanna_service(remote):
+def verify_service(remote, service_name):
     ps_output = remote.execute('ps ax')['stdout']
-
-    savanna_api = filter(lambda x: 'savanna-api' in x, ps_output)
-    logger.debug("savanna-api \\n: {}".format(str(savanna_api)))
-    assert_equal(len(savanna_api), 1, "savanna-api count not equal to 1")
+    service_api = '{}-api'.format(service_name)
+    api = filter(lambda x: service_api in x, ps_output)
+    logger.debug("{} \\n: {}".format(service_api, str(api)))
+    assert_equal(len(api), 1, "{} count not equal to 1".format(service_api))
+    if service_name == 'murano':
+        muranoconductor = filter(lambda x: 'muranoconductor' in x, ps_output)
+        logger.debug("muranoconductor \\n: {}".format(str(api)))
+        assert_equal(len(muranoconductor),
+                     1, "muranoconductor count not equal to 1")
 
 
 @logwrap
