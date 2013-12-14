@@ -106,6 +106,14 @@ def verify_savanna_service(remote):
     logger.debug("savanna-api \\n: {}".format(str(savanna_api)))
     assert_equal(len(savanna_api), 1, "savanna-api count not equal to 1")
 
+@logwrap
+def verify_ceilometer_service(remote):
+    ps_output = remote.execute('ps ax')['stdout']
+
+    ceilometer_api = filter(lambda x: 'ceilometer-api' in x, ps_output)
+    logger.debug("ceilometer-api \\n: {}".format(str(ceilometer_api)))
+    assert_equal(len(ceilometer_api), 1, "ceilometer-api count not equal to 1")
+
 
 @logwrap
 def verify_service_list(remote, smiles_count):
