@@ -358,7 +358,7 @@ python-heatclient
 python-httplib2-0.7.7-1.el6
 python-importlib-1.0.2-1.el6
 python-ipaddr-2.1.9-1.el6
-python-iso8601-0.1.4-2.el6
+python-iso8601
 python-jsonschema
 python-keyring-0.7-1.el6
 python-keystone
