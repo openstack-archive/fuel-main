@@ -92,18 +92,15 @@ class FuelWebClient(object):
             timeout=timeout)
 
     @logwrap
-    def assert_ostf_run(self, cluster_id, should_fail=0, should_pass=0,
-                        timeout=10 * 60):
+    def assert_ostf_run(self, cluster_id, should_fail=0, timeout=15 * 60):
 
         set_result_list = self._ostf_test_wait(cluster_id, timeout)
 
-        passed = 0
         failed = 0
         failed_tests_names = []
 
         for set_result in set_result_list:
-            passed += len(filter(lambda test: test['status'] == 'success',
-                                 set_result['tests']))
+
             failed += len(
                 filter(
                     lambda test: test['status'] == 'failure' or
@@ -115,10 +112,6 @@ class FuelWebClient(object):
             [failed_tests_names.append({test['name']:test['message']})
              for test in set_result['tests'] if test['status'] != 'success']
 
-        assert_true(
-            passed >= should_pass, 'Passed tests, pass: {} should pass: {},'
-                                   ' failed tests names: {}'
-                                   ''.format(passed, should_pass, failed_tests_names))
         assert_true(
             failed <= should_fail, 'Failed tests,  fails: {} should fail:'
                                    ' {} failed tests name: {}'
@@ -306,8 +299,7 @@ class FuelWebClient(object):
             cluster_id, self.client.get_networks(cluster_id)['networks'])
 
     @logwrap
-    def run_ostf(self, cluster_id, test_sets=None,
-                 should_fail=0, should_pass=0):
+    def run_ostf(self, cluster_id, test_sets=None, should_fail=0):
         test_sets = test_sets \
             if test_sets is not None \
             else ['smoke', 'sanity']
@@ -315,9 +307,7 @@ class FuelWebClient(object):
         self.client.ostf_run_tests(cluster_id, test_sets)
         self.assert_ostf_run(
             cluster_id,
-            should_fail=should_fail,
-            should_pass=should_pass
-        )
+            should_fail=should_fail)
 
     @logwrap
     def task_wait(self, task, timeout, interval=5):
@@ -449,13 +439,6 @@ class FuelWebClient(object):
     def verify_network(self, cluster_id):
         task = self.run_network_verify(cluster_id)
         self.assert_task_success(task, 60 * 2, interval=10)
-
-    @logwrap
-    def verify_service(self, node_name, service_name):
-        ip = self.get_nailgun_node_by_devops_node(
-            self.environment.get_virtual_environment().
-            node_by_name(node_name))['ip']
-        verify_service(self.environment.get_ssh_to_remote(ip), service_name)
 
     @logwrap
     def update_nodes_interfaces(self, cluster_id):
