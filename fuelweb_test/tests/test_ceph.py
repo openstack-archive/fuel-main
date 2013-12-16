@@ -188,6 +188,9 @@ class CephCompactWithCinder(TestBasic):
             5. Run OSTF
 
         """
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
         self.env.revert_snapshot("ceph_multinode_with_cinder")
         self.fuel_web.restart_nodes(self.env.nodes().slaves[:4])
 
@@ -331,6 +334,9 @@ class CephHA(TestBasic):
             5. Run OSTF
 
         """
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
         self.env.revert_snapshot("ceph_ha")
         self.fuel_web.restart_nodes(self.env.nodes().slaves[:6])
 
