@@ -135,8 +135,7 @@ class SimpleFlat(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=5, should_pass=17
-        )
+            should_fail=5)
 
     @test(depends_on=[deploy_simple_flat],
           groups=["simple_flat_network_configuration"])
@@ -257,8 +256,7 @@ class SimpleFlat(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=5, should_pass=17
-        )
+            should_fail=5)
 
     @test(depends_on=[simple_flat_ostf], groups=["simple_flat_cold_restart"])
     @log_snapshot_on_error
@@ -277,8 +275,8 @@ class SimpleFlat(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=5, should_pass=17
-        )
+            should_fail=5)
+
 
 @test(groups=["thread_2"])
 class SimpleVlan(TestBasic):
@@ -355,8 +353,7 @@ class SimpleVlan(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=5, should_pass=17
-        )
+            should_fail=5)
 
 
 @test(groups=["thread_3", "multirole"])
@@ -425,8 +422,7 @@ class MultiroleControllerCinder(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=19
-        )
+            should_fail=4)
 
 
 @test(groups=["thread_3", "multirole"])
@@ -495,8 +491,7 @@ class MultiroleComputeCinder(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=19
-        )
+            should_fail=4)
 
 
 @test(groups=["thread_2"])
@@ -671,8 +666,7 @@ class FloatingIPs(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=5, should_pass=17
-        )
+            should_fail=5)
 
 
 @test(groups=["thread_1"])
@@ -730,8 +724,7 @@ class SimpleCinder(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
 
 
 @test(groups=["thread_1"])

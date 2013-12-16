@@ -102,8 +102,7 @@ class CephCompact(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=19
-        )
+            should_fail=4)
 
 
 @test(groups=["thread_1", "ceph"])
@@ -172,8 +171,7 @@ class CephCompactWithCinder(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
 
     @test(depends_on=[ceph_multinode_with_cinder_ostf],
           groups=["ceph_multinode_with_cinder_cold_restart"])
@@ -199,8 +197,7 @@ class CephCompactWithCinder(TestBasic):
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
 
 
 @test(groups=["thread_1", "ceph"])
@@ -270,8 +267,7 @@ class CephHA(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
 
     @test(depends_on=[ceph_ha], groups=["ceph_ha_destroy_osd"])
     @log_snapshot_on_error
@@ -295,8 +291,7 @@ class CephHA(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
 
     @test(depends_on=[ceph_ha], groups=["ceph_ha_destroy_compute"])
     @log_snapshot_on_error
@@ -320,8 +315,7 @@ class CephHA(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
 
     @test(depends_on=[ceph_ha_ostf], groups=["ceph_ha_cold_restart"])
     @log_snapshot_on_error
@@ -345,5 +339,4 @@ class CephHA(TestBasic):
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
