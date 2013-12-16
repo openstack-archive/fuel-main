@@ -121,7 +121,9 @@ class MuranoSimple(TestBasic):
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             settings={
-                'murano': True
+                'murano': True,
+                "net_provider": 'neutron',
+                "net_segment_type": 'gre'
             }
         )
         self.fuel_web.update_nodes(
@@ -141,6 +143,7 @@ class MuranoSimple(TestBasic):
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='muranoconductor')
+
         self.env.make_snapshot("deploy_murano_simple")
 
     @test(depends_on=[deploy_murano_simple],
