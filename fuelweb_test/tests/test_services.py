@@ -17,8 +17,8 @@ from proboscis import test, SkipTest
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
-from fuelweb_test.settings import OPENSTACK_RELEASE, OPENSTACK_RELEASE_REDHAT
 from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
+from fuelweb_test import settings
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
@@ -44,7 +44,7 @@ class SavannaSimple(TestBasic):
         Snapshot: deploy_savanna_simple
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -82,15 +82,14 @@ class SavannaSimple(TestBasic):
             2. Run OSTF
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("deploy_savanna_simple")
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=5, should_pass=17
-        )
+            should_fail=5)
 
 
 @test(groups=["thread_1", "services", "services.murano"])
@@ -113,7 +112,7 @@ class MuranoSimple(TestBasic):
         Snapshot: deploy_murano_simple
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -157,15 +156,14 @@ class MuranoSimple(TestBasic):
             2. Run OSTF
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("deploy_murano_simple")
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=5, should_pass=19
-        )
+            should_fail=5)
 
 
 @test(groups=["thread_1", "services", "services.ceilometer"])
@@ -189,7 +187,7 @@ class CeilometerSimple(TestBasic):
         Snapshot: deploy_ceilometer_simple
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -217,7 +215,6 @@ class CeilometerSimple(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=20
-        )
+            should_fail=4)
 
         self.env.make_snapshot("deploy_ceilometer_simple")

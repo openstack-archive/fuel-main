@@ -101,8 +101,7 @@ class TestHaVLAN(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=4, should_pass=24
-        )
+            should_fail=4)
 
 
 @test(groups=["thread_4", "ha"])
@@ -177,8 +176,7 @@ class TestHaFlat(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=4, should_pass=24
-        )
+            should_fail=4)
 
 
 @test(groups=["thread_4", "ha"])
@@ -238,5 +236,4 @@ class TestHaFlatAddCompute(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=4, should_pass=23
-        )
+            should_fail=4)

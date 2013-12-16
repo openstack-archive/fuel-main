@@ -65,15 +65,6 @@ class CephCompact(TestBasic):
                 'slave-03': ['compute', 'ceph-osd']
             }
         )
-        # Just to change default configuration of disk
-        for node_name in ['slave-01', 'slave-02', 'slave-03']:
-            node = self.fuel_web.get_nailgun_node_by_name(node_name)
-            self.fuel_web.update_node_disk(
-                node['id'],
-                {
-                    'vda': {'os': 30408, 'image': 0},
-                    'vdb': {'image': 20000, 'ceph': 30572}
-                })
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
@@ -98,8 +89,7 @@ class CephCompact(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=19
-        )
+            should_fail=4)
 
 
 @test(groups=["thread_1", "ceph"])
@@ -168,8 +158,7 @@ class CephCompactWithCinder(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
 
     @test(depends_on=[ceph_multinode_with_cinder_ostf],
           groups=["ceph_multinode_with_cinder_cold_restart"])
@@ -186,7 +175,7 @@ class CephCompactWithCinder(TestBasic):
             5. Run OSTF
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ceph_multinode_with_cinder")
@@ -195,8 +184,7 @@ class CephCompactWithCinder(TestBasic):
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
 
 
 @test(groups=["thread_1", "ceph"])
@@ -266,8 +254,7 @@ class CephHA(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
 
     @test(depends_on=[ceph_ha], groups=["ceph_ha_destroy_osd"])
     @log_snapshot_on_error
@@ -291,8 +278,7 @@ class CephHA(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
 
     @test(depends_on=[ceph_ha], groups=["ceph_ha_destroy_compute"])
     @log_snapshot_on_error
@@ -316,8 +302,7 @@ class CephHA(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
 
     @test(depends_on=[ceph_ha_ostf], groups=["ceph_ha_cold_restart"])
     @log_snapshot_on_error
@@ -332,7 +317,7 @@ class CephHA(TestBasic):
             5. Run OSTF
 
         """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ceph_ha")
@@ -341,5 +326,4 @@ class CephHA(TestBasic):
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4, should_pass=18
-        )
+            should_fail=4)
