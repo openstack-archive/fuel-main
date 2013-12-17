@@ -41,7 +41,7 @@ class CephCompact(TestBasic):
             4. Deploy the cluster
             5. Check ceph status
 
-        Snapshot: ceph_multinode_compact
+        Snapshot ceph_multinode_compact
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -71,8 +71,9 @@ class CephCompact(TestBasic):
 
         # Run ostf
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=4)
+
         self.env.make_snapshot("ceph_multinode_compact")
 
 
@@ -93,7 +94,7 @@ class CephCompactWithCinder(TestBasic):
             5. Deploy the cluster
             6. Check ceph status
 
-        Snapshot: ceph_multinode_with_cinder
+        Snapshot ceph_multinode_with_cinder
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -125,7 +126,7 @@ class CephCompactWithCinder(TestBasic):
 
         # Run ostf
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=4)
 
         # Cold restart
@@ -133,7 +134,7 @@ class CephCompactWithCinder(TestBasic):
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=4)
 
         self.env.make_snapshot("ceph_multinode_with_cinder")
@@ -156,7 +157,7 @@ class CephHA(TestBasic):
             5. Deploy the cluster
             6. Check ceph status
 
-        Snapshot: ceph_ha
+        Snapshot ceph_ha
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -190,21 +191,21 @@ class CephHA(TestBasic):
 
         # Run ostf
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=4)
 
         # Destroy osd-node
         self.env.nodes().slaves[-1].destroy()
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=4)
 
         # Destroy compute node
         self.env.nodes().slaves[4].destroy()
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=4)
 
         # Cold restart
@@ -212,7 +213,7 @@ class CephHA(TestBasic):
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=4)
 
         self.env.make_snapshot("ceph_ha")
