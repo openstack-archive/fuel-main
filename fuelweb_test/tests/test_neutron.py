@@ -40,7 +40,7 @@ class NeutronGre(TestBasic):
             2. Add 1 node with controller role
             3. Add 2 nodes with compute role
             4. Deploy the cluster
-            5. Validate cluster network
+            5. Run OSTF
 
         Snapshot: deploy_neutron_gre
 
@@ -73,6 +73,10 @@ class NeutronGre(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=2)
+
         self.env.make_snapshot("deploy_neutron_gre")
 
     # TODO uncomment when fuel/+spec/network-checker-neutron-vlan
@@ -91,26 +95,6 @@ class NeutronGre(TestBasic):
     #    self.env.revert_snapshot("deploy_neutron_gre")
     #    self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[deploy_neutron_gre],
-          groups=["deploy_neutron_gre_ostf"])
-    @log_snapshot_on_error
-    def deploy_neutron_gre_ostf(self):
-        """Run OSTF tests on cluster in simple mode with Neutron GRE
-
-        Scenario:
-            1. Revert snapshot "deploy_neutron_gre"
-            2. Run OSTF
-
-        """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("deploy_neutron_gre")
-
-        self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=2)
-
 
 @test(groups=["thread_3", "neutron"])
 class NeutronVlan(TestBasic):
@@ -126,7 +110,7 @@ class NeutronVlan(TestBasic):
             2. Add 1 node with controller role
             3. Add 2 nodes with compute role
             4. Deploy the cluster
-            5. Validate cluster network
+            5. Run OSTF
 
         Snapshot: deploy_neutron_vlan
 
@@ -159,6 +143,10 @@ class NeutronVlan(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=2)
+
         self.env.make_snapshot("deploy_neutron_vlan")
 
     # TODO uncomment when fuel/+spec/network-checker-neutron-vlan
@@ -178,26 +166,6 @@ class NeutronVlan(TestBasic):
     #
     #     self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[deploy_neutron_vlan],
-          groups=["deploy_neutron_vlan_ostf"])
-    @log_snapshot_on_error
-    def deploy_neutron_vlan_ostf(self):
-        """Run OSTF tests on cluster in simple mode with Neutron VLAN
-
-        Scenario:
-            1. Revert snapshot "deploy_neutron_vlan"
-            2. Run OSTF
-
-        """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("deploy_neutron_vlan")
-
-        self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=2)
-
 
 @test(groups=["thread_4", "neutron"])
 class NeutronGreHa(TestBasic):
@@ -213,7 +181,7 @@ class NeutronGreHa(TestBasic):
             2. Add 3 nodes with controller role
             3. Add 2 nodes with compute role
             4. Deploy the cluster
-            5. Validate cluster network
+            5. Run OSTF
 
         Snapshot: deploy_neutron_gre_ha
 
@@ -248,6 +216,10 @@ class NeutronGreHa(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=4)
+
         self.env.make_snapshot("deploy_neutron_gre_ha")
 
     # TODO uncomment when fuel/+spec/network-checker-neutron-vlan
@@ -266,26 +238,6 @@ class NeutronGreHa(TestBasic):
     #    self.env.revert_snapshot("deploy_neutron_gre_ha")
     #    self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[deploy_neutron_gre_ha],
-          groups=["deploy_neutron_gre_ha_ostf"])
-    @log_snapshot_on_error
-    def deploy_neutron_gre_ha_ostf(self):
-        """Run OSTF tests on cluster in HA mode with Neutron GRE
-
-        Scenario:
-            1. Revert snapshot "deploy_neutron_gre_ha"
-            2. Run OSTF
-
-        """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("deploy_neutron_gre_ha")
-
-        self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4)
-
 
 @test(groups=["thread_2", "neutron"])
 class NeutronVlanHa(TestBasic):
@@ -301,7 +253,7 @@ class NeutronVlanHa(TestBasic):
             2. Add 3 nodes with controller role
             3. Add 2 nodes with compute role
             4. Deploy the cluster
-            5. Validate cluster network
+            5. Run OSTF
 
         Snapshot: deploy_neutron_vlan_ha
 
@@ -336,6 +288,10 @@ class NeutronVlanHa(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=4)
+
         self.env.make_snapshot("deploy_neutron_vlan_ha")
 
     # TODO uncomment when fuel/+spec/network-checker-neutron-vlan
@@ -354,23 +310,3 @@ class NeutronVlanHa(TestBasic):
     #     """
     #     self.env.revert_snapshot("deploy_neutron_vlan_ha")
     #     self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
-
-    @test(depends_on=[deploy_neutron_vlan_ha],
-          groups=["deploy_neutron_vlan_ha_ostf"])
-    @log_snapshot_on_error
-    def deploy_neutron_vlan_ha_ostf(self):
-        """Run OSTF tests on cluster in HA mode with Neutron VLAN
-
-        Scenario:
-            1. Revert snapshot "deploy_neutron_vlan_ha"
-            2. Run OSTF
-
-        """
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-        
-        self.env.revert_snapshot("deploy_neutron_vlan_ha")
-
-        self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4)
