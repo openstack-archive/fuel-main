@@ -66,6 +66,16 @@ class TestHaVLAN(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=16, networks_count=8, timeout=300)
+
+        # Running verify networks after deployment
+        self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
+
+        # Running OSTF after deployment
+        self.fuel_web.run_ostf(
+            cluster_id=self.fuel_web.get_last_created_cluster(),
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=4)
+
         self.env.make_snapshot("deploy_ha_vlan")
 
     @test(depends_on=[deploy_ha_vlan],
@@ -81,8 +91,6 @@ class TestHaVLAN(TestBasic):
         """
         self.env.revert_snapshot("deploy_ha_vlan")
 
-        #self.env.get_ebtables(self.fuel_web.get_last_created_cluster(),
-        #                      self.env.nodes().slaves[:2]).restore_vlans()
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
     @test(depends_on=[deploy_ha_vlan],
@@ -143,6 +151,16 @@ class TestHaFlat(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=16, networks_count=1, timeout=300)
+
+        # Running verify networks after deployment
+        self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
+
+        # Running OSTF after deployment
+        self.fuel_web.run_ostf(
+            cluster_id=self.fuel_web.get_last_created_cluster(),
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=4)
+
         self.env.make_snapshot("deploy_ha_flat")
 
     @test(depends_on=[deploy_ha_flat],
@@ -204,6 +222,16 @@ class TestHaFlatAddCompute(TestBasic):
             cluster_id, {'slave-06': ['compute']}, True, False
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        # Running verify networks after deployment
+        self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
+
+        # Running OSTF after deployment
+        self.fuel_web.run_ostf(
+            cluster_id=self.fuel_web.get_last_created_cluster(),
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=4)
+
         self.env.make_snapshot("ha_flat_add_compute")
 
     @test(depends_on=[ha_flat_add_compute],
