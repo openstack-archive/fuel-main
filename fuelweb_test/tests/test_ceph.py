@@ -66,8 +66,8 @@ class CephCompact(TestBasic):
             }
         )
         # Just to change default configuration of disk
-        disk_size = settings.NODE_VOLUME_SIZE * 1000 - 600
-        image_size = 10000
+        disk_size = (int(settings.NODE_VOLUME_SIZE) * 1024 - 600) * 1024 * 1024
+        image_size = 10 * 1024 * 1024 * 1024
         ceph_size = disk_size - image_size
 
         for node_name in ['slave-01', 'slave-02', 'slave-03']:
@@ -78,31 +78,15 @@ class CephCompact(TestBasic):
                     'vda': {'os': disk_size, 'image': 0},
                     'vdb': {'image': image_size, 'ceph': ceph_size}
                 })
-
+        # Cluster deploy
         self.fuel_web.deploy_cluster_wait(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
-        self.env.make_snapshot("ceph_multinode_compact")
-
-    @test(depends_on=[ceph_multinode_compact],
-          groups=["ceph_multinode_compact_ostf"])
-    @log_snapshot_on_error
-    def ceph_multinode_compact_ostf(self):
-        """Run OSTF on deployed cluster with ceph in simple mode
-
-        Scenario:
-            1. Revert snapshot: ceph_multinode_compact
-            2. Run OSTF
-
-        """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("ceph_multinode_compact")
-
+        # Run ostf
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             should_fail=4)
+        self.env.make_snapshot("ceph_multinode_compact")
 
 
 @test(groups=["thread_1", "ceph"])
@@ -148,56 +132,24 @@ class CephCompactWithCinder(TestBasic):
                 'slave-04': ['cinder', 'ceph-osd']
             }
         )
+        # Cluster deploy
         self.fuel_web.deploy_cluster_wait(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
-        self.env.make_snapshot("ceph_multinode_with_cinder")
-
-    @test(depends_on=[ceph_multinode_with_cinder],
-          groups=["ceph_multinode_with_cinder_ostf"])
-    @log_snapshot_on_error
-    def ceph_multinode_with_cinder_ostf(self):
-        """Run OSTF on deployed cluster with ceph and cider in simple mode
-
-        Scenario:
-            1. Revert snapshot: ceph_multinode_compact
-            2. Run OSTF
-
-        """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("ceph_multinode_with_cinder")
-
+        # Run ostf
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             should_fail=4)
 
-    @test(depends_on=[ceph_multinode_with_cinder_ostf],
-          groups=["ceph_multinode_with_cinder_cold_restart"])
-    @log_snapshot_on_error
-    def ceph_multinode_with_cinder_cold_restart(self):
-        """Cold restart for Simple environment
-
-        Scenario:
-            1. Revert snapshot: ceph_multinode_with_cinder
-            2. Turn off all nodes
-            3. Start all nodes
-            4. Check ceph status
-
-            5. Run OSTF
-
-        """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("ceph_multinode_with_cinder")
+        # Cold restart
         self.fuel_web.restart_nodes(self.env.nodes().slaves[:4])
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             should_fail=4)
+
+        self.env.make_snapshot("ceph_multinode_with_cinder")
 
 
 @test(groups=["thread_1", "ceph"])
@@ -245,98 +197,35 @@ class CephHA(TestBasic):
                 'slave-06': ['cinder', 'ceph-osd']
             }
         )
+        # Depoy cluster
         self.fuel_web.deploy_cluster_wait(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
-        self.env.make_snapshot("ceph_ha")
-
-    @test(depends_on=[ceph_ha], groups=["ceph_ha_ostf"])
-    @log_snapshot_on_error
-    def ceph_ha_ostf(self):
-        """Run OSTF on deployed cluster with ceph and cider in HA mode
-
-        Scenario:
-            1. Revert snapshot: ceph_ha
-            2. Run OSTF
-
-        """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("ceph_ha")
-
+        # Run ostf
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             should_fail=4)
 
-    @test(depends_on=[ceph_ha], groups=["ceph_ha_destroy_osd"])
-    @log_snapshot_on_error
-    def ceph_ha_destroy_osd(self):
-        """Destroy OSD node for ceph HA
-
-        Scenario:
-            1. Revert snapshot: ceph_ha
-            2. Destroy cinder + ceph osd node
-            3. Check ceph status
-            4. Run OSTF
-
-        """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("ceph_ha")
+        # Destroy osd-node
         self.env.nodes().slaves[-1].destroy()
-
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
-
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             should_fail=4)
 
-    @test(depends_on=[ceph_ha], groups=["ceph_ha_destroy_compute"])
-    @log_snapshot_on_error
-    def ceph_ha_destroy_compute(self):
-        """Destroy OSD node for ceph HA
-
-        Scenario:
-            1. Revert snapshot: ceph_ha
-            2. Destroy first compute + ceph OSD node
-            3. Check ceph status
-            4. Run OSTF
-
-        """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("ceph_ha")
+        # Destroy compute node
         self.env.nodes().slaves[4].destroy()
-
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
-
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             should_fail=4)
 
-    @test(depends_on=[ceph_ha_ostf], groups=["ceph_ha_cold_restart"])
-    @log_snapshot_on_error
-    def ceph_ha_cold_restart(self):
-        """Cold restart for HA environment
-
-        Scenario:
-            1. Revert snapshot: ceph_ha
-            2. Turn off all nodes
-            3. Start all nodes
-            4. Check ceph status
-            5. Run OSTF
-
-        """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("ceph_ha")
-        self.fuel_web.restart_nodes(self.env.nodes().slaves[:6])
+        # Cold restart
+        self.fuel_web.restart_nodes(self.env.nodes().slaves[:])
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             should_fail=4)
+
+        self.env.make_snapshot("ceph_ha")
