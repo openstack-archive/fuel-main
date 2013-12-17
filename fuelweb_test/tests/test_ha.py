@@ -70,8 +70,10 @@ class TestHaVLAN(TestBasic):
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=16, networks_count=8, timeout=300)
 
-        self.fuel_web.verify_network(cluster_id)
+        # Running verify networks after deployment
+        self.fuel_web.verify_network(cluster_id=cluster_id)
 
+        # Running OSTF after deployment
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             test_sets=['ha', 'smoke', 'sanity'],
@@ -123,8 +125,10 @@ class TestHaFlat(TestBasic):
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=16, networks_count=1, timeout=300)
 
-        self.fuel_web.verify_network(cluster_id)
+        # Running verify networks after deployment
+        self.fuel_web.verify_network(cluster_id=cluster_id)
 
+        # Running OSTF after deployment
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             test_sets=['ha', 'smoke', 'sanity'],
@@ -183,10 +187,13 @@ class TestHaFlatAddCompute(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        self.fuel_web.verify_network(cluster_id)
+        # Running verify networks after deployment
+        self.fuel_web.verify_network(cluster_id=cluster_id)
 
+        # Running OSTF after deployment
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['ha', 'smoke', 'sanity'], should_fail=4)
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=4)
 
         self.env.make_snapshot("ha_flat_add_compute")
