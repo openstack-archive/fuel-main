@@ -66,42 +66,17 @@ class TestHaVLAN(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=16, networks_count=8, timeout=300)
-        self.env.make_snapshot("deploy_ha_vlan")
 
-    @test(depends_on=[deploy_ha_vlan],
-          groups=["deploy_ha_vlan_verify_networks"])
-    @log_snapshot_on_error
-    def deploy_ha_vlan_verify_networks(self):
-        """Verify network on cluster in HA mode with VLAN Manager
-
-        Scenario:
-            1. Revert snapshot "deploy_ha_vlan"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("deploy_ha_vlan")
-
-        #self.env.get_ebtables(self.fuel_web.get_last_created_cluster(),
-        #                      self.env.nodes().slaves[:2]).restore_vlans()
+        # Running verify networks after deployment
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[deploy_ha_vlan],
-          groups=["revert_snapshot"])
-    @log_snapshot_on_error
-    def deploy_ha_vlan_ostf(self):
-        """Run OSTF tests on cluster in HA mode with VLAN Manager
-
-        Scenario:
-            1. Revert snapshot "deploy_ha_vlan"
-            2. Run OSTF
-
-        """
-        self.env.revert_snapshot("deploy_ha_vlan")
-
+        # Running OSTF after deployment
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             test_sets=['ha', 'smoke', 'sanity'],
             should_fail=4)
+
+        self.env.make_snapshot("deploy_ha_vlan")
 
 
 @test(groups=["thread_4", "ha"])
@@ -143,40 +118,17 @@ class TestHaFlat(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=16, networks_count=1, timeout=300)
-        self.env.make_snapshot("deploy_ha_flat")
 
-    @test(depends_on=[deploy_ha_flat],
-          groups=["deploy_ha_flat_verify_networks"])
-    @log_snapshot_on_error
-    def deploy_ha_flat_verify_networks(self):
-        """Verify network on cluster in HA mode with flat nova-network
-
-        Scenario:
-            1. Revert snapshot "deploy_ha_flat"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("deploy_ha_flat")
-
+        # Running verify networks after deployment
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[deploy_ha_flat],
-          groups=["deploy_ha_flat_ostf"])
-    @log_snapshot_on_error
-    def deploy_ha_flat_ostf(self):
-        """Run OSTF tests on cluster in HA mode with flat nova-network
-
-        Scenario:
-            1. Revert snapshot "deploy_ha_flat"
-            2. Run OSTF
-
-        """
-        self.env.revert_snapshot("deploy_ha_flat")
-
+        # Running OSTF after deployment
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             test_sets=['ha', 'smoke', 'sanity'],
             should_fail=4)
+
+        self.env.make_snapshot("deploy_ha_flat")
 
 
 @test(groups=["thread_4", "ha"])
@@ -204,36 +156,14 @@ class TestHaFlatAddCompute(TestBasic):
             cluster_id, {'slave-06': ['compute']}, True, False
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.env.make_snapshot("ha_flat_add_compute")
 
-    @test(depends_on=[ha_flat_add_compute],
-          groups=["ha_flat_add_compute_verify_networks"])
-    @log_snapshot_on_error
-    def ha_flat_add_compute_verify_networks(self):
-        """Verify network on cluster in HA mode after add compute node
-
-        Scenario:
-            1. Revert snapshot "ha_flat_add_compute"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("ha_flat_add_compute")
+        # Running verify networks after deployment
         self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
-    @test(depends_on=[ha_flat_add_compute],
-          groups=["ha_flat_add_compute_ostf"])
-    @log_snapshot_on_error
-    def ha_flat_add_compute_ostf(self):
-        """Run OSTF tests on cluster in HA mode after add compute node
-
-        Scenario:
-            1. Revert snapshot "ha_flat_add_compute"
-            2. Run OSTF
-
-        """
-        self.env.revert_snapshot("ha_flat_add_compute")
-
+        # Running OSTF after deployment
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             test_sets=['ha', 'smoke', 'sanity'],
             should_fail=4)
+
+        self.env.make_snapshot("ha_flat_add_compute")
