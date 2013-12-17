@@ -66,13 +66,17 @@ class CephCompact(TestBasic):
             }
         )
         # Just to change default configuration of disk
+        disk_size = settings.NODE_VOLUME_SIZE * 1000 - 600
+        image_size = 10000
+        ceph_size = disk_size - image_size
+
         for node_name in ['slave-01', 'slave-02', 'slave-03']:
             node = self.fuel_web.get_nailgun_node_by_name(node_name)
             self.fuel_web.update_node_disk(
                 node['id'],
                 {
-                    'vda': {'os': 30408, 'image': 0},
-                    'vdb': {'image': 20000, 'ceph': 30572}
+                    'vda': {'os': disk_size, 'image': 0},
+                    'vdb': {'image': image_size, 'ceph': ceph_size}
                 })
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
