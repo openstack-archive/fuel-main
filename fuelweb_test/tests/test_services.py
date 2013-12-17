@@ -40,6 +40,7 @@ class SavannaSimple(TestBasic):
             4. Add 1 node with cinder role
             4. Deploy the cluster
             5. Verify savanna services
+            6. Run OSTF
 
         Snapshot: deploy_savanna_simple
 
@@ -69,26 +70,9 @@ class SavannaSimple(TestBasic):
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='savanna-api')
-        self.env.make_snapshot("deploy_savanna_simple")
-
-    @test(depends_on=[deploy_savanna_simple],
-          groups=["deploy_savanna_simple_ostf"])
-    @log_snapshot_on_error
-    def deploy_savanna_simple_ostf(self):
-        """Run OSTF tests on cluster in simple mode with Savanna
-
-        Scenario:
-            1. Revert snapshot "deploy_savanna_simple"
-            2. Run OSTF
-
-        """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("deploy_savanna_simple")
 
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=5)
 
 
@@ -108,6 +92,7 @@ class MuranoSimple(TestBasic):
             4. Add 1 node with cinder role
             4. Deploy the cluster
             5. Verify murano services
+            6. Run OSTF
 
         Snapshot: deploy_murano_simple
 
@@ -143,26 +128,8 @@ class MuranoSimple(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='muranoconductor')
 
-        self.env.make_snapshot("deploy_murano_simple")
-
-    @test(depends_on=[deploy_murano_simple],
-          groups=["deploy_murano_simple_ostf"])
-    @log_snapshot_on_error
-    def deploy_murano_simple_ostf(self):
-        """Run OSTF tests on cluster in simple mode with Murano
-
-        Scenario:
-            1. Revert snapshot "deploy_murano_simple"
-            2. Run OSTF
-
-        """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("deploy_murano_simple")
-
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=5)
 
 
@@ -214,7 +181,5 @@ class CeilometerSimple(TestBasic):
             service_name='ceilometer-api')
 
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=4)
-
-        self.env.make_snapshot("deploy_ceilometer_simple")
