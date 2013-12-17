@@ -78,6 +78,9 @@ class SimpleFlat(TestBasic):
             4. Deploy the cluster
             5. Validate cluster was set up correctly, there are no dead
             services, there are no errors in logs
+            6. Verify networks
+            7. Verify network configuration on controller
+            8. Run OSTF
 
         Snapshot: deploy_simple_flat
 
@@ -99,75 +102,53 @@ class SimpleFlat(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
-        self.env.make_snapshot("deploy_simple_flat")
 
-    @test(depends_on=[deploy_simple_flat],
-          groups=["smoke", "simple_flat_verify_networks"])
-    @log_snapshot_on_error
-    def simple_flat_verify_networks(self):
-        """Verify network on cluster in simple mode with flat nova-network
-
-        Scenario:
-            1. Revert snapshot "deploy_simple_flat"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("deploy_simple_flat")
-
-        #self.env.get_ebtables(self.fuel_web.get_last_created_cluster(),
-        #                      self.env.nodes().slaves[:2]).restore_vlans()
-        task = self.fuel_web.run_network_verify(
-            self.fuel_web.get_last_created_cluster())
+        task = self.fuel_web.run_network_verify(cluster_id)
         self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
 
-    @test(depends_on=[deploy_simple_flat],
-          groups=["smoke", "simple_flat_ostf"])
-    @log_snapshot_on_error
-    def simple_flat_ostf(self):
-        """Run OSTF tests on cluster in simple mode with flat nova-network
-
-        Scenario:
-            1. Revert snapshot "deploy_simple_flat"
-            2. Run OSTF
-
-        """
-        self.env.revert_snapshot("deploy_simple_flat")
-
-        self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=5)
-
-    @test(depends_on=[deploy_simple_flat],
-          groups=["simple_flat_network_configuration"])
-    @log_snapshot_on_error
-    def simple_flat_network_configuration(self):
-        """Verify network configuration on controller node on cluster
-        in simple mode with flat nova-network
-
-        Scenario:
-            1. Revert snapshot "deploy_simple_flat"
-            2. Verify network configuration on controller
-
-        """
-        self.env.revert_snapshot("deploy_simple_flat")
         self.env.verify_network_configuration("slave-01")
 
-    @test(depends_on=[deploy_simple_flat],
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=5)
+
+        self.env.make_snapshot("deploy_simple_flat")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["simple_flat_node_deletion"])
     @log_snapshot_on_error
     def simple_flat_node_deletion(self):
         """Remove controller from cluster in simple mode with flat nova-network
 
-        Scenario:
-            1. Revert snapshot "deploy_simple_flat"
-            2. Remove controller nodes
-            3. Deploy changes
-            4. Verify node returns to unallocated pull
+         Scenario:
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 1 node with compute role
+            4. Deploy the cluster
+            5. Validate cluster was set up correctly, there are no dead
+            services, there are no errors in logs
+            6. Remove controller nodes
+            7. Deploy changes
+            8. Verify node returns to unallocated pull
 
         """
-        self.env.revert_snapshot("deploy_simple_flat")
+        self.env.revert_snapshot("ready_with_3_slaves")
 
-        cluster_id = self.fuel_web.get_last_created_cluster()
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_SIMPLE
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+
         nailgun_nodes = self.fuel_web.update_nodes(
             cluster_id, {'slave-01': ['controller']}, False, True)
         task = self.fuel_web.deploy_cluster(cluster_id)
@@ -181,22 +162,41 @@ class SimpleFlat(TestBasic):
             timeout=3 * 60
         )
 
-    @test(depends_on=[deploy_simple_flat],
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["simple_flat_blocked_vlan"])
     @log_snapshot_on_error
     def simple_flat_blocked_vlan(self):
         """Verify network verification with blocked VLANs
 
         Scenario:
-            1. Revert snapshot "deploy_simple_flat"
-            2. Block first VLAN
-            3. Run Verify network and assert it fails
-            4. Restore first VLAN
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 1 node with compute role
+            4. Deploy the cluster
+            5. Validate cluster was set up correctly, there are no dead
+            services, there are no errors in logs
+            6. Block first VLAN
+            7. Run Verify network and assert it fails
+            8. Restore first VLAN
 
         """
-        self.env.revert_snapshot("deploy_simple_flat")
+        self.env.revert_snapshot("ready_with_3_slaves")
 
-        cluster_id = self.fuel_web.get_last_created_cluster()
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_SIMPLE
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+
         ebtables = self.env.get_ebtables(
             cluster_id, self.env.nodes().slaves[:2])
         ebtables.restore_vlans()
@@ -207,26 +207,46 @@ class SimpleFlat(TestBasic):
         finally:
             ebtables.restore_first_vlan()
 
-    @test(depends_on=[deploy_simple_flat],
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["simple_flat_add_compute"])
     @log_snapshot_on_error
     def simple_flat_add_compute(self):
         """Add compute node to cluster in simple mode
 
         Scenario:
-            1. Revert snapshot "deploy_simple_flat"
-            2. Add 1 node with role compute
-            3. Deploy changes
-            4. Validate cluster was set up correctly, there are no dead
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 1 node with compute role
+            4. Deploy the cluster
+            5. Validate cluster was set up correctly, there are no dead
             services, there are no errors in logs
-            5. Verify services list on compute nodes
+            6. Add 1 node with role compute
+            7. Deploy changes
+            8. Validate cluster was set up correctly, there are no dead
+            services, there are no errors in logs
+            9. Verify services list on compute nodes
+            10. Run OSTF
 
         Snapshot: simple_flat_add_compute
 
         """
-        self.env.revert_snapshot("deploy_simple_flat")
+        self.env.revert_snapshot("ready_with_3_slaves")
 
-        cluster_id = self.fuel_web.get_last_created_cluster()
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_SIMPLE
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+
         self.fuel_web.update_nodes(
             cluster_id, {'slave-03': ['compute']}, True, False)
         self.fuel_web.deploy_cluster_wait(cluster_id)
@@ -239,42 +259,51 @@ class SimpleFlat(TestBasic):
         self.env.verify_node_service_list("slave-02", 8)
         self.env.verify_node_service_list("slave-03", 8)
 
-        self.env.make_snapshot("simple_flat_add_compute")
-
-    @test(depends_on=[simple_flat_add_compute],
-          groups=["simple_flat_add_compute_ostf"])
-    @log_snapshot_on_error
-    def simple_flat_add_compute_ostf(self):
-        """Run OSTF tests on cluster in simple mode after adding compute node
-
-        Scenario:
-            1. Revert snapshot "simple_flat_add_compute"
-            2. Run OSTF
-
-        """
-        self.env.revert_snapshot("simple_flat_add_compute")
-
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=5)
 
-    @test(depends_on=[simple_flat_ostf], groups=["simple_flat_cold_restart"])
+        self.env.make_snapshot("simple_flat_add_compute")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["simple_flat_cold_restart"])
     @log_snapshot_on_error
     def simple_flat_cold_restart(self):
         """Cold restart for simple environment
 
         Scenario:
-            1. Revert snapshot: deploy_simple_flat
-            2. Turn off all nodes
-            3. Start all nodes
-            4. Run OSTF
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 1 node with compute role
+            4. Deploy the cluster
+            5. Validate cluster was set up correctly, there are no dead
+            services, there are no errors in logs
+            6. Turn off all nodes
+            7. Start all nodes
+            8. Run OSTF
 
         """
-        self.env.revert_snapshot("deploy_simple_flat")
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_SIMPLE
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+
         self.fuel_web.restart_nodes(self.env.nodes().slaves[:2])
 
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=5)
 
 
@@ -295,6 +324,8 @@ class SimpleVlan(TestBasic):
             5. Deploy the cluster
             6. Validate cluster was set up correctly, there are no dead
             services, there are no errors in logs
+            7. Run network verification
+            8. Run OSTF
 
         Snapshot: deploy_simple_vlan
 
@@ -317,43 +348,15 @@ class SimpleVlan(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=8, timeout=300)
-        self.env.make_snapshot("deploy_simple_vlan")
 
-    @test(depends_on=[deploy_simple_vlan],
-          groups=["simple_vlan_verify_networks"])
-    @log_snapshot_on_error
-    def simple_vlan_verify_networks(self):
-        """Verify network on cluster in simple mode with nova-network
-        VLAN Manager
-
-        Scenario:
-            1. Revert snapshot "deploy_simple_vlan"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("deploy_simple_vlan")
-
-        task = self.fuel_web.run_network_verify(
-            self.fuel_web.get_last_created_cluster())
+        task = self.fuel_web.run_network_verify(cluster_id)
         self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
 
-    @test(depends_on=[deploy_simple_vlan],
-          groups=["simple_vlan_ostf"])
-    @log_snapshot_on_error
-    def simple_vlan_ostf(self):
-        """Run OSTF tests on cluster in simple mode with nova-network
-        VLAN Manager
-
-        Scenario:
-            1. Revert snapshot "deploy_simple_vlan"
-            2. Run OSTF
-
-        """
-        self.env.revert_snapshot("deploy_simple_vlan")
-
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=5)
+
+        self.env.make_snapshot("deploy_simple_vlan")
 
 
 @test(groups=["thread_3", "multirole"])
@@ -370,6 +373,8 @@ class MultiroleControllerCinder(TestBasic):
             2. Add 1 node with controller and cinder roles
             3. Add 1 node with compute role
             4. Deploy the cluster
+            5. Run network verification
+            6. Run OSTF
 
         Snapshot: deploy_multirole_controller_cinder
 
@@ -389,40 +394,13 @@ class MultiroleControllerCinder(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        self.env.make_snapshot("deploy_multirole_controller_cinder")
-
-    @test(depends_on=[deploy_multirole_controller_cinder],
-          groups=["deploy_multirole_controller_cinder_verify_networks"])
-    @log_snapshot_on_error
-    def deploy_multirole_controller_cinder_verify_networks(self):
-        """Verify network on cluster in simple mode with multi-role
-        controller and cinder
-
-        Scenario:
-            1. Revert snapshot "deploy_multirole_controller_cinder"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("deploy_multirole_controller_cinder")
-        self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
-
-    @test(depends_on=[deploy_multirole_controller_cinder],
-          groups=["deploy_multirole_controller_cinder_ostf"])
-    @log_snapshot_on_error
-    def deploy_multirole_controller_cinder_ostf(self):
-        """Run OSTF tests on cluster in simple mode with multi-role
-        controller and cinder
-
-        Scenario:
-            1. Revert snapshot "deploy_multirole_controller_cinder"
-            2. Run OSTF
-
-        """
-        self.env.revert_snapshot("deploy_multirole_controller_cinder")
+        self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=4)
+
+        self.env.make_snapshot("deploy_multirole_controller_cinder")
 
 
 @test(groups=["thread_3", "multirole"])
@@ -437,8 +415,10 @@ class MultiroleComputeCinder(TestBasic):
         Scenario:
             1. Create cluster
             2. Add 1 node with controller role
-            3. Add 1 node with compute and cinder roles
+            3. Add 2 node with compute and cinder roles
             4. Deploy the cluster
+            5. Run network verification
+            6. Run OSTF
 
         Snapshot: deploy_multirole_compute_cinder
 
@@ -453,55 +433,29 @@ class MultiroleComputeCinder(TestBasic):
             cluster_id,
             {
                 'slave-01': ['controller'],
-                'slave-02': ['compute', 'cinder']
+                'slave-02': ['compute', 'cinder'],
+                'slave-03': ['compute', 'cinder']
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        self.env.make_snapshot("deploy_multirole_compute_cinder")
-
-    @test(depends_on=[deploy_multirole_compute_cinder],
-          groups=["deploy_multirole_compute_cinder_verify_networks"])
-    @log_snapshot_on_error
-    def deploy_multirole_compute_cinder_verify_networks(self):
-        """Verify network on cluster in simple mode with multi-role
-        compute and cinder
-
-        Scenario:
-            1. Revert snapshot "deploy_multirole_compute_cinder"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("deploy_multirole_compute_cinder")
-        self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
-
-    @test(depends_on=[deploy_multirole_compute_cinder],
-          groups=["deploy_multirole_compute_cinder_ostf"])
-    @log_snapshot_on_error
-    def deploy_multirole_compute_cinder_ostf(self):
-        """Run OSTF tests on cluster in simple mode with multi-role
-        compute and cinder
-
-        Scenario:
-            1. Revert snapshot "deploy_multirole_compute_cinder"
-            2. Run OSTF
-
-        """
-        self.env.revert_snapshot("deploy_multirole_compute_cinder")
+        self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=4)
+
+        self.env.make_snapshot("deploy_multirole_compute_cinder")
 
 
 @test(groups=["thread_2"])
 class UntaggedNetwork(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["prepare_untagged_network"])
+          groups=["deploy_untagged_network"])
     @log_snapshot_on_error
-    def prepare_untagged_network(self):
-        """Prepare cluster with untagged networks
+    def deploy_untagged_network(self):
+        """Deploy cluster with untagged networks
 
         Scenario:
             1. Create cluster
@@ -509,8 +463,11 @@ class UntaggedNetwork(TestBasic):
             3. Add 1 node with compute role
             4. Split networks on existing physical interfaces
             5. Remove VLAN tagging from networks which are not on eth0
+            6. Run network verification
+            7. Deploy the cluster
+            8. Run network verification
 
-        Snapshot: prepare_untagged_network
+        Snapshot: deploy_untagged_network
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -535,66 +492,27 @@ class UntaggedNetwork(TestBasic):
             }
         )
         nets = self.fuel_web.client.get_networks(cluster_id)['networks']
+
         nailgun_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
         for node in nailgun_nodes:
             self.fuel_web.update_node_networks(node['id'], interfaces)
 
         # select networks that will be untagged:
-        [net.update(vlan_turn_off) for net in nets if net["name"] != "storage"]
+        [net.update(vlan_turn_off)
+         for net in nets if net["name"] != "storage"]
 
         # stop using VLANs:
         self.fuel_web.client.update_network(cluster_id, networks=nets)
 
-        self.env.make_snapshot("prepare_untagged_network")
+        self.fuel_web.verify_network(cluster_id)
 
-    @test(depends_on=[prepare_untagged_network],
-          groups=["untagged_network_verify_networks"])
-    @log_snapshot_on_error
-    def untagged_network_verify_networks(self):
-        """Verify network on prepared cluster with untagged networks
-
-        Scenario:
-            1. Revert snapshot "prepare_untagged_network"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("prepare_untagged_network")
-        self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
-
-    @test(depends_on=[prepare_untagged_network],
-          groups=["deploy_untagged_network"])
-    @log_snapshot_on_error
-    def deploy_untagged_network(self):
-        """Deploy cluster with untagged networks
-
-        Scenario:
-            1. Revert snapshot "prepare_untagged_network"
-            2. Deploy the cluster
-
-        Snapshot: deploy_untagged_network
-
-        """
-        self.env.revert_snapshot("prepare_untagged_network")
-
-        self.fuel_web.deploy_cluster_wait(
-            self.fuel_web.get_last_created_cluster())
+        self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
+
+        self.fuel_web.verify_network(cluster_id)
+
         self.env.make_snapshot("deploy_untagged_network")
-
-    @test(depends_on=[deploy_untagged_network],
-          groups=["deploy_untagged_network_verify_networks"])
-    @log_snapshot_on_error
-    def deploy_untagged_network_verify_networks(self):
-        """Verify network on deployed cluster on untagged networks
-
-        Scenario:
-            1. Revert snapshot "deploy_untagged_network"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("deploy_untagged_network")
-        self.fuel_web.verify_network(self.fuel_web.get_last_created_cluster())
 
 
 @test(groups=["thread_2"])
@@ -613,6 +531,7 @@ class FloatingIPs(TestBasic):
             4. Update floating IP ranges. Use 3 ranges
             5. Deploy the cluster
             6. Verify available floating IP list
+            7. Run OSTF
 
         Snapshot: deploy_floating_ips
 
@@ -649,24 +568,11 @@ class FloatingIPs(TestBasic):
         expected_ips = self.fuel_web.get_floating_ranges()[1]
         self.fuel_web.assert_cluster_floating_list('slave-02', expected_ips)
 
-        self.env.make_snapshot("deploy_floating_ips")
-
-    @test(depends_on=[deploy_floating_ips],
-          groups=["deploy_floating_ips_ostf"])
-    @log_snapshot_on_error
-    def deploy_floating_ips_ostf(self):
-        """Run OSTF tests on cluster with 3 floating IPs ranges
-
-        Scenario:
-            1. Revert snapshot "deploy_floating_ips"
-            2. Run OSTF
-
-        """
-        self.env.revert_snapshot("deploy_floating_ips")
-
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=5)
+
+        self.env.make_snapshot("deploy_floating_ips")
 
 
 @test(groups=["thread_1"])
@@ -686,6 +592,7 @@ class SimpleCinder(TestBasic):
             5. Deploy the cluster
             6. Validate cluster was set up correctly, there are no dead
             services, there are no errors in logs
+            7. Run OSTF
 
         Snapshot: deploy_simple_cinder
 
@@ -707,24 +614,12 @@ class SimpleCinder(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
-        self.env.make_snapshot("deploy_simple_cinder")
-
-    @test(depends_on=[deploy_simple_cinder],
-          groups=["simple_cinder_ostf"])
-    @log_snapshot_on_error
-    def simple_cinder_ostf(self):
-        """Run OSTF tests on cluster in simple mode with cinder
-
-        Scenario:
-            1. Revert snapshot "deploy_simple_cinder"
-            2. Run OSTF
-
-        """
-        self.env.revert_snapshot("deploy_simple_cinder")
 
         self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
+            cluster_id=cluster_id,
             should_fail=4)
+
+        self.env.make_snapshot("deploy_simple_cinder")
 
 
 @test(groups=["thread_1"])
@@ -744,6 +639,7 @@ class NodeMultipleInterfaces(TestBasic):
             5. Split networks on existing physical interfaces
             6. Deploy the cluster
             7. Verify network configuration on each deployed node
+            8. Run network verification
 
         Snapshot: deploy_node_multiple_interfaces
 
@@ -777,25 +673,10 @@ class NodeMultipleInterfaces(TestBasic):
         for node in ['slave-01', 'slave-02', 'slave-03']:
             self.env.verify_network_configuration(node)
 
-        self.env.make_snapshot("deploy_node_multiple_interfaces")
-
-    @test(depends_on=[deploy_node_multiple_interfaces],
-          groups=["deploy_node_multiple_interfaces_verify_networks"])
-    @log_snapshot_on_error
-    def deploy_node_multiple_interfaces_verify_networks(self):
-        """Verify network on cluster with networks allocated on
-        different interfaces
-
-        Scenario:
-            1. Revert snapshot "deploy_node_multiple_interfaces"
-            2. Run network verification
-
-        """
-        self.env.revert_snapshot("deploy_node_multiple_interfaces")
-
-        task = self.fuel_web.run_network_verify(
-            self.fuel_web.get_last_created_cluster())
+        task = self.fuel_web.run_network_verify(cluster_id)
         self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
+
+        self.env.make_snapshot("deploy_node_multiple_interfaces")
 
 
 @test(groups=["thread_1"])
@@ -838,18 +719,39 @@ class NodeDiskSizes(TestBasic):
                 assert_equal(disk['size'],
                              NODE_VOLUME_SIZE * 1024 - 500, 'Disk size')
 
-    @test(depends_on=[SimpleCinder.deploy_simple_cinder],
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["check_nodes_disks"])
     @log_snapshot_on_error
     def check_nodes_disks(self):
         """Verify nailgun notifications for discovered nodes
 
         Scenario:
-            1. Revert snapshot "deploy_simple_cinder"
-            2. Verify hard drive sizes for deployed nodes
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 1 node with compute role
+            4. Add 1 node with cinder role
+            5. Deploy the cluster
+            6. Verify hard drive sizes for deployed nodes
 
         """
-        self.env.revert_snapshot("deploy_simple_cinder")
+
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_SIMPLE
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute'],
+                'slave-03': ['cinder']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=6, networks_count=1, timeout=300)
 
         nodes_dict = {
             'slave-01': ['controller'],
@@ -928,21 +830,38 @@ class MultinicBootstrap(TestBasic):
 @test(groups=["thread_2", "test"])
 class DeleteEnvironment(TestBasic):
 
-    @test(depends_on=[SimpleFlat.deploy_simple_flat])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
     @log_snapshot_on_error
     def delete_environment(self):
         """Delete existing environment
         and verify nodes returns to unallocated state
 
         Scenario:
-            1. Revert snapshot "deploy_simple_flat"
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 1 node with compute role
+            4. Deploy the cluster
             2. Delete environment
             3. Verify node returns to unallocated pull
 
         """
-        self.env.revert_snapshot("deploy_simple_flat")
+        self.env.revert_snapshot("ready_with_3_slaves")
 
-        cluster_id = self.fuel_web.get_last_created_cluster()
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_SIMPLE
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+
         self.fuel_web.client.delete_cluster(cluster_id)
         nailgun_nodes = self.fuel_web.client.list_nodes()
         nodes = filter(lambda x: x["pending_deletion"] is True, nailgun_nodes)
