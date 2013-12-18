@@ -129,6 +129,7 @@ subscription-manager
 system-config-firewall-base
 tcpdump
 vim-enhanced
+virt-what
 wget
 yum
 
@@ -352,5 +353,8 @@ sed -i --follow-symlinks -e 's/ACTIVE_CONSOLES=.*/ACTIVE_CONSOLES=\/dev\/tty\[2-
 
 # Copying default bash settings to the root directory
 cp -f /etc/skel/.bash* /root/
+
+# Blacklist i2c_piix4 module for VirtualBox so it does not create kernel errors
+[[ $(virt-what) = "virtualbox" ]] && echo "blacklist i2c_piix4" > /etc/modprobe.d/blacklist-i2c-piix4.conf
 
 %end
