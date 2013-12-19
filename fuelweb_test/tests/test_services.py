@@ -135,7 +135,7 @@ class MuranoSimple(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+            'slave-01', smiles_count=5, networks_count=1, timeout=300)
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='murano-api')
