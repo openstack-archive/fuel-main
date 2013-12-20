@@ -23,8 +23,8 @@ cluster_size=3
 # Get the first available ISO from the directory 'iso'
 iso_path=`ls -1t iso/*.iso 2>/dev/null | head -1`
 
-# Every Fuel Web machine name will start from this prefix  
-vm_name_prefix=fuel-web-
+# Every Mirantis OpenStack machine name will start from this prefix
+vm_name_prefix=fuel-
 
 # Host interfaces to bridge VMs interfaces with
 idx=0

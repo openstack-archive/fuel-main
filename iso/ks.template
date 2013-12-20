@@ -311,7 +311,7 @@ cat > /etc/issue << EOF
 #########################################
 Server is running on \m platform
 
-Fuel Web UI is available on: http://:8000
+Fuel UI is available on: http://:8000
 
 Default administrator login:    root
 Default administrator password: r00tme
