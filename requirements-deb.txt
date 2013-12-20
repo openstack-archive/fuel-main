@@ -731,10 +731,7 @@ python-xattr
 python-yaml
 python2.7
 python2.7-minimal
-qemu-keymaps
 qemu-kvm
-qemu-system-common
-qemu-system-x86
 qemu-utils
 rabbitmq-server
 radosgw
