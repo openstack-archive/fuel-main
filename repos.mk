@@ -4,8 +4,7 @@ repos: $(BUILD_DIR)/repos/repos.done
 
 $(BUILD_DIR)/repos/repos.done:
 	sed -i '/^  fuelmain_sha:/d' $(BUILD_DIR)/repos/version.yaml
-	/bin/echo -n "  fuelmain_sha: " >> $(BUILD_DIR)/repos/version.yaml
-	git rev-parse --verify HEAD >> $(BUILD_DIR)/repos/version.yaml
+	/bin/echo -n "  fuelmain_sha: \"`git rev-parse --verify HEAD`\"" >> $(BUILD_DIR)/repos/version.yaml
 	$(ACTION.TOUCH)
 
 # Usage:
@@ -22,8 +21,7 @@ $(BUILD_DIR)/repos/$1.done:
 	# Update versions.yaml
 	touch $(BUILD_DIR)/repos/version.yaml
 	sed -i '/^  $1_sha:/d' $(BUILD_DIR)/repos/version.yaml
-	/bin/echo -n "  $1_sha: " >> $(BUILD_DIR)/repos/version.yaml
-	cd $(BUILD_DIR)/repos/$1 && git rev-parse --verify HEAD >> $(BUILD_DIR)/repos/version.yaml
+	/bin/echo -n "  $1_sha: \"`cd $(BUILD_DIR)/repos/$1 && git rev-parse --verify HEAD`\"" >> $(BUILD_DIR)/repos/version.yaml
 	touch $(BUILD_DIR)/repos/$1.done
 endef
 
