@@ -159,7 +159,7 @@ class SimpleFlat(TestBasic):
         )
         wait(
             lambda: self.fuel_web.is_node_discovered(nodes[0]),
-            timeout=3 * 60
+            timeout=10 * 60
         )
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
@@ -872,7 +872,7 @@ class DeleteEnvironment(TestBasic):
             lambda:
             self.fuel_web.is_node_discovered(nodes[0]) and
             self.fuel_web.is_node_discovered(nodes[1]),
-            timeout=3 * 60,
+            timeout=10 * 60,
             interval=15
         )
 
