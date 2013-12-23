@@ -57,7 +57,7 @@ def log_snapshot_on_error(func):
                     command=
                     "dos.py revert {env} --snapshot-name {name} && "
                     "dos.py resume {env} && "
-                    "virsh net-dumpxml {env}_internal | grep -P {pattern} -o "
+                    "virsh net-dumpxml {env}_admin | grep -P {pattern} -o "
                     "| awk {awk_command}".format(
                         env=ENV_NAME, name=name, pattern="\"(\d+\.){3}\"",
                         awk_command="'{print \"Admin node IP: \"$0\"2\"}'"
