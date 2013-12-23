@@ -40,7 +40,7 @@ ADMIN_NODE_SETUP_TIMEOUT = os.environ.get("ADMIN_NODE_SETUP_TIMEOUT", 30)
 HARDWARE = {
     "admin_node_memory": os.environ.get("ADMIN_NODE_MEMORY", 1024),
     "admin_node_cpu": os.environ.get("ADMIN_NODE_CPU", 1),
-    "slave_node_memory": os.environ.get("SLAVE_NODE_MEMORY", 1024),
+    "slave_node_memory": os.environ.get("SLAVE_NODE_MEMORY", 1536),
     "slave_node_cpu": os.environ.get("SLAVE_NODE_CPU", 1),
 }
 NODE_VOLUME_SIZE = os.environ.get('NODE_VOLUME_SIZE', 50)
