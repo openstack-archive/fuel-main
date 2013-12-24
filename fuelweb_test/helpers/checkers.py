@@ -22,7 +22,11 @@ logwrap = debug(logger)
 
 
 @logwrap
-def check_ceph_health(ssh):
+def check_ceph_health(ssh, recovery_timeout=False):
+    if recovery_timeout:
+        logger.debug("Timeout for ceph recovery.")
+        sleep(300)
+
     # Check Ceph node disk configuration:
     disks = ''.join(ssh.execute(
         'ceph osd tree | grep osd')['stdout'])
