@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Approved+1: Dmitry Pyzhov <dpyzhov@mirantis.com>
+Code-Review+2: Dmitry Pyzhov <dpyzhov@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 25 Dec 2013 16:22:51 +0000
+Reviewed-on: https://review.openstack.org/64004
+Project: stackforge/fuel-main
+Branch: refs/heads/stable/4.0
