@@ -1,4 +1,5 @@
 #!/bin/bash
+# set -x
 
 #    Copyright 2013 Mirantis, Inc.
 #
@@ -30,12 +31,15 @@ source functions/network.sh
 
 # Check for expect
 echo -n "Checking for 'expect'... "
-expect -v >/dev/null 2>&1 || { echo >&2 "'expect' is not available in the path, but it's required. Please install 'expect' package. Aborting."; exit 1; }
+expect -v >/dev/null 2>&1 || { echo >&2 " \"expect\" is not available in the path, but it's required. Please install Tcl \"expect\" package. Aborting."; exit 1; }
 echo "OK"
 
 # Check for VirtualBox
-echo -n "Checking for 'VBoxManage'... "
-VBoxManage -v >/dev/null 2>&1 || { echo >&2 "'VBoxManage' is not available in the path, but it's required. Likely, VirtualBox is not installed. Aborting."; exit 1; }
+echo "If you run this script under Cygwin, you may have to add path to VirtualBox directory to your PATH. "
+echo "Usually it is enough to run \"export PATH=\$PATH:\"/cygdrive/c/Program Files/Oracle/VirtualBox\" "
+echo -n "Checking for \"VBoxManage\"... "
+echo -n " "
+VBoxManage -v >/dev/null 2>&1 || { echo >&2 "\"VBoxManage\" is not available in the path, but it's required. Likely, VirtualBox is not installed. Aborting."; exit 1; }
 echo "OK"
 
 # Check for VirtualBox Extension Pack
@@ -54,6 +58,15 @@ if [ -z $iso_path ]; then
 fi
 echo "OK"
 
+# Check if SSH is installed. Cygwin does not install SSH by default.
+echo "Checking if SSH client installed... "
+which ssh
+if [ $? -ne 0 ] ; then
+  echo -n "SSH client is not installed. Please install \"openssh\" package if you run this script under Cygwin. Aborting"
+  exit 1
+fi
+echo "OK"
+
 # Delete all VMs from the previous Mirantis OpenStack installation
 delete_vms_multiple $vm_name_prefix
 
@@ -61,8 +74,9 @@ delete_vms_multiple $vm_name_prefix
 delete_all_hostonly_interfaces
 
 # Create the required host-only interfaces
+# Change {0..2} to {0..4} below if you are going to create 5 interfaces instead of 3
 for idx in $(eval echo {0..2}); do
-  create_hostonly_interface ${host_nic_name[$idx]} ${host_nic_ip[$idx]} ${host_nic_mask[$idx]}
+  create_hostonly_interface "${host_nic_name[$idx]}" ${host_nic_ip[$idx]} ${host_nic_mask[$idx]}
 done
 
 # Report success
