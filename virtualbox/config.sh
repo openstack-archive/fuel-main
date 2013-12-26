@@ -98,7 +98,9 @@ vm_slave_cpu_cores=1
 vm_slave_memory_default=1536
 # You may comment out all the following memory parameters to use default value for each node.
 # It is recommended if you going to try HA configurations.
-vm_slave_memory_mb[1]=1536  # for controller node at least 1.5Gb is required if you also run Ceph and Heat on it
+# for controller node at least 1.5Gb is required if you also run Ceph and Heat on it
+# and for Ubuntu controller we need 2Gb of ram
+vm_slave_memory_mb[1]=2048
 vm_slave_memory_mb[2]=1024  # for compute node 1GB is recommended, otherwise VM instances in OpenStack may not boot
 vm_slave_memory_mb[3]=1024  # for dedicated Cinder, 768Mb is OK, but Ceph needs 1Gb minimum
 
