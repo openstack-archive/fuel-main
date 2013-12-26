@@ -130,3 +130,5 @@ UPLOAD_MANIFESTS_PATH = os.environ.get(
     'UPLOAD_MANIFESTS_PATH', '~/git/fuel/deployment/puppet/')
 SITEPP_FOR_UPLOAD = os.environ.get(
     'SITEPP_PATH', '/etc/puppet/modules/osnailyfacter/examples/site.pp')
+
+KVM_USE = os.environ.get('KVM_USE', 'true') == 'true'

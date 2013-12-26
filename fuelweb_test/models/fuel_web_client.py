@@ -24,7 +24,8 @@ from fuelweb_test.helpers.checkers import *
 
 from fuelweb_test.helpers.decorators import debug, upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE, NEUTRON, NEUTRON_SEGMENT
+from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE, NEUTRON, \
+    NEUTRON_SEGMENT, KVM_USE
 import fuelweb_test.settings as help_data
 
 
@@ -201,6 +202,11 @@ class FuelWebClient(object):
                         settings[option]
 
             attributes['editable']['common']['debug']['value'] = True
+
+            if KVM_USE:
+                attributes['editable']['common']['libvirt_type']['value'] = \
+                    "kvm"
+
             self.client.update_cluster_attributes(cluster_id, attributes)
             self.update_network_configuration(cluster_id)
 
