@@ -86,7 +86,7 @@ else
 fi
 echo > /tmp/partition.ks
 echo "partition /boot --onpart=/dev/${bootdev}3" >> /tmp/partition.ks
-echo "partition pv.001 --ondisk=${tgtdrive} --size=1 --grow" >> /tmp/partition.ks
+echo "partition pv.001 --ondisk=${tgtdrive} --size=30000 --grow" >> /tmp/partition.ks
 echo "volgroup os pv.001" >> /tmp/partition.ks
 echo "logvol swap --vgname=os --recommended --name=swap" >> /tmp/partition.ks
 echo "logvol / --vgname=os --size=10000 --name=root --fstype=ext4" >> /tmp/partition.ks
