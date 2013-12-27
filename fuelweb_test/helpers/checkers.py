@@ -33,7 +33,7 @@ def check_ceph_health(ssh, recovery_timeout=False):
     logger.debug("Disks output information: \\n{}".format(disks))
     assert_true('up' in disks, "Some disks are not 'up'")
 
-    result = ''.join(ssh.execute('ceph -w health')['stdout'])
+    result = ''.join(ssh.execute('ceph -s')['stdout'])
     assert_true('HEALTH_OK' in result,
                 "Ceph status is '{}' != HEALTH_OK".format(result))
 
