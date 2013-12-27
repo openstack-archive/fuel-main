@@ -56,6 +56,25 @@ else
     tgtdrive=`echo ${drives} | sed -e "s/^\s*//" -e "s/\s*$//"`
 fi
 
+# verify tgtdrive is at least 30GB
+tgtdrivesize=$(( $(cat "/sys/class/block/${tgtdrive}/size") / 2 / 1024 ))
+if [[ "$tgtdrivesize" < "30720" ]]; then
+    exec < /dev/tty3 > /dev/tty3 2>&1
+    chvt 3
+    clear
+    echo
+    echo '********************************************************************'
+    echo '*                            E R R O R                             *'
+    echo '*                                                                  *'
+    echo '*  Your disk is under 30GB in size. Installation cannot continue.  *'
+    echo '*             Restart installation with a larger disk.             *'
+    echo '*                                                                  *'
+    echo '********************************************************************'
+    echo
+    read -p "Press Enter to restart: " _
+    reboot
+fi
+
 # source
 if test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
     echo "harddrive --partition=UUID=will_be_substituted_with_actual_uuid --dir=/" > /tmp/source.ks
@@ -86,7 +105,7 @@ else
 fi
 echo > /tmp/partition.ks
 echo "partition /boot --onpart=/dev/${bootdev}3" >> /tmp/partition.ks
-echo "partition pv.001 --ondisk=${tgtdrive} --size=1 --grow" >> /tmp/partition.ks
+echo "partition pv.001 --ondisk=${tgtdrive} --size=30000 --grow" >> /tmp/partition.ks
 echo "volgroup os pv.001" >> /tmp/partition.ks
 echo "logvol swap --vgname=os --recommended --name=swap" >> /tmp/partition.ks
 echo "logvol / --vgname=os --size=10000 --name=root --fstype=ext4" >> /tmp/partition.ks
@@ -203,7 +222,7 @@ function save_cfg {
         echo BOOTPROTO=dhcp >> $scrFile
     fi
     scrDHCPFile="/etc/sysconfig/network-scripts/ifcfg-$dhcp_interface"
-    #Ignore gateway and set up DHCP if it is used, otherwise apply it 
+    #Ignore gateway and set up DHCP if it is used, otherwise apply it
     if [ $dhcp_interface ] && [ "$dhcp_interface" != "$device" ]; then
         echo "DEVICE=$dhcp_interface" > $scrDHCPFile
         echo "BOOTPROTO=dhcp" >> $scrDHCPFile
@@ -250,7 +269,7 @@ cp -r ${SOURCE}/Packages ${repodir}/centos/fuelweb/x86_64
 cp ${SOURCE}/.treeinfo ${repodir}/centos/fuelweb/x86_64
 cp -r ${SOURCE}/rhel ${repodir}
 
-# Copying Ubuntu files 
+# Copying Ubuntu files
 mkdir -p ${repodir}/ubuntu/fuelweb/x86_64/images
 cp -r ${SOURCE}/ubuntu/conf ${repodir}/ubuntu/fuelweb/x86_64
 cp -r ${SOURCE}/ubuntu/db ${repodir}/ubuntu/fuelweb/x86_64
@@ -316,7 +335,7 @@ uuidgen > /etc/fuel-uuid
 ###Run fuel menu
 [ -z "$showmenu" ] && showmenu="no"
 cat > /root/.showfuelmenu << EOF
-#Set to yes to run Fuel Setup 
+#Set to yes to run Fuel Setup
 #Set to no to accept default settings
 showmenu=$showmenu
 EOF
