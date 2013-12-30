@@ -265,47 +265,6 @@ class SimpleFlat(TestBasic):
 
         self.env.make_snapshot("simple_flat_add_compute")
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["simple_flat_cold_restart"])
-    @log_snapshot_on_error
-    def simple_flat_cold_restart(self):
-        """Cold restart for simple environment
-
-        Scenario:
-            1. Create cluster
-            2. Add 1 node with controller role
-            3. Add 1 node with compute role
-            4. Deploy the cluster
-            5. Validate cluster was set up correctly, there are no dead
-            services, there are no errors in logs
-            6. Turn off all nodes
-            7. Start all nodes
-            8. Run OSTF
-
-        """
-        self.env.revert_snapshot("ready_with_3_slaves")
-
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller'],
-                'slave-02': ['compute']
-            }
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
-
-        self.fuel_web.restart_nodes(self.env.nodes().slaves[:2])
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=5)
-
 
 @test(groups=["thread_2"])
 class SimpleVlan(TestBasic):
