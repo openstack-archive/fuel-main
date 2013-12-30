@@ -268,7 +268,7 @@ class SimpleFlat(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["simple_flat_cold_restart"])
     @log_snapshot_on_error
-    def simple_flat_cold_restart(self):
+    def simple_flat_warm_restart(self):
         """Cold restart for simple environment
 
         Scenario:
@@ -281,6 +281,8 @@ class SimpleFlat(TestBasic):
             6. Turn off all nodes
             7. Start all nodes
             8. Run OSTF
+            9. Warm restart
+            10. Run OSTF
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -300,7 +302,8 @@ class SimpleFlat(TestBasic):
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
 
-        self.fuel_web.restart_nodes(self.env.nodes().slaves[:2])
+        # Warm restart
+        self.fuel_web.warm_restart_nodes(self.env.nodes().slaves[:2])
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,

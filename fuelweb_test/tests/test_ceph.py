@@ -93,6 +93,8 @@ class CephCompactWithCinder(TestBasic):
             4. Add 2 nodes with cinder and ceph OSD roles
             5. Deploy the cluster
             6. Check ceph status
+            7. Warm restart
+            8. Check ceph status
 
         Snapshot ceph_multinode_with_cinder
 
@@ -129,8 +131,8 @@ class CephCompactWithCinder(TestBasic):
             cluster_id=cluster_id,
             should_fail=4)
 
-        # Cold restart
-        self.fuel_web.restart_nodes(self.env.nodes().slaves[:4])
+        # Warm restart
+        self.fuel_web.warm_restart_nodes(self.env.nodes().slaves[:4])
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
@@ -156,6 +158,8 @@ class CephHA(TestBasic):
             4. Add 2 nodes with compute and ceph OSD roles
             5. Deploy the cluster
             6. Check ceph status
+            7. Cold retsart
+            8. Check ceph status
 
         Snapshot ceph_ha
 
@@ -211,7 +215,7 @@ class CephHA(TestBasic):
             should_fail=4)
 
         # Cold restart
-        self.fuel_web.restart_nodes(self.env.nodes().slaves[:4])
+        self.fuel_web.cold_restart_nodes(self.env.nodes().slaves[:4])
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
