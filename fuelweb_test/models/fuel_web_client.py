@@ -543,7 +543,7 @@ class FuelWebClient(object):
 
         return ip_ranges, expected_ips
 
-    def restart_nodes(self, devops_nodes):
+    def warm_restart_nodes(self, devops_nodes):
         for node in devops_nodes:
             remote = self.get_ssh_for_node(node.name)
             remote.check_call('/sbin/shutdown -Ph now')
@@ -552,6 +552,19 @@ class FuelWebClient(object):
             wait(
                 lambda: not self.get_nailgun_node_by_devops_node(node)['online'])
             node.destroy()
+            node.create()
+
+        for node in devops_nodes:
+            wait(
+                lambda: self.get_nailgun_node_by_devops_node(node)['online'])
+
+    def cold_restart_nodes(self, devops_nodes):
+        for node in devops_nodes:
+            node.destroy()
+
+        for node in devops_nodes:
+            wait(
+                lambda: not self.get_nailgun_node_by_devops_node(node)['online'])
             node.create()
 
         for node in devops_nodes:

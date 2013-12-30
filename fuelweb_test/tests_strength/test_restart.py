@@ -19,71 +19,20 @@ from proboscis import test, SkipTest
 from fuelweb_test.helpers.checkers import check_ceph_health
 from fuelweb_test.helpers.decorators import log_snapshot_on_error, debug
 from fuelweb_test import settings
+from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
 
 
-@test(groups=["thread_1", "ceph"])
-class CephCompact(TestBasic):
-
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["ceph_multinode_compact"])
-    @log_snapshot_on_error
-    def ceph_multinode_compact(self):
-        """Deploy ceph in simple mode
-
-        Scenario:
-            1. Create cluster
-            2. Add 1 node with controller and ceph OSD roles
-            3. Add 2 node with compute and ceph OSD roles
-            4. Deploy the cluster
-            5. Check ceph status
-
-        Snapshot ceph_multinode_compact
-
-        """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("ready_with_3_slaves")
-
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
-            settings={
-                'volumes_ceph': True,
-                'images_ceph': True
-            }
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller', 'ceph-osd'],
-                'slave-02': ['compute', 'ceph-osd'],
-                'slave-03': ['compute', 'ceph-osd']
-            }
-        )
-        # Cluster deploy
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
-
-        # Run ostf
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=4)
-
-        self.env.make_snapshot("ceph_multinode_compact")
-
-
-@test(groups=["thread_1", "ceph"])
-class CephCompactWithCinder(TestBasic):
+@test(groups=["thread_5", "ceph"])
+class CephRestart(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
-          groups=["ceph_multinode_with_cinder"])
+          groups=["ceph_multinode_restart"])
     @log_snapshot_on_error
-    def ceph_multinode_with_cinder(self):
+    def ceph_multinode_restart(self):
         """Deploy ceph with cinder in simple mode
 
         Scenario:
@@ -92,9 +41,10 @@ class CephCompactWithCinder(TestBasic):
             3. Add 1 node with compute role
             4. Add 2 nodes with cinder and ceph OSD roles
             5. Deploy the cluster
-            6. Check ceph status
+            7. Warm restart
+            8. Check ceph status
 
-        Snapshot ceph_multinode_with_cinder
+        Snapshot None
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -122,23 +72,23 @@ class CephCompactWithCinder(TestBasic):
         )
         # Cluster deploy
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
-        # Run ostf
+        # Warm restart
+        self.fuel_web.warm_restart_nodes(self.env.nodes().slaves[:4])
+
+        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             should_fail=4)
 
-        self.env.make_snapshot("ceph_multinode_with_cinder")
 
-
-@test(groups=["thread_1", "ceph"])
-class CephHA(TestBasic):
+@test(groups=["thread_5", "ceph"])
+class CephHARestart(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
-          groups=["ceph_ha"])
+          groups=["ceph_ha_restart"])
     @log_snapshot_on_error
-    def ceph_ha(self):
+    def ceph_ha_restart(self):
         """Deploy ceph with cinder in HA mode
 
         Scenario:
@@ -148,6 +98,8 @@ class CephHA(TestBasic):
             4. Add 2 nodes with compute and ceph OSD roles
             5. Deploy the cluster
             6. Check ceph status
+            7. Cold retsart
+            8. Check ceph status
 
         Snapshot ceph_ha
 
@@ -186,4 +138,74 @@ class CephHA(TestBasic):
             cluster_id=cluster_id,
             should_fail=4)
 
+        # Destroy osd-node
+        self.env.nodes().slaves[5].destroy()
+        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'),
+                          recovery_timeout=True)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=4)
+
+        # Destroy compute node
+        self.env.nodes().slaves[4].destroy()
+        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'),
+                          recovery_timeout=True)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=4)
+
+        # Cold restart
+        self.fuel_web.cold_restart_nodes(self.env.nodes().slaves[:4])
+
+        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=4)
+
         self.env.make_snapshot("ceph_ha")
+
+
+@test(groups=["thread_5"])
+class SimpleFlatRestart(TestBasic):
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["simple_flat_warm_restart"])
+    @log_snapshot_on_error
+    def simple_flat_warm_restart(self):
+        """Cold restart for simple environment
+
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 1 node with compute role
+            4. Deploy the cluster
+            5. Validate cluster was set up correctly, there are no dead
+            services, there are no errors in logs
+            6. Turn off all nodes
+            7. Start all nodes
+            8. Run OSTF
+            9. Warm restart
+            10. Run OSTF
+
+        """
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_SIMPLE
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        # Warm restart
+        self.fuel_web.warm_restart_nodes(self.env.nodes().slaves[:2])
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=5)
