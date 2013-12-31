@@ -12,9 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-from proboscis.asserts import assert_true, assert_false, assert_equal
 from fuelweb_test.helpers.decorators import debug
+import logging
+from proboscis.asserts import assert_equal
+from proboscis.asserts import assert_false
+from proboscis.asserts import assert_true
 from time import sleep
 
 logger = logging.getLogger(__name__)
@@ -109,6 +111,7 @@ def verify_service_list(remote, smiles_count):
     try:
         _verify()
     except AssertionError:
-        logger.debug("Services still not read. Sleeping for 60 seconds and retrying")
+        logger.debug("Services still not read. Sleeping for 60 seconds and "
+                     "retrying")
         sleep(60)
         _verify()

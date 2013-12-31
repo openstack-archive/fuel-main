@@ -1,12 +1,12 @@
 def run_tests():
     from proboscis import TestProgram
-    from tests import test_admin_node
-    from tests import test_ceph
-    from tests import test_ha
-    from tests import test_neutron
-    from tests import test_services
-    from tests import test_simple
-    from tests import test_pullrequest
+    from tests import test_admin_node  # NOQA
+    from tests import test_ceph  # NOQA
+    from tests import test_ha  # NOQA
+    from tests import test_neutron  # NOQA
+    from tests import test_pullrequest  # NOQA
+    from tests import test_services  # NOQA
+    from tests import test_simple  # NOQA
 
     # Run Proboscis and exit.
     TestProgram().run_and_exit()
