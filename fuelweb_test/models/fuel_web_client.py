@@ -13,19 +13,22 @@
 #    under the License.
 
 
-import logging
-import re
 from devops.error import TimeoutError
+from devops.helpers.helpers import _wait
+from devops.helpers.helpers import wait
 
-from devops.helpers.helpers import wait, _wait
-from ipaddr import IPNetwork
-from proboscis.asserts import assert_true, assert_equal
-from fuelweb_test.helpers.checkers import *
-
-from fuelweb_test.helpers.decorators import debug, upload_manifests
+from fuelweb_test.helpers import checkers
+from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE, NEUTRON, \
-    NEUTRON_SEGMENT, KVM_USE
+from fuelweb_test import settings
+
+from ipaddr import IPNetwork
+import logging
+from proboscis.asserts import assert_equal
+from proboscis.asserts import assert_true
+import re
+
 import fuelweb_test.settings as help_data
 
 
@@ -43,7 +46,7 @@ class FuelWebClient(object):
 
     @property
     def environment(self):
-        """
+        """Environment Model
         :rtype: EnvironmentModel
         """
         return self._environment
@@ -51,9 +54,9 @@ class FuelWebClient(object):
     @staticmethod
     @logwrap
     def get_cluster_status(ssh_remote, smiles_count, networks_count=1):
-        verify_service_list(ssh_remote, smiles_count)
-        verify_glance_index(ssh_remote)
-        verify_network_list(networks_count, ssh_remote)
+        checkers.verify_service_list(ssh_remote, smiles_count)
+        checkers.verify_glance_index(ssh_remote)
+        checkers.verify_network_list(networks_count, ssh_remote)
 
     @logwrap
     def _ostf_test_wait(self, cluster_id, timeout):
@@ -116,7 +119,8 @@ class FuelWebClient(object):
         assert_true(
             failed <= should_fail, 'Failed tests,  fails: {} should fail:'
                                    ' {} failed tests name: {}'
-                                   ''.format(failed, should_fail, failed_tests_names))
+                                   ''.format(failed, should_fail,
+                                             failed_tests_names))
 
     def assert_release_state(self, release_name, state='available'):
         for release in self.client.get_releases():
@@ -150,9 +154,9 @@ class FuelWebClient(object):
                        name,
                        settings=None,
                        release_name=help_data.OPENSTACK_RELEASE,
-                       mode=DEPLOYMENT_MODE_SIMPLE,
+                       mode=settings.DEPLOYMENT_MODE_SIMPLE,
                        port=5514):
-        """
+        """Creates a cluster
         :param name:
         :param release_name:
         :param mode:
@@ -160,7 +164,7 @@ class FuelWebClient(object):
         :param port:
         :return: cluster_id
         """
-        #TODO back
+        #TODO(back)
         release_id = self.client.get_release_id(release_name=release_name)
         logging.info('Release_id is %s' % str(release_id))
 
@@ -203,7 +207,7 @@ class FuelWebClient(object):
 
             attributes['editable']['common']['debug']['value'] = True
 
-            if KVM_USE:
+            if settings.KVM_USE:
                 attributes['editable']['common']['libvirt_type']['value'] = \
                     "kvm"
 
@@ -271,7 +275,7 @@ class FuelWebClient(object):
 
     @logwrap
     def get_nailgun_node_by_devops_node(self, devops_node):
-        """
+        """Return nailgun slave node.
         Returns dict with nailgun slave node description if node is
         registered. Otherwise return None.
         """
@@ -350,7 +354,8 @@ class FuelWebClient(object):
                  self.get_nailgun_node_by_devops_node(devops_node)['online'],
                  timeout=60 * 2)
             node = self.get_nailgun_node_by_devops_node(devops_node)
-            assert_true(node['online'], 'Node {} is online'.format(node['mac']))
+            assert_true(node['online'],
+                        'Node {} is online'.format(node['mac']))
 
             node_data = {
                 'cluster_id': cluster_id,
@@ -412,7 +417,8 @@ class FuelWebClient(object):
     @logwrap
     def update_redhat_credentials(
             self, license_type=help_data.REDHAT_LICENSE_TYPE,
-            username=help_data.REDHAT_USERNAME, password=help_data.REDHAT_PASSWORD,
+            username=help_data.REDHAT_USERNAME,
+            password=help_data.REDHAT_PASSWORD,
             satellite_host=help_data.REDHAT_SATELLITE_HOST,
             activation_key=help_data.REDHAT_ACTIVATION_KEY):
 
@@ -456,14 +462,14 @@ class FuelWebClient(object):
     def update_nodes_interfaces(self, cluster_id):
         cluster = self.client.get_cluster(cluster_id)
         net_provider = self.client.get_cluster(cluster_id)['net_provider']
-        if NEUTRON == net_provider:
+        if settings.NEUTRON == net_provider:
             assigned_networks = {
-                    'eth1': ['public'],
-                    'eth2': ['management'],
-                    'eth4': ['storage'],
+                'eth1': ['public'],
+                'eth2': ['management'],
+                'eth4': ['storage'],
             }
 
-            if cluster['net_segment_type'] == NEUTRON_SEGMENT['vlan']:
+            if cluster['net_segment_type'] == settings.NEUTRON_SEGMENT['vlan']:
                 assigned_networks.update({'eth3': ['private']})
         else:
             assigned_networks = {
@@ -475,30 +481,32 @@ class FuelWebClient(object):
 
         nailgun_nodes = self.client.list_cluster_nodes(cluster_id)
         for node in nailgun_nodes:
-             self.update_node_networks(node['id'], assigned_networks)
+            self.update_node_networks(node['id'], assigned_networks)
 
     @logwrap
     def update_network_configuration(self, cluster_id):
         net_config = self.client.get_networks(cluster_id)
         net_provider = self.client.get_cluster(cluster_id)['net_provider']
 
-        self.client.update_network(cluster_id=cluster_id,
-                                   networks=self.update_net_settings(net_config,
-                                                                     net_provider),
-                                   all_set=True)
+        self.client.update_network(
+            cluster_id=cluster_id,
+            networks=self.update_net_settings(net_config, net_provider),
+            all_set=True)
 
     def update_net_settings(self, network_configuration, net_provider):
         for net in network_configuration.get('networks'):
             self.set_network(net_config=net,
                              net_name=net['name'])
 
-        if NEUTRON == net_provider:
-            neutron_params = network_configuration['neutron_parameters']['predefined_networks']['net04_ext']['L3']
+        if settings.NEUTRON == net_provider:
+            neutron_params = network_configuration['neutron_parameters'][
+                'predefined_networks']['net04_ext']['L3']
             neutron_params['cidr'] = self.environment.get_network('public')
             neutron_params['gateway'] = self.environment.router('public')
-            neutron_params['floating'] = self.get_range(self.environment.get_network('public'), 1)[0]
+            neutron_params['floating'] = self.get_range(
+                self.environment.get_network('public'), 1)[0]
 
-        print network_configuration
+        print(network_configuration)
         return network_configuration
 
     def set_network(self, net_config, net_name):
@@ -519,11 +527,12 @@ class FuelWebClient(object):
         net_config['netmask'] = self.environment.get_net_mask(net_name)
         net_config['vlan_start'] = None
         net_config['cidr'] = str(ip_network)
-        net_config['gateway'] = self.environment.router(net_name) #if net_name != "nat" else None
+        #if net_name != "nat" else None
+        net_config['gateway'] = self.environment.router(net_name)
 
     def get_range(self, ip_network, ip_range=0):
         net = list(IPNetwork(ip_network))
-        half = len(net)/2
+        half = len(net) / 2
         if ip_range == 0:
             return [[str(net[2]), str(net[-2])]]
         elif ip_range == 1:
@@ -550,7 +559,8 @@ class FuelWebClient(object):
 
         for node in devops_nodes:
             wait(
-                lambda: not self.get_nailgun_node_by_devops_node(node)['online'])
+                lambda: not self.get_nailgun_node_by_devops_node(node)[
+                    'online'])
             node.destroy()
             node.create()
 

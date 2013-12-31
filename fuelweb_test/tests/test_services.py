@@ -12,13 +12,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-from proboscis import test, SkipTest
-
 from fuelweb_test.helpers import checkers
-from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
-from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
+from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import settings
+from fuelweb_test.tests.base_test_case import SetupEnvironment
+from fuelweb_test.tests.base_test_case import TestBasic
+
+import logging
+
+from proboscis import SkipTest
+from proboscis import test
+
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
