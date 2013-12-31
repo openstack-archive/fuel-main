@@ -14,13 +14,20 @@
 
 import logging
 
-from proboscis import test, SkipTest
+from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.helpers.decorators import log_snapshot_on_error
+
+from fuelweb_test.settings import DEPLOYMENT_MODE_HA
+from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
+from fuelweb_test.settings import OPENSTACK_RELEASE
+from fuelweb_test.settings import OPENSTACK_RELEASE_REDHAT
+
+from fuelweb_test.tests.base_test_case import SetupEnvironment
+from fuelweb_test.tests.base_test_case import TestBasic
 
 from proboscis.asserts import assert_equal
-from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
-from fuelweb_test.settings import OPENSTACK_RELEASE, OPENSTACK_RELEASE_REDHAT, \
-    DEPLOYMENT_MODE_SIMPLE, DEPLOYMENT_MODE_HA
-from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
+from proboscis import SkipTest
+from proboscis import test
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
@@ -75,7 +82,7 @@ class NeutronGre(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
-        # TODO uncomment when will be implemented
+        # TODO(uncomment when will be implemented)
         # self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
@@ -133,7 +140,7 @@ class NeutronVlan(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
-        # TODO uncomment when will be implemented
+        # TODO(uncomment when will be implemented)
         # self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
@@ -193,7 +200,7 @@ class NeutronGreHa(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
-        # TODO uncomment when will be implemented
+        # TODO(uncomment when will be implemented)
         #self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
@@ -253,7 +260,7 @@ class NeutronVlanHa(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
-        #TODO uncomment when will be implemented
+        #TODO(uncomment when will be implemented)
         #self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(

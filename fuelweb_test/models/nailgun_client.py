@@ -15,9 +15,10 @@
 
 import logging
 
-from fuelweb_test.settings import OPENSTACK_RELEASE
-from fuelweb_test.helpers.decorators import debug, json_parse
+from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.helpers.decorators import json_parse
 from fuelweb_test.helpers.http import HTTPClient
+from fuelweb_test.settings import OPENSTACK_RELEASE
 
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,8 @@ logwrap = debug(logger)
 class NailgunClient(object):
     def __init__(self, admin_node_ip):
         self.client = HTTPClient(url="http://{}:8000".format(admin_node_ip))
-        logger.info('Init of client by url %s' % "http://{}:8000".format(admin_node_ip))
+        logger.info('Init of client by url %s' % "http://{}:8000".format(
+            admin_node_ip))
         super(NailgunClient, self).__init__()
 
     @logwrap
@@ -204,7 +206,8 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
-    def update_network(self, cluster_id, networks=None, net_manager=None, all_set=False):
+    def update_network(self, cluster_id, networks=None, net_manager=None,
+                       all_set=False):
         data = {}
         net_provider = self.get_cluster(cluster_id)['net_provider']
         if networks is not None:
@@ -241,7 +244,7 @@ class NailgunClient(object):
     def get_cluster_vlans(self, cluster_id):
         cluster_vlans = []
         for network in self.get_networks(cluster_id)['networks']:
-            if not network['vlan_start'] is None:
+            if network['vlan_start'] is not None:
                 amount = network.get('amount', 1)
                 cluster_vlans.extend(range(network['vlan_start'],
                                            network['vlan_start'] + amount))
