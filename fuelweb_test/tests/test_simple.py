@@ -60,6 +60,10 @@ class OneNodeDeploy(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=4, networks_count=1, timeout=300)
+        self.fuel_web.run_single_ostf_test(
+            cluster_id=cluster_id, test_sets=['sanity'],
+            test_name=('fuel_health.tests.sanity.test_sanity_identity'
+                       '.test_list_users'))
 
 
 @test(groups=["thread_2"])

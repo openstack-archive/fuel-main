@@ -27,7 +27,9 @@ logwrap = debug(logger)
 class NailgunClient(object):
     def __init__(self, admin_node_ip):
         self.client = HTTPClient(url="http://{}:8000".format(admin_node_ip))
-        logger.info('Init of client by url %s' % "http://{}:8000".format(admin_node_ip))
+        logger.info(
+            'Init of client by url %s' % "http://{}:8000".format(
+                admin_node_ip))
         super(NailgunClient, self).__init__()
 
     @logwrap
@@ -204,7 +206,25 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
-    def update_network(self, cluster_id, networks=None, net_manager=None, all_set=False):
+    def ostf_run_singe_test(self, cluster_id, test_sets_list, test_name):
+        # get tests otherwise 500 error will be thrown
+        self.get_ostf_tests(cluster_id)
+        logger.info('Get tests finish with success')
+        data = []
+        for test_set in test_sets_list:
+            data.append(
+                {
+                    'metadata': {'cluster_id': str(cluster_id), 'config': {}},
+                    'tests': [test_name],
+                    'testset': test_set
+                }
+            )
+        return self.client.post("/ostf/testruns", data)
+
+    @logwrap
+    @json_parse
+    def update_network(self, cluster_id, networks=None,
+                       net_manager=None, all_set=False):
         data = {}
         net_provider = self.get_cluster(cluster_id)['net_provider']
         if networks is not None:
