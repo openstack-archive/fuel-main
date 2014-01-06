@@ -84,12 +84,19 @@ INTERFACES = {
 # May be one of virtio, e1000, pcnet, rtl8139
 INTERFACE_MODEL = os.environ.get('INTERFACE_MODEL', 'virtio')
 
+POOL_DEFAULT = os.environ.get('POOL_DEFAULT', '10.108.0.0/16:24')
+POOL_ADMIN = os.environ.get('POOL_ADMIN', POOL_DEFAULT)
+POOL_PUBLIC = os.environ.get('POOL_PUBLIC', POOL_DEFAULT)
+POOL_MANAGEMENT = os.environ.get('POOL_MANAGEMENT', POOL_DEFAULT)
+POOL_PRIVATE = os.environ.get('POOL_PRIVATE', POOL_DEFAULT)
+POOL_STORAGE = os.environ.get('POOL_STORAGE', POOL_DEFAULT)
+
 DEFAULT_POOLS = {
-    'admin': '10.108.0.0/16:24',
-    'public': '10.108.0.0/16:24',
-    'management': '10.108.0.0/16:24',
-    'private': '10.108.0.0/16:24',
-    'storage': '10.108.0.0/16:24',
+    'admin': POOL_ADMIN,
+    'public': POOL_PUBLIC,
+    'management': POOL_MANAGEMENT,
+    'private': POOL_PRIVATE,
+    'storage': POOL_STORAGE,
 }
 
 POOLS = {
