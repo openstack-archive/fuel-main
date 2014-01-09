@@ -13,7 +13,11 @@
 #    under the License.
 
 import logging
+import re
+from devops.error import DevopsCalledProcessError
+from devops.helpers.helpers import wait
 from proboscis import test
+from proboscis.asserts import assert_true, assert_equal
 
 from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
@@ -131,6 +135,103 @@ class TestHaFlat(TestBasic):
             should_fail=4)
 
         self.env.make_snapshot("deploy_ha_flat")
+
+    @test(depends_on_groups=['deploy_ha_flat'],
+          groups=["ha_destroy_controllers"])
+    @log_snapshot_on_error
+    def ha_destroy_controllers(self):
+        """Destory two controllers and check pacemaker status is correct
+
+        Scenario:
+            1. Destroy first controller
+            2. Check pacemaker status
+            3. Revert environment
+            4. Destroy second controller
+            5. Check pacemaker status
+
+        Snapshot deploy_ha_flat
+
+        """
+
+        for devops_node in self.env.nodes().slaves[:2]:
+            self.env.revert_snapshot("deploy_ha_flat")
+
+            devops_node.suspend(False)
+            self.fuel_web.assert_pacemaker(
+                'slave-03',
+                set(self.env.nodes().slaves[:3]) - {devops_node},
+                [devops_node])
+
+    @test(depends_on_groups=['deploy_ha_flat'],
+          groups=["ha_disconnect_controllers"])
+    @log_snapshot_on_error
+    def ha_disconnect_controllers(self):
+        """Destory two controllers and check pacemaker status is correct
+
+        Scenario:
+            1. Disconnect eth3 of the first controller
+            2. Check pacemaker status
+            3. Revert environment
+            4. Disconnect eth3 of the second controller
+            5. Check pacemaker status
+
+        Snapshot deploy_ha_flat
+
+        """
+
+        for devops_node in self.env.nodes().slaves[:2]:
+            self.env.revert_snapshot("deploy_ha_flat")
+
+            remote = self.fuel_web.get_ssh_for_node(devops_node.name)
+            remote.check_call('/etc/sysconfig/network-scripts/ifdown '
+                              '/etc/sysconfig/network-scripts/ifcfg-eth3')
+            self.fuel_web.assert_pacemaker(
+                'slave-03',
+                set(self.env.nodes().slaves[:3]) - {devops_node},
+                [devops_node])
+
+    @test(depends_on_groups=['deploy_ha_flat'],
+          groups=["ha_delete_vip"])
+    @log_snapshot_on_error
+    def ha_delete_vips(self):
+        """Delete all secondary VIPs on all controller nodes.
+        Verify that they are restored.
+
+        Scenario:
+            1. Delete all secondary VIP
+            2. Wait while it is being restored
+            3. Verify it is restored
+
+        Snapshot deploy_ha_flat
+
+        """
+        self.env.revert_snapshot("deploy_ha_flat")
+
+        interfaces = ('eth1', 'eth3.101')
+        ips_amount = 0
+        for devops_node in self.env.nodes().slaves[:3]:
+            remote = self.fuel_web.get_ssh_for_node(devops_node.name)
+            for interface in interfaces:
+                try:
+                    # Look for secondary ip and remove it
+                    ret = remote.check_call(
+                        'ip address show {0} | grep ka$'.format(interface))
+                    ip = re.search(
+                        'inet (?P<ip>.*) brd', ret['stdout'][0]).group('ip')
+                    remote.check_call(
+                        'ip addr del {0} dev {1}'.format(ip, interface))
+
+                    # The ip should be restored
+                    ip_assigned = lambda: ip in ''.join(
+                        remote.check_call('ip address show {0}'.format(
+                            interface))['stdout'])
+                    wait(ip_assigned, timeout=10)
+                    assert_true(ip_assigned(),
+                                'Secondary IP is restored')
+                    ips_amount += 1
+                except DevopsCalledProcessError:
+                    pass
+        assert_equal(ips_amount, 2, 'Secondary IPs amount')
 
 
 @test(groups=["thread_4", "ha"])
