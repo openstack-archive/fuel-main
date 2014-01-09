@@ -13,7 +13,11 @@
 #    under the License.
 
 import logging
+import re
+from devops.error import DevopsCalledProcessError
+from devops.helpers.helpers import wait
 from proboscis import test
+from proboscis.asserts import assert_true, assert_equal
 
 from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
@@ -131,6 +135,203 @@ class TestHaFlat(TestBasic):
             should_fail=4)
 
         self.env.make_snapshot("deploy_ha_flat")
+
+    @test(depends_on_groups=['deploy_ha_flat'],
+          groups=["ha_destroy_controllers"])
+    @log_snapshot_on_error
+    def ha_destroy_controllers(self):
+        """Destory two controllers and check pacemaker status is correct
+
+        Scenario:
+            1. Destroy first controller
+            2. Check pacemaker status
+            3. Revert environment
+            4. Destroy second controller
+            5. Check pacemaker status
+
+        Snapshot deploy_ha_flat
+
+        """
+
+        for devops_node in self.env.nodes().slaves[:2]:
+            self.env.revert_snapshot("deploy_ha_flat")
+
+            devops_node.suspend(False)
+            self.fuel_web.assert_pacemaker(
+                self.env.nodes().slaves[2].name,
+                set(self.env.nodes().slaves[:3]) - {devops_node},
+                [devops_node])
+
+    @test(depends_on_groups=['deploy_ha_flat'],
+          groups=["ha_disconnect_controllers"])
+    @log_snapshot_on_error
+    def ha_disconnect_controllers(self):
+        """Destory two controllers and check pacemaker status is correct
+
+        Scenario:
+            1. Disconnect eth3 of the first controller
+            2. Check pacemaker status
+            3. Revert environment
+            4. Disconnect eth3 of the second controller
+            5. Check pacemaker status
+
+        Snapshot deploy_ha_flat
+
+        """
+
+        for devops_node in self.env.nodes().slaves[:2]:
+            self.env.revert_snapshot("deploy_ha_flat")
+
+            remote = self.fuel_web.get_ssh_for_node(devops_node.name)
+            remote.check_call('ifconfig eth3 down')
+            self.fuel_web.assert_pacemaker(
+                self.env.nodes().slaves[2].name,
+                set(self.env.nodes().slaves[:3]) - {devops_node},
+                [devops_node])
+
+    @test(depends_on_groups=['deploy_ha_flat'],
+          groups=["ha_delete_vips"])
+    @log_snapshot_on_error
+    def ha_delete_vips(self):
+        """Delete all secondary VIPs on all controller nodes.
+        Verify that they are restored.
+        Verify total amount of secondary IPs. Should be 2:
+        management and public
+
+        Scenario:
+            1. Delete all secondary VIP
+            2. Wait while it is being restored
+            3. Verify it is restored
+
+        Snapshot deploy_ha_flat
+
+        """
+        self.env.revert_snapshot("deploy_ha_flat")
+
+        # Verify VIPs are started.
+        ret = self.fuel_web.get_pacemaker_status(
+            self.env.nodes().slaves[0].name)
+        assert_true(
+            re.search('vip__management_old\s+\(ocf::heartbeat:IPaddr2\):'
+                      '\s+Started node', ret), 'vip management started')
+        assert_true(
+            re.search('vip__public_old\s+\(ocf::heartbeat:IPaddr2\):'
+                      '\s+Started node', ret), 'vip public started')
+
+        interfaces = ('eth1', 'eth2')
+        ips_amount = 0
+        for devops_node in self.env.nodes().slaves[:3]:
+            for interface in interfaces:
+                try:
+                    # Look for secondary ip and remove it
+                    addresses = self.fuel_web.ip_address_show(
+                        devops_node.name, interface)
+                    ip = re.search(
+                        'inet (?P<ip>.*) brd', addresses).group('ip')
+                    self.fuel_web.ip_address_del(
+                        devops_node.name, interface, ip)
+
+                    # The ip should be restored
+                    ip_assigned = \
+                        lambda: ip in self.fuel_web.ip_address_show(
+                            devops_node.name, interface)
+                    wait(ip_assigned, timeout=10)
+                    assert_true(ip_assigned(),
+                                'Secondary IP is restored')
+                    ips_amount += 1
+                except DevopsCalledProcessError:
+                    pass
+        assert_equal(ips_amount, 2, 'Secondary IPs amount')
+
+    @test(depends_on_groups=['deploy_ha_flat'],
+          groups=["ha_mysql_termination"])
+    @log_snapshot_on_error
+    def ha_mysql_termination(self):
+        """Terminate mysql on all controllers one by one
+
+        Scenario:
+            1. Terminate mysql
+            2. Wait while it is being restarted
+            3. Verify it is restarted
+            4. Go to another controller
+
+        Snapshot deploy_ha_flat
+
+        """
+        self.env.revert_snapshot("deploy_ha_flat")
+
+        for devops_node in self.env.nodes().slaves[:3]:
+            remote = self.fuel_web.get_ssh_for_node(devops_node.name)
+            remote.check_call('kill -9 $(pidof mysqld)')
+
+            mysql_started = lambda: \
+                len(remote.check_call(
+                    'ps aux | grep "/usr/sbin/mysql"')['stdout']) == 3
+            wait(mysql_started, timeout=300)
+            assert_true(mysql_started(), 'MySQL restarted')
+
+    @test(depends_on_groups=['deploy_ha_flat'],
+          groups=["ha_haproxy_termination"])
+    @log_snapshot_on_error
+    def ha_haproxy_termination(self):
+        """Terminate haproxy on all controllers one by one
+
+        Scenario:
+            1. Terminate haproxy
+            2. Wait while it is being restarted
+            3. Verify it is restarted
+            4. Go to another controller
+
+        Snapshot deploy_ha_flat
+
+        """
+        self.env.revert_snapshot("deploy_ha_flat")
+
+        for devops_node in self.env.nodes().slaves[:3]:
+            remote = self.fuel_web.get_ssh_for_node(devops_node.name)
+            remote.check_call('kill -9 $(pidof haproxy)')
+
+            mysql_started = lambda: \
+                len(remote.check_call(
+                    'ps aux | grep "/usr/sbin/haproxy"')['stdout']) == 3
+            wait(mysql_started, timeout=20)
+            assert_true(mysql_started(), 'haproxy restarted')
+
+    @test(depends_on_groups=['deploy_ha_flat'],
+          groups=["ha_pacemaker_configuration"])
+    @log_snapshot_on_error
+    def ha_pacemaker_configuration(self):
+        """Verify resources are configured
+
+        Scenario:
+            1. SSH to controller node
+            2. Verify resources are configured
+            3. Go to next controller
+
+        Snapshot deploy_ha_flat
+
+        """
+        self.env.revert_snapshot("deploy_ha_flat")
+
+        devops_ctrls = self.env.nodes().slaves[:3]
+        nailgun_ctrls = \
+            [self.fuel_web.get_nailgun_node_by_devops_node(n)
+             for n in devops_ctrls]
+
+        for devops_node in devops_ctrls:
+            config = self.fuel_web.get_pacemaker_config(devops_node.name)
+            for n in nailgun_ctrls:
+                assert_true(
+                    'node {0}'.format(n['meta']['system']['fqdn']) in config,
+                    'node {0} exists'.format(n['meta']['system']['fqdn']))
+            assert_true(
+                'primitive openstack-heat-engine' in config, 'heat engine')
+            assert_true('primitive p_haproxy' in config, 'haproxy')
+            assert_true('primitive p_mysql' in config, 'mysql')
+            assert_true(
+                'primitive vip__management_old' in config, 'vip management')
+            assert_true(
+                'primitive vip__public_old' in config, 'vip public')
 
 
 @test(groups=["thread_4", "ha"])
