@@ -202,10 +202,10 @@ class FuelWebClient(object):
                         settings[option]
 
             attributes['editable']['common']['debug']['value'] = True
+            hpv_data= attributes['editable']['common']['libvirt_type']
 
             if KVM_USE:
-                attributes['editable']['common']['libvirt_type']['value'] = \
-                    "kvm"
+                hpv_data['value'] = "kvm"
 
             self.client.update_cluster_attributes(cluster_id, attributes)
             self.update_network_configuration(cluster_id)
