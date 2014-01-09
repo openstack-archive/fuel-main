@@ -31,40 +31,29 @@ vm_name_prefix=fuel-
 # between Windows and Linux/MacOS
 idx=0
 # Please add the IPs accordingly if you going to create non-default NICs number
-# 10.20.0.1/24   - Fuel Admin network
+# 10.20.0.1/24   - Mirantis OpenStack Admin network
 # 172.16.0.1/24  - OpenStack Public/External/Floating network
 # 172.16.1.1/24  - OpenStack Fixed/Internal/Private network
 # 192.168.0.1/24 - OpenStack Management network
 # 192.168.1.1/24 - OpenStack Storage network (for Ceph, Swift etc)
 for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
 # VirtualBox for Windows has different virtual NICs naming and indexing
-  if [ $idx -eq 0 ]; then
-    case "$(uname)" in
-      Linux | Darwin)
-        host_nic_name[$idx]=vboxnet$idx
-      ;;
-      CYGWIN*)
+  case "$(uname)" in
+    Linux | Darwin)
+      host_nic_name[$idx]=vboxnet$idx
+    ;;
+    CYGWIN*)
+      if [ $idx -eq 0 ]; then
         host_nic_name[$idx]='VirtualBox Host-Only Ethernet Adapter'
-      ;;
-      *)
-        echo "$(uname) is not supported operating system."
-        exit 1
-      ;;
-    esac
-  else
-    case "$(uname)" in
-      Linux | Darwin)
-        host_nic_name[$idx]=vboxnet$idx
-      ;;
-      CYGWIN*)
+      else
         host_nic_name[$idx]='VirtualBox Host-Only Ethernet Adapter #'$((idx+1))
-      ;;
-      *)
-        echo "$(uname) is not supported operating system."
-        exit 1
-      ;;
-    esac
-  fi
+      fi
+    ;;
+    *)
+      echo "$(uname) is not supported operating system."
+      exit 1
+    ;;
+  esac
   host_nic_ip[$idx]=$ip
   host_nic_mask[$idx]=255.255.255.0
   idx=$((idx+1))
