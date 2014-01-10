@@ -18,7 +18,7 @@ from proboscis import test, SkipTest
 
 from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
 from fuelweb_test.settings import OPENSTACK_RELEASE, \
-    OPENSTACK_RELEASE_REDHAT, DEPLOYMENT_MODE_HA
+    OPENSTACK_RELEASE_REDHAT, DEPLOYMENT_MODE
 from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ class TestPullRequest(TestBasic):
         segment_type = 'gre'
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type
