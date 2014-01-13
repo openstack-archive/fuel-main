@@ -785,6 +785,7 @@ swift-plugin-s3
 swift-proxy
 sysv-rc
 sysvinit-utils
+sheepdog
 tar
 tasksel
 tasksel-data
