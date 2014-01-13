@@ -122,7 +122,7 @@ MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 
-MIRROR_CENTOS?=http://mirror.yandex.ru/centos/$(CENTOS_RELEASE)
+MIRROR_CENTOS?=http://vault.centos.org/$(CENTOS_RELEASE)
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 MIRROR_UBUNTU?=http://mirror.yandex.ru/ubuntu/
 MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
