@@ -314,7 +314,10 @@ class EnvironmentModel(object):
 
             list = self.nodes().slaves
             for node in list:
-                if not node.driver.node_active(node):
+                nailgun_node = self.fuel_web.get_nailgun_node_by_devops_node(
+                    node)
+                if not node.driver.node_active(node) or \
+                        nailgun_node['status'] not in ['provisioned', 'ready']:
                     continue
                 try:
                     self.sync_node_time(self.get_ssh_to_remote(
