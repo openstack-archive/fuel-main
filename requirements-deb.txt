@@ -129,6 +129,7 @@ ftp
 fuel-utils
 fuse
 fuse-utils
+fence-agents
 g++
 g++-4.6
 galera
@@ -184,6 +185,7 @@ irqbalance
 isc-dhcp-client
 isc-dhcp-common
 iso-codes
+ipmitool
 jfsutils
 kbd
 kdump-tools
@@ -729,6 +731,7 @@ python-werkzeug
 python-xapian
 python-xattr
 python-yaml
+python-pexpect
 python2.7
 python2.7-minimal
 qemu-kvm
@@ -786,6 +789,7 @@ swift-proxy
 sysv-rc
 sysvinit-utils
 sheepdog
+snmp
 tar
 tasksel
 tasksel-data
