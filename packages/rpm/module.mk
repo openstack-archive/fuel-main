@@ -24,6 +24,16 @@ $(BUILD_DIR)/packages/rpm/rpm-nailgun-agent.done: \
 		$(SOURCE_DIR)/packages/rpm/specs/nailgun-agent.spec
 	$(ACTION.TOUCH)
 
+$(BUILD_DIR)/packages/rpm/rpm-fencing-agent.done: \
+                $(BUILD_DIR)/packages/rpm/prep.done \
+                $(SOURCE_DIR)/packages/rpm/specs/fencing-agent.spec \
+                $(BUILD_DIR)/repos/nailgun.done \
+                $(call find-files,$(BUILD_DIR)/repos/nailgun/bin)
+        cp -f $(BUILD_DIR)/repos/nailgun/bin/fencing-agent.rb $(BUILD_DIR)/repos/nailgun/bin/fencing-agent.cron $(RPM_SOURCES)
+        rpmbuild -vv --define "_topdir $(BUILD_DIR)/packages/rpm" -ba \
+                $(SOURCE_DIR)/packages/rpm/specs/fencing-agent.spec
+        $(ACTION.TOUCH)
+
 $(BUILD_DIR)/packages/rpm/rpm-nailgun-mcagents.done: \
 		$(BUILD_DIR)/packages/rpm/prep.done \
 		$(SOURCE_DIR)/packages/rpm/specs/nailgun-mcagents.spec \
