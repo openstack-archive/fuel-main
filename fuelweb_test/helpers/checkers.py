@@ -13,6 +13,10 @@
 #    under the License.
 
 import logging
+import urllib
+import hashlib
+import os.path
+
 from proboscis.asserts import assert_true, assert_false, assert_equal
 from fuelweb_test.helpers.decorators import debug
 from time import sleep
@@ -112,3 +116,31 @@ def verify_service_list(remote, smiles_count):
         logger.debug("Services still not read. Sleeping for 60 seconds and retrying")
         sleep(60)
         _verify()
+
+@logwrap
+def check_image(url, image, md5, path):
+    download_url = "{0}/{1}".format(url, image)
+    local_path = "{0}/{1}".format(path, image)
+    logger.debug('Check md5 {0} of image {1}/{2}'.format(md5, path, image))
+    if not os.path.isfile(local_path):
+        try:
+            urllib.urlretrieve(download_url, local_path)
+        except Exception as error:
+            logger.error(error)
+    with open(local_path, mode='rb') as fimage:
+        digits = hashlib.md5()
+        while True:
+            buf = fimage.read(4096)
+            if not buf:
+                break
+            digits.update(buf)
+        md5_local = digits.hexdigest()
+    if md5_local != md5:
+        logger.debug('MD5 is not correct, download {0} to {1}'.format(
+                     download_url, local_path))
+        try:
+            urllib.urlretrieve(download_url, local_path)
+        except Exception as error:
+            logger.error(error)
+
+    return True
