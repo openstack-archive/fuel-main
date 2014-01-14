@@ -26,3 +26,9 @@ sh "utils/jenkins/system_tests.sh" -h
 
 ------------------------------- For 'make iso' -----------------------------------
 http://docs.mirantis.com/fuel-dev/develop/env.html#building-the-fuel-iso
+
+=============== Important notes for savanna and murano tests ===============
+1. Don't recommend to start tests without kvm
+2. Put Savanna image savanna-0.3-vanilla-1.2.1-ubuntu-13.04.qcow2 (md5 9ab37ec9a13bb005639331c4275a308d) to /tmp/ before start
+3. Put Murano image cloud-fedora.qcow2 (md5 6e5e2f149c54b898b3c272f11ae31125) to /tmp/ before start
+4. Murano tests  without Internet connection on the instances will be failed
