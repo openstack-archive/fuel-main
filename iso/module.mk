@@ -87,6 +87,7 @@ $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/nailgun.done
 $(ISOROOT)/version.yaml: $(call depv,PRODUCT_VERSION)
 $(ISOROOT)/version.yaml: $(BUILD_DIR)/repos/repos.done
 	echo "VERSION:" > $@
+	echo "  mirantis: \"$(MIRANTIS)\"" >> $@
 	echo "  release: \"$(PRODUCT_VERSION)\"" >> $@
 ifdef BUILD_NUMBER
 	echo "  build_number: \"$(BUILD_NUMBER)\"" >> $@
