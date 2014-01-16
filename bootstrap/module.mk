@@ -5,6 +5,12 @@ INITRAMROOT:=$(BUILD_DIR)/bootstrap/initram-root
 BOOTSTRAP_RPMS:=\
 	bash \
 	byacc \
+	bfa-firmware \
+	ql2100-firmware \
+	ql2200-firmware \
+	ql23xx-firmware \
+	ql2400-firmware \
+	ql2500-firmware \
 	cronie-noanacron \
 	crontabs \
 	dhclient \
