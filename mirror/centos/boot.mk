@@ -1,5 +1,5 @@
 ISOLINUX_FILES:=boot.msg grub.conf initrd.img isolinux.bin memtest vesamenu.c32 vmlinuz
-IMAGES_FILES:=efiboot.img efidisk.img install.img
+IMAGES_FILES:=efiboot.img efidisk.img
 EFI_FILES:=BOOTX64.conf BOOTX64.efi splash.xpm.gz
 
 # centos isolinux files
