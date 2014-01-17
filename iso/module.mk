@@ -199,6 +199,8 @@ $(BUILD_DIR)/iso/img.done: $(BUILD_DIR)/iso/iso.done
 	sudo dd conv=notrunc bs=440 count=1 if=/usr/lib/extlinux/mbr.bin of=`cat $(BUILD_DIR)/iso/img_loop_device`
 	sudo cp -r $(BUILD_DIR)/iso/isoroot/images $(BUILD_DIR)/iso/imgroot
 	sudo cp -r $(BUILD_DIR)/iso/isoroot/isolinux $(BUILD_DIR)/iso/imgroot
+	#copy custom install.img
+	sudo cp $(LOCAL_MIRROR_SRC)/install.img $(BUILD_DIR)/iso/imgroot/install.img
 	sudo mv $(BUILD_DIR)/iso/imgroot/isolinux $(BUILD_DIR)/iso/imgroot/syslinux
 	sudo rm $(BUILD_DIR)/iso/imgroot/syslinux/isolinux.cfg
 	sudo cp $(SOURCE_DIR)/iso/syslinux/syslinux.cfg $(BUILD_DIR)/iso/imgroot/syslinux  # NOTE(mihgen): Is it used for IMG file? Comments needed!
