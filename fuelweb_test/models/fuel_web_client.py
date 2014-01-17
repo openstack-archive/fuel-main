@@ -25,7 +25,8 @@ from fuelweb_test.helpers.checkers import *
 from fuelweb_test.helpers.decorators import debug, upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE, NEUTRON, \
-    NEUTRON_SEGMENT, KVM_USE
+    NEUTRON_SEGMENT, KVM_USE, OPENSTACK_RELEASE, OPENSTACK_RELEASE_CENTOS, \
+    OPENSTACK_RELEASE_UBUNTU
 import fuelweb_test.settings as help_data
 
 
@@ -145,6 +146,35 @@ class FuelWebClient(object):
         )
 
     @logwrap
+    def fqdn(self, devops_node):
+        nailgun_node = self.get_nailgun_node_by_devops_node(devops_node)
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_UBUNTU:
+            return nailgun_node['meta']['system']['fqdn']
+        return nailgun_node['fqdn']
+
+    @logwrap
+    def assert_pacemaker(self, ctrl_node, online_nodes, offline_nodes):
+        fqdn_names = lambda nodes: sorted([self.fqdn(n) for n in nodes])
+
+        # Assert online nodes list
+        online = \
+            'Online: [ {0} ]'.format(' '.join(fqdn_names(online_nodes)))
+        wait(lambda: online in self.get_pacemaker_status(
+            ctrl_node), timeout=30)
+        assert_true(
+            online in self.get_pacemaker_status(ctrl_node))
+
+        # Assert offline nodes list
+        if len(offline_nodes) > 0:
+            offline = \
+                'OFFLINE: [ {0} ]'.format(
+                    ' '.join(fqdn_names(offline_nodes)))
+            wait(lambda: offline in self.get_pacemaker_status(
+                ctrl_node), timeout=30)
+            assert_true(
+                offline in self.get_pacemaker_status(ctrl_node))
+
+    @logwrap
     @upload_manifests
     def create_cluster(self,
                        name,
@@ -245,6 +275,16 @@ class FuelWebClient(object):
         remote = self.get_ssh_for_node(node_name)
         ret = remote.check_call('/bin/lsblk')
         return ''.join(ret['stdout'])
+
+    @logwrap
+    def get_pacemaker_status(self, controller_node_name):
+        remote = self.get_ssh_for_node(controller_node_name)
+        return ''.join(remote.check_call('crm_mon -1')['stdout'])
+
+    @logwrap
+    def get_pacemaker_config(self, controller_node_name):
+        remote = self.get_ssh_for_node(controller_node_name)
+        return ''.join(remote.check_call('crm configure show')['stdout'])
 
     @logwrap
     def get_last_created_cluster(self):
@@ -572,3 +612,16 @@ class FuelWebClient(object):
         for node in devops_nodes:
             wait(
                 lambda: self.get_nailgun_node_by_devops_node(node)['online'])
+
+    @logwrap
+    def ip_address_show(self, node_name, interface):
+        remote = self.fuel_web.get_ssh_for_node(node_name)
+        ret = remote.check_call(
+            'ip address show {0} | grep ka$'.format(interface))
+        return ' '.join(ret['stdout'])
+
+    @logwrap
+    def ip_address_del(self, node_name, interface, ip):
+        remote = self.fuel_web.get_ssh_for_node(node_name)
+        remote.check_call(
+            'ip addr del {0} dev {1}'.format(ip, interface))
