@@ -43,10 +43,11 @@ class EnvironmentModel(object):
     nat_interface = ''  # INTERFACES.get('admin')
     admin_net = 'admin'
 
-    def __init__(self):
+    def __init__(self, os_image=None):
         self._virtual_environment = None
         self._keys = None
         self.manager = Manager()
+        self.os_image = os_image
         self._fuel_web = FuelWebClient(self.get_admin_node_ip(), self)
 
     def _get_or_create(self):
@@ -167,14 +168,27 @@ class EnvironmentModel(object):
             name=name,
             boot=['hd', 'cdrom'])
         self.create_interfaces(networks, node)
-        self.add_empty_volume(node, name + '-system')
-        self.add_empty_volume(
-            node,
-            name + '-iso',
-            capacity=_get_file_size(settings.ISO_PATH),
-            format='raw',
-            device='cdrom',
-            bus='ide')
+
+        if self.os_image is None:
+            self.add_empty_volume(node, name + '-system')
+            self.add_empty_volume(
+                node,
+                name + '-iso',
+                capacity=_get_file_size(settings.ISO_PATH),
+                format='raw',
+                device='cdrom',
+                bus='ide')
+        else:
+            volume = self.manager.volume_get_predefined(self.os_image)
+            vol_child = self.manager.volume_create_child(
+                name=name + '-system',
+                backing_store=volume,
+                environment=self.get_virtual_environment()
+            )
+            self.manager.node_attach_volume(
+                node=node,
+                volume=vol_child
+            )
         return node
 
     def describe_empty_node(self, name, networks):

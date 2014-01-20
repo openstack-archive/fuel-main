@@ -140,3 +140,13 @@ SITEPP_FOR_UPLOAD = os.environ.get(
     'SITEPP_PATH', '/etc/puppet/modules/osnailyfacter/examples/site.pp')
 
 KVM_USE = os.environ.get('KVM_USE', 'false') == 'true'
+
+DEFAULT_IMAGES_CENTOS = os.environ.get(
+    'DEFAULT_IMAGES_CENTOS',
+    '/var/lib/libvirt/images/centos6.4-base.qcow2')
+
+DEFAULT_IMAGES_UBUNTU = os.environ.get(
+    'DEFAULT_IMAGES_UBUNTU',
+    '/var/lib/libvirt/images/ubuntu-12.04.1-server-amd64-p2.qcow2')
+
+OS_IMAGE = os.environ.get('OS_IMAGE', DEFAULT_IMAGES_CENTOS)
