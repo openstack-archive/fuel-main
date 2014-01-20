@@ -195,7 +195,7 @@ class CephHA(TestBasic):
             should_fail=4)
 
         # Destroy osd-node
-        self.env.nodes().slaves[5].destroy()
+        self.env.nodes().slaves[3].destroy()
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'),
                           recovery_timeout=True)
         self.fuel_web.run_ostf(
