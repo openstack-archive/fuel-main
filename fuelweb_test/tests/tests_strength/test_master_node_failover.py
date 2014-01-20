@@ -1,0 +1,103 @@
+#    Copyright 2014 Mirantis, Inc.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+import logging
+
+from proboscis.asserts import assert_equal
+from proboscis import test
+
+from fuelweb_test.helpers import common
+from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.models.fuel_web_client import DEPLOYMENT_MODE_SIMPLE
+from fuelweb_test.tests import base_test_case
+from fuelweb_test import settings
+
+
+logger = logging.getLogger(__name__)
+logwrap = debug(logger)
+
+
+@test(groups=["thread_non_func_1"])
+class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
+
+    @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
+          groups=["non_functional", "deploy_simple_flat_master_node_fail"])
+    def deploy_simple_flat_master_node_fail(self):
+        """Deploy cluster in simple mode with flat nova-network
+
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 1 node with compute role
+            4. Deploy the cluster
+            5. Validate cluster was set up correctly, there are no dead
+            services, there are no errors in logs
+            6. Verify networks
+            7. Verify network configuration on controller
+            8. Run OSTF
+            9. Shut down master node
+            10. Run openstack verification
+
+        """
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_SIMPLE
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+
+        task = self.fuel_web.run_network_verify(cluster_id)
+        self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
+        logger.info('PASS DEPLOYMENT')
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=1)
+        logger.info('PASS OSTF')
+
+        # shut down master node
+        remote = self.env.get_admin_remote()
+        logger.info('GET REMOTE TO ADMIN NODE')
+        remote.check_call('/sbin/shutdown -Fv now')
+        logger.info('PASS Shutdown of master node')
+
+        controller_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        common_func = common.Common(
+            controller_ip,
+            settings.SERVTEST_USERNAME,
+            settings.SERVTEST_PASSWORD,
+            settings.SERVTEST_TENANT)
+
+        #create instance
+        server = common_func.create_instance()
+
+        # get_instance details
+        details = common_func.get_instance_detail(server)
+        assert_equal(details.name, 'test_instance')
+
+        # Check if instacne active
+        common_func.verify_instance_status(server, 'ACTIVE')
+
+        # delete instance
+        common_func.delete_instance(server)

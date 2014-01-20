@@ -17,6 +17,9 @@ import logging
 from glanceclient.v1 import Client as glanceclient
 from keystoneclient.v2_0 import Client as keystoneclient
 from novaclient.v1_1 import Client as novaclient
+from proboscis.asserts import assert_equal
+import time
+
 from fuelweb_test.helpers.decorators import debug
 
 LOGGER = logging.getLogger(__name__)
@@ -44,7 +47,6 @@ class Common:
         LOGGER.debug('Glance endpoind is {0}'.format(glance_endpoint))
         self.glance = glanceclient(endpoint=glance_endpoint, token=token)
 
-
     def goodbye_security(self):
         LOGGER.debug('Permit all TCP and ICMP in security group default')
         secgroup = self.nova.security_groups.find(name='default')
@@ -61,12 +63,43 @@ class Common:
         LOGGER.debug('Import image {0}/{1} to glance'.
                      format(local_path, image))
         with open('{0}/{1}'.format(local_path, image)) as fimage:
-            self.glance.images.create(name=image_name, is_public=True,
-                                 disk_format='qcow2',
-                                 container_format='bare', data=fimage,
-                                 properties=properties)
+            self.glance.images.create(
+                name=image_name, is_public=True, disk_format='qcow2',
+                container_format='bare', data=fimage, properties=properties)
 
     def create_key(self, key_name):
         LOGGER.debug('Try to create key {0}'.format(key_name))
         self.nova.keypairs.create(key_name)
 
+    def create_instance(self):
+        LOGGER.debug('Try to create instance')
+        image = [i.id for i in self.nova.images.list()]
+        LOGGER.info('image uuid is {0}'.format(image))
+        flavor = self.nova.flavors.create(
+            name='test_flavor', ram=64, vcpus=1, disk=1)
+        LOGGER.info('flavor is {0}'.format(flavor.name))
+        server = self.nova.servers.create(
+            name='test_instance', image=image[0], flavor=flavor)
+        LOGGER.info('server is {0}'.format(server.name))
+        return server
+
+    def get_instance_detail(self, server):
+        details = self.nova.servers.get(server)
+        return details
+
+    def verify_instance_status(self, server, expected_state):
+        def _verify_instance_state():
+            curr_state = self.get_instance_detail(server).status
+            assert_equal(expected_state, curr_state)
+
+        try:
+            _verify_instance_state()
+        except AssertionError:
+            LOGGER.debug('Instance is not active, '
+                         'lets provide it the last chance and sleep 60 sec')
+            time.sleep(60)
+            _verify_instance_state()
+
+    def delete_instance(self, server):
+        LOGGER.debug('Try to create instance')
+        self.nova.servers.delete(server)
