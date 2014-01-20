@@ -615,13 +615,13 @@ class FuelWebClient(object):
 
     @logwrap
     def ip_address_show(self, node_name, interface):
-        remote = self.fuel_web.get_ssh_for_node(node_name)
+        remote = self.get_ssh_for_node(node_name)
         ret = remote.check_call(
             'ip address show {0} | grep ka$'.format(interface))
         return ' '.join(ret['stdout'])
 
     @logwrap
     def ip_address_del(self, node_name, interface, ip):
-        remote = self.fuel_web.get_ssh_for_node(node_name)
+        remote = self.get_ssh_for_node(node_name)
         remote.check_call(
             'ip addr del {0} dev {1}'.format(ip, interface))
