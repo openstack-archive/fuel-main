@@ -148,7 +148,7 @@ class FuelWebClient(object):
     @logwrap
     def fqdn(self, devops_node):
         nailgun_node = self.get_nailgun_node_by_devops_node(devops_node)
-        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_UBUNTU:
+        if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
             return nailgun_node['meta']['system']['fqdn']
         return nailgun_node['fqdn']
 
