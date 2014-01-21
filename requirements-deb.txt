@@ -15,6 +15,7 @@ apt-utils
 apt-xapian-index
 aptitude
 at
+atop
 augeas-lenses
 base-files
 base-passwd
@@ -83,6 +84,7 @@ dnsutils
 dosfstools
 dpkg
 dpkg-dev
+dstat
 e2fslibs
 e2fsprogs
 ed
