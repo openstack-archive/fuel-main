@@ -667,7 +667,8 @@ class FuelWebClient(object):
 
         for node in devops_nodes:
             wait(
-                lambda: not self.get_nailgun_node_by_devops_node(node)['online'])
+                lambda: not
+                self.get_nailgun_node_by_devops_node(node)['online'])
             node.create()
 
         for node in devops_nodes:

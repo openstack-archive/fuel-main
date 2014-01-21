@@ -10,6 +10,8 @@ def run_tests():
     from tests.tests_strength import test_master_node_failover
     from tests.tests_strength import test_failover
     from tests.tests_strength import test_restart
+    from tests import test_services_extended
+
 
     # Run Proboscis and exit.
     TestProgram().run_and_exit()

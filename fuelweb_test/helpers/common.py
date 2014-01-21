@@ -64,16 +64,17 @@ class Common:
         LOGGER.debug('Import image {0}/{1} to glance'.
                      format(local_path, image))
         with open('{0}/{1}'.format(local_path, image)) as fimage:
-            LOGGER.debug('Try to open image')
-            self.glance.images.create(
-                name=image_name, is_public=True,
-                disk_format='qcow2',
-                container_format='bare', data=fimage,
-                properties=properties)
+            self.glance.images.create(name=image_name, is_public=True,
+                                      disk_format='qcow2',
+                                      container_format='bare', data=fimage,
+                                      properties=properties)
+        imported_image = self.nova.images.find(name=image_name)
+        return imported_image.id
 
     def create_key(self, key_name):
         LOGGER.debug('Try to create key {0}'.format(key_name))
-        self.nova.keypairs.create(key_name)
+        keypair = self.nova.keypairs.create(key_name)
+        return keypair.private_key
 
     def create_instance(self):
         LOGGER.debug('Try to create instance')
