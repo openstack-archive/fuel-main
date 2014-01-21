@@ -183,7 +183,7 @@ class TestHaFlat(TestBasic):
             self.env.revert_snapshot("deploy_ha_flat")
 
             remote = self.fuel_web.get_ssh_for_node(devops_node.name)
-            remote.check_call('ifconfig eth3 down')
+            remote.check_call('ifconfig eth2 down')
             self.fuel_web.assert_pacemaker(
                 self.env.nodes().slaves[2].name,
                 set(self.env.nodes().slaves[:3]) - {devops_node},
