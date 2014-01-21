@@ -469,7 +469,8 @@ class FuelWebClient(object):
             for allowed_network in interface['allowed_networks']:
                 key_exists = interface_name in interfaces_dict
                 if key_exists and \
-                    allowed_network['name'] in interfaces_dict[interface_name]:
+                        allowed_network['name'] in \
+                        interfaces_dict[interface_name]:
                     interface['assigned_networks'].append(allowed_network)
 
                 if allowed_network['name'] == "fuelweb_admin":
@@ -652,7 +653,8 @@ class FuelWebClient(object):
 
         for node in devops_nodes:
             wait(
-                lambda: not self.get_nailgun_node_by_devops_node(node)['online'])
+                lambda: not
+                self.get_nailgun_node_by_devops_node(node)['online'])
             node.create()
 
         for node in devops_nodes:
