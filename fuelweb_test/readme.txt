@@ -35,4 +35,13 @@ to /tmp/ before start for best performance. If Internet available the image will
 Murano image available only internally.
 4. Murano tests  without Internet connection on the instances will be failed
 5. For Murano tests execute 'export SLAVE_NODE_MEMORY=5120' before tests run.
+<<<<<<< HEAD
 6. To get heat autoscale tests passed put image F17-x86_64-cfntools.qcow2 in /tmp before start
+=======
+
+=============== Important notes for Savanna integration tests run ===============
+1. Put HDP image centos-6_4-64-hdp-1.3-quantum.qcow2 (md5 f11d941c6c63a7277aa881a1116045ad) from
+https://s3.amazonaws.com/public-repo-1.hortonworks.com/savanna/images/ to /tmp/ before start for best
+performance. If Internet available the image will download automatically.
+2. Dedicated hardware controller node and two hardware nodes is highly recommended.
+>>>>>>> Added run Savanna integration tests with Fuel

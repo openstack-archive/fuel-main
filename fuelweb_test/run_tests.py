@@ -1,6 +1,7 @@
 def run_tests():
     from proboscis import TestProgram
 
+
     from tests import test_admin_node  # noqa
     from tests import test_ceph  # noqa
     from tests import test_ha  # noqa
@@ -11,6 +12,7 @@ def run_tests():
     from tests.tests_strength import test_failover  # noqa
     from tests.tests_strength import test_master_node_failover  # noqa
     from tests.tests_strength import test_restart  # noqa
+    from tests import test_services_extended
 
     # Run Proboscis and exit.
     TestProgram().run_and_exit()
