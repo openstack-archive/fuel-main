@@ -43,7 +43,7 @@ HARDWARE = {
     "admin_node_cpu": os.environ.get("ADMIN_NODE_CPU", 1),
     "slave_node_cpu": os.environ.get("SLAVE_NODE_CPU", 1),
 }
-if OPENSTACK_RELEASE == 'Ubuntu 12.04':
+if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
     slave_mem_default = 2048
 else:
     slave_mem_default = 1536
