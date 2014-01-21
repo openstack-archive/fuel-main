@@ -144,6 +144,7 @@ KVM_USE = os.environ.get('KVM_USE', 'false') == 'true'
 
 #Services tests
 SERVTEST_LOCAL_PATH = '/tmp/'
+SERVTEST_KEY_FILE = '{0}/key_file_savanna_tests'.format(SERVTEST_LOCAL_PATH)
 SERVTEST_USERNAME = 'admin'
 SERVTEST_PASSWORD = SERVTEST_USERNAME
 SERVTEST_TENANT = SERVTEST_USERNAME
@@ -154,6 +155,15 @@ SERVTEST_SAVANNA_IMAGE_MD5 = '9ab37ec9a13bb005639331c4275a308d'
 SERVTEST_SAVANNA_IMAGE_META = {'_savanna_tag_1.2.1': 'True',
                                '_savanna_tag_vanilla': 'True',
                                '_savanna_username': 'ubuntu'}
+
+SERVTEST_SAVANNA_HDP_SERVER_URL = 'https://s3.amazonaws.com/public-repo-1.' \
+                                  'hortonworks.com/savanna/images'
+SERVTEST_SAVANNA_HDP_IMAGE = 'centos-6_4-64-hdp-1.3-quantum.qcow2'
+SERVTEST_SAVANNA_HDP_IMAGE_NAME = 'hdp'
+SERVTEST_SAVANNA_HDP_IMAGE_MD5 = 'f11d941c6c63a7277aa881a1116045ad'
+SERVTEST_SAVANNA_HDP_IMAGE_META = {'_savanna_tag_1.2.1': 'True',
+                                   '_savanna_tag_vanilla': 'True',
+                                   '_savanna_username': 'root'}
 
 SERVTEST_MURANO_SERVER_URL = "http://murano-files.mirantis.com"
 SERVTEST_MURANO_IMAGE = "cloud-fedora.qcow2"

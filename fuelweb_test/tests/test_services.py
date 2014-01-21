@@ -16,7 +16,7 @@ import logging
 
 from proboscis import test, SkipTest
 from proboscis.asserts import assert_true
-from fuelweb_test.helpers import checkers
+from fuelweb_test.helpers import checkers, services_prepare
 from fuelweb_test.helpers.common import Common
 from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
 from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
@@ -44,54 +44,27 @@ class SavannaSimple(TestBasic):
             3. Add 1 node with compute role
             4. Deploy the cluster
             5. Verify savanna services
-            6. Run OSTF
-            7. Register savanna image
+            6. Register savanna image
+            7. Run OSTF
             8. Run OSTF platform tests
 
         Snapshot: deploy_savanna_simple
 
         """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
+        services_prepare.savanna_check_image()
 
-        LOGGER.debug('Check MD5 of image')
-        check_image = checkers.check_image(
-            settings.SERVTEST_SAVANNA_SERVER_URL,
-            settings.SERVTEST_SAVANNA_IMAGE,
-            settings.SERVTEST_SAVANNA_IMAGE_MD5,
-            settings.SERVTEST_LOCAL_PATH)
-        assert_true(check_image)
+        LOGGER.debug('Check slaves RAM size')
+        if settings.HARDWARE["slave_node_memory"] < 1500:
+            LOGGER.error("Slaves node memory is low, need more then 1.5Gb")
+            assert_true(False)
+
 
         self.env.revert_snapshot("ready_with_3_slaves")
-        LOGGER.debug('Create cluster for savanna tests')
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            settings={
-                'savanna': True,
-                "net_provider": 'neutron',
-                "net_segment_type": 'gre'
-            }
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller'],
-                'slave-02': ['compute']
-            }
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
-        checkers.verify_service(
-            self.env.get_ssh_to_remote_by_name("slave-01"),
-            service_name='savanna-api')
+        services_prepare.services_prepare_lab(
+            self.fuel_web, self.env, self.__class__.__name__,
+            {'savanna': True}, ['savanna-api'], 6)
 
-        controller_ip = self.fuel_web.get_nailgun_node_by_name(
-            'slave-01')['ip']
-        common_func = Common(controller_ip,
-                             settings.SERVTEST_USERNAME,
-                             settings.SERVTEST_PASSWORD,
-                             settings.SERVTEST_TENANT)
+        services_prepare.savanna_prepare_env(self.fuel_web)
 
         test_classes = ['fuel_health.tests.sanity.test_sanity_savanna.'
                         'SanitySavannaTests.test_sanity_savanna']
@@ -100,15 +73,6 @@ class SavannaSimple(TestBasic):
             tests_must_be_passed=test_classes
         )
 
-        LOGGER.debug('Import image')
-        common_func.image_import(
-            settings.SERVTEST_SAVANNA_IMAGE_META,
-            settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_SAVANNA_IMAGE,
-            settings.SERVTEST_SAVANNA_IMAGE_NAME)
-
-        common_func.goodbye_security()
-
         LOGGER.debug('Run OSTF platform tests')
         test_classes = ['fuel_health.tests.platform_tests'
                         '.test_platform_savanna.'
@@ -116,6 +80,7 @@ class SavannaSimple(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             tests_must_be_passed=test_classes, test_sets=['platform_tests'])
+
         self.env.make_snapshot("deploy_savanna_simple")
 
 
@@ -138,8 +103,8 @@ class MuranoSimple(TestBasic):
             3. Add 1 nodes with compute role
             4. Deploy the cluster
             5. Verify murano services
-            6. Run OSTF
-            7. Register murano image
+            6. Register murano image
+            7. Run OSTF
             8. Run OSTF platform tests
 
         Snapshot: deploy_murano_simple
@@ -147,6 +112,11 @@ class MuranoSimple(TestBasic):
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
+
+        LOGGER.debug('Check slaves RAM size')
+        if settings.HARDWARE["slave_node_memory"] < 5000:
+            LOGGER.error('Slaves node memory is low, need more then 5Gb')
+            assert_true(False)
 
         LOGGER.debug('Check MD5 of image')
         check_image = checkers.check_image(
@@ -156,30 +126,12 @@ class MuranoSimple(TestBasic):
             settings.SERVTEST_LOCAL_PATH)
         assert_true(check_image)
 
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            settings={
-                'murano': True,
-                "net_provider": 'neutron',
-                "net_segment_type": 'gre'
-            }
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller'],
-                'slave-02': ['compute']
-            }
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=5, networks_count=1, timeout=300)
-        checkers.verify_service(
-            self.env.get_ssh_to_remote_by_name("slave-01"),
-            service_name='murano-api')
-        checkers.verify_service(
-            self.env.get_ssh_to_remote_by_name("slave-01"),
-            service_name='muranoconductor')
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        services_prepare.services_prepare_lab(
+            self.fuel_web, self.env, self.__class__.__name__,
+            {'murano': True, "net_provider": 'neutron', "net_segment_type": 'gre'},
+            ['murano-api', 'muranoconductor'], 5)
 
         controller_ip = self.fuel_web.get_nailgun_node_by_name(
             'slave-01')['ip']
@@ -187,15 +139,6 @@ class MuranoSimple(TestBasic):
                              settings.SERVTEST_USERNAME,
                              settings.SERVTEST_PASSWORD,
                              settings.SERVTEST_TENANT)
-
-        LOGGER.debug('Run sanity and functional oSTF tests')
-        test_classes = ['fuel_health.tests.sanity.test_sanity_murano.'
-                        'MuranoSanityTests.test_create_and_delete_service']
-        self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
-            tests_must_be_passed=test_classes
-        )
-
 
         LOGGER.debug('Import image')
         common_func.image_import(
@@ -207,6 +150,15 @@ class MuranoSimple(TestBasic):
         common_func.goodbye_security()
         LOGGER.debug('Create key murano-lb-key')
         common_func.create_key('murano-lb-key')
+
+        LOGGER.debug('Run sanity and functional OSTF tests')
+        test_classes = ['fuel_health.tests.sanity.test_sanity_murano.'
+                        'MuranoSanityTests.test_create_and_delete_service']
+        self.fuel_web.run_ostf(
+            cluster_id=self.fuel_web.get_last_created_cluster(),
+            tests_must_be_passed=test_classes
+        )
+
         LOGGER.debug('Run OSTF platform tests')
         test_class_main = ('fuel_health.tests.platform_tests'
                            '.test_murano.MuranoDeploymentSmokeTests')
