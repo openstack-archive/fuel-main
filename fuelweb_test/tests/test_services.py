@@ -64,7 +64,9 @@ class SavannaSimple(TestBasic):
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             settings={
-                'savanna': True
+                'savanna': True,
+                "net_provider": 'neutron',
+                "net_segment_type": 'gre'
             }
         )
         self.fuel_web.update_nodes(
