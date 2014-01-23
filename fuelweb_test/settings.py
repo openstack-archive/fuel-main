@@ -162,3 +162,12 @@ SERVTEST_MURANO_IMAGE_NAME = 'murano'
 
 SERVTEST_MURANO_IMAGE_META = {'murano_image_info': '{"type": "linux", "title": "murano"}'}
 
+DEFAULT_IMAGES_CENTOS = os.environ.get(
+    'DEFAULT_IMAGES_CENTOS',
+    '/var/lib/libvirt/images/centos6.4-base.qcow2')
+
+DEFAULT_IMAGES_UBUNTU = os.environ.get(
+    'DEFAULT_IMAGES_UBUNTU',
+    '/var/lib/libvirt/images/ubuntu-12.04.1-server-amd64-p2.qcow2')
+
+OS_IMAGE = os.environ.get('OS_IMAGE', DEFAULT_IMAGES_CENTOS)
