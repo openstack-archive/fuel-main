@@ -227,7 +227,9 @@ class TestHaFlat(TestBasic):
                     addresses = self.fuel_web.ip_address_show(
                         devops_node.name, interface)
                     ip = re.search(
-                        'inet (?P<ip>.*) brd', addresses).group('ip')
+                        'inet (?P<ip>\d+\.\d+\.\d+.\d+/\d+) brd '
+                        '(?P<mask>\d+\.\d+\.\d+.\d+) scope global secondary',
+                        addresses).group('ip')
                     self.fuel_web.ip_address_del(
                         devops_node.name, interface, ip)
 
