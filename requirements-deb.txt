@@ -122,7 +122,6 @@ euca2ools
 facter
 fakeroot
 febootstrap
-fencing-agent
 file
 findutils
 fontconfig
