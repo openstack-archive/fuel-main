@@ -47,7 +47,6 @@ BOOTSTRAP_RPMS_CUSTOM:=\
 	nailgun-agent \
 	nailgun-mcagents \
 	nailgun-net-check \
-	fencing-agent \
 	dhcp_checker
 
 define yum_local_repo
