@@ -26,7 +26,7 @@ LOGGER = logging.getLogger(__name__)
 LOGWRAP = debug(LOGGER)
 
 
-@test(groups=["thread_1", "services", "services.savanna"])
+@test(groups=["services", "services.savanna"])
 class SavannaSimple(TestBasic):
     """
     Don't recommend to start tests without kvm
@@ -51,6 +51,9 @@ class SavannaSimple(TestBasic):
         Snapshot: deploy_savanna_simple
 
         """
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
         LOGGER.debug('Check MD5 of image')
         check_image = checkers.check_image(
             settings.SERVTEST_SAVANNA_SERVER_URL,
@@ -116,7 +119,7 @@ class SavannaSimple(TestBasic):
         self.env.make_snapshot("deploy_savanna_simple")
 
 
-@test(groups=["thread_1", "services", "services.murano"])
+@test(groups=["services", "services.murano"])
 class MuranoSimple(TestBasic):
     """
     Don't recommend to start tests without kvm
