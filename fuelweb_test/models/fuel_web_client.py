@@ -462,14 +462,15 @@ class FuelWebClient(object):
         interfaces = self.client.get_node_interfaces(node_id)
         for interface in interfaces:
             interface_name = interface['name']
-            if not self.find_admin(interface['allowed_networks']):
-                interface['assigned_networks'] = []
-                for allowed_network in interface['allowed_networks']:
-                    key_exists = interface_name in interfaces_dict
-                    if key_exists and \
-                            allowed_network['name'] \
-                            in interfaces_dict[interface_name]:
-                        interface['assigned_networks'].append(allowed_network)
+            interface['assigned_networks'] = []
+            for allowed_network in interface['allowed_networks']:
+                key_exists = interface_name in interfaces_dict
+                if key_exists and \
+                    allowed_network['name'] in interfaces_dict[interface_name]:
+                    interface['assigned_networks'].append(allowed_network)
+
+                if allowed_network['name'] == "fuelweb_admin":
+                    interface['assigned_networks'].append(allowed_network)
 
         self.client.put_node_interfaces(
             [{'id': node_id, 'interfaces': interfaces}])
@@ -654,10 +655,3 @@ class FuelWebClient(object):
         remote = self.get_ssh_for_node(node_name)
         remote.check_call(
             'ip addr del {0} dev {1}'.format(ip, interface))
-
-    @logwrap
-    def find_admin(self, net_list):
-        for i, d in enumerate(net_list):
-            if d['name'] == 'fuelweb_admin':
-                return True
-        return False
