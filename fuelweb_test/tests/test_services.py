@@ -156,6 +156,7 @@ class MuranoSimple(TestBasic):
             settings.SERVTEST_LOCAL_PATH)
         assert_true(check_image)
 
+        self.env.revert_snapshot("ready_with_3_slaves")
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             settings={
