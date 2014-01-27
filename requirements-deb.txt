@@ -132,6 +132,7 @@ fuel-utils
 fuse
 fuse-utils
 fence-agents
+fencing-agent
 g++
 g++-4.6
 galera
