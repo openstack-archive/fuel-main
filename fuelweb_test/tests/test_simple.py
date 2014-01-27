@@ -477,10 +477,10 @@ class UntaggedNetwork(TestBasic):
 
         vlan_turn_off = {'vlan_start': None}
         interfaces = {
-            'eth0': ["storage"],
             'eth1': ["public", "floating"],
             'eth2': ["management"],
-            'eth3': ["fixed"]
+            'eth3': ["fixed"],
+            'eth4': ["storage"]
         }
 
         cluster_id = self.fuel_web.create_cluster(
