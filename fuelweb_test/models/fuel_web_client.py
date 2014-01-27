@@ -16,6 +16,7 @@
 import logging
 import re
 from devops.error import TimeoutError
+from devops.error import DevopsCalledProcessError
 
 from devops.helpers.helpers import wait, _wait
 from ipaddr import IPNetwork
@@ -644,11 +645,15 @@ class FuelWebClient(object):
                 lambda: self.get_nailgun_node_by_devops_node(node)['online'])
 
     @logwrap
-    def ip_address_show(self, node_name, interface):
-        remote = self.get_ssh_for_node(node_name)
-        ret = remote.check_call(
-            'ip address show {0} | grep ka$'.format(interface))
-        return ' '.join(ret['stdout'])
+    def ip_address_show(self, node_name, interface, pipe_str=''):
+        try:
+            remote = self.get_ssh_for_node(node_name)
+            ret = remote.check_call(
+                'ip address show {0} {1}'.format(interface, pipe_str))
+            return ' '.join(ret['stdout'])
+        except DevopsCalledProcessError:
+            pass
+        return ''
 
     @logwrap
     def ip_address_del(self, node_name, interface, ip):
