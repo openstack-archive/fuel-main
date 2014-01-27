@@ -650,10 +650,10 @@ class NodeMultipleInterfaces(TestBasic):
         self.env.revert_snapshot("ready_with_3_slaves")
 
         interfaces_dict = {
-            'eth0': ['management'],
             'eth1': ['floating', 'public'],
             'eth2': ['storage'],
-            'eth3': ['fixed']
+            'eth3': ['fixed'],
+            'eth4': ['management'],
         }
 
         cluster_id = self.fuel_web.create_cluster(
