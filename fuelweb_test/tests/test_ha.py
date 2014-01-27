@@ -14,7 +14,6 @@
 
 import logging
 import re
-from devops.error import DevopsCalledProcessError
 from devops.helpers.helpers import wait
 from proboscis import test
 from proboscis.asserts import assert_true, assert_equal
@@ -222,27 +221,27 @@ class TestHaFlat(TestBasic):
         ips_amount = 0
         for devops_node in self.env.nodes().slaves[:3]:
             for interface in interfaces:
-                try:
-                    # Look for secondary ip and remove it
-                    addresses = self.fuel_web.ip_address_show(
-                        devops_node.name, interface)
-                    ip = re.search(
-                        'inet (?P<ip>\d+\.\d+\.\d+.\d+/\d+) brd '
-                        '(?P<mask>\d+\.\d+\.\d+.\d+) scope global secondary',
-                        addresses).group('ip')
-                    self.fuel_web.ip_address_del(
-                        devops_node.name, interface, ip)
+                # Look for secondary ip and remove it
+                addresses = self.fuel_web.ip_address_show(
+                    devops_node.name, interface)
+                ip_search = re.search(
+                    'inet (?P<ip>\d+\.\d+\.\d+.\d+/\d+) brd '
+                    '(?P<mask>\d+\.\d+\.\d+.\d+) scope global secondary',
+                    addresses)
+                if ip_search is None:
+                    continue
+                ip = ip_search.group('ip')
+                self.fuel_web.ip_address_del(
+                    devops_node.name, interface, ip)
 
-                    # The ip should be restored
-                    ip_assigned = \
-                        lambda: ip in self.fuel_web.ip_address_show(
-                            devops_node.name, interface)
-                    wait(ip_assigned, timeout=10)
-                    assert_true(ip_assigned(),
-                                'Secondary IP is restored')
-                    ips_amount += 1
-                except DevopsCalledProcessError:
-                    pass
+                # The ip should be restored
+                ip_assigned = \
+                    lambda: ip in self.fuel_web.ip_address_show(
+                        devops_node.name, interface, '| grep ka$')
+                wait(ip_assigned, timeout=10)
+                assert_true(ip_assigned(),
+                            'Secondary IP is restored')
+                ips_amount += 1
         assert_equal(ips_amount, 2, 'Secondary IPs amount')
 
     @test(depends_on_groups=['deploy_ha_flat'],
