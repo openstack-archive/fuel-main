@@ -2,6 +2,7 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot
 	sudo debootstrap --no-check-gpg --include=wget --components=main,universe,multiverse,restricted $(UBUNTU_RELEASE) $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot $(MIRROR_UBUNTU)
 	echo deb $(MIRROR_FUEL_UBUNTU) $(UBUNTU_RELEASE) main | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list.d/mirantis.list
+	echo deb http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-4.1-stable-9903/ubuntu/ main | sudo tee -a $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list.d/mirantis.list
 	echo 'APT::Get::AllowUnauthenticated 1;' | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/apt.conf.d/02mirantis-unauthenticated
 	sudo cp -a $(SOURCE_DIR)/mirror/ubuntu/files/preferences $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt
 	sudo cp -a $(SOURCE_DIR)/requirements-deb.txt $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/

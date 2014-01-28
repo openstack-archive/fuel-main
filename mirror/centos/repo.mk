@@ -23,6 +23,7 @@ $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: \
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo:
 	@mkdir -p $(@D)
 	/bin/echo -e "$${contents}" > $@
+	wget -O $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/rmq3.repo http://osci-obs.vm.mirantis.net:82/centos-fuel-4.1-stable-9904/centos/centos-fuel-4.1-stable-9904.repo
 
 $(BUILD_DIR)/mirror/centos/yum-config.done: \
 		$(BUILD_DIR)/mirror/centos/etc/yum.conf \

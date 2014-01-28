@@ -13,7 +13,7 @@ fysom==1.0.11
 greenlet==0.4.0
 hacking==0.7
 jsonschema==2.0.0
-kombu==2.1.8
+kombu==2.5.14
 netaddr==0.7.10
 netifaces==0.8
 nose2==0.4.1
