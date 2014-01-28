@@ -3,6 +3,8 @@ apt-get update
 for pkg in $(cat /requirements-deb.txt); do
 	apt-get -dy install $pkg || exit 1
 done
+rm /var/cache/apt/archives/rabbitmq-server*.deb
+wget -O /var/cache/apt/archives/rabbitmq-server_3.2.3-ubuntu0_all.deb http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-4.1-stable-9903/ubuntu/all/rabbitmq-server_3.2.3-ubuntu0_all.deb
 # Make structure and mocks for multiarch
 for dir in binary-i386 binary-amd64; do 
 	mkdir -p /repo/dists/precise/main/$dir /repo/dists/precise/main/debian-installer/$dir

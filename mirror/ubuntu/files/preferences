@@ -2,6 +2,10 @@ Package: *
 Pin: origin download.mirantis.com
 Pin-Priority: 1001
 
+Package: rabbitmq-server
+Version: 3.2.3*
+Pin-Priority: 1002
+
 Package: *
 Pin: origin *.mirantis.com
 Pin-Priority: 1001

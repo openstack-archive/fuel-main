@@ -45,6 +45,7 @@ $(BUILD_DIR)/mirror/eggs/build.done: \
 	sudo chroot $(SANDBOX) pip install \
 		--exists-action=i \
 		--index-url $(MIRROR_EGGS) \
+		--extra-index-url http://pypi.python.org/simple \
 		--find-links $(MIRROR_EGGS) \
 		--download /tmp/$(notdir $(LOCAL_MIRROR_EGGS)) \
 		$(REQUIRED_EGGS)
