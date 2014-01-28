@@ -17,7 +17,7 @@ import re
 from devops.error import DevopsCalledProcessError
 from devops.helpers.helpers import wait
 from proboscis import test
-from proboscis.asserts import assert_true, assert_equal
+from proboscis.asserts import assert_true, assert_equal, assert_not_equal
 
 from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
@@ -324,8 +324,9 @@ class TestHaFlat(TestBasic):
                 assert_true(
                     'node {0}'.format(fqdn) in config,
                     'node {0} exists'.format(fqdn))
-            assert_true(
-                'primitive openstack-heat-engine' in config, 'heat engine')
+            assert_not_equal(
+                re.search('primitive (openstack-)?heat-engine', config), None,
+                'heat engine')
             assert_true('primitive p_haproxy' in config, 'haproxy')
             assert_true('primitive p_mysql' in config, 'mysql')
             assert_true(
