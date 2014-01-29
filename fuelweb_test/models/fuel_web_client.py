@@ -247,7 +247,8 @@ class FuelWebClient(object):
                 section = False
                 if option in ('savanna', 'murano', 'ceilometer'):
                     section = 'additional_components'
-                if option in ('volumes_ceph', 'images_ceph'):
+                if option in ('volumes_ceph', 'images_ceph', 'ephemeral_ceph',
+                              'objects_ceph', 'osd_pool_size', 'volumes_lvm'):
                     section = 'storage'
                 if section:
                     attributes['editable'][section][option]['value'] =\
