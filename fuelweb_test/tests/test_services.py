@@ -102,10 +102,10 @@ class SavannaSimple(TestBasic):
 
         LOGGER.debug('Import image')
         common_func.image_import(
-            settings.SERVTEST_SAVANNA_IMAGE_META,
             settings.SERVTEST_LOCAL_PATH,
             settings.SERVTEST_SAVANNA_IMAGE,
-            settings.SERVTEST_SAVANNA_IMAGE_NAME)
+            settings.SERVTEST_SAVANNA_IMAGE_NAME,
+            settings.SERVTEST_SAVANNA_IMAGE_META)
 
         common_func.goodbye_security()
 
@@ -200,10 +200,10 @@ class MuranoSimple(TestBasic):
 
         LOGGER.debug('Import image')
         common_func.image_import(
-            settings.SERVTEST_MURANO_IMAGE_META,
             settings.SERVTEST_LOCAL_PATH,
             settings.SERVTEST_MURANO_IMAGE,
-            settings.SERVTEST_MURANO_IMAGE_NAME)
+            settings.SERVTEST_MURANO_IMAGE_NAME,
+            settings.SERVTEST_MURANO_IMAGE_META)
         LOGGER.debug('Permit all traffic')
         common_func.goodbye_security()
         LOGGER.debug('Create key murano-lb-key')
@@ -271,8 +271,38 @@ class CeilometerSimple(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='ceilometer-api')
 
+        # run ostf smoke and sanity
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=4)
+            should_fail=1)
+
+        # verify if needed image exists
+        LOGGER.debug('Check MD5 of image')
+        check_image = checkers.check_image(
+            settings.SERVTEST_HEAT_SERVER_URL,
+            settings.SERVTEST_HEAT_IMAGE,
+            settings.SERVTEST_HEAT_IMAGE_MD5,
+            settings.SERVTEST_LOCAL_PATH)
+        assert_true(check_image)
+
+        ###################################
+        controller_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        common_func = Common(controller_ip,
+                             settings.SERVTEST_USERNAME,
+                             settings.SERVTEST_PASSWORD,
+                             settings.SERVTEST_TENANT)
+
+        LOGGER.debug('Import image')
+        common_func.image_import(
+            settings.SERVTEST_LOCAL_PATH,
+            settings.SERVTEST_HEAT_IMAGE,
+            settings.SERVTEST_HEAT_IMAGE_NAME)
+
+        # run ostf platform tests for ceilometer and heat
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,  test_sets=['platform_tests'],
+            should_fail=0)
 
         self.env.make_snapshot("deploy_ceilometer_simple")
