@@ -47,6 +47,7 @@ class Common:
         LOGGER.debug('Glance endpoind is {0}'.format(glance_endpoint))
         self.glance = glanceclient(endpoint=glance_endpoint, token=token)
 
+
     def goodbye_security(self):
         LOGGER.debug('Permit all TCP and ICMP in security group default')
         secgroup = self.nova.security_groups.find(name='default')
@@ -59,13 +60,16 @@ class Common:
                                               from_port=-1,
                                               to_port=-1)
 
-    def image_import(self, properties, local_path, image, image_name):
+    def image_import(self, local_path, image, image_name, properties=None):
         LOGGER.debug('Import image {0}/{1} to glance'.
                      format(local_path, image))
         with open('{0}/{1}'.format(local_path, image)) as fimage:
+            LOGGER.debug('Try to open image')
             self.glance.images.create(
-                name=image_name, is_public=True, disk_format='qcow2',
-                container_format='bare', data=fimage, properties=properties)
+                name=image_name, is_public=True,
+                disk_format='qcow2',
+                container_format='bare', data=fimage,
+                properties=properties)
 
     def create_key(self, key_name):
         LOGGER.debug('Try to create key {0}'.format(key_name))
