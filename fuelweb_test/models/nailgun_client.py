@@ -25,8 +25,9 @@ logwrap = debug(logger)
 
 
 class NailgunClient(object):
-    def __init__(self, admin_node_ip):
-        self.client = HTTPClient(url="http://{}:8000".format(admin_node_ip))
+    def __init__(self, admin_node_ip, user=None, password=None):
+        self.client = HTTPClient(url="http://{}:8000".format(admin_node_ip),
+                                 user, password)
         logger.info(
             'Init of client by url %s' % "http://{}:8000".format(
                 admin_node_ip))
