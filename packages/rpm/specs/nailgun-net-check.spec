@@ -11,6 +11,7 @@ URL:       http://github.com/Mirantis
 Requires:  vconfig
 Requires:  scapy
 Requires:  python-argparse
+BuildRequires: python-devel
 
 %define pypcapver 1.1
 %define libpcapver 1.3.0
