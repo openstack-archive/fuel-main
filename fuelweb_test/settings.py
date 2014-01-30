@@ -141,6 +141,7 @@ SITEPP_FOR_UPLOAD = os.environ.get(
 
 
 KVM_USE = os.environ.get('KVM_USE', 'false') == 'true'
+DEBUG_MODE = os.environ.get('DEBUG_MODE', 'true') == 'true'
 
 #Services tests
 SERVTEST_LOCAL_PATH = '/tmp/'

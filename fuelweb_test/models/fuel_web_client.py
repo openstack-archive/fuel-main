@@ -26,7 +26,7 @@ from fuelweb_test.helpers.decorators import debug, upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
 
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE, NEUTRON, \
-    NEUTRON_SEGMENT, KVM_USE, OPENSTACK_RELEASE, OPENSTACK_RELEASE_CENTOS, \
+    NEUTRON_SEGMENT, KVM_USE, OPENSTACK_RELEASE, \
     OPENSTACK_RELEASE_UBUNTU
 
 import fuelweb_test.settings as help_data
@@ -254,7 +254,9 @@ class FuelWebClient(object):
                     attributes['editable'][section][option]['value'] =\
                         settings[option]
 
-            attributes['editable']['common']['debug']['value'] = True
+            attributes['editable']['common']['debug']['value'] = \
+                help_data.DEBUG_MODE
+
             hpv_data = attributes['editable']['common']['libvirt_type']
 
             if KVM_USE:
