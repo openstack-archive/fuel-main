@@ -63,7 +63,7 @@ class OneNodeDeploy(TestBasic):
         self.fuel_web.run_single_ostf_test(
             cluster_id=cluster_id, test_sets=['sanity'],
             test_name=('fuel_health.tests.sanity.test_sanity_identity'
-                       '.test_list_users'))
+                       '.SanityIdentityTest.test_list_users'))
 
 
 @test(groups=["thread_2"])

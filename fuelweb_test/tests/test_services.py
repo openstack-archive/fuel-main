@@ -46,7 +46,7 @@ class SavannaSimple(TestBasic):
             5. Verify savanna services
             6. Run OSTF
             7. Register savanna image
-            8. Run OSTF platform tests
+            8. Run OSTF platform savanna tests only
 
         Snapshot: deploy_savanna_simple
 
@@ -109,13 +109,14 @@ class SavannaSimple(TestBasic):
 
         common_func.goodbye_security()
 
-        LOGGER.debug('Run OSTF platform tests')
-        test_classes = ['fuel_health.tests.platform_tests'
-                        '.test_platform_savanna.'
-                        'PlatformSavannaTests.test_platform_savanna']
-        self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
-            tests_must_be_passed=test_classes, test_sets=['platform_tests'])
+        LOGGER.debug('Run OSTF savanna platform tests')
+
+        self.fuel_web.run_single_ostf_test(
+            cluster_id=cluster_id, test_sets=['platform_tests'],
+            test_name=('fuel_health.tests.platform_tests.'
+                       'test_platform_savanna.PlatformSavannaTests.'
+                       'test_platform_savanna'), should_fail=1)
+
         self.env.make_snapshot("deploy_savanna_simple")
 
 
@@ -197,7 +198,6 @@ class MuranoSimple(TestBasic):
             tests_must_be_passed=test_classes
         )
 
-
         LOGGER.debug('Import image')
         common_func.image_import(
             settings.SERVTEST_MURANO_IMAGE_META,
@@ -218,6 +218,7 @@ class MuranoSimple(TestBasic):
         for test_name in tests_names:
             test_classes.append('{0}.{1}'.format(test_class_main,
                                                  test_name))
+
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             tests_must_be_passed=test_classes, test_sets=['platform_tests'])
