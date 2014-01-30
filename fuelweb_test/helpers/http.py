@@ -15,14 +15,24 @@
 import urllib2
 import logging
 import json
+import base64
+
 
 logger = logging.getLogger(__name__)
 
 
 class HTTPClient(object):
-    def __init__(self, url):
+
+    base64string = None
+
+    def __init__(self, url, user=None, password=None):
         self.url = url
         logging.info('url from helpers http_client %s' % self.url)
+
+        if user and password:
+            creds = '{0}:{1}'.format(user, password)
+            self.base64string = base64.standard_b64encode(creds)
+
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)
 
     def get(self, endpoint):
@@ -51,4 +61,6 @@ class HTTPClient(object):
         return self._open(req)
 
     def _open(self, req):
+        if self.base64string:
+            req.add_header("Authorization", "Basic %s" % self.base64string)
         return self.opener.open(req)
