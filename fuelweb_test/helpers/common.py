@@ -26,7 +26,7 @@ LOGGER = logging.getLogger(__name__)
 LOGWRAP = debug(LOGGER)
 
 
-class Common:
+class Common(object):
 
     def __init__(self, controller_ip, user, password, tenant):
         self.controller_ip = controller_ip
