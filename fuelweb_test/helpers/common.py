@@ -15,6 +15,7 @@
 import logging
 import time
 
+from cinderclient import client as cinderclient
 from glanceclient.v1 import Client as glanceclient
 from keystoneclient.v2_0 import Client as keystoneclient
 from novaclient.v1_1 import Client as novaclient
@@ -26,7 +27,7 @@ LOGGER = logging.getLogger(__name__)
 LOGWRAP = debug(LOGGER)
 
 
-class Common:
+class Common(object):
 
     def __init__(self, controller_ip, user, password, tenant):
         self.controller_ip = controller_ip
@@ -40,6 +41,8 @@ class Common:
                                        password=password,
                                        tenant_name=tenant,
                                        auth_url=auth_url)
+        self.cinder = cinderclient.Client(1, user, password,
+                                          tenant, auth_url)
         token = self.keystone.auth_token
         LOGGER.debug('Token is {0}'.format(token))
         glance_endpoint = self.keystone.service_catalog.url_for(
