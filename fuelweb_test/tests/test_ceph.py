@@ -1,4 +1,4 @@
-#    Copyright 2013 Mirantis, Inc.
+#    Copyright 2014 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -13,11 +13,14 @@
 #    under the License.
 
 import logging
+import proboscis
+import time
 
 from proboscis.asserts import assert_true
 from proboscis import SkipTest
 from proboscis import test
 
+from fuelweb_test.helpers import os_actions
 from fuelweb_test.helpers.checkers import check_ceph_health
 from fuelweb_test.helpers.decorators import debug
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
@@ -257,3 +260,186 @@ class CephRadosGW(TestBasic):
         assert_true(radosgw_started(), 'radosgw daemon started')
 
         self.env.make_snapshot("ceph_rados_gw")
+
+
+@test(groups=["thread_1", "ceph_migration"])
+class VmBackedWithCephMigrationBasic(TestBasic):
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["ceph_migration"])
+    @log_snapshot_on_error
+    def migrate_vm_backed_with_ceph(self):
+        """Check VM backed with ceph migration in simple mode
+
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller and ceph OSD roles
+            3. Add 2 node with compute and ceph OSD roles
+            4. Deploy the cluster
+            5. Check ceph status
+            6. Run OSTF
+            7. Create a new VM, assign floating ip
+            8. Migrate VM
+            9. Check cluster and server state after migration
+            10. Terminate VM
+
+        Snapshot vm_backed_with_ceph_live_migration
+
+        """
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+            raise proboscis.SkipTest()
+
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'volumes_ceph': True,
+                'images_ceph': True,
+                'ephemeral_ceph': True,
+                'volumes_lvm': False
+            }
+        )
+
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller', 'ceph-osd'],
+                'slave-02': ['compute', 'ceph-osd'],
+                'slave-03': ['compute', 'ceph-osd']
+            }
+        )
+        creds = ("cirros", "test")
+
+        # Cluster deploy
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        # Create new server
+        os = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name("slave-01")["ip"])
+
+        logger.info("Create new server")
+        srv = os.create_server_for_migration(
+            scenario='./fuelweb_test/helpers/instance_initial_scenario')
+        logger.info("Srv is currently in status: %s" % srv.status)
+
+        assert_true(srv.status != "ERROR")
+
+        logger.info("Assigning floating ip to server")
+        floating_ip = os.assign_floating_ip(srv)
+        srv_host = os.get_srv_host_name(srv)
+        logger.info("Server is on host %s" % srv_host)
+
+        time.sleep(100)
+
+        md5before = os.get_md5sum(
+            "/home/test_file",
+            self.env.get_ssh_to_remote_by_name("slave-01"),
+            floating_ip.ip, creds)
+
+        logger.info("Get available computes")
+        avail_hosts = os.get_hosts_for_migr(srv_host)
+
+        logger.info("Migrating server")
+        new_srv = os.migrate_server(srv, avail_hosts[0])
+        logger.info("Check cluster and server state after migration")
+
+        assert_true(new_srv.status == "ACTIVE",
+                    "Server didn`t reach ACTIVE status. "
+                    "Status is: %s" % new_srv.status)
+
+        md5after = os.get_md5sum(
+            "/home/test_file",
+            self.env.get_ssh_to_remote_by_name("slave-01"),
+            floating_ip.ip, creds)
+
+        assert_true(
+            md5after in md5before,
+            "Md5 checksums don`t match."
+            "Before migration md5 was equal to: {bef}"
+            "Now it eqals: {aft}".format(bef=md5before, aft=md5after))
+
+        res = os.execute_through_host(
+            self.env.get_ssh_to_remote_by_name("slave-01"),
+            floating_ip.ip, "ping -q -c3 -w3 %s | grep 'received' |"
+            " grep -v '0 packets received'", creds)
+        logger.info("Ping 8.8.8.8 result on vm is: %s" % res)
+
+        logger.info("Check Ceph health is ok after migration")
+        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+
+        logger.info("Server is now on host %s" %
+                    os.get_srv_host_name(new_srv))
+
+        logger.info("Terminate migrated server")
+        os.delete_instance(new_srv)
+        assert_true(os.verify_srv_deleted(new_srv),
+                    "Verify server was deleted")
+
+        # Create new server
+        os = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name("slave-01")["ip"])
+
+        logger.info("Create new server")
+        srv = os.create_server_for_migration(
+            scenario='./fuelweb_test/helpers/instance_initial_scenario')
+        logger.info("Srv is currently in status: %s" % srv.status)
+
+        assert_true(srv.status != "ERROR")
+        logger.info("Assigning floating ip to server")
+        floating_ip = os.assign_floating_ip(srv)
+        srv_host = os.get_srv_host_name(srv)
+        logger.info("Server is on host %s" % srv_host)
+
+        logger.info("Create volume")
+        vol = os.create_volume()
+        logger.info("Attach volume to server")
+        os.attach_volume(vol, srv)
+
+        time.sleep(100)
+        logger.info("Create filesystem and mount volume")
+        os.execute_through_host(
+            self.env.get_ssh_to_remote_by_name('slave-01'),
+            floating_ip.ip, 'sudo sh /home/mount_volume.sh', creds)
+
+        os.execute_through_host(
+            self.env.get_ssh_to_remote_by_name('slave-01'),
+            floating_ip.ip, 'sudo touch /mnt/file-on-volume', creds)
+
+        logger.info("Get available computes")
+        avail_hosts = os.get_hosts_for_migr(srv_host)
+
+        logger.info("Migrating server")
+        new_srv = os.migrate_server(srv, avail_hosts[0])
+        logger.info("Check cluster and server state after migration")
+
+        assert_true(new_srv.status == "ACTIVE",
+                    "Server did not reach active state. "
+                    "Current status is: %s" % new_srv.status)
+
+        logger.info("Mount volume after migration")
+        out = os.execute_through_host(
+            self.env.get_ssh_to_remote_by_name('slave-01'),
+            floating_ip.ip, 'sudo mount /dev/vdb /mnt', creds)
+
+        logger.info("out of mounting volume is: %s" % out)
+
+        assert_true("file-on-volume" in os.execute_through_host(
+                    self.env.get_ssh_to_remote_by_name('slave-01'),
+                    floating_ip.ip, "sudo ls /mnt", creds),
+                    "File is abscent in /mnt")
+
+        logger.info("Check Ceph health is ok after migration")
+        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+
+        logger.info("Server is now on host %s" %
+                    os.get_srv_host_name(new_srv))
+
+        logger.info("Terminate migrated server")
+        os.delete_instance(new_srv)
+        assert_true(os.verify_srv_deleted(new_srv),
+                    "Verify server was deleted")
+
+        self.env.make_snapshot(
+            "vm_backed_with_ceph_live_migration")
