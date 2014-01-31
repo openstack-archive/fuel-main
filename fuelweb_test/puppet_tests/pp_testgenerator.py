@@ -16,10 +16,6 @@ import logging
 import jinja2
 import os
 from puppet_module import PuppetModule
-from fuelweb_test.helpers.decorators import debug
-
-logger = logging.getLogger(__name__)
-logwrap = debug(logger)
 
 
 class PuppetTestGenerator:
