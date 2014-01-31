@@ -3,7 +3,7 @@ Script for creating Puppet integration tests scripts using template engine.
 """
 
 import argparse
-from fuelweb_test.puppet_tests.pp_testgenerator import PuppetTestGenerator
+from puppet_tests.pp_testgenerator import PuppetTestGenerator
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tests", type=str, help="Directory to save tests")

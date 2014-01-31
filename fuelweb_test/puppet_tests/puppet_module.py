@@ -16,12 +16,7 @@ import os
 import sys
 import re
 import logging
-
-from fuelweb_test.helpers.decorators import debug
 from puppet_test import PuppetTest
-
-logger = logging.getLogger(__name__)
-logwrap = debug(logger)
 
 path = os.path.abspath(__file__)
 path = os.path.dirname(path)
