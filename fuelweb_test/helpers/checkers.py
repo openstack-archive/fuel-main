@@ -115,9 +115,11 @@ def verify_service_list(remote, smiles_count):
     try:
         _verify()
     except AssertionError:
-        logger.debug("Services still not read. Sleeping for 60 seconds and retrying")
+        logger.debug(
+            "Services still not read. Sleeping for 60 seconds and retrying")
         sleep(60)
         _verify()
+
 
 @logwrap
 def check_image(url, image, md5, path):
