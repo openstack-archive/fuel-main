@@ -52,18 +52,21 @@ HARDWARE["slave_node_memory"] = int(
 NODE_VOLUME_SIZE = os.environ.get('NODE_VOLUME_SIZE', 50)
 NODES_COUNT = os.environ.get('NODES_COUNT', 10)
 
-ADMIN_FORWARD = os.environ.get('ADMIN_FORWARD', 'nat')
-PUBLIC_FORWARD = os.environ.get('PUBLIC_FORWARD', 'nat')
-
+FORWARD_DEFAULT = os.environ.get('FORWARD_DEFAULT', None)
+ADMIN_FORWARD = os.environ.get('ADMIN_FORWARD', FORWARD_DEFAULT or 'nat')
+PUBLIC_FORWARD = os.environ.get('PUBLIC_FORWARD', FORWARD_DEFAULT or 'nat')
+MGMT_FORWARD =  os.environ.get('MGMT_FORWARD', FORWARD_DEFAULT)
+PRIVATE_FORWARD = os.environ.get('PRIVATE_FORWARD', FORWARD_DEFAULT)
+STORAGE_FORWARD =  os.environ.get('STORAGE_FORWARD', FORWARD_DEFAULT)
 
 INTERFACE_ORDER = ('admin', 'public', 'management', 'private', 'storage')
 
 FORWARDING = {
     'admin': ADMIN_FORWARD,
     'public': PUBLIC_FORWARD,
-    'management': None,
-    'private': None,
-    'storage': None,
+    'management': MGMT_FORWARD,
+    'private': PRIVATE_FORWARD,
+    'storage': STORAGE_FORWARD,
 }
 
 DHCP = {
