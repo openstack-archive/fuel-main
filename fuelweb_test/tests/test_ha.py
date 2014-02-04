@@ -12,16 +12,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-import re
 from devops.error import DevopsCalledProcessError
 from devops.helpers.helpers import wait
-from proboscis import test
-from proboscis.asserts import assert_true, assert_equal, assert_not_equal
 
-from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
+import logging
+
+from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
-from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
+from fuelweb_test.tests.base_test_case import SetupEnvironment
+from fuelweb_test.tests.base_test_case import TestBasic
+
+from proboscis.asserts import assert_equal
+from proboscis.asserts import assert_not_equal
+from proboscis.asserts import assert_true
+from proboscis import test
+
+import re
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
