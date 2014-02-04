@@ -47,7 +47,6 @@ class Common:
         LOGGER.debug('Glance endpoind is {0}'.format(glance_endpoint))
         self.glance = glanceclient(endpoint=glance_endpoint, token=token)
 
-
     def goodbye_security(self):
         LOGGER.debug('Permit all TCP and ICMP in security group default')
         secgroup = self.nova.security_groups.find(name='default')

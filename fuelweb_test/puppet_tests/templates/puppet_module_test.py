@@ -12,17 +12,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-import unittest
-from fuelweb_test.helpers.decorators import debug, upload_manifests
+from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.models.pp_environment import PuppetEnvironment
 
+import logging
+import unittest
 
 logger = logging.getLogger('integration')
 logwrap = debug(logger)
 
 
-class TestPuppetModule{{ module.name|title }}(unittest.TestCase):
+class TestPuppetModule{{ module.name|title }}(unittest.TestCase):  # flake8: noqa
     @upload_manifests
     def setUp(self):
         self.env = PuppetEnvironment()
@@ -34,14 +35,14 @@ class TestPuppetModule{{ module.name|title }}(unittest.TestCase):
 
         if not self.env.get_virtual_environment().has_snapshot("before_test"):
             self.env.make_snapshot(snapshot_name="before_test")
-{% for test in module.tests %}
-    def test_{{ test.name|title }}(self):
+{% for test in module.tests %}  # flake8: noqa
+    def test_{{ test.name|title }}(self):  # flake8: noqa
         manifest = \
-            "{{ internal_modules_path }}/{{ module.name }}/{{ test.path }}/{{ test.file }}"
-        result = self.env.execute_cmd("%s '%s'" % (self.puppet_apply, manifest))
+            "{{ internal_modules_path }}/{{ module.name }}/{{ test.path }}/{{test.file }}"  # flake8: noqa
+        result = self.env.execute_cmd("%s '%s'" % (self.puppet_apply,manifest))  # flake8: noqa
         self.assertIn(result, [0, 2])
-{% endfor %}
-    def tearDown(self):
+{% endfor %}  # flake8: noqa
+    def tearDown(self):  # flake8: noqa
         self.env.revert_snapshot("before_test")
 
 if __name__ == '__main__':
