@@ -12,8 +12,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import subprocess
 import logging
+import subprocess
+
 from fuelweb_test.helpers.decorators import debug
 
 logger = logging.getLogger(__name__)
