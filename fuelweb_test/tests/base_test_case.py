@@ -12,14 +12,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-from devops.helpers.helpers import SSHClient
 
-from proboscis import test, SkipTest
-
-from fuelweb_test.models.environment import EnvironmentModel
 from fuelweb_test.helpers.decorators import debug
-from fuelweb_test.settings import *
+from fuelweb_test.models.environment import EnvironmentModel
+from fuelweb_test.settings import OPENSTACK_RELEASE
+from fuelweb_test.settings import OPENSTACK_RELEASE_REDHAT
+
+import logging
+
+from proboscis import SkipTest
+from proboscis import test
+
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s %(filename)s:'

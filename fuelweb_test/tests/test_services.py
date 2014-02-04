@@ -12,15 +12,20 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
-from proboscis import test, SkipTest
-from proboscis.asserts import assert_true
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.common import Common
-from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
-from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
+from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import settings
+from fuelweb_test.tests.base_test_case import SetupEnvironment
+from fuelweb_test.tests.base_test_case import TestBasic
+
+import logging
+
+from proboscis.asserts import assert_true
+from proboscis import SkipTest
+from proboscis import test
+
 
 LOGGER = logging.getLogger(__name__)
 LOGWRAP = debug(LOGGER)
@@ -28,7 +33,7 @@ LOGWRAP = debug(LOGGER)
 
 @test(groups=["services", "services.savanna"])
 class SavannaSimple(TestBasic):
-    """
+    """Savanna simple test.
     Don't recommend to start tests without kvm
     Put Savanna image before start
     """
@@ -122,7 +127,7 @@ class SavannaSimple(TestBasic):
 
 @test(groups=["services", "services.murano"])
 class MuranoSimple(TestBasic):
-    """
+    """Murano Simple test.
     Don't recommend to start tests without kvm
     Put Murano image before start
     Murano OSTF platform tests  without Internet connection will be failed
@@ -302,7 +307,7 @@ class CeilometerSimple(TestBasic):
         # run ostf platform tests for ceilometer and heat
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,  test_sets=['platform_tests'],
+            cluster_id=cluster_id, test_sets=['platform_tests'],
             should_fail=1, timeout=3500)
 
         self.env.make_snapshot("deploy_ceilometer_simple")

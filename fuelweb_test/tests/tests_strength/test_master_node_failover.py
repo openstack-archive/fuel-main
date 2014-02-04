@@ -19,9 +19,8 @@ from proboscis import test
 
 from fuelweb_test.helpers import common
 from fuelweb_test.helpers.decorators import debug
-from fuelweb_test.models.fuel_web_client import DEPLOYMENT_MODE_SIMPLE
-from fuelweb_test.tests import base_test_case
 from fuelweb_test import settings
+from fuelweb_test.tests import base_test_case
 
 
 logger = logging.getLogger(__name__)
@@ -54,7 +53,7 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
+            mode=settings.DEPLOYMENT_MODE_SIMPLE
         )
         self.fuel_web.update_nodes(
             cluster_id,
