@@ -12,23 +12,29 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-import logging
-import re
-from devops.error import TimeoutError
 from devops.error import DevopsCalledProcessError
+from devops.error import TimeoutError
+from devops.helpers.helpers import _wait
+from devops.helpers.helpers import wait
 
-from devops.helpers.helpers import wait, _wait
-from ipaddr import IPNetwork
-from proboscis.asserts import assert_true, assert_equal
-from fuelweb_test.helpers.checkers import *
-
-from fuelweb_test.helpers.decorators import debug, upload_manifests
+from fuelweb_test.helpers import checkers
+from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
+from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
+from fuelweb_test.settings import KVM_USE
+from fuelweb_test.settings import NEUTRON
+from fuelweb_test.settings import NEUTRON_SEGMENT
+from fuelweb_test.settings import OPENSTACK_RELEASE
+from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE, NEUTRON, \
-    NEUTRON_SEGMENT, KVM_USE, OPENSTACK_RELEASE, \
-    OPENSTACK_RELEASE_UBUNTU
+
+from ipaddr import IPNetwork
+import logging
+from proboscis.asserts import assert_equal
+from proboscis.asserts import assert_true
+import re
+
 
 import fuelweb_test.settings as help_data
 
@@ -47,7 +53,7 @@ class FuelWebClient(object):
 
     @property
     def environment(self):
-        """
+        """Environment Model
         :rtype: EnvironmentModel
         """
         return self._environment
@@ -55,9 +61,9 @@ class FuelWebClient(object):
     @staticmethod
     @logwrap
     def get_cluster_status(ssh_remote, smiles_count, networks_count=1):
-        verify_service_list(ssh_remote, smiles_count)
-        verify_glance_index(ssh_remote)
-        verify_network_list(networks_count, ssh_remote)
+        checkers.verify_service_list(ssh_remote, smiles_count)
+        checkers.verify_glance_index(ssh_remote)
+        checkers.verify_network_list(networks_count, ssh_remote)
 
     @logwrap
     def _ostf_test_wait(self, cluster_id, timeout):
@@ -138,9 +144,10 @@ class FuelWebClient(object):
              for test in set_result['tests'] if test['status'] != 'success']
 
         assert_true(
-            failed <= should_fail,
-            ('Failed tests,  fails: {} should fail: {} failed tests name:'
-             ' {}').format(failed, should_fail, failed_tests_names))
+            failed <= should_fail, 'Failed tests,  fails: {} should fail:'
+                                   ' {} failed tests name: {}'
+                                   ''.format(failed, should_fail,
+                                             failed_tests_names))
 
     def assert_release_state(self, release_name, state='available'):
         for release in self.client.get_releases():
@@ -205,7 +212,7 @@ class FuelWebClient(object):
                        release_name=help_data.OPENSTACK_RELEASE,
                        mode=DEPLOYMENT_MODE_SIMPLE,
                        port=5514):
-        """
+        """Creates a cluster
         :param name:
         :param release_name:
         :param mode:
@@ -213,7 +220,7 @@ class FuelWebClient(object):
         :param port:
         :return: cluster_id
         """
-        #TODO back
+
         release_id = self.client.get_release_id(release_name=release_name)
         logging.info('Release_id is %s' % str(release_id))
 
@@ -235,7 +242,8 @@ class FuelWebClient(object):
                 data.update(
                     {
                         'net_provider': settings["net_provider"],
-                        'net_segment_type': settings["net_segment_type"]
+                        'net_segment_type': settings[
+                            "net_segment_type"]
                     }
                 )
 
@@ -338,7 +346,7 @@ class FuelWebClient(object):
 
     @logwrap
     def get_nailgun_node_by_devops_node(self, devops_node):
-        """
+        """Return slave node description.
         Returns dict with nailgun slave node description if node is
         registered. Otherwise return None.
         """
@@ -381,7 +389,7 @@ class FuelWebClient(object):
     def run_ostf(self, cluster_id, test_sets=None, should_fail=0,
                  tests_must_be_passed=None, timeout=None):
         test_sets = test_sets or ['smoke', 'sanity']
-        timeout = timeout or 30*60
+        timeout = timeout or 30 * 60
         self.client.ostf_run_tests(cluster_id, test_sets)
         if tests_must_be_passed:
             self.assert_ostf_run_certain(
@@ -588,7 +596,7 @@ class FuelWebClient(object):
             neutron_params['floating'] = self.get_range(
                 self.environment.get_network('public'), 1)[0]
 
-        print network_configuration
+        print(network_configuration)
         return network_configuration
 
     def set_network(self, net_config, net_name):
@@ -609,12 +617,11 @@ class FuelWebClient(object):
         net_config['netmask'] = self.environment.get_net_mask(net_name)
         net_config['vlan_start'] = None
         net_config['cidr'] = str(ip_network)
-        #if net_name != "nat" else None
         net_config['gateway'] = self.environment.router(net_name)
 
     def get_range(self, ip_network, ip_range=0):
         net = list(IPNetwork(ip_network))
-        half = len(net)/2
+        half = len(net) / 2
         if ip_range == 0:
             return [[str(net[2]), str(net[-2])]]
         elif ip_range == 1:
@@ -641,8 +648,8 @@ class FuelWebClient(object):
 
         for node in devops_nodes:
             wait(
-                lambda: not self.get_nailgun_node_by_devops_node(
-                    node)['online'])
+                lambda: not self.get_nailgun_node_by_devops_node(node)[
+                    'online'])
             node.destroy()
             node.create()
 
@@ -653,12 +660,10 @@ class FuelWebClient(object):
     def cold_restart_nodes(self, devops_nodes):
         for node in devops_nodes:
             node.destroy()
-
         for node in devops_nodes:
-            wait(
-                lambda: not self.get_nailgun_node_by_devops_node(node)['online'])
+            wait(lambda: not self.get_nailgun_node_by_devops_node(
+                 node)['online'])
             node.create()
-
         for node in devops_nodes:
             wait(
                 lambda: self.get_nailgun_node_by_devops_node(node)['online'])
