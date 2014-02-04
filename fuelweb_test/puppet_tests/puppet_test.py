@@ -12,20 +12,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import os
 from glob import glob
+import os
 import stat
 
 
 class PuppetTest:
-    """
-    This class represents single test of the Puppet module.
-    """
+    """This class represents single test of the Puppet module."""
 
     def __init__(self, test_file_path):
-        """
-        You should give this constructor path to test file.
-        """
+        """You should give this constructor path to test file."""
         self.test_file_path = test_file_path
         self.tests_path = os.path.dirname(self.test_file_path)
         self.test_file_name = os.path.basename(self.test_file_path)
@@ -33,9 +29,7 @@ class PuppetTest:
         self.find_verify_file()
 
     def find_verify_file(self):
-        """
-        Get verify script for this test if there is one.
-        """
+        """Get verify script for this test if there is one."""
         pattern = os.path.join(self.tests_path, self.test_name) + '*'
         verify_files = glob(pattern)
         verify_files = [os.path.basename(verify_file)
@@ -48,21 +42,19 @@ class PuppetTest:
             self.__verify_file = None
 
     def make_verify_executable(self):
-        """
-        Set file's executable bit
-        """
+        """Set executable bit for a file."""
         file_path = os.path.join(self.tests_path, self.__verify_file)
         if not os.path.isfile(file_path):
             return False
         file_stat = os.stat(file_path)
-        result_code = os.chmod(
+        os.chmod(
             file_path,
             file_stat.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
         return True
 
     @property
     def path(self):
-        """
+        """Return path to test.
         Property returns path to this test relative to module and excluding
         file name
         """
@@ -70,28 +62,20 @@ class PuppetTest:
 
     @property
     def file(self):
-        """
-        Property returns this tests' file name
-        """
+        """Property returns this tests' file name."""
         return self.test_file_name
 
     @property
     def name(self):
-        """
-        Property returns name of this test
-        """
+        """Property returns name of this test."""
         return self.test_name
 
     @property
     def verify_file(self):
-        """
-        Property returns verify file name
-        """
+        """Property returns verify file name."""
         return self.__verify_file
 
     def __repr__(self):
-        """
-        String representation of PuppetTest
-        """
+        """String representation of PuppetTest."""
         return "PuppetTest(name=%s, path=%s, file=%s)" % \
                (self.name, self.path, self.file)

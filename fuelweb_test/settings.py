@@ -161,7 +161,8 @@ SERVTEST_MURANO_IMAGE = "cloud-fedora.qcow2"
 SERVTEST_MURANO_IMAGE_MD5 = '6e5e2f149c54b898b3c272f11ae31125'
 SERVTEST_MURANO_IMAGE_NAME = 'murano'
 
-SERVTEST_MURANO_IMAGE_META = {'murano_image_info': '{"type": "linux", "title": "murano"}'}
+SERVTEST_MURANO_IMAGE_META = {'murano_image_info':
+                              '{"type": "linux", "title": "murano"}'}
 
 DEFAULT_IMAGES_CENTOS = os.environ.get(
     'DEFAULT_IMAGES_CENTOS',

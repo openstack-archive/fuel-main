@@ -19,9 +19,9 @@ from proboscis import test
 
 from fuelweb_test.helpers import common
 from fuelweb_test.helpers.decorators import debug
-from fuelweb_test.models.fuel_web_client import DEPLOYMENT_MODE_SIMPLE
-from fuelweb_test.tests import base_test_case
+from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test import settings
+from fuelweb_test.tests import base_test_case
 
 
 logger = logging.getLogger(__name__)
