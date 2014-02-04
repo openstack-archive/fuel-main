@@ -26,6 +26,7 @@ from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
 
+
 @test(groups=["thread_5", "ha"])
 class TestHaFailover(TestBasic):
 
