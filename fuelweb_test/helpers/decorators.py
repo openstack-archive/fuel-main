@@ -12,15 +12,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+
+from devops.helpers.helpers import SSHClient
+from fuelweb_test import settings
 import functools
 import json
 import logging
 import os
+from proboscis import SkipTest
 import time
 import urllib2
-from proboscis import SkipTest
-from fuelweb_test.settings import *
-from devops.helpers.helpers import SSHClient
 
 
 def save_logs(url, filename):
@@ -30,12 +31,13 @@ def save_logs(url, filename):
             f.write(
                 urllib2.urlopen(url).read()
             )
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
         logging.error(e)
 
 
 def log_snapshot_on_error(func):
-    """
+    """Snapshot environment in case of error.
+
     Decorator to snapshot environment when error occurred in test.
     And always fetch diagnostic snapshot from master node
     """
@@ -46,7 +48,7 @@ def log_snapshot_on_error(func):
             return func(*args, **kwagrs)
         except SkipTest:
             pass
-        except:
+        except Exception:
             status = "fail"
             name = 'error_%s' % func.__name__
             description = "Failed in method '%s'." % func.__name__
@@ -59,7 +61,8 @@ def log_snapshot_on_error(func):
                     "dos.py resume {env} && "
                     "virsh net-dumpxml {env}_admin | grep -P {pattern} -o "
                     "| awk {awk_command}".format(
-                        env=ENV_NAME, name=name, pattern="\"(\d+\.){3}\"",
+                        env=settings.ENV_NAME, name=name,
+                        pattern="\"(\d+\.){3}\"",
                         awk_command="'{print \"Admin node IP: \"$0\"2\"}'"
                     )
                 )
@@ -69,9 +72,9 @@ def log_snapshot_on_error(func):
                 args[0].env.make_snapshot(snapshot_name=name[-50:])
             raise
         finally:
-            if LOGS_DIR:
-                if not os.path.exists(LOGS_DIR):
-                    os.makedirs(LOGS_DIR)
+            if settings.LOGS_DIR:
+                if not os.path.exists(settings.LOGS_DIR):
+                    os.makedirs(settings.LOGS_DIR)
 
                 env = args[0].env
                 env.get_virtual_environment().resume()
@@ -85,7 +88,7 @@ def log_snapshot_on_error(func):
                     name=func.__name__,
                     time=time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime())
                 )
-                save_logs(url, os.path.join(LOGS_DIR, log_file_name))
+                save_logs(url, os.path.join(settings.LOGS_DIR, log_file_name))
     return wrapper
 
 
@@ -119,19 +122,20 @@ def upload_manifests(func):
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
         try:
-            if UPLOAD_MANIFESTS:
+            if settings.UPLOAD_MANIFESTS:
                 logging.info("Uploading new manifests from %s" %
-                             UPLOAD_MANIFESTS_PATH)
+                             settings.UPLOAD_MANIFESTS_PATH)
                 remote = SSHClient(args[0].admin_node_ip,
                                    username='root',
                                    password='r00tme')
                 remote.execute('rm -rf /etc/puppet/modules/*')
-                remote.upload(UPLOAD_MANIFESTS_PATH, '/etc/puppet/modules/')
+                remote.upload(settings.UPLOAD_MANIFESTS_PATH,
+                              '/etc/puppet/modules/')
                 logging.info("Copying new site.pp from %s" %
-                             SITEPP_FOR_UPLOAD)
+                             settings.SITEPP_FOR_UPLOAD)
                 remote.execute("cp %s /etc/puppet/manifests" %
-                               SITEPP_FOR_UPLOAD)
-        except:
+                               settings.SITEPP_FOR_UPLOAD)
+        except Exception:
             logging.error("Could not upload manifests")
             raise
         return result
