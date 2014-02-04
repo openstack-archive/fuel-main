@@ -11,17 +11,17 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 import hashlib
 import logging
-import os.path
-import urllib
-
-from proboscis.asserts import assert_true, assert_false, assert_equal
-from time import sleep
 
 from fuelweb_test.helpers.decorators import debug
+from proboscis.asserts import assert_equal
+from proboscis.asserts import assert_false
+from proboscis.asserts import assert_true
 
+import os
+from time import sleep
+import urllib
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
@@ -42,6 +42,34 @@ def check_ceph_health(ssh, recovery_timeout=False):
     result = ''.join(ssh.execute('ceph -s')['stdout'])
     assert_true('HEALTH_OK' in result,
                 "Ceph status is '{}' != HEALTH_OK".format(result))
+
+
+@logwrap
+def check_image(url, image, md5, path):
+    download_url = "{0}/{1}".format(url, image)
+    local_path = "{0}/{1}".format(path, image)
+    logger.debug('Check md5 {0} of image {1}/{2}'.format(md5, path, image))
+    if not os.path.isfile(local_path):
+        try:
+            urllib.urlretrieve(download_url, local_path)
+        except Exception as error:
+            logger.error(error)
+    with open(local_path, mode='rb') as fimage:
+        digits = hashlib.md5()
+        while True:
+            buf = fimage.read(4096)
+            if not buf:
+                break
+            digits.update(buf)
+        md5_local = digits.hexdigest()
+    if md5_local != md5:
+        logger.debug('MD5 is not correct, download {0} to {1}'.format(
+                     download_url, local_path))
+        try:
+            urllib.urlretrieve(download_url, local_path)
+        except Exception as error:
+            logger.error(error)
+    return True
 
 
 @logwrap
@@ -119,32 +147,3 @@ def verify_service_list(remote, smiles_count):
             "Services still not read. Sleeping for 60 seconds and retrying")
         sleep(60)
         _verify()
-
-
-@logwrap
-def check_image(url, image, md5, path):
-    download_url = "{0}/{1}".format(url, image)
-    local_path = "{0}/{1}".format(path, image)
-    logger.debug('Check md5 {0} of image {1}/{2}'.format(md5, path, image))
-    if not os.path.isfile(local_path):
-        try:
-            urllib.urlretrieve(download_url, local_path)
-        except Exception as error:
-            logger.error(error)
-    with open(local_path, mode='rb') as fimage:
-        digits = hashlib.md5()
-        while True:
-            buf = fimage.read(4096)
-            if not buf:
-                break
-            digits.update(buf)
-        md5_local = digits.hexdigest()
-    if md5_local != md5:
-        logger.debug('MD5 is not correct, download {0} to {1}'.format(
-                     download_url, local_path))
-        try:
-            urllib.urlretrieve(download_url, local_path)
-        except Exception as error:
-            logger.error(error)
-
-    return True
