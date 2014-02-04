@@ -13,12 +13,12 @@
 #    under the License.
 
 import logging
+import time
 
 from glanceclient.v1 import Client as glanceclient
 from keystoneclient.v2_0 import Client as keystoneclient
 from novaclient.v1_1 import Client as novaclient
 from proboscis.asserts import assert_equal
-import time
 
 from fuelweb_test.helpers.decorators import debug
 
@@ -46,7 +46,6 @@ class Common:
             service_type='image', endpoint_type='publicURL')
         LOGGER.debug('Glance endpoind is {0}'.format(glance_endpoint))
         self.glance = glanceclient(endpoint=glance_endpoint, token=token)
-
 
     def goodbye_security(self):
         LOGGER.debug('Permit all TCP and ICMP in security group default')
