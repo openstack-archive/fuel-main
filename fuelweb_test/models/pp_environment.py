@@ -13,20 +13,17 @@
 #    under the License.
 
 
-import os
-from devops.helpers.helpers import tcp_ping, wait
+from devops.helpers.helpers import tcp_ping
+from devops.helpers.helpers import wait
 from fuelweb_test.models.environment import EnvironmentModel
 from fuelweb_test import settings
+import os
 
 
 class PuppetEnvironment(EnvironmentModel):
-    """
-    Create environment for puppet modules testing.
-    """
+    """Create environment for puppet modules testing."""
     def __init__(self, os_image=None):
-        """
-        Constructor for create environment.
-        """
+        """Constructor for create environment."""
         self.os_image = os_image or settings.OS_IMAGE
         super(PuppetEnvironment, self).__init__(self.os_image)
         self.environment = \
@@ -41,9 +38,7 @@ class PuppetEnvironment(EnvironmentModel):
         self.get_virtual_environment().start(self.nodes())
 
     def execute_cmd(self, command, debug=True):
-        """
-        Execute command on node.
-        """
+        """Execute command on node."""
         return self.get_admin_remote().execute(command,
                                                verbose=debug)['exit_code']
 
