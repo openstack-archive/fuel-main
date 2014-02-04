@@ -55,9 +55,9 @@ NODES_COUNT = os.environ.get('NODES_COUNT', 10)
 FORWARD_DEFAULT = os.environ.get('FORWARD_DEFAULT', None)
 ADMIN_FORWARD = os.environ.get('ADMIN_FORWARD', FORWARD_DEFAULT or 'nat')
 PUBLIC_FORWARD = os.environ.get('PUBLIC_FORWARD', FORWARD_DEFAULT or 'nat')
-MGMT_FORWARD =  os.environ.get('MGMT_FORWARD', FORWARD_DEFAULT)
+MGMT_FORWARD = os.environ.get('MGMT_FORWARD', FORWARD_DEFAULT)
 PRIVATE_FORWARD = os.environ.get('PRIVATE_FORWARD', FORWARD_DEFAULT)
-STORAGE_FORWARD =  os.environ.get('STORAGE_FORWARD', FORWARD_DEFAULT)
+STORAGE_FORWARD = os.environ.get('STORAGE_FORWARD', FORWARD_DEFAULT)
 
 INTERFACE_ORDER = ('admin', 'public', 'management', 'private', 'storage')
 
