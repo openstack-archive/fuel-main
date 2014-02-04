@@ -12,10 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import socket
 import logging
-import threading
 import select
+import socket
+import threading
+
 from fuelweb_test.helpers.decorators import debug
 
 logger = logging.getLogger(__name__)

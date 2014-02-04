@@ -14,13 +14,17 @@
 
 import logging
 
-from proboscis import test, SkipTest
 
 from fuelweb_test.helpers.checkers import check_ceph_health
-from fuelweb_test.helpers.decorators import log_snapshot_on_error, debug
+from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import settings
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
-from fuelweb_test.tests.base_test_case import TestBasic, SetupEnvironment
+from fuelweb_test.tests.base_test_case import SetupEnvironment
+from fuelweb_test.tests.base_test_case import TestBasic
+
+from proboscis import SkipTest
+from proboscis import test
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)

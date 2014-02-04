@@ -13,13 +13,15 @@
 #    under the License.
 
 import logging
-from devops.helpers.helpers import SSHClient
 
-from proboscis import test, SkipTest
+from proboscis import SkipTest
+from proboscis import test
 
-from fuelweb_test.models.environment import EnvironmentModel
 from fuelweb_test.helpers.decorators import debug
-from fuelweb_test.settings import *
+from fuelweb_test.models.environment import EnvironmentModel
+from fuelweb_test.settings import OPENSTACK_RELEASE
+from fuelweb_test.settings import OPENSTACK_RELEASE_REDHAT
+
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s %(filename)s:'

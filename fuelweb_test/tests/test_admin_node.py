@@ -13,15 +13,21 @@
 #    under the License.
 
 import logging
-import xmlrpclib
-from devops.helpers.helpers import wait, tcp_ping, http
 
-from proboscis import test, SkipTest
+from devops.helpers.helpers import http
+from devops.helpers.helpers import wait
 from proboscis.asserts import assert_equal
+from proboscis import SkipTest
+from proboscis import test
+import xmlrpclib
 
-from fuelweb_test.helpers.decorators import debug, log_snapshot_on_error
-from fuelweb_test.settings import OPENSTACK_RELEASE, OPENSTACK_RELEASE_CENTOS
-from fuelweb_test.tests.base_test_case import SetupEnvironment, TestBasic
+from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.settings import OPENSTACK_RELEASE
+from fuelweb_test.settings import OPENSTACK_RELEASE_CENTOS
+from fuelweb_test.tests.base_test_case import SetupEnvironment
+from fuelweb_test.tests.base_test_case import TestBasic
+
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
