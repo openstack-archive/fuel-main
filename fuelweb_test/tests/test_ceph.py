@@ -15,6 +15,7 @@
 import logging
 
 from proboscis import test, SkipTest
+from proboscis.asserts import assert_true
 
 from fuelweb_test.helpers.checkers import check_ceph_health
 from fuelweb_test.helpers.decorators import log_snapshot_on_error, debug
@@ -187,3 +188,71 @@ class CephHA(TestBasic):
             should_fail=4)
 
         self.env.make_snapshot("ceph_ha")
+
+
+@test(groups=["thread_1", "ceph"])
+class CephRadosGW(TestBasic):
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["ceph_rados_gw"])
+    @log_snapshot_on_error
+    def ceph_rados_gw(self):
+        """Deploy ceph with RadosGW for objects
+
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 1 node with compute role
+            4. Add 3 nodes with ceph-osd role
+            5. Deploy the cluster
+            6. Check ceph status
+            7. Run OSTF tests
+            8. Check the radosqw daemon is started
+
+        Snapshot ceph_rados_gw
+
+        """
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'volumes_lvm': False,
+                'volumes_ceph': True,
+                'images_ceph': True,
+                'objects_ceph': True
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute'],
+                'slave-03': ['ceph-osd'],
+                'slave-04': ['ceph-osd'],
+                'slave-05': ['ceph-osd']
+            }
+        )
+        # Deploy cluster
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        remote = self.fuel_web.get_ssh_for_node('slave-01')
+        check_ceph_health(remote)
+
+        # Run ostf
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke', 'sanity', 'platform_tests'],
+            should_fail=1)
+
+        # Check the radosqw daemon is started
+        radosgw_started = lambda: len(remote.check_call(
+            'ps aux | grep "/usr/bin/radosgw -n '
+            'client.radosgw.gateway"')['stdout']) == 3
+        assert_true(radosgw_started(), 'radosgw daemon started')
+
+        self.env.make_snapshot("ceph_rados_gw")
