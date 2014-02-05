@@ -19,7 +19,7 @@ netifaces==0.8
 nose2==0.4.1
 nose==1.1.2
 ordereddict==1.1
-oslo.config==1.1.1
+oslo.config==1.2.1
 pbr==0.5.21
 pip==1.2.1
 prettytable==0.6.1
