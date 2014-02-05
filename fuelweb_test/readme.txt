@@ -35,3 +35,4 @@ to /tmp/ before start for best performance. If Internet available the image will
 Murano image available only internally.
 4. Murano tests  without Internet connection on the instances will be failed
 5. For Murano tests execute 'export SLAVE_NODE_MEMORY=5120' before tests run.
+6. To get heat autoscale tests passed put image F17-x86_64-cfntools.qcow2 in /tmp before start

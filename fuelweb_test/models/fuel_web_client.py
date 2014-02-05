@@ -137,7 +137,7 @@ class FuelWebClient(object):
              for test in set_result['tests'] if test['status'] != 'success']
 
         assert_true(
-            failed <= should_fail,
+            failed == should_fail,
             ('Failed tests,  fails: {} should fail: {} failed tests name:'
              ' {}').format(failed, should_fail, failed_tests_names))
 
@@ -390,7 +390,7 @@ class FuelWebClient(object):
         else:
             self.assert_ostf_run(
                 cluster_id,
-                should_fail=should_fail)
+                should_fail=should_fail, timeout=timeout)
 
     @logwrap
     def run_single_ostf_test(self, cluster_id,
