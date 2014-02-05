@@ -43,8 +43,8 @@ cluster-glue-libs-1.0.11-59.1
 cman-3.0.12.1-49.el6
 cobbler-2.2.3-2.el6
 cobbler-web-2.2.3-2.el6
-corosync-1.4.3-26.2
-corosynclib-1.4.3-26.2
+corosync
+corosynclib
 cpufreq-init
 crmsh-1.2.5-55.2
 cronie-1.4.4-7.el6
@@ -298,10 +298,10 @@ openstack-swift-proxy
 openstack-utils
 openvswitch
 kmod-openvswitch
-pacemaker-1.1.8-1.el6
-pacemaker-cli-1.1.8-1.el6
-pacemaker-cluster-libs-1.1.8-1.el6
-pacemaker-libs-1.1.8-1.el6
+pacemaker
+pacemaker
+pacemaker-cluster-libs
+pacemaker-libs
 parted-2.1-19.el6
 passwd-0.77-4.el6_2.2
 patch-2.6-6.el6
@@ -316,6 +316,7 @@ postgresql-devel-8.4.13-1.el6_3
 postgresql-libs-8.4.13-1.el6_3
 postgresql-server-8.4.13-1.el6_3
 pssh-2.3.1-15.2
+pcs
 puppet
 puppet-server
 puppetdb-1.2.0-1.el6
