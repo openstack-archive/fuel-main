@@ -137,7 +137,7 @@ class FuelWebClient(object):
              for test in set_result['tests'] if test['status'] != 'success']
 
         assert_true(
-            failed == should_fail,
+            failed <= should_fail,
             ('Failed tests,  fails: {} should fail: {} failed tests name:'
              ' {}').format(failed, should_fail, failed_tests_names))
 
