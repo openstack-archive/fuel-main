@@ -306,3 +306,330 @@ class CeilometerSimple(TestBasic):
             should_fail=1, timeout=3500)
 
         self.env.make_snapshot("deploy_ceilometer_simple")
+
+
+@test(groups=["thread_1", "services", "services.ceilometer"])
+class CeilometerSimpleMongo(TestBasic):
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_ceilometer_simple_with_mongo"])
+    @log_snapshot_on_error
+    def deploy_ceilometer_simple_with_mongo(self):
+        """Deploy cluster in simple mode with Ceilometer
+
+        Scenario:
+            1. Create cluster. Set install Ceilometer option
+            2. Add 1 node with controller role
+            3. Add 1 nodes with compute role
+            4. Add 1 node with cinder role
+            5. Add 1 node with mongo role
+            6. Deploy the cluster
+            7. Verify ceilometer api is running
+            8. Run ostf
+
+        Snapshot: deploy_ceilometer_simple_with_mongo
+
+        """
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            settings={
+                'ceilometer': True
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute'],
+                'slave-03': ['compute'],
+                'slave-04': ['mongo']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        checkers.verify_service(
+            self.env.get_ssh_to_remote_by_name("slave-01"),
+            service_name='ceilometer-api')
+
+        # run ostf smoke and sanity
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=1)
+
+        # verify if needed image exists
+        LOGGER.debug('Check MD5 of image')
+        check_image = checkers.check_image(
+            settings.SERVTEST_HEAT_SERVER_URL,
+            settings.SERVTEST_HEAT_IMAGE,
+            settings.SERVTEST_HEAT_IMAGE_MD5,
+            settings.SERVTEST_LOCAL_PATH)
+        assert_true(check_image)
+
+        controller_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        common_func = Common(controller_ip,
+                             settings.SERVTEST_USERNAME,
+                             settings.SERVTEST_PASSWORD,
+                             settings.SERVTEST_TENANT)
+
+        LOGGER.debug('Import image')
+        common_func.image_import(
+            settings.SERVTEST_LOCAL_PATH,
+            settings.SERVTEST_HEAT_IMAGE,
+            settings.SERVTEST_HEAT_IMAGE_NAME,
+            settings.SERVTEST_HEAT_IMAGE_META)
+
+        # run ostf platform tests for ceilometer and heat
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,  test_sets=['platform_tests'],
+            should_fail=1, timeout=3500)
+
+        self.env.make_snapshot("deploy_ceilometer_simple_with_mongo")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_ceilometer_ha_with_mongo"])
+    @log_snapshot_on_error
+    def deploy_ceilometer_ha_with_mongo(self):
+        """Deploy cluster in simple mode with Ceilometer
+
+        Scenario:
+            1. Create cluster. Set install Ceilometer option
+            2. Add 3 node with controller role
+            3. Add 1 nodes with compute role
+            4. Add 1 node with mongo role
+            5. Deploy the cluster
+            6. Verify ceilometer api is running
+            7. Run ostf
+
+        Snapshot: deploy_ceilometer_ha_with_mongo
+
+        """
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            settings={
+                'ceilometer': True
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['controller'],
+                'slave-03': ['controller'],
+                'slave-04': ['compute'],
+                'slave-05': ['mongo']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        checkers.verify_service(
+            self.env.get_ssh_to_remote_by_name("slave-01"),
+            service_name='ceilometer-api')
+
+        # run ostf smoke and sanity
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=1)
+
+        # verify if needed image exists
+        LOGGER.debug('Check MD5 of image')
+        check_image = checkers.check_image(
+            settings.SERVTEST_HEAT_SERVER_URL,
+            settings.SERVTEST_HEAT_IMAGE,
+            settings.SERVTEST_HEAT_IMAGE_MD5,
+            settings.SERVTEST_LOCAL_PATH)
+        assert_true(check_image)
+
+        controller_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        common_func = Common(controller_ip,
+                             settings.SERVTEST_USERNAME,
+                             settings.SERVTEST_PASSWORD,
+                             settings.SERVTEST_TENANT)
+
+        LOGGER.debug('Import image')
+        common_func.image_import(
+            settings.SERVTEST_LOCAL_PATH,
+            settings.SERVTEST_HEAT_IMAGE,
+            settings.SERVTEST_HEAT_IMAGE_NAME,
+            settings.SERVTEST_HEAT_IMAGE_META)
+
+        # run ostf platform tests for ceilometer and heat
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,  test_sets=['platform_tests'],
+            should_fail=1, timeout=3500)
+
+        self.env.make_snapshot("deploy_ceilometer_ha_with_mongo")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_ceilometer_simple_multirole"])
+    @log_snapshot_on_error
+    def deploy_ceilometer_simple_multirole(self):
+        """Deploy cluster in simple multirole mode with Ceilometer
+
+        Scenario:
+            1. Create cluster. Set install Ceilometer option
+            2. Add 1 node with controller role
+            3. Add 1 nodes with compute role
+            4. Add 2 nodes with cinder and mongo roles
+            5. Deploy the cluster
+            6. Verify ceilometer api is running
+            7. Run ostf
+
+        Snapshot: deploy_ceilometer_simple_multirole
+
+        """
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            settings={
+                'ceilometer': True
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute'],
+                'slave-03': ['cinder', 'mongo'],
+                'slave-04': ['cinder', 'mongo']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        checkers.verify_service(
+            self.env.get_ssh_to_remote_by_name("slave-01"),
+            service_name='ceilometer-api')
+
+        # run ostf smoke and sanity
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=1)
+
+        # verify if needed image exists
+        LOGGER.debug('Check MD5 of image')
+        check_image = checkers.check_image(
+            settings.SERVTEST_HEAT_SERVER_URL,
+            settings.SERVTEST_HEAT_IMAGE,
+            settings.SERVTEST_HEAT_IMAGE_MD5,
+            settings.SERVTEST_LOCAL_PATH)
+        assert_true(check_image)
+
+        controller_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        common_func = Common(controller_ip,
+                             settings.SERVTEST_USERNAME,
+                             settings.SERVTEST_PASSWORD,
+                             settings.SERVTEST_TENANT)
+
+        LOGGER.debug('Import image')
+        common_func.image_import(
+            settings.SERVTEST_LOCAL_PATH,
+            settings.SERVTEST_HEAT_IMAGE,
+            settings.SERVTEST_HEAT_IMAGE_NAME,
+            settings.SERVTEST_HEAT_IMAGE_META)
+
+        # run ostf platform tests for ceilometer and heat
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,  test_sets=['platform_tests'],
+            should_fail=1, timeout=3500)
+
+        self.env.make_snapshot("deploy_ceilometer_simple_mulirole")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_ceilometer_ha_multirole"])
+    @log_snapshot_on_error
+    def deploy_ceilometer_ha_multirole(self):
+        """Deploy cluster in ha multirole mode with Ceilometer
+
+        Scenario:
+            1. Create cluster. Set install Ceilometer option
+            2. Add 3 node with controller and mongo roles
+            3. Add 1 nodes with compute role
+            4. Add 1 nodes with cinder
+            5. Deploy the cluster
+            6. Verify ceilometer api is running
+            7. Run ostf
+
+        Snapshot: deploy_ceilometer_ha_multirole
+
+        """
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            settings={
+                'ceilometer': True
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller', 'mongo'],
+                'slave-02': ['controller', 'mongo'],
+                'slave-03': ['controller', 'mongo'],
+                'slave-04': ['compute'],
+                'slave-05': ['cinder']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        checkers.verify_service(
+            self.env.get_ssh_to_remote_by_name("slave-01"),
+            service_name='ceilometer-api')
+
+        # run ostf smoke and sanity
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=1)
+
+        # verify if needed image exists
+        LOGGER.debug('Check MD5 of image')
+        check_image = checkers.check_image(
+            settings.SERVTEST_HEAT_SERVER_URL,
+            settings.SERVTEST_HEAT_IMAGE,
+            settings.SERVTEST_HEAT_IMAGE_MD5,
+            settings.SERVTEST_LOCAL_PATH)
+        assert_true(check_image)
+
+        controller_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        common_func = Common(controller_ip,
+                             settings.SERVTEST_USERNAME,
+                             settings.SERVTEST_PASSWORD,
+                             settings.SERVTEST_TENANT)
+
+        LOGGER.debug('Import image')
+        common_func.image_import(
+            settings.SERVTEST_LOCAL_PATH,
+            settings.SERVTEST_HEAT_IMAGE,
+            settings.SERVTEST_HEAT_IMAGE_NAME,
+            settings.SERVTEST_HEAT_IMAGE_META)
+
+        # run ostf platform tests for ceilometer and heat
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,  test_sets=['platform_tests'],
+            should_fail=1, timeout=3500)
+
+        self.env.make_snapshot("deploy_ceilometer_ha_mulirole")
