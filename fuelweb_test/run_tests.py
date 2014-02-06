@@ -8,6 +8,8 @@ def run_tests():
     from tests import test_simple
     from tests import test_pullrequest
     from tests.tests_strength import test_master_node_failover
+    from tests.tests_strength import test_master_node_failover
+    from tests.tests_strength import test_restart
 
     # Run Proboscis and exit.
     TestProgram().run_and_exit()
