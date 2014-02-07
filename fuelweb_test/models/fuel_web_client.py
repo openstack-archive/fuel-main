@@ -464,17 +464,18 @@ class FuelWebClient(object):
     @logwrap
     def update_node_networks(self, node_id, interfaces_dict):
         interfaces = self.client.get_node_interfaces(node_id)
+        all_assigned_networks = []
         for interface in interfaces:
-            interface_name = interface['name']
-            interface['assigned_networks'] = []
-            for allowed_network in interface['allowed_networks']:
-                key_exists = interface_name in interfaces_dict
-                if key_exists and \
-                    allowed_network['name'] in interfaces_dict[interface_name]:
-                    interface['assigned_networks'].append(allowed_network)
+            for net in interface['assigned_networks']:
+                all_assigned_networks.append(net)
 
-                if allowed_network['name'] == "fuelweb_admin":
-                    interface['assigned_networks'].append(allowed_network)
+        for interface in interfaces:
+            interface['assigned_networks'] = []
+            for eth, nets in interfaces_dict.iteritems():
+                if interface["name"] in eth:
+                    for i in all_assigned_networks:
+                        if i["name"] in nets:
+                            interface['assigned_networks'].append(i)
 
         self.client.put_node_interfaces(
             [{'id': node_id, 'interfaces': interfaces}])
@@ -543,6 +544,7 @@ class FuelWebClient(object):
         net_provider = self.client.get_cluster(cluster_id)['net_provider']
         if NEUTRON == net_provider:
             assigned_networks = {
+                'eth0': ['fuelweb_admin'],
                 'eth1': ['public'],
                 'eth2': ['management'],
                 'eth4': ['storage'],
@@ -552,6 +554,7 @@ class FuelWebClient(object):
                 assigned_networks.update({'eth3': ['private']})
         else:
             assigned_networks = {
+                'eth0': ['fuelweb_admin'],
                 'eth1': ['floating', 'public'],
                 'eth2': ['management'],
                 'eth3': ['fixed'],
