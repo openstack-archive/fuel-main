@@ -58,7 +58,7 @@ fi
 
 # verify tgtdrive is at least 30GB
 tgtdrivesize=$(( $(cat "/sys/class/block/${tgtdrive}/size") / 2 / 1024 ))
-if [[ "$tgtdrivesize" < "30720" ]]; then
+if [ $tgtdrivesize -lt 30720 ]; then
     exec < /dev/tty3 > /dev/tty3 2>&1
     chvt 3
     clear
