@@ -463,18 +463,20 @@ class FuelWebClient(object):
 
     @logwrap
     def update_node_networks(self, node_id, interfaces_dict):
-        interfaces = self.client.get_node_interfaces(node_id)
-        for interface in interfaces:
-            interface_name = interface['name']
-            interface['assigned_networks'] = []
-            for allowed_network in interface['allowed_networks']:
-                key_exists = interface_name in interfaces_dict
-                if key_exists and \
-                    allowed_network['name'] in interfaces_dict[interface_name]:
-                    interface['assigned_networks'].append(allowed_network)
+        # fuelweb_admin is always on eth0
+        interfaces_dict['eth0'] = interfaces_dict.get('eth0', [])
+        interfaces_dict['eth0'].append('fuelweb_admin')
 
-                if allowed_network['name'] == "fuelweb_admin":
-                    interface['assigned_networks'].append(allowed_network)
+        interfaces = self.client.get_node_interfaces(node_id)
+        all_networks = dict()
+        for interface in interfaces:
+            all_networks.update(
+                {net['name']: net for net in interface['assigned_networks']})
+
+        for interface in interfaces:
+            name = interface["name"]
+            interface['assigned_networks'] = \
+                [all_networks[i] for i in interfaces_dict.get(name, [])]
 
         self.client.put_node_interfaces(
             [{'id': node_id, 'interfaces': interfaces}])
