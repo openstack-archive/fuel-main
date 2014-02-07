@@ -436,6 +436,7 @@ qpid-tools-0.14-6.el6_3
 rabbitmq-server-2.8.7-2.el6
 rbd-fuse
 resource-agents-3.9.5-56.1
+redhat-lsb-core
 rpm-build-4.8.0-32.el6
 rst2pdf-0.16-1.el6
 rsync-3.0.6-9.el6
