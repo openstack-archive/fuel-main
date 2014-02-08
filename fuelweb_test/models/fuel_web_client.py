@@ -465,7 +465,8 @@ class FuelWebClient(object):
     def update_node_networks(self, node_id, interfaces_dict):
         # fuelweb_admin is always on eth0
         interfaces_dict['eth0'] = interfaces_dict.get('eth0', [])
-        interfaces_dict['eth0'].append('fuelweb_admin')
+        if 'fuelweb_admin' not in interfaces_dict['eth0']:
+            interfaces_dict['eth0'].append('fuelweb_admin')
 
         interfaces = self.client.get_node_interfaces(node_id)
         all_networks = dict()
