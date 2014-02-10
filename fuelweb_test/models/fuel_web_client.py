@@ -165,14 +165,23 @@ class FuelWebClient(object):
                               'role in release id {1}').format(role_name, id))
 
     @logwrap
-    def assert_task_success(self, task, timeout=130 * 60, interval=5):
-        task = self.task_wait(task, timeout, interval)
-        assert_equal(
-            task['status'], 'ready',
-            "Task '{name}' has incorrect status. {} != {}".format(
-                task['status'], 'ready', name=task["name"]
+    def assert_task_success(
+            self, task, timeout=130 * 60, interval=5, progress=None):
+        if not progress:
+            task = self.task_wait(task, timeout, interval)
+            assert_equal(
+                task['status'], 'ready',
+                "Task '{name}' has incorrect status. {} != {}".format(
+                    task['status'], 'ready', name=task["name"]
+                )
             )
-        )
+        else:
+            logger.info('Start to polling task progress')
+            task = self.task_wait_progress(
+                task, timeout=timeout, interval=interval, progress=progress)
+            assert_true(
+                task['progress'] >= progress,
+                'Task has other progress{0}'.format(task['progress']))
 
     @logwrap
     def assert_task_failed(self, task, timeout=70 * 60, interval=5):
@@ -292,10 +301,14 @@ class FuelWebClient(object):
 
         return cluster_id
 
-    def deploy_cluster_wait(self, cluster_id, is_feature=False):
-        if not is_feature:
+    def deploy_cluster_wait(self, cluster_id, is_feature=False,
+                            progress=None):
+        if not is_feature and not progress:
             task = self.deploy_cluster(cluster_id)
             self.assert_task_success(task, interval=30)
+        if progress:
+            task = self.deploy_cluster(cluster_id)
+            self.assert_task_success(task, interval=30, progress=progress)
         else:
             task = self.client.provision_nodes(cluster_id)
             self.assert_task_success(task, timeout=50 * 60, interval=30)
@@ -425,6 +438,25 @@ class FuelWebClient(object):
             wait(
                 lambda: self.client.get_task(
                     task['id'])['status'] != 'running',
+                interval=interval,
+                timeout=timeout
+            )
+        except TimeoutError:
+            raise TimeoutError(
+                "Waiting task \"{task}\" timeout {timeout} sec "
+                "was exceeded: ".format(task=task["name"], timeout=timeout))
+
+        return self.client.get_task(task['id'])
+
+    @logwrap
+    def task_wait_progress(self, task, timeout, interval=5, progress=None):
+        try:
+            logger.info(
+                'start to wait with timeout {0} '
+                'interval {1}'.format(timeout, interval))
+            wait(
+                lambda: self.client.get_task(
+                    task['id'])['progress'] >= progress,
                 interval=interval,
                 timeout=timeout
             )
@@ -693,3 +725,24 @@ class FuelWebClient(object):
         remote = self.get_ssh_for_node(node_name)
         remote.check_call(
             'ip addr del {0} dev {1}'.format(ip, interface))
+
+    @logwrap
+    def provisioning_cluster_wait(self, cluster_id, progress=None):
+        task = self.client.provision_nodes(cluster_id)
+        self.assert_task_success(task, progress=progress)
+
+    @logwrap
+    def deploy_task_wait(self, cluster_id, progress):
+        task = self.client.deploy_nodes(cluster_id)
+        self.assert_task_success(
+            task, progress=progress)
+
+    @logwrap
+    def stop_deployment_wait(self, cluster_id):
+        task = self.client.stop_deployment(cluster_id)
+        self.assert_task_success(task, timeout=50 * 60, interval=30)
+
+    @logwrap
+    def stop_reset_env_wait(self, cluster_id):
+        task = self.client.reset_environment(cluster_id)
+        self.assert_task_success(task, timeout=50 * 60, interval=30)
