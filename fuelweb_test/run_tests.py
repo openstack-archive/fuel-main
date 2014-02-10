@@ -9,6 +9,7 @@ def run_tests():
     from tests import test_pullrequest
     from tests.tests_strength import test_master_node_failover
     from tests.tests_strength import test_failover
+    from tests.tests_strength import test_mixed  # noqa
     from tests.tests_strength import test_restart
 
     # Run Proboscis and exit.
