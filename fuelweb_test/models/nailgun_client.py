@@ -297,6 +297,14 @@ class NailgunClient(object):
         return self.do_cluster_action(cluster_id, "deploy")
 
     @logwrap
+    def stop_deployment(self, cluster_id):
+        return self.do_stop_reset_actions(cluster_id)
+
+    @logwrap
+    def reset_environment(self, cluster_id):
+        return self.do_stop_reset_actions(cluster_id, "reset")
+
+    @logwrap
     @json_parse
     def do_cluster_action(self, cluster_id, action="provision"):
         nailgun_nodes = self.list_cluster_nodes(cluster_id)
@@ -307,3 +315,13 @@ class NailgunClient(object):
                 action,
                 ','.join(cluster_node_ids))
         )
+
+    @logwrap
+    @json_parse
+    def do_stop_reset_actions(self, cluster_id, action="stop_deployment"):
+        data = ''
+        resp = self.client.put(
+            "/api/clusters/{0}/{1}/".format(str(cluster_id), action),
+            data=data)
+        logger.info('response for cluster action {0}'.format(resp))
+        return resp
