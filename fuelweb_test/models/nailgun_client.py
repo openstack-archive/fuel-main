@@ -140,6 +140,11 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
+    def get_releases_details(self, release_id):
+        return self.client.get("/api/releases/{}".format(release_id))
+
+    @logwrap
+    @json_parse
     def get_node_disks(self, node_id):
         return self.client.get("/api/nodes/{}/disks".format(node_id))
 

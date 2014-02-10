@@ -123,7 +123,7 @@ class FuelWebClient(object):
 
         failed = 0
         failed_tests_names = []
-
+        test_result = {}
         for set_result in set_result_list:
 
             failed += len(
@@ -133,9 +133,13 @@ class FuelWebClient(object):
                     set_result['tests']
                 )
             )
+            [test_result.update({test['name']:test['status']})
+             for test in set_result['tests']]
 
             [failed_tests_names.append({test['name']:test['message']})
              for test in set_result['tests'] if test['status'] != 'success']
+
+        logger.info('OSTF test statuses are : {0}'.format(test_result))
 
         assert_true(
             failed <= should_fail,
@@ -147,6 +151,13 @@ class FuelWebClient(object):
             if release["name"].find(release_name) != -1:
                 assert_equal(release['state'], state)
                 return release["id"]
+
+    def assert_release_role_present(self, release_name, role_name):
+        id = self.assert_release_state(release_name)
+        release_data = self.client.get_releases_details(release_id=id)
+        assert_equal(True, role_name in release_data['roles'],
+                     message=('There is no {0} '
+                              'role in release id {1}').format(role_name, id))
 
     @logwrap
     def assert_task_success(self, task, timeout=130 * 60, interval=5):
