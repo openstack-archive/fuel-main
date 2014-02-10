@@ -178,14 +178,23 @@ class FuelWebClient(object):
                 role_name, release_name))
 
     @logwrap
-    def assert_task_success(self, task, timeout=130 * 60, interval=5):
-        task = self.task_wait(task, timeout, interval)
-        assert_equal(
-            task['status'], 'ready',
-            "Task '{name}' has incorrect status. {} != {}".format(
-                task['status'], 'ready', name=task["name"]
+    def assert_task_success(
+            self, task, timeout=130 * 60, interval=5, progress=None):
+        if not progress:
+            task = self.task_wait(task, timeout, interval)
+            assert_equal(
+                task['status'], 'ready',
+                "Task '{name}' has incorrect status. {} != {}".format(
+                    task['status'], 'ready', name=task["name"]
+                )
             )
-        )
+        else:
+            logger.info('Start to polling task progress')
+            task = self.task_wait_progress(
+                task, timeout=timeout, interval=interval, progress=progress)
+            assert_true(
+                task['progress'] >= progress,
+                'Task has other progress{0}'.format(task['progress']))
 
     @logwrap
     def assert_task_failed(self, task, timeout=70 * 60, interval=5):
@@ -316,6 +325,10 @@ class FuelWebClient(object):
             task = self.client.deploy_nodes(cluster_id)
             self.assert_task_success(task, timeout=timeout, interval=interval)
 
+    def deploy_cluster_wait_progress(self, cluster_id, progress):
+        task = self.deploy_cluster(cluster_id)
+        self.assert_task_success(task, interval=30, progress=progress)
+
     @logwrap
     def deploy_cluster(self, cluster_id):
         """Return hash with task description."""
@@ -443,6 +456,25 @@ class FuelWebClient(object):
             wait(
                 lambda: self.client.get_task(
                     task['id'])['status'] != 'running',
+                interval=interval,
+                timeout=timeout
+            )
+        except TimeoutError:
+            raise TimeoutError(
+                "Waiting task \"{task}\" timeout {timeout} sec "
+                "was exceeded: ".format(task=task["name"], timeout=timeout))
+
+        return self.client.get_task(task['id'])
+
+    @logwrap
+    def task_wait_progress(self, task, timeout, interval=5, progress=None):
+        try:
+            logger.info(
+                'start to wait with timeout {0} '
+                'interval {1}'.format(timeout, interval))
+            wait(
+                lambda: self.client.get_task(
+                    task['id'])['progress'] >= progress,
                 interval=interval,
                 timeout=timeout
             )
@@ -711,3 +743,35 @@ class FuelWebClient(object):
         remote = self.get_ssh_for_node(node_name)
         remote.check_call(
             'ip addr del {0} dev {1}'.format(ip, interface))
+
+    @logwrap
+    def provisioning_cluster_wait(self, cluster_id, progress=None):
+        task = self.client.provision_nodes(cluster_id)
+        self.assert_task_success(task, progress=progress)
+
+    @logwrap
+    def deploy_task_wait(self, cluster_id, progress):
+        task = self.client.deploy_nodes(cluster_id)
+        self.assert_task_success(
+            task, progress=progress)
+
+    @logwrap
+    def stop_deployment_wait(self, cluster_id):
+        task = self.client.stop_deployment(cluster_id)
+        self.assert_task_success(task, timeout=50 * 60, interval=30)
+
+    @logwrap
+    def stop_reset_env_wait(self, cluster_id):
+        task = self.client.reset_environment(cluster_id)
+        self.assert_task_success(task, timeout=50 * 60, interval=30)
+
+    @logwrap
+    def wait_nodes_get_online_state(self, nodes):
+        for node in nodes:
+            wait(lambda:
+                 self.get_nailgun_node_by_devops_node(node)['online'],
+                 timeout=60 * 4)
+            logger.info('node {0} has state {1}'.format(node, node['online']))
+            node = self.get_nailgun_node_by_devops_node(node)
+            assert_true(node['online'],
+                        'Node {} is online'.format(node['mac']))
