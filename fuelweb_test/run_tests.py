@@ -2,6 +2,7 @@ def run_tests():
     from proboscis import TestProgram
     from tests import test_admin_node
     from tests import test_ceph
+    from tests import test_environment_action  # noqa
     from tests import test_ha
     from tests import test_neutron
     from tests import test_services
