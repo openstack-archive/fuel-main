@@ -3,6 +3,7 @@ def run_tests():
 
     from tests import test_admin_node  # noqa
     from tests import test_ceph  # noqa
+    from tests import test_environment_action  # noqa
     from tests import test_ha  # noqa
     from tests import test_neutron  # noqa
     from tests import test_pullrequest  # noqa
