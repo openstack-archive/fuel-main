@@ -14,8 +14,8 @@
 
 import logging
 
+from proboscis import asserts
 from proboscis import test, SkipTest
-from proboscis.asserts import assert_true
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.common import Common
@@ -61,7 +61,7 @@ class SavannaSimple(TestBasic):
             settings.SERVTEST_SAVANNA_IMAGE,
             settings.SERVTEST_SAVANNA_IMAGE_MD5,
             settings.SERVTEST_LOCAL_PATH)
-        assert_true(check_image)
+        asserts.assert_true(check_image)
 
         self.env.revert_snapshot("ready_with_3_slaves")
         LOGGER.debug('Create cluster for savanna tests')
@@ -156,7 +156,7 @@ class MuranoSimple(TestBasic):
             settings.SERVTEST_MURANO_IMAGE,
             settings.SERVTEST_MURANO_IMAGE_MD5,
             settings.SERVTEST_LOCAL_PATH)
-        assert_true(check_image)
+        asserts.assert_true(check_image)
 
         self.env.revert_snapshot("ready_with_3_slaves")
         cluster_id = self.fuel_web.create_cluster(
@@ -284,7 +284,7 @@ class CeilometerSimple(TestBasic):
             settings.SERVTEST_HEAT_IMAGE,
             settings.SERVTEST_HEAT_IMAGE_MD5,
             settings.SERVTEST_LOCAL_PATH)
-        assert_true(check_image)
+        asserts.assert_true(check_image)
 
         controller_ip = self.fuel_web.get_nailgun_node_by_name(
             'slave-01')['ip']
@@ -322,18 +322,13 @@ class CeilometerSimpleMongo(TestBasic):
         Snapshot: deploy_mongo_available
 
         """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
+        asserts.assert_false(
+            settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT,
+            'Ceilometer is not supported on RHEL')
 
         self.env.revert_snapshot("ready_with_5_slaves")
-        try:
-            self.fuel_web.assert_release_role_present(
-                settings.OPENSTACK_RELEASE, role_name='mongo')
-        except AssertionError:
-            LOGGER.debug('Mongo role is not implemented')
-            LOGGER.debug(AssertionError)
-            raise SkipTest()
-
+        self.fuel_web.assert_release_role_present(
+            settings.OPENSTACK_RELEASE, role_name='mongo')
         self.env.make_snapshot("deploy_mongo_available")
 
     @test(depends_on=[verify_mongo_role_available],
