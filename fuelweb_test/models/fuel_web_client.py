@@ -160,9 +160,10 @@ class FuelWebClient(object):
     def assert_release_role_present(self, release_name, role_name):
         id = self.assert_release_state(release_name)
         release_data = self.client.get_releases_details(release_id=id)
-        assert_equal(True, role_name in release_data['roles'],
-                     message=('There is no {0} '
-                              'role in release id {1}').format(role_name, id))
+        assert_equal(
+            True, role_name in release_data['roles'],
+            message='There is no {0} role in release id {1}'.format(
+                role_name, release_name))
 
     @logwrap
     def assert_task_success(self, task, timeout=130 * 60, interval=5):
