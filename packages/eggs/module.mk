@@ -37,6 +37,7 @@ endef
 # OSTF eggs version are hardcoded here and in fuel/deployment/puppet/nailgun/manifests/ostf.pp
 $(eval $(call build_repo_egg,ostf,fuel-ostf,0.1))
 $(eval $(call build_egg,GateOne,bb003114b4e84e9425fd02fd1ee615d4dd2113e7,gateone,1.2.0))
+$(eval $(call build_egg,python-heatclient,7685f8ac19482086f72d6d733fc21a31c5e35d16,python-heatclient,0.2.5))
 
 nailgun: $(BUILD_DIR)/packages/eggs/nailgun.done
 shotgun: $(BUILD_DIR)/packages/eggs/shotgun.done
