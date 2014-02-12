@@ -154,6 +154,10 @@ ifeq ($(CACHE_RHEL),1)
 YUM_REPOS:=$(YUM_REPOS) rhel
 endif
 
+# Additional CentOS repos
+# Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm bar,ftp://repo.foo"
+EXTRA_RPM_REPOS?=
+
 # Mirror of source packages. Bareword 'internet' is used to download packages
 # directly from the internet
 MIRROR_SRC?=internet

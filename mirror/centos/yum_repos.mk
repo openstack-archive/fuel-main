@@ -74,3 +74,16 @@ gpgcheck = 0
 enabled = 1
 priority=1
 endef
+
+# It's a callable object.
+# Usage: $(call create_extra_repo,repo)
+# where:
+# repo="repo_name,http://path_to_the_repo another_name,http://awesome_repo"
+define create_extra_repo
+[$(shell VAR=$($1); echo "$${VAR%%,*}")]
+name = Extra repo "$(shell VAR=$($1); echo "$${VAR%%,*}")"
+baseurl = $(shell VAR=$($1); echo "$${VAR#*,}")
+gpgcheck = 0
+enabled = 1
+priority = 10
+endef
