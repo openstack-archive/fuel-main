@@ -15,7 +15,12 @@ function license_check {
 
 function nailgun_deps {
     # Installing nailgun dependencies
-    sudo pip install -r $WORKSPACE/requirements-eggs.txt
+    if [ -n "${VIRTUAL_ENV}" ]; then
+	pip install -r $WORKSPACE/requirements-eggs.txt
+    else
+	echo "INFO: install dependencies system-wide"
+	sudo pip install -r $WORKSPACE/requirements-eggs.txt
+    fi
 }
 
 function nailgun_checks {
