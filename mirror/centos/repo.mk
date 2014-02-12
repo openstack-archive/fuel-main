@@ -24,9 +24,17 @@ $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo:
 	@mkdir -p $(@D)
 	/bin/echo -e "$${contents}" > $@
 
+$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: $(call depv,EXTRA_RPM_REPOS)
+$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: \
+		export contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(call create_extra_repo,repo)\n)
+$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo:
+	@mkdir -p $(@D)
+	/bin/echo -e "$${contents}" > $@
+
 $(BUILD_DIR)/mirror/centos/yum-config.done: \
 		$(BUILD_DIR)/mirror/centos/etc/yum.conf \
 		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo \
+		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo \
 		$(BUILD_DIR)/mirror/centos/etc/yum-plugins/priorities.py \
 		$(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d/priorities.conf
 	$(ACTION.TOUCH)
