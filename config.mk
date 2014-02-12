@@ -158,6 +158,8 @@ endif
 # directly from the internet
 MIRROR_SRC?=internet
 
+MIRANTIS?=no
+
 # INTEGRATION TEST CONFIG
 NOFORWARD:=1
 
