@@ -45,7 +45,8 @@ help:
 MIRROR_CENTOS=http://<your_mirror>/centos \
 MIRROR_EGGS=http://<your_mirror>/eggs \
 MIRROR_GEMS=http://<your_mirror>/gems \
-MIRROR_SRC=http://<your_mirror>/src'
+MIRROR_SRC=http://<your_mirror>/src \
+EXTRA_DEB_REPOS="<full debian url including dist and sections separated by bar. do not forget about double quotes>|http://mirror.yandex.ru/ubuntu precise main"'
 
 # Path to the sources.
 # Default value: directory with Makefile

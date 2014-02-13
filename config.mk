@@ -144,6 +144,9 @@ REQUIRED_DEBS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-deb.txt)
 REQUIRED_EGGS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-eggs.txt)
 REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 
+
+EXTRA_DEB_REPOS?=
+
 # Which repositories to use for making local centos mirror.
 # Possible values you can find out from mirror/centos/yum_repos.mk file.
 # The actual name will be constracted wich prepending "yum_repo_" prefix.
