@@ -154,9 +154,18 @@ ifeq ($(CACHE_RHEL),1)
 YUM_REPOS:=$(YUM_REPOS) rhel
 endif
 
-# Additional CentOS repos
+# Additional CentOS repos.
+# Each repo must be comma separated tuple with repo-name and repo-path.
+# Repos must be separated by space.
 # Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm bar,ftp://repo.foo"
 EXTRA_RPM_REPOS?=
+
+# Additional Ubunutu repos.
+# Each repo must consist of an url, dist and section parts.
+# Repos must be separated by bar.
+# Example:
+# EXTRA_DEB_REPOS="http://mrr.lcl raring main|http://mirror.yandex.ru/ubuntu precise main"'
+EXTRA_DEB_REPOS?=
 
 # Mirror of source packages. Bareword 'internet' is used to download packages
 # directly from the internet
