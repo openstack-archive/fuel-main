@@ -12,18 +12,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-import time
 import logging
-from ipaddr import IPNetwork
-
-from paramiko import RSAKey
+import time
 
 from devops.helpers.helpers import _get_file_size
+from devops.helpers.helpers import SSHClient
+from devops.helpers.helpers import wait
 from devops.manager import Manager
-from devops.helpers.helpers import wait, SSHClient
+from ipaddr import IPNetwork
+from paramiko import RSAKey
 
-from fuelweb_test.helpers.checkers import *
+from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import debug
 from fuelweb_test.helpers.eb_tables import Ebtables
 from fuelweb_test.models.fuel_web_client import FuelWebClient
@@ -53,7 +52,7 @@ class EnvironmentModel(object):
     def _get_or_create(self):
         try:
             return self.manager.environment_get(self.env_name)
-        except:
+        except Exception:
             self._virtual_environment = self.describe_environment()
             self._virtual_environment.define()
             return self._virtual_environment
@@ -67,7 +66,7 @@ class EnvironmentModel(object):
 
     @property
     def fuel_web(self):
-        """
+        """FuelWebClient
         :rtype: FuelWebClient
         """
         return self._fuel_web
@@ -85,8 +84,8 @@ class EnvironmentModel(object):
         return settings.ENV_NAME
 
     def add_empty_volume(self, node, name,
-                         capacity=settings.NODE_VOLUME_SIZE*1024*1024*1024,
-                         device='disk', bus='virtio', format='qcow2'):
+                         capacity=settings.NODE_VOLUME_SIZE * 1024 * 1024
+                         * 1024, device='disk', bus='virtio', format='qcow2'):
         self.manager.node_attach_volume(
             node=node,
             volume=self.manager.volume_create(
@@ -111,8 +110,8 @@ class EnvironmentModel(object):
             cluster_id, self.get_host_node_ip(), port)
 
     def bootstrap_nodes(self, devops_nodes, timeout=600):
-        """
-        Start vms and wait they are registered on nailgun.
+        """Lists registered nailgun nodes
+        Start vms and wait until they are registered on nailgun.
         :rtype : List of registered nailgun nodes
         """
         for node in devops_nodes:
@@ -130,7 +129,7 @@ class EnvironmentModel(object):
             self.manager.interface_create(network, node=node, model=model)
 
     def describe_environment(self):
-        """
+        """Environment
         :rtype : Environment
         """
         environment = self.manager.environment_create(self.env_name)
@@ -207,7 +206,7 @@ class EnvironmentModel(object):
 
     @logwrap
     def get_admin_remote(self):
-        """
+        """SSH to admin node
         :rtype : SSHClient
         """
         return self.nodes().admin.remote(self.admin_net,
@@ -282,7 +281,7 @@ class EnvironmentModel(object):
                 for val in var]]
 
     def get_virtual_environment(self):
-        """
+        """Returns virtual environment
         :rtype : devops.models.Environment
         """
         if self._virtual_environment is None:
@@ -336,7 +335,7 @@ class EnvironmentModel(object):
                 try:
                     self.sync_node_time(self.get_ssh_to_remote(
                         node.get_ip_address_by_network_name(self.admin_net)))
-                except Exception, e:
+                except Exception as e:
                     logging.warn(
                         'Paramiko exception catched while'
                         ' trying to run ntpdate: %s' % e)
@@ -371,10 +370,10 @@ class EnvironmentModel(object):
 
     def verify_node_service_list(self, node_name, smiles_count):
         remote = self.get_ssh_to_remote_by_name(node_name)
-        verify_service_list(remote, smiles_count)
+        checkers.verify_service_list(remote, smiles_count)
 
     def verify_network_configuration(self, node_name):
-        verify_network_configuration(
+        checkers.verify_network_configuration(
             node=self.fuel_web.get_nailgun_node_by_name(node_name),
             remote=self.get_ssh_to_remote_by_name(node_name)
         )

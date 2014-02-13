@@ -13,13 +13,15 @@
 #    under the License.
 
 import logging
-import jinja2
 import os
+
+import jinja2
+
 from puppet_module import PuppetModule
 
 
 class PuppetTestGenerator:
-    """
+    """Puppet Test Generator
     This is main class. It finds all modules in the given directory and creates
     tests for them.
     You should give constructor following arguments:
@@ -31,7 +33,7 @@ class PuppetTestGenerator:
     """
 
     def __init__(self, tests_directory_path, modules_path):
-        """
+        """Constructor
         Constructor
         """
         if not os.path.isdir(modules_path):
@@ -65,7 +67,7 @@ class PuppetTestGenerator:
         self.find_modules()
 
     def find_modules(self):
-        """
+        """Find modules in library path
         Find all Puppet modules in module_library_path
         and create array of PuppetModule objects
         """
@@ -80,7 +82,7 @@ class PuppetTestGenerator:
             self.modules.append(puppet_module)
 
     def compile_script(self, module):
-        """
+        """Compile script template
         Compile script template for given module and return it
         """
         template_file = self.module_templates.get(module.name,
@@ -96,7 +98,7 @@ class PuppetTestGenerator:
         return compiled_template
 
     def save_script(self, module):
-        """
+        """Save compiled script
         Saves compiled script to a file
         """
         file_name = self.test_file_prefix + module.name.title() + '.py'
@@ -107,7 +109,7 @@ class PuppetTestGenerator:
         script_file.close()
 
     def make_all_scripts(self):
-        """
+        """Compile and save all scripts
         Compile and save to tests_directory_path all the test scripts.
         Main function.
         """
@@ -116,7 +118,7 @@ class PuppetTestGenerator:
             self.save_script(module)
 
     def remove_all_tests(self):
-        """
+        """Remove all tests
         Remove all tests from tests_directory_path
         """
         file_list = os.listdir(self.tests_directory)

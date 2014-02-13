@@ -12,10 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import os
-import sys
-import re
 import logging
+import os
+import re
+import sys
+
 from puppet_test import PuppetTest
 
 path = os.path.abspath(__file__)
@@ -24,14 +25,10 @@ sys.path.insert(0, path)
 
 
 class PuppetModule:
-    """
-    This class represents Puppet module
-    """
+    """This class represents Puppet module."""
 
     def __init__(self, local_module_path):
-        """
-        You should give this constructor the full path to the module
-        """
+        """You should give this constructor the full path to the module."""
         self.local_module_path = local_module_path
         self.module_name = os.path.basename(self.local_module_path)
 
@@ -46,9 +43,7 @@ class PuppetModule:
         self.find_dependencies()
 
     def find_dependencies(self):
-        """
-        Get dependencies of this module from Modulefile if present
-        """
+        """Get dependencies of this module from Modulefile if present."""
         module_file = 'Modulefile'
         dependencies = []
         module_file_path = os.path.join(self.local_module_path, module_file)
@@ -69,7 +64,7 @@ class PuppetModule:
         return True
 
     def find_tests(self):
-        """
+        """Find all tests.
         Find all tests in this module and fill tests array
         with PuppetTest objects.
         """
@@ -97,36 +92,26 @@ class PuppetModule:
 
     @property
     def tests(self):
-        """
-        Property returns list of tests
-        """
+        """Property returns list of tests."""
         return self.__tests
 
     @property
     def name(self):
-        """
-        Property returns module name
-        """
+        """Property returns module name."""
         return self.module_name
 
     @property
     def path(self):
-        """
-        Property returns path to this module
-        """
+        """Property returns path to this module."""
         return self.local_module_path
 
     @property
     def dependencies(self):
-        """
-        Property returns list of module dependencies
-        """
+        """Property returns list of module dependencies."""
         return self.__dependencies
 
     def __repr__(self):
-        """
-        String representation of PuppetModule
-        """
+        """String representation of PuppetModule."""
         tests_string = ''
         if len(self.tests) > 0:
             tests = [repr(test) for test in self.tests]
