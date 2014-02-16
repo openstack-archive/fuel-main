@@ -41,8 +41,8 @@ ceph-test
 cirros-testvm
 cluster-glue-libs-1.0.11-59.1
 cman-3.0.12.1-49.el6
-cobbler-2.2.3-2.el6
-cobbler-web-2.2.3-2.el6
+cobbler-2.2.3-3.el6
+cobbler-web-2.2.3-3.el6
 corosync
 cpufreq-init
 crmsh-1.2.5-55.2
