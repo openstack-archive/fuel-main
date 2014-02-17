@@ -36,9 +36,10 @@ sed 's|^TEMPLATE_DIR:.*$|TEMPLATE_DIR: '"$STATIC_DIR"'|' -i $WORKSPACE/build/rep
 sed 's|^STATIC_DIR:.*$|STATIC_DIR: '"$STATIC_DIR"'|' -i $WORKSPACE/build/repos/nailgun/nailgun/nailgun/settings.yaml
 sed 's|^DEVELOPMENT:.*$|DEVELOPMENT: false|' -i $WORKSPACE/build/repos/nailgun/nailgun/nailgun/settings.yaml
 
-# Show date and commit hash in ui
+# Show date and commit hash in ui, enable mirantis logo
 VERSION_TEXT="`git show -s --format=%ci HEAD` `git rev-parse --verify HEAD`"
 sed 's|  release:.*$|  release: "'"$VERSION_TEXT"'"|' -i $WORKSPACE/build/repos/nailgun/nailgun/nailgun/settings.yaml
+sed 's|  mirantis:.*$|  mirantis: "yes"|' -i $WORKSPACE/build/repos/nailgun/nailgun/nailgun/settings.yaml
 
 # Starting fake UI
 sudo WORKSPACE=$WORKSPACE /etc/init.d/nailgun start
