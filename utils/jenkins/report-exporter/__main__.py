@@ -14,6 +14,7 @@
 import logging
 
 from optparse import OptionParser
+import gdata.spreadsheet
 from jenkins import Job
 from spreadsheet import BuildsDocument
 from settings import GOOGLE_SPREADSHEET
@@ -47,20 +48,38 @@ if build is None:
 # Open google spreadsheet
 doc = BuildsDocument(options.spreadsheet)
 sheet = doc.get_sheet(job.name)
+
+gd_client = doc.gspreadsheet.client._GetSpreadsheetsClient()
+gd_sheet = filter(lambda e: job.name in e.title.text,
+                  gd_client.GetWorksheetsFeed(key=options.spreadsheet).entry).pop()
+gd_sheet_id = gd_sheet.id.text.rsplit('/', 1)[1]
+gd_rows = \
+    {r.title.text: r for r in gd_client.GetListFeed(
+        key=options.spreadsheet, wksht_id=gd_sheet_id).entry}
+
 build_column = sheet.get_build_column_name(build.number)
 
 # Save test report to spreadsheet
 for suite in test_report['suites']:
     suite_name = suite['name']
     for case in suite['cases']:
-        record = sheet.get_case_record(case['name'])
-        record.content[build_column] = case['status'].lower()
-        for i in range(3):
-            try:
-                record.Push()
-                break
-            except Exception as ex:
-                if i > 0:
-                    logger.info('failed to push changes. {0}'.format(ex.message))
-                else:
-                    raise ex
+        case_name = case['name']
+        case_status = case['status'].lower()
+        if case_name in gd_rows:
+            # Updated row
+            row = gd_rows[case_name]
+            # Create new cell instance
+            new_cell = gdata.spreadsheet.Custom()
+            new_cell.column = build_column
+            new_cell.text = case_status
+            # Add new cell and put changes to sheet
+            row.custom[build_column] = new_cell
+            for lnk in row.link:
+                if lnk.rel == 'edit':
+                    converter = gdata.spreadsheet.SpreadsheetsListFromString
+                    gd_client.Put(row, lnk.href, converter=converter)
+        else:
+            # Insert new row
+            row_data = {'name': case_name, build_column: case_status}
+            gd_client.InsertRow(row_data, options.spreadsheet,
+                                wksht_id=gd_sheet_id)
