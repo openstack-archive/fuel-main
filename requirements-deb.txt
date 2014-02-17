@@ -701,6 +701,7 @@ python-paste
 python-pastedeploy
 python-pastescript
 python-pbr
+python-pcs
 python-pkg-resources
 python-prettytable
 python-pyasn1
