@@ -251,7 +251,6 @@ libcap-ng0
 libcap2
 libccs3
 libcfg4
-libcib1
 libclass-accessor-perl
 libclass-isa-perl
 libcman3
@@ -701,6 +700,7 @@ python-paste
 python-pastedeploy
 python-pastescript
 python-pbr
+python-pcs
 python-pkg-resources
 python-prettytable
 python-pyasn1
