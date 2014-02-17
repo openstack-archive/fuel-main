@@ -47,8 +47,10 @@ class BuildSheet:
 
     @property
     def last_build_column(self):
-        s = self.table.fields[-1]
-        return s if 'name' not in s else None
+        if len(self.table.fields) < 2:
+            return None
+        else:
+            return self.table.fields[1]
 
     def get_build_column_name(self, build_num):
         """
@@ -63,17 +65,7 @@ class BuildSheet:
         name = self.BUILD_COLUMN.format(build_num)
         if self.last_build_column != name:
             fields = self.table.fields
-            fields.append(name)
+            fields.insert(1, name)
             self.table.SetFields(fields)
             self.table.LookupFields()
         return name
-
-    def get_case_record(self, case_name):
-        """
-        Returns record / row for a test case
-        """
-        name = re.sub('[<>]', '', case_name)
-        r = self.table.FindRecords('name = {0}'.format(name))
-        if len(r) == 0:
-            return self.table.AddRecord({'name': name})
-        return r.pop()
