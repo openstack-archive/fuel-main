@@ -49,6 +49,14 @@ if [ ${numdrives} -gt 1 ]; then
         echo "Possible choices: ${drives}"
         echo
         read -p "Choose hard drive: " tgtdrive
+        match="no"
+        for drive in ${drives[@]}; do
+          [[ "$drive" == "$tgtdrive" ]] && match="yes" && break
+        done
+        if [[ "$match" == "no" ]]; then
+          tgtdrive="undefined"
+          read -p "Invalid choice. Press Enter to continue." _
+        fi
     done
     clear
     chvt 1
