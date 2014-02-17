@@ -279,7 +279,8 @@ class CeilometerSimple(TestBasic):
         # run ostf smoke and sanity
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=1)
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
 
         # verify if needed image exists
         LOGGER.debug('Check MD5 of image')
@@ -308,7 +309,8 @@ class CeilometerSimple(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['platform_tests'],
-            should_fail=1, timeout=3500)
+            should_fail=1, timeout=3500,
+            failed_test_name=['Create volume and attach it to instance'])
 
         self.env.make_snapshot("deploy_ceilometer_simple")
 
@@ -440,7 +442,9 @@ class CeilometerSimpleMongo(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['platform_tests', 'ha'],
-            should_fail=2, timeout=3500)
+            should_fail=2, timeout=3500,
+            failed_test_name=['Create volume and attach it to instance',
+                              'Check stack autoscaling'])
 
         self.env.make_snapshot("deploy_ceilometer_ha_with_mongo")
 
@@ -492,7 +496,9 @@ class CeilometerSimpleMongo(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['platform_tests'],
-            should_fail=2, timeout=3500)
+            should_fail=2, timeout=3500,
+            failed_test_name=['Create volume and attach it to instance',
+                              'Check stack autoscaling'])
 
         self.env.make_snapshot("deploy_ceilometer_simple_mulirole")
 
@@ -545,6 +551,8 @@ class CeilometerSimpleMongo(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['platform_tests', 'ha'],
-            should_fail=2, timeout=3500)
+            should_fail=2, timeout=3500,
+            failed_test_name=['Create volume and attach it to instance',
+                              'Check stack autoscaling'])
 
         self.env.make_snapshot("deploy_ceilometer_ha_mulirole")

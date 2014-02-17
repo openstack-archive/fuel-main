@@ -73,5 +73,5 @@ class TestPullRequest(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            should_fail=4
+            should_fail=1
         )
