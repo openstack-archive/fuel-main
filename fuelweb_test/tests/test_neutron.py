@@ -86,7 +86,8 @@ class NeutronGre(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=2)
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
 
         self.env.make_snapshot("deploy_neutron_gre")
 
@@ -144,7 +145,8 @@ class NeutronVlan(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=2)
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
 
         self.env.make_snapshot("deploy_neutron_vlan")
 
@@ -204,7 +206,8 @@ class NeutronGreHa(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=4)
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
 
         self.env.make_snapshot("deploy_neutron_gre_ha")
 
@@ -264,6 +267,7 @@ class NeutronVlanHa(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=4)
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
 
         self.env.make_snapshot("deploy_neutron_vlan_ha")
