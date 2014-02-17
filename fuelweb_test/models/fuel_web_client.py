@@ -121,12 +121,13 @@ class FuelWebClient(object):
         assert_true(result)
 
     @logwrap
-    def assert_ostf_run(self, cluster_id, should_fail=0, timeout=15 * 60):
+    def assert_ostf_run(self, cluster_id, should_fail=0,
+                        failed_test_name=None, timeout=15 * 60):
 
         set_result_list = self._ostf_test_wait(cluster_id, timeout)
-
-        failed = 0
-        failed_tests_names = []
+        failed_tests_res = []
+        failed = []
+        actual_failed_names = []
         test_result = {}
         for set_result in set_result_list:
 
@@ -137,19 +138,30 @@ class FuelWebClient(object):
                     set_result['tests']
                 )
             )
+
+            [actual_failed_names.append(test['name'])
+             for test in set_result['tests'] if test['status'] != 'success']
+
             [test_result.update({test['name']:test['status']})
              for test in set_result['tests']]
 
-            [failed_tests_names.append({test['name']:test['message']})
+            [failed_tests_res.append({test['name']:test['message']})
              for test in set_result['tests'] if test['status'] != 'success']
 
         logger.info('OSTF test statuses are : {0}'.format(test_result))
+
+        if failed_test_name:
+            for test_name in failed_test_name:
+                assert_true(test_name in actual_failed_names,
+                            'WARNINg unexpected fail,'
+                            'expected {0} actual {1}'.format(
+                                failed_test_name, actual_failed_names))
 
         assert_true(
             failed <= should_fail, 'Failed tests,  fails: {} should fail:'
                                    ' {} failed tests name: {}'
                                    ''.format(failed, should_fail,
-                                             failed_tests_names))
+                                             failed_tests_res))
 
     def assert_release_state(self, release_name, state='available'):
         for release in self.client.get_releases():
@@ -397,8 +409,9 @@ class FuelWebClient(object):
             cluster_id, self.client.get_networks(cluster_id)['networks'])
 
     @logwrap
-    def run_ostf(self, cluster_id, test_sets=None, should_fail=0,
-                 tests_must_be_passed=None, timeout=None):
+    def run_ostf(self, cluster_id, test_sets=None,
+                 should_fail=0, tests_must_be_passed=None,
+                 timeout=None, failed_test_name=None):
         test_sets = test_sets or ['smoke', 'sanity']
         timeout = timeout or 30 * 60
         self.client.ostf_run_tests(cluster_id, test_sets)
@@ -408,9 +421,12 @@ class FuelWebClient(object):
                 tests_must_be_passed,
                 timeout)
         else:
+            logger.info('Try to run assert ostf with '
+                        'expected fail name {0}'.format(failed_test_name))
             self.assert_ostf_run(
                 cluster_id,
-                should_fail=should_fail, timeout=timeout)
+                should_fail=should_fail, timeout=timeout,
+                failed_test_name=failed_test_name)
 
     @logwrap
     def run_single_ostf_test(self, cluster_id,
