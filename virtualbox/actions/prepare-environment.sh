@@ -60,11 +60,36 @@ echo "OK"
 
 # Check if SSH is installed. Cygwin does not install SSH by default.
 echo "Checking if SSH client installed... "
-which ssh
-if [ $? -ne 0 ] ; then
+sshs=`which ssh | wc -l`
+if [ "$sshs" -le 0 ] ; then
   echo -n "SSH client is not installed. Please install \"openssh\" package if you run this script under Cygwin. Aborting"
   exit 1
 fi
+echo "OK"
+
+echo "Checking if ipconfig or ifconfig installed... "
+case "$(uname)" in
+  Linux | Darwin)
+    if [ ! -x /sbin/ifconfig ] ; then
+      echo -n "No ifconfig available at /sbin/ifconfig path! This path is hard-coded into VBoxNetAdpCtl utility."
+      echo -n "Please install ifconfig or create symlink to proper interface configuration utility."
+      exit 1
+    fi
+  ;;
+  CYGWIN*)
+    # Cygwin does not use ifconfig at all and even has no link to it.
+    # It uses built-in Windows ipconfig utility instead.
+    ipconfigs=`which ipconfig | wc -l`
+    if [ "$ipconfigs" -le 0 ] ; then
+      echo -n "No ipconfig available in Cygwin environment. Please check you can run ipconfig from Cygwin command prompt."
+      exit 1
+    fi
+  ;;
+  *)
+    echo "$(uname) is not supported operating system."
+    exit 1
+  ;;
+esac
 echo "OK"
 
 # Delete all VMs from the previous Mirantis OpenStack installation
