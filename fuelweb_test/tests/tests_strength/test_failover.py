@@ -160,8 +160,8 @@ class TestHaFailover(TestBasic):
                     devops_node.name, interface)
                 ip_search = re.search(
                     'inet (?P<ip>\d+\.\d+\.\d+.\d+/\d+) brd '
-                    '(?P<mask>\d+\.\d+\.\d+.\d+) scope global secondary',
-                    addresses)
+                    '(?P<mask>\d+\.\d+\.\d+.\d+) scope global '
+                    '{0}:ka'.format(interface), addresses)
                 if ip_search is None:
                     continue
                 ip = ip_search.group('ip')
