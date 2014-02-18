@@ -128,7 +128,7 @@ class HugeEnvironments(base_test_case.TestBasic):
                 'slave-01': ['controller'],
                 'slave-02': ['controller'],
                 'slave-03': ['controller'],
-                'slave-04': ['compute'],
+                'slave-04': ['controller'],
                 'slave-05': ['compute'],
                 'slave-06': ['cinder'],
                 'slave-07': ['cinder'],
