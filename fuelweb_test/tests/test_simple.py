@@ -117,7 +117,8 @@ class SimpleFlat(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=5)
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
 
         self.env.make_snapshot("deploy_simple_flat")
 
@@ -268,7 +269,8 @@ class SimpleFlat(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=5)
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
 
         self.env.make_snapshot("simple_flat_add_compute")
 
@@ -320,7 +322,8 @@ class SimpleVlan(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=5)
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
 
         self.env.make_snapshot("deploy_simple_vlan")
 
@@ -362,9 +365,7 @@ class MultiroleControllerCinder(TestBasic):
 
         self.fuel_web.verify_network(cluster_id)
 
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=4)
+        self.fuel_web.run_ostf(cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_multirole_controller_cinder")
 
@@ -407,9 +408,7 @@ class MultiroleComputeCinder(TestBasic):
 
         self.fuel_web.verify_network(cluster_id)
 
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=4)
+        self.fuel_web.run_ostf(cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_multirole_compute_cinder")
 
@@ -536,7 +535,8 @@ class FloatingIPs(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=5)
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
 
         self.env.make_snapshot("deploy_floating_ips")
 
@@ -581,9 +581,7 @@ class SimpleCinder(TestBasic):
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
 
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=4)
+        self.fuel_web.run_ostf(cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_simple_cinder")
 

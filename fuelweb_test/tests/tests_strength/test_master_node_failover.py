@@ -71,12 +71,13 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
         logger.info('PASS DEPLOYMENT')
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=1)
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
         logger.info('PASS OSTF')
         logger.info('Get controller ip')
         controller_ip = self.fuel_web.get_nailgun_node_by_name(
             'slave-01')['ip']
-        logger.info('Destoy admin node...')
+        logger.info('Destroy admin node...')
         self.env.nodes().admin.destroy()
         logger.info('Admin node destroyed')
 
