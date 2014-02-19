@@ -57,6 +57,7 @@ class CephCompact(TestBasic):
             name=self.__class__.__name__,
             mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
+                'volumes_lvm': False,
                 'volumes_ceph': True,
                 'images_ceph': True
             }
