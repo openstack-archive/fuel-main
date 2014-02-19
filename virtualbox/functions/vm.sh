@@ -46,9 +46,10 @@ create_vm() {
     cpu_cores=$3
     memory_mb=$4
     disk_mb=$5
-   
+    os=${6:-'RedHat_64'}
+
     # Create virtual machine with the right name and type (assuming CentOS) 
-    VBoxManage createvm --name $name --ostype RedHat_64 --register
+    VBoxManage createvm --name $name --ostype $os --register
 
     # Set the real-time clock (RTC) operate in UTC time
     # Set memory and CPU parameters
