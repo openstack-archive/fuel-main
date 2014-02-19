@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #    Copyright 2013 Mirantis, Inc.
 #
@@ -36,7 +36,7 @@ idx=0
 # 172.16.1.1/24  - OpenStack Fixed/Internal/Private network
 # 192.168.0.1/24 - OpenStack Management network
 # 192.168.1.1/24 - OpenStack Storage network (for Ceph, Swift etc)
-for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
+for ip in 10.20.0.1 172.16.1.1 ; do
 # VirtualBox for Windows has different virtual NICs naming and indexing
   case "$(uname)" in
     Linux | Darwin)
@@ -63,6 +63,10 @@ done
 vm_master_cpu_cores=1
 vm_master_memory_mb=1024
 vm_master_disk_mb=65535
+
+# Public/External/Floating network
+vm_nat_network_name=fuel-public-nat
+vm_nat_network=172.16.0.0/24
 
 # Master node access to the internet through the host system, using VirtualBox NAT adapter
 vm_master_nat_network=192.168.200/24
@@ -94,7 +98,7 @@ vm_slave_memory_mb[2]=1024  # for compute node 1GB is recommended, otherwise VM 
 vm_slave_memory_mb[3]=1024  # for dedicated Cinder, 768Mb is OK, but Ceph needs 1Gb minimum
 
 # Within demo cluster created by this script, all slaves (controller
-# and compute nodes) will have identical disk configuration. Each 
+# and compute nodes) will have identical disk configuration. Each
 # slave will have three disks with sizes defined by the variables below. In a disk configuration
 # dialog you will be able to allocate the whole disk or it's part for
 # operating system (Base OS), VMs (Virtual Storage), Ceph or other function,

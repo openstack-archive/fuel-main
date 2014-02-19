@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #    Copyright 2013 Mirantis, Inc.
 #
@@ -39,6 +39,9 @@ for idx in $(eval echo {1..$cluster_size}); do
       add_hostonly_adapter_to_vm $name $((nic+1)) "${host_nic_name[${nic}]}"
     done
   fi
+
+  # NAT Router network always will be last one
+  add_nat_network_addapter_to_vm $name "$((${#host_nic_name[*]}+1))" $vm_nat_network_name
   # Add additional disks to VM
   echo
   add_disk_to_vm $name 1 $vm_slave_second_disk_mb

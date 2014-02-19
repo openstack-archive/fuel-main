@@ -17,7 +17,7 @@
 # This file contains the functions to manage VMs in through VirtualBox CLI
 
 get_vm_base_path() {
-    echo -e `VBoxManage list systemproperties | grep '^Default machine folder' | sed 's/^Default machine folder\:[ \t]*//'` 
+    echo -e `VBoxManage list systemproperties | grep '^Default machine folder' | sed 's/^Default machine folder\:[ \t]*//'`
 }
 
 get_vms_running() {
@@ -46,8 +46,8 @@ create_vm() {
     cpu_cores=$3
     memory_mb=$4
     disk_mb=$5
-   
-    # Create virtual machine with the right name and type (assuming CentOS) 
+
+    # Create virtual machine with the right name and type (assuming CentOS)
     VBoxManage createvm --name $name --ostype RedHat_64 --register
 
     # Set the real-time clock (RTC) operate in UTC time
@@ -76,6 +76,19 @@ add_hostonly_adapter_to_vm() {
     VBoxManage modifyvm $name --nic${id} hostonly --hostonlyadapter${id} "$nic" --nictype${id} Am79C973 \
                         --cableconnected${id} on --macaddress${id} auto
     VBoxManage modifyvm  $name  --nicpromisc${id} allow-all
+}
+
+add_nat_network_addapter_to_vm() {
+    name=$1
+    id=$2
+    network=$3
+
+    echo "Adding NAT router with id $network for vm $name"
+
+    VBoxManage modifyvm $name --nic${id} natnetwork --nictype${id} Am79C973 \
+                        --cableconnected${id} on --macaddress${id} auto --nat-network${id} "${network}"
+    VBoxManage modifyvm  $name  --nicpromisc${id} allow-all
+    VBoxManage controlvm $name setlinkstate${id} on
 }
 
 add_nat_adapter_to_vm() {
@@ -115,7 +128,7 @@ delete_vm() {
         VBoxManage controlvm $name poweroff
     fi
 
-    # Virtualbox does not fully delete VM file structure, so we need to delete the corresponding directory with files as well 
+    # Virtualbox does not fully delete VM file structure, so we need to delete the corresponding directory with files as well
     if [ -d "$vm_path"  ]; then
         echo "Deleting existing virtual machine $name..."
         VBoxManage unregistervm $name --delete
@@ -127,11 +140,11 @@ delete_vms_multiple() {
     name_prefix=$1
     list=$(get_vms_present)
 
-    # Loop over the list of VMs and delete them, if its name matches the given refix 
+    # Loop over the list of VMs and delete them, if its name matches the given refix
     for name in $list; do
         if [[ $name == $name_prefix* ]]; then
             echo "Found existing VM: $name. Deleting it..."
-            delete_vm $name 
+            delete_vm $name
         fi
     done
 }
@@ -147,7 +160,7 @@ start_vm() {
 mount_iso_to_vm() {
     name=$1
     iso_path=$2
- 
+
     # Mount ISO to the VM
     VBoxManage storageattach $name --storagectl "IDE" --port 0 --device 0 --type dvddrive --medium "$iso_path"
 }

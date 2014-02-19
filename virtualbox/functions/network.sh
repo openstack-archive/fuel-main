@@ -141,6 +141,21 @@ create_hostonly_interface() {
   fi
 }
 
+delete_nat_router() {
+  name=$1
+
+  echo "Deleting nat router network $name"
+  VBoxManage natnetwork remove --netname "$name"
+}
+
+create_nat_router() {
+  name=$1
+  range=$2
+
+  echo "Create nat router network with name: $name - range: $range"
+  VBoxManage natnetwork add -t "$name" -n "$range" -e -h off
+}
+
 delete_all_hostonly_interfaces() {
   OIFS=$IFS;IFS=",";list=(`VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`);IFS=$OIFS
   # Delete every single hostonly interface in the system
