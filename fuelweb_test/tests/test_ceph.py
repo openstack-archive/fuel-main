@@ -58,7 +58,8 @@ class CephCompact(TestBasic):
             mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'volumes_ceph': True,
-                'images_ceph': True
+                'images_ceph': True,
+                'volumes_lvm': False
             }
         )
         self.fuel_web.update_nodes(
@@ -110,7 +111,8 @@ class CephCompactWithCinder(TestBasic):
             mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'volumes_ceph': True,
-                'images_ceph': True
+                'images_ceph': True,
+                'volumes_lvm': False
             }
         )
         self.fuel_web.update_nodes(
@@ -163,7 +165,8 @@ class CephHA(TestBasic):
             mode=settings.DEPLOYMENT_MODE_HA,
             settings={
                 'volumes_ceph': True,
-                'images_ceph': True
+                'images_ceph': True,
+                'volumes_lvm': False
             }
         )
         self.fuel_web.update_nodes(
