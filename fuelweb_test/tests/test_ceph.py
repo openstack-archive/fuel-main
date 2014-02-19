@@ -58,7 +58,8 @@ class CephCompact(TestBasic):
             mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'volumes_ceph': True,
-                'images_ceph': True
+                'images_ceph': True,
+                'volumes_lvm': False
             }
         )
         self.fuel_web.update_nodes(
@@ -110,7 +111,8 @@ class CephCompactWithCinder(TestBasic):
             mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'volumes_ceph': True,
-                'images_ceph': True
+                'images_ceph': False,
+                'volumes_lvm': False
             }
         )
         self.fuel_web.update_nodes(
@@ -144,7 +146,7 @@ class CephHA(TestBasic):
         Scenario:
             1. Create cluster
             2. Add 3 nodes with controller and ceph OSD roles
-            3. Add 1 node with cinder and ceph OSD roles
+            3. Add 1 node with ceph OSD roles
             4. Add 2 nodes with compute and ceph OSD roles
             5. Deploy the cluster
             6. Check ceph status
@@ -163,7 +165,8 @@ class CephHA(TestBasic):
             mode=settings.DEPLOYMENT_MODE_HA,
             settings={
                 'volumes_ceph': True,
-                'images_ceph': True
+                'images_ceph': True,
+                'volumes_lvm': False
             }
         )
         self.fuel_web.update_nodes(
@@ -174,7 +177,7 @@ class CephHA(TestBasic):
                 'slave-03': ['controller', 'ceph-osd'],
                 'slave-04': ['compute', 'ceph-osd'],
                 'slave-05': ['compute', 'ceph-osd'],
-                'slave-06': ['cinder', 'ceph-osd']
+                'slave-06': ['ceph-osd']
             }
         )
         # Depoy cluster
