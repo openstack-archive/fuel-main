@@ -98,12 +98,27 @@ class Bonding(TestBasic):
             ]
         }
 
+        vlans = {
+            'public': 100,
+            'management': 101,
+            'storage': 102
+        }
+
+        nets = self.fuel_web.client.get_networks(cluster_id)['networks']
+        vlan_start = 100
+        for net in nets:
+            net.update({'vlan_start': vlan_start})
+            vlan_start += 1
+
+        self.fuel_web.client.update_network(cluster_id, networks=nets)
+
         nailgun_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
         for node in nailgun_nodes:
             self.fuel_web.update_node_networks(
                 node['id'], interfaces_dict=interfaces,
                 raw_data=raw_data
             )
+
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)

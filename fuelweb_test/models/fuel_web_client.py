@@ -505,38 +505,23 @@ class FuelWebClient(object):
 
         interfaces = self.client.get_node_interfaces(node_id)
 
-
-        import json
-        logger.debug('ORIGINAL DATA: %s' % json.dumps(interfaces,
-                                                          indent=4))
-
         if raw_data:
             interfaces.append(raw_data)
-
-        logger.debug('BONDING ADDED: %s' % json.dumps(interfaces,
-                                                          indent=4))
 
         all_networks = dict()
         for interface in interfaces:
             all_networks.update(
                 {net['name']: net for net in interface['assigned_networks']})
 
-        logger.debug('DICT RECYCLING: %s' % json.dumps(interfaces,
-                                                      indent=4))
-        logger.debug('ALL_NETWORKS: %s' % json.dumps(
-            all_networks, indent=4
-        ))
-
         for interface in interfaces:
             name = interface["name"]
             interface['assigned_networks'] = \
                 [all_networks[i] for i in interfaces_dict.get(name, [])]
 
-        logger.debug('ASSIGNING NETWORKS: %s' % json.dumps(interfaces,
-                                                      indent=4))
-
         self.client.put_node_interfaces(
-            [{'id': node_id, 'interfaces': interfaces}])
+            node_id=node_id,
+            data=interfaces
+        )
 
     @logwrap
     def update_node_disk(self, node_id, disks_dict):
