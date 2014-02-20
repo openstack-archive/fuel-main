@@ -303,6 +303,7 @@ passwd-0.77-4.el6_2.2
 patch-2.6-6.el6
 pax-3.4-10.1.el6
 pcapy-0.10.8-2.el6
+percona-toolkit
 perl-DBD-MySQL-4.022-1.el6
 perl-LockFile-Simple-0.207-2.el6
 perl-devel-5.10.1-131.el6_4
