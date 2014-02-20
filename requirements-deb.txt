@@ -597,6 +597,7 @@ parted
 passwd
 patch
 pciutils
+percona-toolkit
 perl
 perl-base
 perl-modules
