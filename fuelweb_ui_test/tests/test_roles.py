@@ -4,8 +4,8 @@ from pageobjects.nodes import Nodes, RolesPanel
 from tests import preconditions
 from tests.base import BaseTestCase
 
-ERROR_ROLE_CANNOT_COMBINE = 'This role cannot be combined ' \
-                            'with the other roles already selected.'
+ERROR_ROLE_CANNOT_COMBINE = 'This role cannot be combined' \
+                            ' with the other roles already selected.'
 ROLE_UNALLOCATED = 'UNALLOCATED'
 ROLE_CONTROLLER = 'CONTROLLER'
 ROLE_COMPUTE = 'COMPUTE'
@@ -22,16 +22,33 @@ class BaseClass(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
         Environments().create_cluster_boxes[0].click()
+        time.sleep(1)
         Nodes().add_nodes.click()
         time.sleep(1)
 
 
 class TestRolesSimpleFlat(BaseClass):
 
+    """Global precondition
+
+        steps:
+            1. Create simple environment with default values
+    """
+
     @classmethod
     def setUpClass(cls):
         BaseTestCase.setUpClass()
         preconditions.Environment.simple_flat()
+
+    """Check controller node
+
+        Scenario:
+            1. Select first node and assign controller role
+            2. Verify that role of the node is changed,
+               compute role is disabled
+            3. Deselect node
+            4. Verify that role is unallocated
+    """
 
     def test_controller(self):
         with Nodes()as n:
@@ -50,6 +67,13 @@ class TestRolesSimpleFlat(BaseClass):
             self.assertFalse(n.apply_changes.is_enabled())
             self.assertNodeInRoles(n.nodes_discovered[0], [ROLE_UNALLOCATED])
 
+    """Check that only one controller node is possible
+
+        Scenario:
+            1. Select first node and assign controller role
+            2. Verify that checkboxes of other nodes are disabled
+    """
+
     def test_one_controller_allowed_nodes_disabled(self):
         with Nodes()as n:
             n.nodes_discovered[0].checkbox.click()
@@ -60,6 +84,13 @@ class TestRolesSimpleFlat(BaseClass):
                 n.checkbox.find_element_by_tag_name('input').is_enabled(),
                 'Checkbox is disabled')
 
+    """Check controller node is disabled if many nodes are selected
+
+        Scenario:
+            1. Select all nodes
+            2. Verify that controller role is disabled
+    """
+
     def test_one_controller_allowed_controller_role_disabled(self):
         with Nodes()as n:
             with RolesPanel() as r:
@@ -68,6 +99,16 @@ class TestRolesSimpleFlat(BaseClass):
                 for node in n.nodes_discovered[1:]:
                     node.checkbox.click()
                     self.assertFalse(r.controller.is_enabled())
+
+    """Check compute node
+
+        Scenario:
+            1. Select first node and assign compute role
+            2. Verify that role of the node is changed,
+               controller role is disabled
+            3. Deselect node
+            4. Verify that role is unallocated
+    """
 
     def test_compute(self):
         with Nodes()as n:
@@ -86,6 +127,15 @@ class TestRolesSimpleFlat(BaseClass):
             self.assertFalse(n.apply_changes.is_enabled())
             self.assertNodeInRoles(n.nodes_discovered[0], [ROLE_UNALLOCATED])
 
+    """Check cinder node
+
+        Scenario:
+            1. Select first node and assign cinder role
+            2. Verify that role of the node is changed
+            3. Deselect node
+            4. Verify that role is unallocated
+    """
+
     def test_cinder(self):
         with Nodes()as n:
             n.nodes_discovered[0].checkbox.click()
@@ -97,6 +147,15 @@ class TestRolesSimpleFlat(BaseClass):
             n.nodes_discovered[0].checkbox.click()
             self.assertFalse(n.apply_changes.is_enabled())
             self.assertNodeInRoles(n.nodes_discovered[0], [ROLE_UNALLOCATED])
+
+    """Check ceph node
+
+        Scenario:
+            1. Select first node and assign ceph role
+            2. Verify that role of the node is changed
+            3. Deselect node
+            4. Verify that role is unallocated
+    """
 
     def test_ceph(self):
         with Nodes()as n:
@@ -110,6 +169,15 @@ class TestRolesSimpleFlat(BaseClass):
             self.assertFalse(n.apply_changes.is_enabled())
             self.assertNodeInRoles(n.nodes_discovered[0], [ROLE_UNALLOCATED])
 
+    """Check multiroles node
+
+        Scenario:
+            1. Select first node and assign controller, ceph, cinder roles
+            2. Verify that role of the node is changed
+            3. Deselect node
+            4. Verify that role is unallocated
+    """
+
     def test_multiroles(self):
         with Nodes()as n:
             n.nodes_discovered[0].checkbox.click()
@@ -121,6 +189,15 @@ class TestRolesSimpleFlat(BaseClass):
             self.assertNodeInRoles(
                 n.nodes_discovered[0],
                 [ROLE_CONTROLLER, ROLE_CINDER, ROLE_CEPH])
+
+    """Check multiroles for many nodes
+
+        Scenario:
+            1. Select three nodes and assign controller, ceph, cinder roles
+            2. Verify that role of the nodes is changed
+            3. Deselect nodes
+            4. Verify that role is unallocated
+    """
 
     def test_several_nodes(self):
         with Nodes()as n:
@@ -150,6 +227,14 @@ class TestRolesHAFlat(BaseClass):
         BaseTestCase.setUpClass()
         preconditions.Environment.ha_flat()
 
+    """Check controller node in HA mode
+
+        Scenario:
+            1. Select all nodes
+            2. Assign controller role
+            3. Verify that nodes are with controller role
+    """
+
     def test_controller_role_always_enabled(self):
         with Nodes()as n:
             for node in n.nodes_discovered:
@@ -158,6 +243,14 @@ class TestRolesHAFlat(BaseClass):
             RolesPanel().controller.click()
             for node in n.nodes_discovered:
                 self.assertNodeInRoles(node, [ROLE_CONTROLLER])
+
+    """Check all nodes with controller role in HA mode
+
+        Scenario:
+            1. Select all nodes
+            2. Assign controller role
+            3. Verify that nodes are with controller role
+    """
 
     def test_all_nodes_could_be_controller(self):
         RolesPanel().controller.click()
