@@ -167,7 +167,7 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
-    def put_node_interfaces(self, data):
+    def put_node_interfaces(self, node_id, data):
         return self.client.put("/api/nodes/interfaces", data)
 
     @logwrap

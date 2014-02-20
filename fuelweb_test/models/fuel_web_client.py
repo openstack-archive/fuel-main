@@ -515,7 +515,9 @@ class FuelWebClient(object):
                 [all_networks[i] for i in interfaces_dict.get(name, [])]
 
         self.client.put_node_interfaces(
-            [{'id': node_id, 'interfaces': interfaces}])
+            node_id=node_id,
+            data=interfaces
+        )
 
     @logwrap
     def update_node_disk(self, node_id, disks_dict):
