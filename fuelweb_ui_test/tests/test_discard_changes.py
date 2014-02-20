@@ -11,6 +11,14 @@ class TestDiscardEnvironmentChanges(BaseTestCase):
     def setUpClass(cls):
         BaseTestCase.setUpClass()
 
+    """Each test precondition
+
+        Steps:
+            1. Create simple environment with default values
+            2. Click on created environment
+            3. Deploy environment with 1 controller and 2 compute nodes
+    """
+
     def setUp(self):
         BaseTestCase.clear_nailgun_database()
         BaseTestCase.setUp(self)
@@ -31,6 +39,14 @@ class TestDiscardEnvironmentChanges(BaseTestCase):
             self.assertEqual('ready', node.status.text.lower(),
                              'Node status is READY')
 
+    """Discard changes after adding new node
+
+        Scenario:
+            1. Add compute node
+            2. Discard changes
+            3. Verify that there are 3 nodes and their statuses are ready
+    """
+
     def test_discard_adding_node(self):
         Nodes().add_nodes.click()
         Nodes().nodes_discovered[0].checkbox.click()
@@ -38,6 +54,15 @@ class TestDiscardEnvironmentChanges(BaseTestCase):
         Nodes().apply_changes.click()
         time.sleep(1)
         self._discard_changes()
+
+
+    """Discard changes after deleting node
+
+        Scenario:
+            1. Delete one compute node
+            2. Discard changes
+            3. Verify that there are 3 nodes and their statuses are ready
+    """
 
     def test_discard_deleting_node(self):
         with Nodes() as n:
