@@ -2,13 +2,9 @@ from pageobjects.base import PageObject
 from pageobjects.environments import RedhatAccountPopup
 from pageobjects.header import Header
 from pageobjects.releases import Releases
-from fuelweb_ui_test.settings import OPENSTACK_REDHAT
-from fuelweb_ui_test.settings import REDHAT_USERNAME
-from fuelweb_ui_test.settings import REDHAT_PASSWORD
-from fuelweb_ui_test.settings import REDHAT_SATELLITE
-from fuelweb_ui_test.settings import REDHAT_ACTIVATION_KEY
-from fuelweb_ui_test.settings import OPENSTACK_CENTOS
-from fuelweb_ui_test.settings import OPENSTACK_UBUNTU
+from settings import OPENSTACK_REDHAT, REDHAT_USERNAME, REDHAT_PASSWORD, \
+    REDHAT_SATELLITE, REDHAT_ACTIVATION_KEY, OPENSTACK_CENTOS, \
+    OPENSTACK_UBUNTU
 from tests.base import BaseTestCase
 
 
@@ -23,11 +19,25 @@ class TestReleases(BaseTestCase):
         BaseTestCase.setUp(self)
         Header().releases.click()
 
+    """Check Centos status is active on releases tab
+
+        Scenario:
+            1. Open releases tab
+            2. Check that Centos status is active
+    """
+
     def test_centos_is_active(self):
         with Releases() as r:
             self.assertEqual(
                 'Active', r.dict[OPENSTACK_CENTOS].status.text,
                 'CentOS status is active')
+
+    """Check Ubuntu status is active on releases tab
+
+        Scenario:
+            1. Open releases tab
+            2. Check that Ubuntu status is active
+    """
 
     def test_ubuntu_is_active(self):
         with Releases() as r:
@@ -35,11 +45,28 @@ class TestReleases(BaseTestCase):
                 'Active', r.dict[OPENSTACK_UBUNTU].status.text,
                 'Ubuntu status is active')
 
+    """Check RHOS status is active on releases tab
+
+        Scenario:
+            1. Open releases tab
+            2. Check that RHOS status is Not available
+    """
+
     def test_rhos_is_active(self):
         with Releases() as r:
             self.assertEqual(
                 'Not available', r.dict[OPENSTACK_REDHAT].status.text,
                 'RHOS status is Not available')
+
+    """Download RHEL with RHSM option
+
+        Scenario:
+            1. Open releases tab
+            2. Click Configure button in actions column
+            3. Select 'RHSM' radiobutton
+            4. Enter username and password and click apply
+            5. Check that RHOS status is active
+    """
 
     def test_rhsm(self):
         Releases().rhel_setup.click()
@@ -55,6 +82,17 @@ class TestReleases(BaseTestCase):
             self.assertEqual(
                 'Active', r.dict[OPENSTACK_REDHAT].status.text,
                 'RHOS status is active')
+
+    """Download RHEL with RHN option
+
+        Scenario:
+            1. Open releases tab
+            2. Click Configure button in actions column
+            3. Select 'RHN' radiobutton
+            4. Enter username and password
+            5. Enter satellite hostname, activation key and click apply
+            6. Check that RHOS status is active
+    """
 
     def test_rhn_satellite(self):
         Releases().rhel_setup.click()
