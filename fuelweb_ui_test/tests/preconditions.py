@@ -1,15 +1,13 @@
 import time
-from pageobjects.environments import Environments
-from pageobjects.environments import Wizard
-from pageobjects.environments import DeployChangesPopup
+from pageobjects.environments import Environments, Wizard, DeployChangesPopup
 from pageobjects.header import TaskResultAlert
 from pageobjects.nodes import Nodes, RolesPanel
+from settings import OPENSTACK_CENTOS, OPENSTACK_RELEASE_CENTOS
 from tests.base import BaseTestCase
-from fuelweb_ui_test.settings import OPENSTACK_CENTOS
-from fuelweb_ui_test.settings import OPENSTACK_RELEASE_CENTOS
 
 
 class Environment:
+
     @staticmethod
     def simple_flat(name=OPENSTACK_CENTOS,
                     release=OPENSTACK_RELEASE_CENTOS):
