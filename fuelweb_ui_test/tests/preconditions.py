@@ -1,15 +1,14 @@
 import time
-from pageobjects.environments import Environments
-from pageobjects.environments import Wizard
-from pageobjects.environments import DeployChangesPopup
+from pageobjects.base import PageObject
+from pageobjects.environments import Environments, Wizard, DeployChangesPopup
 from pageobjects.header import TaskResultAlert
 from pageobjects.nodes import Nodes, RolesPanel
+from settings import *
 from tests.base import BaseTestCase
-from fuelweb_ui_test.settings import OPENSTACK_CENTOS
-from fuelweb_ui_test.settings import OPENSTACK_RELEASE_CENTOS
 
 
 class Environment:
+
     @staticmethod
     def simple_flat(name=OPENSTACK_CENTOS,
                     release=OPENSTACK_RELEASE_CENTOS):
@@ -25,7 +24,7 @@ class Environment:
 
     @staticmethod
     def ha_flat(name=OPENSTACK_CENTOS,
-                release=OPENSTACK_RELEASE_CENTOS):
+                    release=OPENSTACK_RELEASE_CENTOS):
         BaseTestCase.get_home()
         Environments().create_cluster_box.click()
         with Wizard() as w:

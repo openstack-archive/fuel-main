@@ -4,14 +4,18 @@ from unittest import TestCase
 from PIL import Image
 import operator
 import math
-import time
 from selenium.common.exceptions import NoSuchElementException
+import time
 import browser
+from pageobjects.base import PageObject
+from pageobjects.environments import Environments
 from pageobjects.header import Header
-from fuelweb_ui_test.settings import FOLDER_SCREEN_CURRENT
-from fuelweb_ui_test.settings import FOLDER_SCREEN_EXPECTED
-from fuelweb_ui_test.settings import NAILGUN_FIXTURES
-from fuelweb_ui_test.settings import URL_HOME
+from settings import FOLDER_SCREEN_CURRENT
+from settings import FOLDER_SCREEN_EXPECTED
+from settings import NAILGUN_FIXTURES
+from settings import URL_HOME
+from settings import BROWSER
+from settings import CHROME_EXECUTABLE_PATH
 
 
 class BaseTestCase(TestCase):
@@ -39,8 +43,7 @@ class BaseTestCase(TestCase):
                     $('head').append(
                         '<style type="text/css">
                             * {
-                                -webkit-transition-duration: 0.00000001s !
-                                important;
+                                -webkit-transition-duration: 0.00000001s !important;
                                 -moz-transition: 0.00000001s !important;
                                 transition-duration: 0.00000001s !important;
                             }
@@ -84,8 +87,6 @@ class BaseTestCase(TestCase):
 
         h1 = img_exp.histogram()
         h2 = img_cur.histogram()
-        rms = math.sqrt(
-            reduce(operator.add,
-                   map(lambda a, b: (a - b) ** 2, h1, h2)) / len(h1))
+        rms = math.sqrt(reduce(operator.add, map(lambda a, b: (a-b)**2, h1, h2))/len(h1))
 
         self.assertNotEqual(rms == 0, 'Screen valid')
