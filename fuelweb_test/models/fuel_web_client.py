@@ -88,11 +88,10 @@ class FuelWebClient(object):
     @logwrap
     def assert_cluster_ready(self, node_name, smiles_count,
                              networks_count=1, timeout=300):
-        remote = self.environment.get_ssh_to_remote(
-            self.get_nailgun_node_by_devops_node(
-                self.environment.get_virtual_environment().
-                node_by_name(node_name))['ip']
-        )
+        env = self.environment.get_virtual_environment()
+        devops_node = env.node_by_name(node_name)
+        node_ip = devops_node.get_ip_address_by_network_name('admin')
+        remote = self.environment.get_ssh_to_remote(node_ip)
         _wait(
             lambda: self.get_cluster_status(
                 remote,
