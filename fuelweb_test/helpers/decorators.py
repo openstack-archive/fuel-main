@@ -18,6 +18,7 @@ import logging
 import os
 import time
 import urllib2
+import datetime
 
 from devops.helpers.helpers import SSHClient
 from proboscis import SkipTest
@@ -51,7 +52,9 @@ def log_snapshot_on_error(func):
             pass
         except Exception:
             status = "fail"
-            name = 'error_%s' % func.__name__
+            name = 'error_%s%s' % \
+                   (func.__name__[:36],
+                    datetime.datetime.now().strftime("%d%H%M%S"))
             description = "Failed in method '%s'." % func.__name__
             logging.debug("=" * 100)
             logging.debug("{} Make snapshot: {}".format(description, name))
