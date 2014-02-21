@@ -34,7 +34,6 @@ logwrap = debug(logger)
 
 @test(groups=["thread_2"])
 class OneNodeDeploy(TestBasic):
-
     @test(depends_on=[SetupEnvironment.prepare_release],
           groups=["deploy_one_node"])
     @log_snapshot_on_error
@@ -72,7 +71,6 @@ class OneNodeDeploy(TestBasic):
 
 @test(groups=["thread_2"])
 class SimpleFlat(TestBasic):
-
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["smoke", "deploy_simple_flat"])
     @log_snapshot_on_error
@@ -117,8 +115,12 @@ class SimpleFlat(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=1,
-            failed_test_name=['Create volume and attach it to instance'])
+            should_fail=2,
+            failed_test_name=['Create volume and attach it to instance',
+                              #TODO: issue with remove floating ip
+                              # https://bugs.launchpad.net/fuel/+bug/1263916
+                              'Check network connectivity'
+                              ' from instance via floating IP'])
 
         self.env.make_snapshot("deploy_simple_flat")
 
@@ -277,7 +279,6 @@ class SimpleFlat(TestBasic):
 
 @test(groups=["thread_2"])
 class SimpleVlan(TestBasic):
-
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_simple_vlan"])
     @log_snapshot_on_error
@@ -330,7 +331,6 @@ class SimpleVlan(TestBasic):
 
 @test(groups=["thread_3", "multirole"])
 class MultiroleControllerCinder(TestBasic):
-
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_multirole_controller_cinder"])
     @log_snapshot_on_error
@@ -372,7 +372,6 @@ class MultiroleControllerCinder(TestBasic):
 
 @test(groups=["thread_3", "multirole"])
 class MultiroleComputeCinder(TestBasic):
-
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_multirole_compute_cinder"])
     @log_snapshot_on_error
@@ -415,7 +414,6 @@ class MultiroleComputeCinder(TestBasic):
 
 @test(groups=["thread_2"])
 class UntaggedNetwork(TestBasic):
-
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_untagged_network"])
     @log_snapshot_on_error
@@ -482,7 +480,6 @@ class UntaggedNetwork(TestBasic):
 
 @test(groups=["thread_2"])
 class FloatingIPs(TestBasic):
-
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_floating_ips"])
     @log_snapshot_on_error
@@ -543,7 +540,6 @@ class FloatingIPs(TestBasic):
 
 @test(groups=["thread_1"])
 class SimpleCinder(TestBasic):
-
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_simple_cinder"])
     @log_snapshot_on_error
@@ -588,7 +584,6 @@ class SimpleCinder(TestBasic):
 
 @test(groups=["thread_1"])
 class NodeMultipleInterfaces(TestBasic):
-
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_node_multiple_interfaces"])
     @log_snapshot_on_error
@@ -645,7 +640,6 @@ class NodeMultipleInterfaces(TestBasic):
 
 @test(groups=["thread_1"])
 class NodeDiskSizes(TestBasic):
-
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["check_nodes_notifications"])
     @log_snapshot_on_error
@@ -757,7 +751,6 @@ class NodeDiskSizes(TestBasic):
 
 @test(groups=["thread_2"])
 class MultinicBootstrap(TestBasic):
-
     @test(depends_on=[SetupEnvironment.prepare_release],
           groups=["multinic_bootstrap_booting"])
     @log_snapshot_on_error
@@ -793,7 +786,6 @@ class MultinicBootstrap(TestBasic):
 
 @test(groups=["thread_2", "test"])
 class DeleteEnvironment(TestBasic):
-
     @test(depends_on=[SetupEnvironment.prepare_slaves_3])
     @log_snapshot_on_error
     def delete_environment(self):
@@ -843,7 +835,6 @@ class DeleteEnvironment(TestBasic):
 
 @test(groups=["thread_1"])
 class UntaggedNetworksNegative(TestBasic):
-
     @test(
         depends_on=[SetupEnvironment.prepare_slaves_3],
         groups=["untagged_networks_negative"],
