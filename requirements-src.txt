@@ -7,3 +7,4 @@ https://github.com/sstephenson/ruby-build/archive/1fb955eead087646f4d73ac3678643
 http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz
 http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p392.tar.gz
 https://github.com/liftoff/GateOne/archive/bb003114b4e84e9425fd02fd1ee615d4dd2113e7.zip
+https://github.com/e0ne/python-heatclient/archive/7685f8ac19482086f72d6d733fc21a31c5e35d16.zip
