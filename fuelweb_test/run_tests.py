@@ -10,6 +10,7 @@ def run_tests():
     from tests import test_simple  # noqa
     from tests.tests_strength import test_failover  # noqa
     from tests.tests_strength import test_master_node_failover  # noqa
+    from tests.tests_strength import test_ostf_repeatable_tests  # noqa
     from tests.tests_strength import test_restart  # noqa
     from tests.tests_strength import test_huge_environments  # noqa
 
