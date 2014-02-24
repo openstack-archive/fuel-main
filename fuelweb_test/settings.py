@@ -183,3 +183,8 @@ DEFAULT_IMAGES_UBUNTU = os.environ.get(
     '/var/lib/libvirt/images/ubuntu-12.04.1-server-amd64-p2.qcow2')
 
 OS_IMAGE = os.environ.get('OS_IMAGE', DEFAULT_IMAGES_CENTOS)
+
+OSTF_TEST_NAME = os.environ.get('OSTF_TEST_NAME',
+                                'Check network connectivity'
+                                ' from instance via floating IP')
+OSTF_TEST_RETRIES_COUNT = os.environ.get('OSTF_TEST_RETRIES_COUNT', 50)
