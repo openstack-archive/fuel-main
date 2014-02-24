@@ -9,6 +9,7 @@ def run_tests():
     from tests import test_services  # noqa
     from tests import test_simple  # noqa
     from tests.tests_strength import test_failover  # noqa
+    from tests.tests_strength import test_floating_ip_actions  # noqa
     from tests.tests_strength import test_master_node_failover  # noqa
     from tests.tests_strength import test_restart  # noqa
     from tests.tests_strength import test_huge_environments  # noqa
