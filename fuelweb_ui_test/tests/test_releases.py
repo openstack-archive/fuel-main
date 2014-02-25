@@ -19,46 +19,44 @@ class TestReleases(BaseTestCase):
         BaseTestCase.setUp(self)
         Header().releases.click()
 
-    """Check Centos status is active on releases tab
+    def test_centos_is_active(self):
+        """Check Centos status is active on releases tab
 
         Scenario:
             1. Open releases tab
             2. Check that Centos status is active
-    """
-
-    def test_centos_is_active(self):
+        """
         with Releases() as r:
             self.assertEqual(
                 'Active', r.dict[OPENSTACK_CENTOS].status.text,
                 'CentOS status is active')
 
-    """Check Ubuntu status is active on releases tab
+    def test_ubuntu_is_active(self):
+        """Check Ubuntu status is active on releases tab
 
         Scenario:
             1. Open releases tab
             2. Check that Ubuntu status is active
-    """
-
-    def test_ubuntu_is_active(self):
+        """
         with Releases() as r:
             self.assertEqual(
                 'Active', r.dict[OPENSTACK_UBUNTU].status.text,
                 'Ubuntu status is active')
 
-    """Check RHOS status is active on releases tab
+    def test_rhos_is_active(self):
+        """Check RHOS status is active on releases tab
 
         Scenario:
             1. Open releases tab
             2. Check that RHOS status is Not available
-    """
-
-    def test_rhos_is_active(self):
+        """
         with Releases() as r:
             self.assertEqual(
                 'Not available', r.dict[OPENSTACK_REDHAT].status.text,
                 'RHOS status is Not available')
 
-    """Download RHEL with RHSM option
+    def test_rhsm(self):
+        """Download RHEL with RHSM option
 
         Scenario:
             1. Open releases tab
@@ -66,9 +64,7 @@ class TestReleases(BaseTestCase):
             3. Select 'RHSM' radiobutton
             4. Enter username and password and click apply
             5. Check that RHOS status is active
-    """
-
-    def test_rhsm(self):
+        """
         Releases().rhel_setup.click()
         with RedhatAccountPopup() as p:
             p.license_rhsm.click()
@@ -83,7 +79,8 @@ class TestReleases(BaseTestCase):
                 'Active', r.dict[OPENSTACK_REDHAT].status.text,
                 'RHOS status is active')
 
-    """Download RHEL with RHN option
+    def test_rhn_satellite(self):
+        """Download RHEL with RHN option
 
         Scenario:
             1. Open releases tab
@@ -92,9 +89,7 @@ class TestReleases(BaseTestCase):
             4. Enter username and password
             5. Enter satellite hostname, activation key and click apply
             6. Check that RHOS status is active
-    """
-
-    def test_rhn_satellite(self):
+        """
         Releases().rhel_setup.click()
         with RedhatAccountPopup() as p:
             p.license_rhn.click()
