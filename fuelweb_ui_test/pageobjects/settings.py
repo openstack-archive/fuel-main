@@ -27,6 +27,14 @@ class SettingsFooter(PageObject):
     def apply(self):
         return self.parent.find_element_by_xpath('//button[text()="Apply"]')
 
+    @property
+    def bond_interfaces(self):
+        return self.parent.find_element_by_css_selector('button.btn-bond')
+
+    @property
+    def unbond_interfaces(self):
+        return self.parent.find_element_by_css_selector('button.btn-unbond')
+
 
 class Settings(PageObject, SettingsFooter):
 
