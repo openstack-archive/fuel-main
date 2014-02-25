@@ -12,17 +12,17 @@ from tests.base import BaseTestCase
 
 class TestEnvWizard(BaseTestCase):
 
-    """Each test precondition
+    def setUp(self):
+        """Each test precondition
 
         Steps:
             1. Click on create environment
-    """
-
-    def setUp(self):
+        """
         BaseTestCase.setUp(self)
         Environments().create_cluster_box.click()
 
-    """Test environment name
+    def test_name_field(self):
+        """Test environment name
 
         Scenario:
             1. Enter Environment name
@@ -30,9 +30,7 @@ class TestEnvWizard(BaseTestCase):
             3. Verify that correct name is displayed
             4. Clear environment name and click next
             5. Verify that message 'Environment name cannot be empty' appears
-    """
-
-    def test_name_field(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_RELEASE_CENTOS)
             w.next.click()
@@ -45,7 +43,8 @@ class TestEnvWizard(BaseTestCase):
                 'Environment name cannot be empty',
                 w.name.find_element_by_xpath('..').text)
 
-    """Test existing environment name
+    def test_name_exists(self):
+        """Test existing environment name
 
         Scenario:
             1. Create environment with 'test name'
@@ -54,9 +53,7 @@ class TestEnvWizard(BaseTestCase):
             4. Click next button
             5. Verify that message 'Environment with name test name
                already exists' appears
-    """
-
-    def test_name_exists(self):
+        """
         name = 'test name'
         with Wizard() as w:
             w.name.send_keys(name)
@@ -74,7 +71,8 @@ class TestEnvWizard(BaseTestCase):
                           format(name),
                           w.name.find_element_by_xpath('..').text)
 
-    """Test environment release field
+    def test_release_field(self):
+        """Test environment release field
 
         Scenario:
             1. Enter environment name
@@ -82,9 +80,7 @@ class TestEnvWizard(BaseTestCase):
             3. Click next button
             4. Click previous button
             5. Verify that correct release is selected
-    """
-
-    def test_release_field(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_RELEASE_UBUNTU)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_UBUNTU)
@@ -93,7 +89,8 @@ class TestEnvWizard(BaseTestCase):
             self.assertEqual(w.release.first_selected_option.text,
                              OPENSTACK_RELEASE_UBUNTU)
 
-    """Test validation of empty RHEL form
+    def test_rhel_empty_form(self):
+        """Test validation of empty RHEL form
 
         Scenario:
             1. Enter environment name
@@ -103,9 +100,7 @@ class TestEnvWizard(BaseTestCase):
                messages appear
             5. Select RHN Satellite license and click next
             6. Verify that error messages appear
-    """
-
-    def test_rhel_empty_form(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_RELEASE_REDHAT)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_REDHAT)
@@ -129,7 +124,8 @@ class TestEnvWizard(BaseTestCase):
                 'Invalid activation key',
                 w.redhat_activation_key.find_element_by_xpath('..').text)
 
-    """Test RHEL form on presence of necessary fields
+    def test_rhel_form(self):
+        """Test RHEL form on presence of necessary fields
 
         Scenario:
             1. Enter environment name
@@ -139,9 +135,7 @@ class TestEnvWizard(BaseTestCase):
             5. Verify satellite and activation key fields appear
             6. Select RHSM radio button
             7. Verify satellite and activation key fields disappear
-    """
-
-    def test_rhel_form(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_RELEASE_REDHAT)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_REDHAT)
@@ -158,7 +152,8 @@ class TestEnvWizard(BaseTestCase):
             self.assertFalse(w.redhat_satellite.is_displayed())
             self.assertFalse(w.redhat_activation_key.is_displayed())
 
-    """Test development mode
+    def test_mode_radios(self):
+        """Test development mode
 
         Scenario:
             1. Enter environment name
@@ -166,9 +161,7 @@ class TestEnvWizard(BaseTestCase):
             3. Select HA mode and click next
             4. Click previous
             5. Verify HA mode is selected
-    """
-
-    def test_mode_radios(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_RELEASE_UBUNTU)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_UBUNTU)
@@ -181,7 +174,8 @@ class TestEnvWizard(BaseTestCase):
             self.assertFalse(w.mode_multinode.
                              find_element_by_tag_name('input').is_selected())
 
-    """Select environment hypervisor
+    def test_hypervisor_radios(self):
+        """Select environment hypervisor
 
         Scenario:
             1. Enter environment name
@@ -190,9 +184,7 @@ class TestEnvWizard(BaseTestCase):
             4. Select KVM hypervisor and click next
             5. Click previous
             6. Verify KVM is selected
-    """
-
-    def test_hypervisor_radios(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_RELEASE_UBUNTU)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_UBUNTU)
@@ -206,7 +198,8 @@ class TestEnvWizard(BaseTestCase):
             self.assertFalse(w.hypervisor_kvm.
                              find_element_by_tag_name('input').is_selected())
 
-    """Select environment network
+    def test_network_radios(self):
+        """Select environment network
 
         Scenario:
             1. Enter environment name
@@ -215,9 +208,7 @@ class TestEnvWizard(BaseTestCase):
             3. Select Neutron with GRE segmentation
             4. Click next and click previous button
             5. Verify Neutron with GRE network is selected
-    """
-
-    def test_network_radios(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_RELEASE_UBUNTU)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_UBUNTU)
@@ -241,7 +232,8 @@ class TestEnvWizard(BaseTestCase):
             self.assertTrue(w.network_neutron_vlan.
                             find_element_by_tag_name('input').is_selected())
 
-    """Select environment storage
+    def test_storage_radios(self):
+        """Select environment storage
 
         Scenario:
             1. Enter environment name
@@ -250,9 +242,7 @@ class TestEnvWizard(BaseTestCase):
             3. Select Ceph for Cinder and Glance
             4. Click next and click previous button
             5. Verify Ceph options are selected
-    """
-
-    def test_storage_radios(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_RELEASE_UBUNTU)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_UBUNTU)
@@ -273,7 +263,8 @@ class TestEnvWizard(BaseTestCase):
             self.assertTrue(w.storage_glance_ceph.
                             find_element_by_tag_name('input').is_selected())
 
-    """Select environment additional services
+    def test_services_checkboxes(self):
+        """Select environment additional services
 
         Scenario:
             1. Enter environment name
@@ -284,9 +275,7 @@ class TestEnvWizard(BaseTestCase):
             5. Select install Savanna, Murano, Ceilometer
             6. Click next and previous button
             7. Verify checkboxes are selected
-    """
-
-    def test_services_checkboxes(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_RELEASE_UBUNTU)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_UBUNTU)
@@ -308,7 +297,8 @@ class TestEnvWizard(BaseTestCase):
             self.assertTrue(w.install_ceilometer.
                             find_element_by_tag_name('input').is_selected())
 
-    """Cancel environment wizard
+    def test_cancel_button(self):
+        """Cancel environment wizard
 
         Scenario:
             1. Enter environment name
@@ -321,9 +311,7 @@ class TestEnvWizard(BaseTestCase):
             8. Click cancel button
             9. Click create environment again and check that
                all default values are selected
-    """
-
-    def test_cancel_button(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_RELEASE_UBUNTU)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_UBUNTU)
@@ -372,18 +360,18 @@ class TestEnvWizard(BaseTestCase):
 
 class TestEnvWizardRedHat(BaseTestCase):
 
-    """Each test precondition
+    def setUp(self):
+        """Each test precondition
 
         Steps:
             1. Click on create environment
-    """
-
-    def setUp(self):
+        """
         BaseTestCase.clear_nailgun_database()
         BaseTestCase.setUp(self)
         Environments().create_cluster_box.click()
 
-    """Download RHEL and RHOS by RHSM
+    def test_rhsm(self):
+        """Download RHEL and RHOS by RHSM
 
         Scenario:
             1. Enter environment name
@@ -392,9 +380,7 @@ class TestEnvWizardRedHat(BaseTestCase):
             4. Click next till the end and click create
             5. Open releases tab
             6. Verify that RHOS status is active
-    """
-
-    def test_rhsm(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_RELEASE_REDHAT)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_REDHAT)
@@ -413,7 +399,8 @@ class TestEnvWizardRedHat(BaseTestCase):
                 'Active', r.dict[OPENSTACK_REDHAT].status.text,
                 'RHOS status is active')
 
-    """Download RHEL and RHOS by RHN satellite
+    def test_rhn_satellite(self):
+        """Download RHEL and RHOS by RHN satellite
 
         Scenario:
             1. Enter environment name
@@ -424,9 +411,7 @@ class TestEnvWizardRedHat(BaseTestCase):
             5. Click next till the end and click create
             6. Open releases tab
             7. Verify that RHOS status is active
-    """
-
-    def test_rhn_satellite(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_RELEASE_REDHAT)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_REDHAT)

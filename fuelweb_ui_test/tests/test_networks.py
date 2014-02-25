@@ -201,18 +201,18 @@ class SimpleFlatNetworks(BaseTestCase):
 
 class TestNeutronNetworks(SimpleFlatNetworks):
 
-    """Global precondition
+    @classmethod
+    def setUpClass(cls):
+        """Global precondition
 
         Steps:
             1. Create simple environment with Neutron GRE
-    """
-
-    @classmethod
-    def setUpClass(cls):
+        """
         BaseTestCase.setUpClass()
         preconditions.Environment.simple_neutron_gre()
 
-    """Change id start value in Neutron L2 configuration
+    def test_id_start(self):
+        """Change id start value in Neutron L2 configuration
 
         Scenario:
             1. Enter new value in id start field
@@ -221,12 +221,11 @@ class TestNeutronNetworks(SimpleFlatNetworks):
             4. Leave id start field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_id_start(self):
+        """
         self._test_text_field('neutron', 'id_start', '1500')
 
-    """Change id end value in Neutron L2 configuration
+    def test_id_end(self):
+        """Change id end value in Neutron L2 configuration
 
         Scenario:
             1. Enter new value in id end field
@@ -235,12 +234,11 @@ class TestNeutronNetworks(SimpleFlatNetworks):
             4. Leave id end field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_id_end(self):
+        """
         self._test_text_field('neutron', 'id_end', '3500')
 
-    """Change Base Mac address value in Neutron L2 configuration
+    def test_base_mac(self):
+        """Change Base Mac address value in Neutron L2 configuration
 
         Scenario:
             1. Enter new value in base mac address field
@@ -249,12 +247,11 @@ class TestNeutronNetworks(SimpleFlatNetworks):
             4. Leave base mac address field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_base_mac(self):
+        """
         self._test_text_field('neutron', 'base_mac', 'aa:bb:3e:14:b4:a3')
 
-    """Change floating ip start value in Neutron L2 configuration
+    def test_floating_start(self):
+        """Change floating ip start value in Neutron L2 configuration
 
         Scenario:
             1. Enter new value in floating ip start field
@@ -263,12 +260,11 @@ class TestNeutronNetworks(SimpleFlatNetworks):
             4. Leave floating ip start field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_floating_start(self):
+        """
         self._test_text_field('neutron', 'floating_start', RANGES[3][0])
 
-    """Change floating ip end value in Neutron L2 configuration
+    def test_floating_end(self):
+        """Change floating ip end value in Neutron L2 configuration
 
         Scenario:
             1. Enter new value in floating ip end field
@@ -277,12 +273,11 @@ class TestNeutronNetworks(SimpleFlatNetworks):
             4. Leave floating ip end field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_floating_end(self):
+        """
         self._test_text_field('neutron', 'floating_end', RANGES[3][1])
 
-    """Change CIDR value in Neutron L2 configuration
+    def test_cidr(self):
+        """Change CIDR value in Neutron L2 configuration
 
         Scenario:
             1. Enter new value in CIDR field
@@ -291,12 +286,11 @@ class TestNeutronNetworks(SimpleFlatNetworks):
             4. Leave CIDR field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_cidr(self):
+        """
         self._test_text_field('neutron', 'cidr', '192.168.111.0/16')
 
-    """Change Gateway value in Neutron L2 configuration
+    def test_gateway(self):
+        """Change Gateway value in Neutron L2 configuration
 
         Scenario:
             1. Enter new value in Gateway field
@@ -305,12 +299,11 @@ class TestNeutronNetworks(SimpleFlatNetworks):
             4. Leave Gateway field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_gateway(self):
+        """
         self._test_text_field('neutron', 'gateway', '192.168.111.2')
 
-    """Change first nameserver value in Neutron L2 configuration
+    def test_nameserver0(self):
+        """Change first nameserver value in Neutron L2 configuration
 
         Scenario:
             1. Enter new value in first nameserver field
@@ -319,12 +312,11 @@ class TestNeutronNetworks(SimpleFlatNetworks):
             4. Leave nameserver field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_nameserver0(self):
+        """
         self._test_text_field('neutron', 'nameserver0', '5.5.5.5')
 
-    """Change second nameserver value in Neutron L2 configuration
+    def test_nameserver1(self):
+        """Change second nameserver value in Neutron L2 configuration
 
         Scenario:
             1. Enter new value in second nameserver field
@@ -333,24 +325,21 @@ class TestNeutronNetworks(SimpleFlatNetworks):
             4. Leave nameserver field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_nameserver1(self):
+        """
         self._test_text_field('neutron', 'nameserver1', '5.5.5.5')
 
 
 class TestSimpleVlanNetworks(SimpleFlatNetworks):
 
-    """Global precondition
+    @classmethod
+    def setUpClass(cls):
+        """Global precondition
 
         Steps:
             1. Create simple environment with default values
             2. Click on created environment and open networks tab
             3. Select VLAN Manager and save settings
-    """
-
-    @classmethod
-    def setUpClass(cls):
+        """
         BaseTestCase.setUpClass()
         preconditions.Environment.simple_flat()
         Environments().create_cluster_boxes[0].click()
@@ -360,7 +349,8 @@ class TestSimpleVlanNetworks(SimpleFlatNetworks):
             n.save_settings.click()
             time.sleep(1)
 
-    """Change number of networks in VLAN Manager
+    def test_fixed_number_of_networks(self):
+        """Change number of networks in VLAN Manager
 
         Scenario:
             1. Enter new value in number of networks field
@@ -369,12 +359,11 @@ class TestSimpleVlanNetworks(SimpleFlatNetworks):
             4. Leave number of networks field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_fixed_number_of_networks(self):
+        """
         self._test_text_field('fixed', 'number_of_networks', '3')
 
-    """Change Size of Networks in VLAN Manager
+    def test_fixed_size_of_networks(self):
+        """Change Size of Networks in VLAN Manager
 
         Scenario:
             1. Enter new value in Size of Networks field
@@ -383,12 +372,11 @@ class TestSimpleVlanNetworks(SimpleFlatNetworks):
             4. Leave Size of Networks field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_fixed_size_of_networks(self):
+        """
         self._test_select_field('fixed', 'network_size', '128')
 
-    """Change VLAN id start in VLAN Manager
+    def test_fixed_vlan_range_start(self):
+        """Change VLAN id start in VLAN Manager
 
         Scenario:
             1. Enter new value in VLAN id start field
@@ -397,21 +385,18 @@ class TestSimpleVlanNetworks(SimpleFlatNetworks):
             4. Leave VLAN id start field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_fixed_vlan_range_start(self):
+        """
         self._test_text_field('fixed', 'vlan_id', '120')
 
-    """Check calculation of VLAN id end
+    def test_fixed_vlan_range_end_calculation(self):
+        """Check calculation of VLAN id end
 
         Scenario:
             1. Enter new value in VLAN id start field
             2. Click save settings
             3. Verify that value in VLAN id end equals to VLAN id start
                plus number of networks minus 1
-    """
-
-    def test_fixed_vlan_range_end_calculation(self):
+        """
         start_values = [105, 120]
         with Networks().fixed as n:
             number = int(n.number_of_networks.get_attribute('value'))
@@ -422,16 +407,15 @@ class TestSimpleVlanNetworks(SimpleFlatNetworks):
                     n.vlan_end.get_attribute('value'),
                     str(v + number - 1), 'end value')
 
-    """Check calculation of VLAN id end when number of networks is changed
+    def test_fixed_vlan_range_end_calculation_2(self):
+        """Check calculation of VLAN id end when number of networks is changed
 
         Scenario:
             1. Enter new value in number of networks field
             2. Click save settings
             3. Verify that value in VLAN id end equals to VLAN id start
                plus number of networks minus 1
-    """
-
-    def test_fixed_vlan_range_end_calculation_2(self):
+        """
         numbers = [5, 20]
         with Networks().fixed as n:
             start = int(n.vlan_id.get_attribute('value'))
@@ -445,58 +429,55 @@ class TestSimpleVlanNetworks(SimpleFlatNetworks):
 
 class TestRangesControls(SimpleFlatNetworks):
 
-    """Add new ip ranges for public network
+    def test_public_plus_icon(self):
+        """Add new ip ranges for public network
 
         Scenario:
             1. Click on '+' to add new ip range
             2. Enter values in start and end fields
             3. Click on '+' to add new ip range after first ip range
             4. Verify that fields are added after first range
-    """
-
-    def test_public_plus_icon(self):
+        """
         self._test_ranges_plus_icon('public')
 
-    """Delete ip range for public network
+    def test_public_minus_icon(self):
+        """Delete ip range for public network
 
         Scenario:
             1. Add three new ip ranges
             2. Enter values in start and end fields of last ip range
             3. Click on '-' for last but one ip range
             4. Verify that last ip range values are saved
-    """
-
-    def test_public_minus_icon(self):
+        """
         self._test_ranges_minus_icon('public')
 
-    """Add new ip ranges for floating network
+    def test_floating_plus_icon(self):
+        """Add new ip ranges for floating network
 
         Scenario:
             1. Click on '+' to add new ip range
             2. Enter values in start and end fields
             3. Click on '+' to add new ip range after first ip range
             4. Verify that fields are added after first range
-    """
-
-    def test_floating_plus_icon(self):
+        """
         self._test_ranges_plus_icon('floating')
 
-    """Delete ip range for floating network
+    def test_floating_minus_icon(self):
+        """Delete ip range for floating network
 
         Scenario:
             1. Add three new ip ranges
             2. Enter values in start and end fields of last ip range
             3. Click on '-' for last but one ip range
             4. Verify that last ip range values are saved
-    """
-
-    def test_floating_minus_icon(self):
+        """
         self._test_ranges_minus_icon('floating')
 
 
 class TestPublicNetwork(SimpleFlatNetworks):
 
-    """Ip range for public network
+    def test_ranges(self):
+        """Ip range for public network
 
         Scenario:
             1. Add one new ip range
@@ -505,12 +486,11 @@ class TestPublicNetwork(SimpleFlatNetworks):
             4. Verify that values are saved
             5. Delete values from the first range
             6. Verify that validation messages are displayed
-    """
-
-    def test_ranges(self):
+        """
         self._test_ranges('public', RANGES[:2])
 
-    """Use VLAN tagging for public network
+    def test_use_vlan_tagging(self):
+        """Use VLAN tagging for public network
 
         Scenario:
             1. Enable VLAN tagging
@@ -519,12 +499,11 @@ class TestPublicNetwork(SimpleFlatNetworks):
             4. Verify that value is saved
             5. Clear value from VLAN tagging field
             6. Verify that validation messages are displayed
-    """
-
-    def test_use_vlan_tagging(self):
+        """
         self._test_use_vlan_tagging('public', '111', False)
 
-    """Change netmask for public network
+    def test_net_mask(self):
+        """Change netmask for public network
 
         Scenario:
             1. Enter new value in netmask field
@@ -533,12 +512,11 @@ class TestPublicNetwork(SimpleFlatNetworks):
             4. Leave netmask field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_net_mask(self):
+        """
         self._test_text_field('public', 'netmask', '255.255.0.0')
 
-    """Change gateway for public network
+    def test_gateway(self):
+        """Change gateway for public network
 
         Scenario:
             1. Enter new value in gateway field
@@ -547,15 +525,14 @@ class TestPublicNetwork(SimpleFlatNetworks):
             4. Leave gateway field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_gateway(self):
+        """
         self._test_text_field('public', 'gateway', '172.16.0.2')
 
 
 class TestFloatingNetwork(SimpleFlatNetworks):
 
-    """Ip range for floating network
+    def test_ranges(self):
+        """Ip range for floating network
 
         Scenario:
             1. Add one new ip range
@@ -564,12 +541,11 @@ class TestFloatingNetwork(SimpleFlatNetworks):
             4. Verify that values are saved
             5. Delete values from the first range
             6. Verify that validation messages are displayed
-    """
-
-    def test_ranges(self):
+        """
         self._test_ranges('floating', RANGES[2:4])
 
-    """Use VLAN tagging for floating network
+    def test_use_vlan_tagging(self):
+        """Use VLAN tagging for floating network
 
         Scenario:
             1. Enable public VLAN tagging
@@ -578,9 +554,7 @@ class TestFloatingNetwork(SimpleFlatNetworks):
                and value is the same as for public VLAN
             4. Click save settings
             5. Verify that changes are saved
-    """
-
-    def test_use_vlan_tagging(self):
+        """
         value = '112'
         with Networks().public as n:
             n.vlan_tagging.click()
@@ -600,7 +574,8 @@ class TestFloatingNetwork(SimpleFlatNetworks):
 
 class TestManagementNetwork(SimpleFlatNetworks):
 
-    """Change CIDR for management network
+    def test_cidr(self):
+        """Change CIDR for management network
 
         Scenario:
             1. Enter new value in management CIDR field
@@ -609,12 +584,11 @@ class TestManagementNetwork(SimpleFlatNetworks):
             4. Leave CIDR field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_cidr(self):
+        """
         self._test_text_field('management', 'cidr', '192.169.0.0/16')
 
-    """Use VLAN tagging for management network
+    def test_use_vlan_tagging(self):
+        """Use VLAN tagging for management network
 
         Scenario:
             1. Enable VLAN tagging for management network
@@ -623,15 +597,14 @@ class TestManagementNetwork(SimpleFlatNetworks):
             4. Verify that value is saved
             5. Clear value from VLAN tagging field
             6. Verify that validation messages are displayed
-    """
-
-    def test_use_vlan_tagging(self):
+        """
         self._test_use_vlan_tagging('management', '111', True)
 
 
 class TestStorageNetwork(SimpleFlatNetworks):
 
-    """Change CIDR for storage network
+    def test_cidr(self):
+        """Change CIDR for storage network
 
         Scenario:
             1. Enter new value in storage CIDR field
@@ -640,12 +613,11 @@ class TestStorageNetwork(SimpleFlatNetworks):
             4. Leave CIDR field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_cidr(self):
+        """
         self._test_text_field('storage', 'cidr', '192.170.0.0/16')
 
-    """Use VLAN tagging for storage network
+    def test_use_vlan_tagging(self):
+        """Use VLAN tagging for storage network
 
         Scenario:
             1. Enable VLAN tagging for storage network
@@ -654,15 +626,14 @@ class TestStorageNetwork(SimpleFlatNetworks):
             4. Verify that value is saved
             5. Clear value from VLAN tagging field
             6. Verify that validation messages are displayed
-    """
-
-    def test_use_vlan_tagging(self):
+        """
         self._test_use_vlan_tagging('storage', '111', True)
 
 
 class TestFixedNetwork(SimpleFlatNetworks):
 
-    """Change CIDR for VM(fixed) network
+    def test_cidr(self):
+        """Change CIDR for VM(fixed) network
 
         Scenario:
             1. Enter new value in VM(fixed) CIDR field
@@ -671,12 +642,11 @@ class TestFixedNetwork(SimpleFlatNetworks):
             4. Leave CIDR field empty
             5. Verify that Save settings and
                Verify Networks buttons are disabled
-    """
-
-    def test_cidr(self):
+        """
         self._test_text_field('fixed', 'cidr', '10.1.0.0/24')
 
-    """Use VLAN tagging for VM(fixed) network
+    def test_use_vlan_tagging(self):
+        """Use VLAN tagging for VM(fixed) network
 
         Scenario:
             1. Enable VLAN tagging for VM(fixed) network
@@ -685,15 +655,14 @@ class TestFixedNetwork(SimpleFlatNetworks):
             4. Verify that value is saved
             5. Clear value from VLAN tagging field
             6. Verify that validation messages are displayed
-    """
-
-    def test_use_vlan_tagging(self):
+        """
         self._test_use_vlan_tagging('fixed', '111', True)
 
 
 class TestDnsServers(SimpleFlatNetworks):
 
-    """Change dns servers
+    def test_name_servers(self):
+        """Change dns servers
 
         Scenario:
             1. Change dns servers value
@@ -701,9 +670,7 @@ class TestDnsServers(SimpleFlatNetworks):
             3. Verify that values are saved
             5. Clear values for dns servers
             6. Verify that Save settings and Verify networks are disabled
-    """
-
-    def test_name_servers(self):
+        """
         v1 = '8.7.7.7'
         v2 = '8.6.6.6'
         with Networks() as n:
@@ -739,14 +706,13 @@ class TestFlatVerifyNetworks(BaseTestCase):
     def setUpClass(cls):
         BaseTestCase.setUpClass()
 
-    """Each test precondition
+    def setUp(self):
+        """Each test precondition
 
         Steps:
             1. Create simple environment with default values
             2. Click on created environment and open Networks tab
-    """
-
-    def setUp(self):
+        """
         BaseTestCase.clear_nailgun_database()
         BaseTestCase.setUp(self)
         preconditions.Environment.simple_flat()
@@ -754,14 +720,13 @@ class TestFlatVerifyNetworks(BaseTestCase):
         Tabs().networks.click()
         time.sleep(1)
 
-    """Verify network without added nodes
+    def test_no_nodes(self):
+        """Verify network without added nodes
 
         Scenario:
             1. Click Verify Networks
             2. Verify that message 'At least two nodes are required' appears
-    """
-
-    def test_no_nodes(self):
+        """
         with Networks() as n:
             n.verify_networks.click()
             self.assertIn(
@@ -769,16 +734,15 @@ class TestFlatVerifyNetworks(BaseTestCase):
                 n.verification_alert.text,
                 'Alert text contains "At least two nodes are required"')
 
-    """Verify network with one added nodes
+    def test_one_node(self):
+        """Verify network with one added nodes
 
         Scenario:
             1. Add one controller node
             2. Open Networks tab
             3. Click Verify Networks
             4. Verify that message 'At least two nodes are required' appears
-    """
-
-    def test_one_node(self):
+        """
         Tabs().nodes.click()
         time.sleep(1)
         Nodes().add_nodes.click()
@@ -796,7 +760,8 @@ class TestFlatVerifyNetworks(BaseTestCase):
                 n.verification_alert.text,
                 'Alert text contains "At least two nodes are required"')
 
-    """Verify network with two added nodes
+    def test_two_nodes(self):
+        """Verify network with two added nodes
 
         Scenario:
             1. Add two compute nodes
@@ -804,9 +769,7 @@ class TestFlatVerifyNetworks(BaseTestCase):
             3. Click Verify Networks
             4. Verify that message 'Verification succeeded.
                Your network is configured correctly' appears
-    """
-
-    def test_two_nodes(self):
+        """
         Tabs().nodes.click()
         time.sleep(1)
         Nodes().add_nodes.click()
