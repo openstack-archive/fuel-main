@@ -49,7 +49,7 @@ class PageObject:
             pass
 
     @staticmethod
-    def wait_element(page_object, attribute, timeout=10):
+    def wait_element(page_object, attribute, timeout=40):
         class El:
             def __init__(self, page_object, attribute):
                 self.page_object = page_object

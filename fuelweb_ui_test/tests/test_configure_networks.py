@@ -403,3 +403,155 @@ class TestConfigureNetworks(BaseTestCase):
                 label.format(vlans[2]), s.interfaces[0].
                 networks['vm (fixed)'].text,
                 'vlan id is correct. VM (Fixed) network')
+
+
+class TestBondingInterfaces(BaseTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        BaseTestCase.setUpClass()
+
+    """Each test precondition
+
+        Steps:
+            1. Create environment with Neutron gre
+            2. Open created environment
+            3. Add controller node
+            4. Open interface configuration of the node
+    """
+
+    def setUp(self):
+        BaseTestCase.clear_nailgun_database()
+        BaseTestCase.setUp(self)
+        preconditions.Environment.simple_neutron_gre()
+        Environments().create_cluster_boxes[0].click()
+        time.sleep(1)
+        Nodes().add_nodes.click()
+        Nodes().nodes_discovered[0].checkbox.click()
+        RolesPanel().controller.click()
+        Nodes().apply_changes.click()
+        time.sleep(1)
+        Nodes().nodes[0].details.click()
+        NodeInfo().edit_networks.click()
+        time.sleep(1)
+
+    """Check bond buttons are inactive by default
+
+        Scenario:
+            1. Verify bond and unbond buttons are disabled
+    """
+
+    def test_bond_buttons_inactive(self):
+        self.assertFalse(InterfacesSettings().bond_interfaces.is_enabled())
+        self.assertFalse(InterfacesSettings().unbond_interfaces.is_enabled())
+
+    """Check bond buttons are inactive if one interface is selected
+
+        Scenario:
+            1. Select one interface
+            2. Verify bond and unbond buttons are disabled
+    """
+
+    def test_inactive_one_selected(self):
+        with InterfacesSettings() as s:
+            s.interfaces[0].interface_checkbox.click()
+            self.assertFalse(s.bond_interfaces.is_enabled())
+            self.assertFalse(s.unbond_interfaces.is_enabled())
+
+    """Bond two interfaces
+
+        Scenario:
+            1. Select two interfaces
+            2. Click bond interfaces
+            3. Verify that interfaces were bonded
+    """
+
+    def test_bond_interfaces(self):
+        with InterfacesSettings() as s:
+            s.interfaces[0].interface_checkbox.click()
+            s.interfaces[1].interface_checkbox.click()
+            self.assertTrue(s.bond_interfaces.is_enabled())
+            s.bond_interfaces.click()
+            s.interfaces[0].bond_mode
+            self.assertFalse(s.bond_interfaces.is_enabled())
+            self.assertFalse(s.unbond_interfaces.is_enabled())
+
+    """Cancel bonding
+
+        Scenario:
+            1. Select two interfaces
+            2. Click bond interfaces
+            3. Click cancel changes
+            4. Verify that interfaces aren't bonded
+    """
+
+    def test_cancel_bonding(self):
+        with InterfacesSettings() as s:
+            s.interfaces[0].interface_checkbox.click()
+            s.interfaces[1].interface_checkbox.click()
+            s.bond_interfaces.click()
+            s.cancel_changes.click()
+            self.assertEqual(len(s.interfaces), 3, 'Interfaces amount')
+
+    """Load default bonding
+
+        Scenario:
+            1. Select two interfaces
+            2. Click bond interfaces
+            3. Click load defaults
+            4. Verify that interfaces aren't bonded
+    """
+
+    def test_load_default_bonding(self):
+        with InterfacesSettings() as s:
+            s.interfaces[0].interface_checkbox.click()
+            s.interfaces[1].interface_checkbox.click()
+            s.bond_interfaces.click()
+            s.apply.click()
+            self.assertEqual(len(s.interfaces), 2, 'Interfaces amount not 2')
+            time.sleep(1)
+            s.load_defaults.click()
+            time.sleep(1)
+            self.assertEqual(len(s.interfaces), 3, 'Interfaces amount not 3')
+
+    """Unbond interfaces
+
+        Scenario:
+            1. Select two interfaces
+            2. Click bond interfaces
+            3. Click unbond defaults
+            4. Verify that interfaces aren't bonded
+    """
+
+    def test_unbond_interfaces(self):
+        with InterfacesSettings() as s:
+            s.interfaces[0].interface_checkbox.click()
+            s.interfaces[1].interface_checkbox.click()
+            s.bond_interfaces.click()
+            s.interfaces[0].interface_checkbox.click()
+            s.unbond_interfaces.click()
+            self.assertEqual(len(s.interfaces), 3, 'Interfaces amount not 3')
+
+    """Change bond modes
+
+        Scenario:
+            1. Select two interfaces
+            2. Click bond interfaces
+            3. Change bond modes
+            4. Verify that modes are saved correctly
+    """
+
+    def test_bond_mode(self):
+        with InterfacesSettings() as s:
+            s.interfaces[0].interface_checkbox.click()
+            s.interfaces[1].interface_checkbox.click()
+            s.bond_interfaces.click()
+            s.interfaces[0].select_mode.select_by_visible_text('Balance SLB')
+            self.assertEqual(s.interfaces[0].select_mode.first_selected_option.text,
+                             'Balance SLB', 'Text is Balance SLB')
+            s.interfaces[0].select_mode.select_by_visible_text('Balance TCP')
+            self.assertEqual(s.interfaces[0].select_mode.first_selected_option.text,
+                             'Balance TCP', 'Text is Balance TCP')
+            s.interfaces[0].select_mode.select_by_visible_text('LACP Balance TCP')
+            self.assertEqual(s.interfaces[0].select_mode.first_selected_option.text,
+                             'LACP Balance TCP', 'Text is LACP Balance TCP')
