@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 logwrap = debug(logger)
 
 
-@test(groups=["thread_2, cluster_actions"])
+@test(groups=["thread_2", "cluster_actions"])
 class EnvironmentAction(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
