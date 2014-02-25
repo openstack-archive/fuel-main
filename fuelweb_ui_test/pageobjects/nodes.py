@@ -1,6 +1,7 @@
 from selenium.webdriver.support.select import Select
 from pageobjects.base import PageObject
 from pageobjects.base import Popup
+import time
 
 
 class Nodes(PageObject):
@@ -100,6 +101,20 @@ class Nodes(PageObject):
     def node_groups(self):
         elements = self.parent.find_elements_by_css_selector('.node-groups')
         return [Nodes(el) for el in elements]
+
+    @staticmethod
+    def add_controller_compute_nodes():
+        Nodes().add_nodes.click()
+        Nodes().nodes_discovered[0].checkbox.click()
+        RolesPanel().controller.click()
+        Nodes().apply_changes.click()
+        time.sleep(2)
+        Nodes().add_nodes.click()
+        time.sleep(1)
+        Nodes().nodes_discovered[0].checkbox.click()
+        RolesPanel().compute.click()
+        Nodes().apply_changes.click()
+        time.sleep(1)
 
 
 class NodeContainer(PageObject):
