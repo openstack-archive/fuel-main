@@ -65,6 +65,23 @@ class PageObject:
         wait = WebDriverWait(browser.driver, timeout)
         wait.until(El(page_object, attribute))
 
+    @staticmethod
+    def long_wait_element(page_object, attribute, timeout=40):
+        class El:
+            def __init__(self, page_object, attribute):
+                self.page_object = page_object
+                self.attribute = attribute
+
+            def __call__(self, *args, **kwargs):
+                try:
+                    getattr(self.page_object, attribute)
+                    return True
+                except NoSuchElementException:
+                    return False
+
+        wait = WebDriverWait(browser.driver, timeout)
+        wait.until(El(page_object, attribute))
+
 
 class Popup(PageObject):
 

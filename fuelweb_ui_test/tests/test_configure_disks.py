@@ -11,15 +11,14 @@ from tests.base import BaseTestCase
 
 class TestConfigureDisks(BaseTestCase):
 
-    """Global precondition
+    @classmethod
+    def setUpClass(cls):
+        """Global precondition
 
         Steps:
             1. Create simple environment with default values
             2. Add one controller node
-    """
-
-    @classmethod
-    def setUpClass(cls):
+        """
         BaseTestCase.setUpClass()
         preconditions.Environment.simple_flat()
         Environments().create_cluster_boxes[0].click()
@@ -30,22 +29,22 @@ class TestConfigureDisks(BaseTestCase):
         RolesPanel().controller.click()
         Nodes().apply_changes.click()
 
-    """Each test precondition
+    def setUp(self):
+        """Each test precondition
 
         Steps:
             1. Click on created environment
             2. Select controller node
             3. Click Configure Disks
-    """
-
-    def setUp(self):
+        """
         BaseTestCase.setUp(self)
         Environments().create_cluster_boxes[0].click()
         Nodes().nodes[0].details.click()
         NodeInfo().edit_disks.click()
         time.sleep(1)
 
-    """Expand and collapse blocks with disk information
+    def test_volume_animation(self):
+        """Expand and collapse blocks with disk information
 
         Scenario:
             1. Click on disk area
@@ -53,9 +52,7 @@ class TestConfigureDisks(BaseTestCase):
             3. Click disk area again
             4. Verify that area is collapsed and
                disk information is unavailable
-    """
-
-    def test_volume_animation(self):
+        """
         with DisksSettings() as s:
             s.disks[0].volume_os.parent.click()
             time.sleep(1)
@@ -69,15 +66,14 @@ class TestConfigureDisks(BaseTestCase):
                 s.disks[0].details_panel.is_displayed(),
                 'details panel is expanded')
 
-    """Remove disk volume by clicking on X button
+    def test_remove_volume_cross(self):
+        """Remove disk volume by clicking on X button
 
         Scenario:
             1. Click on disk area
             2. Click on X button for some volume group
             3. Verify that image size is 0 and there is Unallocated space
-    """
-
-    def test_remove_volume_cross(self):
+        """
         with DisksSettings() as s:
             s.disks[0].volume_image.parent.click()
             time.sleep(1)
@@ -90,7 +86,8 @@ class TestConfigureDisks(BaseTestCase):
                 s.disks[0].volume_group_image.input.get_attribute('value'),
                 'image volume size is 0')
 
-    """Use all allowed space
+    def test_use_all_allowed(self):
+        """Use all allowed space
 
         Scenario:
             1. Click on disk area
@@ -100,9 +97,7 @@ class TestConfigureDisks(BaseTestCase):
             5. Remove all volumes group and click
                Use all allowed space for Image Storage
             6. Verify that all space is allocated for Image Storage
-    """
-
-    def test_use_all_allowed(self):
+        """
         with DisksSettings() as s:
             s.disks[1].volume_image.parent.click()
             time.sleep(1)
@@ -122,15 +117,14 @@ class TestConfigureDisks(BaseTestCase):
                 'Image storage uses all allowed space'
             )
 
-    """Allocate space for volume groups
+    def test_type_volume_size(self):
+        """Allocate space for volume groups
 
         Scenario:
             1. Click on disk area
             2. Allocate space for Image Storage
             3. Verify that allocated size is correct in the header of disk area
-    """
-
-    def test_type_volume_size(self):
+        """
         values = [random.randint(100000, 200000) for i in range(3)]
         with DisksSettings() as s:
             s.disks[0].volume_image.parent.click()
@@ -145,7 +139,8 @@ class TestConfigureDisks(BaseTestCase):
                     exp, cur,
                     'Volume size. exp: {0} ({1}), cur {2}'.format(exp, v, cur))
 
-    """Load default values
+    def test_save_load_defaults(self):
+        """Load default values
 
         Scenario:
             1. Click on disk area
@@ -153,9 +148,7 @@ class TestConfigureDisks(BaseTestCase):
             3. Apply changes
             4. Click Load Defaults
             5. Verify that Image size is default value
-    """
-
-    def test_save_load_defaults(self):
+        """
         default = None
         value = random.randint(60000, 80000)
         with DisksSettings() as s:
@@ -185,16 +178,15 @@ class TestConfigureDisks(BaseTestCase):
                 'default value has been restored'
             )
 
-    """Cancel changes to disk configuring
+    def test_cancel_changes(self):
+        """Cancel changes to disk configuring
 
         Scenario:
             1. Click on disk area
             2. Allocate space for Image Storage
             3. Click Cancel Changes
             4. Verify that default value is restored
-    """
-
-    def test_cancel_changes(self):
+        """
         with DisksSettings() as s:
             s.disks[0].volume_image.parent.click()
             time.sleep(1)
@@ -212,7 +204,8 @@ class TestConfigureDisks(BaseTestCase):
                 'default value has been restored'
             )
 
-    """Back to node list form disk configuring
+    def test_confirm_if_back_to_list(self):
+        """Back to node list form disk configuring
 
         Scenario:
             1. Click on disk area
@@ -223,9 +216,7 @@ class TestConfigureDisks(BaseTestCase):
             6. Click Back to node list
             7. Click Leave page
             8. Verify that Nodes page is present and changes are discarded
-    """
-
-    def test_confirm_if_back_to_list(self):
+        """
         with DisksSettings() as s:
             s.disks[0].volume_image.parent.click()
             time.sleep(1)
@@ -253,7 +244,8 @@ class TestConfigureDisks(BaseTestCase):
                 Nodes().add_nodes.is_displayed(),
                 'Backed to nodes page. Add Nodes button is displayed')
 
-    """Configure disks for several nodes
+    def test_configure_disks_of_several_nodes(self):
+        """Configure disks for several nodes
 
         Scenario:
             1. Add two compute nodes
@@ -261,9 +253,7 @@ class TestConfigureDisks(BaseTestCase):
             3. Allocate size for Base system volume
             4. Click apply changes
             5. Verify that changes are correctly applied
-    """
-
-    def test_configure_disks_of_several_nodes(self):
+        """
         values = [random.randint(100000, 500000) for i in range(4)]
 
         # Go back to nodes page

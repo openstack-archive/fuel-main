@@ -13,15 +13,14 @@ from tests.base import BaseTestCase
 
 class TestConfigureNetworksPage(BaseTestCase):
 
-    """Global precondition
+    @classmethod
+    def setUpClass(cls):
+        """Global precondition
 
         Steps:
             1. Create simple environment with default values
             2. Add one controller node
-    """
-
-    @classmethod
-    def setUpClass(cls):
+        """
         BaseTestCase.setUpClass()
         preconditions.Environment.simple_flat()
         Environments().create_cluster_boxes[0].click()
@@ -33,30 +32,28 @@ class TestConfigureNetworksPage(BaseTestCase):
         Nodes().apply_changes.click()
         time.sleep(1)
 
-    """Each test precondition
+    def setUp(self):
+        """Each test precondition
 
         Steps:
             1. Click on created environment
             2. Select controller node
             3. Click Configure Interfaces
-    """
-
-    def setUp(self):
+        """
         BaseTestCase.setUp(self)
         Environments().create_cluster_boxes[0].click()
         Nodes().nodes[0].details.click()
         NodeInfo().edit_networks.click()
 
-    """Drag and drop networks between interfaces
+    def test_drag_and_drop(self):
+        """Drag and drop networks between interfaces
 
         Scenario:
             1. Drag and drop Storage network from eth0 to eth1
             2. Drag and drop Management network from eth0 to eth2
             3. Drag and drop VM network from eth0 to eth2
             4. Verify that networks are on correct interfaces
-    """
-
-    def test_drag_and_drop(self):
+        """
         with InterfacesSettings() as s:
             ActionChains(browser.driver).drag_and_drop(
                 s.interfaces[0].networks['storage'],
@@ -78,16 +75,15 @@ class TestConfigureNetworksPage(BaseTestCase):
                 'vm (fixed)', s.interfaces[2].networks,
                 'vm (fixed) at eht2')
 
-    """Drag and drop public and floating networks
+    def test_public_floating_grouped(self):
+        """Drag and drop public and floating networks
 
         Scenario:
             1. Drag and drop Public network from eth0 to eth1
             2. Verify that Floating network is moved to eth1 too
             3. Drag and drop Floating network from eth1 to eth2
             4. Verify that Public network is moved to eth2 too
-    """
-
-    def test_public_floating_grouped(self):
+        """
         with InterfacesSettings() as s:
             ActionChains(browser.driver).drag_and_drop(
                 s.interfaces[0].networks['public'],
@@ -102,14 +98,13 @@ class TestConfigureNetworksPage(BaseTestCase):
                 'public', s.interfaces[2].networks,
                 'Public has been moved')
 
-    """Drag and drop Admin(PXE) network
+    def test_admin_pxe_is_not_dragable(self):
+        """Drag and drop Admin(PXE) network
 
         Scenario:
             1. Drag and drop Admin(PXE) network from eth2 to eth0
             2. Verify that network isn't draggable
-    """
-
-    def test_admin_pxe_is_not_dragable(self):
+        """
         with InterfacesSettings() as s:
             ActionChains(browser.driver).drag_and_drop(
                 s.interfaces[2].networks['admin (pxe)'],
@@ -118,7 +113,8 @@ class TestConfigureNetworksPage(BaseTestCase):
                 'admin (pxe)', s.interfaces[0].networks,
                 'admin (pxe) has not been moved')
 
-    """Assign two untagged networks to one interface
+    def test_two_untagged_on_interface(self):
+        """Assign two untagged networks to one interface
 
         Scenario:
             1. Drag and drop Public network from eth0 to eth2
@@ -127,9 +123,7 @@ class TestConfigureNetworksPage(BaseTestCase):
             3. Drag and drop Public network from eth2 to eth1
             4. Verify that eth2 isn't highlighted, error message
                has disappeared and Apply button is active
-    """
-
-    def test_two_untagged_on_interface(self):
+        """
         error = 'Untagged networks can not be assigned to one interface'
         with InterfacesSettings() as s:
             ActionChains(browser.driver).drag_and_drop(
@@ -157,7 +151,8 @@ class TestConfigureNetworksPage(BaseTestCase):
             )
             self.assertTrue(s.apply.is_enabled(), 'Apply enabled')
 
-    """Assign two untagged networks to one interface
+    def test_cancel_changes(self):
+        """Assign two untagged networks to one interface
 
         Scenario:
             1. Drag and drop Public network from eth0 to eth1
@@ -165,9 +160,7 @@ class TestConfigureNetworksPage(BaseTestCase):
             3. Click Cancel Changes
             4. Verify that Public, Storage, Floating network
                are on eth0 interface
-    """
-
-    def test_cancel_changes(self):
+        """
         with InterfacesSettings() as s:
             ActionChains(browser.driver).drag_and_drop(
                 s.interfaces[0].networks['public'],
@@ -195,7 +188,8 @@ class TestConfigureNetworks(BaseTestCase):
     def setUpClass(cls):
         BaseTestCase.setUpClass()
 
-    """Each test precondition
+    def setUp(self):
+        """Each test precondition
 
         Steps:
             1. Create simple environment with default values
@@ -203,9 +197,7 @@ class TestConfigureNetworks(BaseTestCase):
             3. Create controller node
             4. Select controller node
             5. Click Configure Interfaces
-    """
-
-    def setUp(self):
+        """
         BaseTestCase.clear_nailgun_database()
         BaseTestCase.setUp(self)
 
@@ -221,7 +213,8 @@ class TestConfigureNetworks(BaseTestCase):
         Nodes().nodes[0].details.click()
         NodeInfo().edit_networks.click()
 
-    """Load default network settings
+    def test_save_load_defaults(self):
+        """Load default network settings
 
         Scenario:
             1. Drag and drop Public network from eth0 to eth1
@@ -230,9 +223,7 @@ class TestConfigureNetworks(BaseTestCase):
             4. Click Load Defaults
             5. Verify that Public, Storage, Floating network
                are on eth0 interface
-    """
-
-    def test_save_load_defaults(self):
+        """
         with InterfacesSettings() as s:
             ActionChains(browser.driver).drag_and_drop(
                 s.interfaces[0].networks['public'],
@@ -265,7 +256,8 @@ class TestConfigureNetworks(BaseTestCase):
                 'floating', s.interfaces[0].networks,
                 'floating at eht0')
 
-    """Configure interfaces on several nodes
+    def test_configure_interfaces_of_several_nodes(self):
+        """Configure interfaces on several nodes
 
         Scenario:
             1. Add compute node
@@ -277,9 +269,7 @@ class TestConfigureNetworks(BaseTestCase):
             6. Click Apply
             7. Verify that Public and Management networks
                are on eth1 interface, Storage is on eth2
-    """
-
-    def test_configure_interfaces_of_several_nodes(self):
+        """
         # Go back to nodes page
         Tabs().nodes.click()
         # Add second node
@@ -322,7 +312,8 @@ class TestConfigureNetworks(BaseTestCase):
                 'storage', s.interfaces[2].networks,
                 'storage at eht2. Node #{0}'.format(i))
 
-    """Checking vlan id label when vlan tagging is disabled
+    def test_vlan_id_labels_visibility(self):
+        """Checking vlan id label when vlan tagging is disabled
 
         Scenario:
             1. Open Networks tab
@@ -332,9 +323,7 @@ class TestConfigureNetworks(BaseTestCase):
             5. Click configure interfaces
             6. Verify that 'Vlan Id' isn't visible on Storage,
                Management, VM(Fixed) network boxes
-    """
-
-    def test_vlan_id_labels_visibility(self):
+        """
         label = 'VLAN ID'
         Tabs().networks.click()
         with Networks() as n:
@@ -357,7 +346,8 @@ class TestConfigureNetworks(BaseTestCase):
                 label, s.interfaces[0].networks['vm (fixed)'].text,
                 'vlan id is visible. VM (Fixed) network')
 
-    """Checking correctness of vlan id on Networks tab
+    def test_vlan_id_values(self):
+        """Checking correctness of vlan id on Networks tab
 
         Scenario:
             1. Open Networks tab
@@ -368,9 +358,7 @@ class TestConfigureNetworks(BaseTestCase):
             5. Click configure interfaces
             6. Verify that 'Vlan Id' values are correct on Storage,
                Management, VM(Fixed) network boxes
-    """
-
-    def test_vlan_id_values(self):
+        """
         label = 'VLAN ID: {0}'
         vlans = [random.randint(110, 200) for i in range(3)]
         Tabs().networks.click()
@@ -403,3 +391,151 @@ class TestConfigureNetworks(BaseTestCase):
                 label.format(vlans[2]), s.interfaces[0].
                 networks['vm (fixed)'].text,
                 'vlan id is correct. VM (Fixed) network')
+
+
+class TestBondingInterfaces(BaseTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        BaseTestCase.setUpClass()
+
+    def setUp(self):
+        """Each test precondition
+
+        Steps:
+            1. Create environment with Neutron gre
+            2. Open created environment
+            3. Add controller node
+            4. Open interface configuration of the node
+        """
+        BaseTestCase.clear_nailgun_database()
+        BaseTestCase.setUp(self)
+        preconditions.Environment.simple_neutron_gre()
+        Environments().create_cluster_boxes[0].click()
+        time.sleep(1)
+        Nodes().add_nodes.click()
+        Nodes().nodes_discovered[0].checkbox.click()
+        RolesPanel().controller.click()
+        Nodes().apply_changes.click()
+        time.sleep(1)
+        Nodes().nodes[0].details.click()
+        NodeInfo().edit_networks.click()
+        time.sleep(1)
+
+    def test_bond_buttons_inactive(self):
+        """Check bond buttons are inactive by default
+
+        Scenario:
+            1. Verify bond and unbond buttons are disabled
+        """
+        self.assertFalse(InterfacesSettings().bond_interfaces.is_enabled())
+        self.assertFalse(InterfacesSettings().unbond_interfaces.is_enabled())
+
+    def test_inactive_one_selected(self):
+        """Check bond buttons are inactive if one interface is selected
+
+        Scenario:
+            1. Select one interface
+            2. Verify bond and unbond buttons are disabled
+        """
+        with InterfacesSettings() as s:
+            s.interfaces[0].interface_checkbox.click()
+            self.assertFalse(s.bond_interfaces.is_enabled())
+            self.assertFalse(s.unbond_interfaces.is_enabled())
+
+    def test_bond_interfaces(self):
+        """Bond two interfaces
+
+        Scenario:
+            1. Select two interfaces
+            2. Click bond interfaces
+            3. Verify that interfaces were bonded
+        """
+        with InterfacesSettings() as s:
+            s.interfaces[0].interface_checkbox.click()
+            s.interfaces[1].interface_checkbox.click()
+            self.assertTrue(s.bond_interfaces.is_enabled())
+            s.bond_interfaces.click()
+            s.interfaces[0].bond_mode
+            self.assertFalse(s.bond_interfaces.is_enabled())
+            self.assertFalse(s.unbond_interfaces.is_enabled())
+
+    def test_cancel_bonding(self):
+        """Cancel bonding
+
+        Scenario:
+            1. Select two interfaces
+            2. Click bond interfaces
+            3. Click cancel changes
+            4. Verify that interfaces aren't bonded
+        """
+        with InterfacesSettings() as s:
+            s.interfaces[0].interface_checkbox.click()
+            s.interfaces[1].interface_checkbox.click()
+            s.bond_interfaces.click()
+            s.cancel_changes.click()
+            self.assertEqual(len(s.interfaces), 3, 'Interfaces amount')
+
+    def test_load_default_bonding(self):
+        """Load default bonding
+
+        Scenario:
+            1. Select two interfaces
+            2. Click bond interfaces
+            3. Click load defaults
+            4. Verify that interfaces aren't bonded
+        """
+        with InterfacesSettings() as s:
+            s.interfaces[0].interface_checkbox.click()
+            s.interfaces[1].interface_checkbox.click()
+            s.bond_interfaces.click()
+            s.apply.click()
+            self.assertEqual(len(s.interfaces), 2, 'Interfaces amount not 2')
+            time.sleep(1)
+            s.load_defaults.click()
+            time.sleep(1)
+            self.assertEqual(len(s.interfaces), 3, 'Interfaces amount not 3')
+
+    def test_unbond_interfaces(self):
+        """Unbond interfaces
+
+        Scenario:
+            1. Select two interfaces
+            2. Click bond interfaces
+            3. Click unbond defaults
+            4. Verify that interfaces aren't bonded
+        """
+        with InterfacesSettings() as s:
+            s.interfaces[0].interface_checkbox.click()
+            s.interfaces[1].interface_checkbox.click()
+            s.bond_interfaces.click()
+            s.interfaces[0].interface_checkbox.click()
+            s.unbond_interfaces.click()
+            self.assertEqual(len(s.interfaces), 3, 'Interfaces amount not 3')
+
+    def test_bond_mode(self):
+        """Change bond modes
+
+        Scenario:
+            1. Select two interfaces
+            2. Click bond interfaces
+            3. Change bond modes
+            4. Verify that modes are saved correctly
+        """
+        with InterfacesSettings() as s:
+            s.interfaces[0].interface_checkbox.click()
+            s.interfaces[1].interface_checkbox.click()
+            s.bond_interfaces.click()
+            s.interfaces[0].select_mode.select_by_visible_text('Balance SLB')
+            self.assertEqual(s.interfaces[0].select_mode.
+                             first_selected_option.text,
+                             'Balance SLB', 'Text is Balance SLB')
+            s.interfaces[0].select_mode.select_by_visible_text('Balance TCP')
+            self.assertEqual(s.interfaces[0].select_mode.
+                             first_selected_option.text,
+                             'Balance TCP', 'Text is Balance TCP')
+            s.interfaces[0].select_mode.\
+                select_by_visible_text('LACP Balance TCP')
+            self.assertEqual(s.interfaces[0].select_mode.
+                             first_selected_option.text,
+                             'LACP Balance TCP', 'Text is LACP Balance TCP')

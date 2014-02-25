@@ -10,18 +10,18 @@ from tests.base import BaseTestCase
 
 class TestEnvironment(BaseTestCase):
 
-    """Each test precondition
+    def setUp(self):
+        """Each test precondition
 
         Steps:
             1. Click on create environment
-    """
-
-    def setUp(self):
+        """
         self.clear_nailgun_database()
         BaseTestCase.setUp(self)
         Environments().create_cluster_box.click()
 
-    """Create default environment
+    def test_default_settings(self):
+        """Create default environment
 
         Scenario:
             1. Create environment with default values
@@ -30,9 +30,7 @@ class TestEnvironment(BaseTestCase):
             4. Click on information icon and verify all
                information is displayed correctly
             5. Verify all info on Networks and Settings tab
-    """
-
-    def test_default_settings(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_CENTOS)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_CENTOS)
@@ -74,7 +72,8 @@ class TestEnvironment(BaseTestCase):
                             find_element_by_tag_name('input').is_selected())
         pass
 
-    """Create environment with HA mode
+    def test_ha_mode(self):
+        """Create environment with HA mode
 
         Scenario:
             1. Create environment with HA mode
@@ -82,9 +81,7 @@ class TestEnvironment(BaseTestCase):
             3. Verify that correct environment name is displayed
             4. Click on information icon and verify
                all information is displayed correctly
-    """
-
-    def test_ha_mode(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_CENTOS)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_CENTOS)
@@ -104,16 +101,15 @@ class TestEnvironment(BaseTestCase):
             self.assertIn(OPENSTACK_CENTOS, n.env_details.text)
             self.assertIn('Multi-node with HA', n.env_details.text)
 
-    """Create environment with KVM hypervisor
+    def test_hypervisor_kvm(self):
+        """Create environment with KVM hypervisor
 
         Scenario:
             1. Create environment with KVM hypervisor
             2. Click on created environment
             3. Open settings tab
             4. Verify KVM hypervisor is selected
-    """
-
-    def test_hypervisor_kvm(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_CENTOS)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_CENTOS)
@@ -133,7 +129,8 @@ class TestEnvironment(BaseTestCase):
             self.assertTrue(s.hypervisor_kvm.
                             find_element_by_tag_name('input').is_selected())
 
-    """Create environment with Neutron GRE network
+    def test_neutron_gre(self):
+        """Create environment with Neutron GRE network
 
         Scenario:
             1. Create environment with Neutron GRE network
@@ -141,9 +138,7 @@ class TestEnvironment(BaseTestCase):
             3. Open networks tab
             4. Verify Neutron parameters are displayed and
                Neutron with gre segmentation text is displayed
-    """
-
-    def test_neutron_gre(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_CENTOS)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_CENTOS)
@@ -164,7 +159,8 @@ class TestEnvironment(BaseTestCase):
                              'Neutron with gre segmentation')
             self.assertTrue(NeutronParameters().parent.is_displayed())
 
-    """Create environment with Neutron VLAN network
+    def test_neutron_vlan(self):
+        """Create environment with Neutron VLAN network
 
         Scenario:
             1. Create environment with Neutron VLAN network
@@ -172,9 +168,7 @@ class TestEnvironment(BaseTestCase):
             3. Open networks tab
             4. Verify Neutron parameters are displayed and
                Neutron with vlan segmentation text is displayed
-    """
-
-    def test_neutron_vlan(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_CENTOS)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_CENTOS)
@@ -195,7 +189,8 @@ class TestEnvironment(BaseTestCase):
                              'Neutron with vlan segmentation')
             self.assertTrue(NeutronParameters().parent.is_displayed())
 
-    """Create environment with Ceph storage
+    def test_storage_ceph(self):
+        """Create environment with Ceph storage
 
         Scenario:
             1. Create environment with Ceph storage for Cinder and Glance
@@ -203,9 +198,7 @@ class TestEnvironment(BaseTestCase):
             3. Open settings tab
             4. Verify that Cinder for volumes, Ceph for volumes
                and images are selected, Ceph for rados isn't selected
-    """
-
-    def test_storage_ceph(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_CENTOS)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_CENTOS)
@@ -232,7 +225,8 @@ class TestEnvironment(BaseTestCase):
             self.assertFalse(s.ceph_rados_gw.
                              find_element_by_tag_name('input').is_selected())
 
-    """Create environment with Savanna, Murano, Ceilometer selected
+    def test_services(self):
+        """Create environment with Savanna, Murano, Ceilometer selected
 
         Scenario:
             1. Create environment with Install Savanna,
@@ -241,9 +235,7 @@ class TestEnvironment(BaseTestCase):
             3. Open settings tab
             4. Verify that Install Savanna, Murano,
                Ceilometer checkboxes are selected
-    """
-
-    def test_services(self):
+        """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_CENTOS)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_CENTOS)
