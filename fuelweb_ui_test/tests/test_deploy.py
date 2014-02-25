@@ -16,29 +16,27 @@ class TestDeploy(BaseTestCase):
     def setUpClass(cls):
         BaseTestCase.setUpClass()
 
-    """Each test precondition
+    def setUp(self):
+        """Each test precondition
 
         Steps:
             1. Create simple environment with default values
             2. Click on created environment
-    """
-
-    def setUp(self):
+        """
         BaseTestCase.clear_nailgun_database()
         BaseTestCase.setUp(self)
         preconditions.Environment.simple_flat()
         Environments().create_cluster_boxes[0].click()
         time.sleep(1)
 
-    """Deploy environment with controller and compute nodes
+    def test_add_nodes(self):
+        """Deploy environment with controller and compute nodes
 
         Scenario:
             1. Add controller and compute node
             2. Deploy changes
             3. Verify that nodes statuses are ready
-    """
-
-    def test_add_nodes(self):
+        """
         Nodes().add_nodes.click()
         Nodes().nodes_discovered[0].checkbox.click()
         RolesPanel().controller.click()
@@ -66,7 +64,8 @@ class TestDeploy(BaseTestCase):
                 self.assertEqual('ready', node.status.text.lower(),
                                  'Node status is READY')
 
-    """Delete one node and deploy changes
+    def test_delete_node(self):
+        """Delete one node and deploy changes
 
         Scenario:
             1. Add controller and compute node
@@ -74,9 +73,7 @@ class TestDeploy(BaseTestCase):
             3. Delete one node
             4. Deploy changes
             5. Verify that only one node is present
-    """
-
-    def test_delete_node(self):
+        """
         self.test_add_nodes()
 
         with Nodes() as n:
@@ -101,7 +98,8 @@ class TestDeploy(BaseTestCase):
                 self.assertEqual('ready', node.status.text.lower(),
                                  'Node status is READY')
 
-    """Configure network interfaces after deploy
+    def test_node_configure_networks_is_readonly(self):
+        """Configure network interfaces after deploy
 
         Scenario:
             1. Add controller node
@@ -110,9 +108,7 @@ class TestDeploy(BaseTestCase):
             4. Drag and drop Storage network to eth1
             5. Verify that Storage network can't be dragged and dropped
             6. Apply, Load defaults, Cancel Changes buttons are not active
-    """
-
-    def test_node_configure_networks_is_readonly(self):
+        """
         Nodes().add_nodes.click()
         Nodes().nodes_discovered[0].checkbox.click()
         RolesPanel().controller.click()
@@ -140,7 +136,8 @@ class TestDeploy(BaseTestCase):
             self.assertFalse(s.cancel_changes.is_enabled(),
                              'Cancel changes is disabled')
 
-    """Configure disks after deploy
+    def test_node_configure_disks_is_readonly(self):
+        """Configure disks after deploy
 
         Scenario:
             1. Add controller node
@@ -148,9 +145,7 @@ class TestDeploy(BaseTestCase):
             3. Select controller node and click configure disks
             4. Verify that volume inputs are disabled
             6. Apply, Load defaults, Cancel Changes buttons are not active
-    """
-
-    def test_node_configure_disks_is_readonly(self):
+        """
         Nodes().add_nodes.click()
         Nodes().nodes_discovered[0].checkbox.click()
         RolesPanel().controller.click()
