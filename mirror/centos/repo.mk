@@ -55,8 +55,8 @@ $(BUILD_DIR)/mirror/centos/yum.done: \
 	# yumdownloader should fail if some packages are missed
 	test `grep "No Match" $(BUILD_DIR)/mirror/centos/yumdownloader.log | wc -l` = 0
 	# Yumdownloader workaround number three:
-	# We have exactly three downloading conflicts: django, mysql and kernel-headers
-	test `grep "has depsolving problems" $(BUILD_DIR)/mirror/centos/yumdownloader.log | wc -l` -le 3
+	# We have exactly three downloading conflicts: django, mysql, kernel-headers and kernel-lt-firmware
+	test `grep "has depsolving problems" $(BUILD_DIR)/mirror/centos/yumdownloader.log | wc -l` -le 4
 	$(ACTION.TOUCH)
 
 show-yum-urls-centos: \
