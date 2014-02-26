@@ -21,6 +21,7 @@ base-files
 base-passwd
 bash
 bash-completion
+bc
 bind9-host
 binutils
 bridge-utils
