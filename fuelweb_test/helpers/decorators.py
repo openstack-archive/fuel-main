@@ -24,7 +24,6 @@ from proboscis import SkipTest
 
 from fuelweb_test import settings
 
-
 def save_logs(url, filename):
     logging.info('Saving logs to "{}" file'.format(filename))
     try:
@@ -138,6 +137,37 @@ def upload_manifests(func):
                                settings.SITEPP_FOR_UPLOAD)
         except Exception:
             logging.error("Could not upload manifests")
+            raise
+        return result
+    return wrapper
+
+
+def update_ostf(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        try:
+            if settings.UPLOAD_PATCHSET:
+                logging.info("Uploading new patchset from %s" %
+                             settings.GERRIT_REFSPEC)
+                remote = SSHClient(args[0].admin_node_ip,
+                                   username='root',
+                                   password='r00tme')
+                remote.execute('yum install git -y')
+                remote.execute('cd /tmp; git clone https://github.com/'
+                               'stackforge/fuel-ostf.git')
+                remote.execute('cd /tmp/fuel-ostf; git fetch https://review.'
+                               'openstack.org/stackforge/fuel-ostf '
+                               '{GERRIT_REFSPEC} && git checkout FETCH_HEAD'
+                               .format(GERRIT_REFSPEC = GERRIT_REFSPEC))
+                remote.execute('source /opt/fuel_plugins/ostf/bin/activate'
+                               'cd /tmp/fuel-ostf; python setup.py develop')
+                remote.execute('/etc/init.d/supervisord restart')
+                ostf_status = remote.execute('supervisorctl status ostf'
+                                             "| awk '{print $2}'")
+                logging.info("OSTF status %s" % ostf_status)
+        except Exception:
+            logging.error("Could not upload patch set")
             raise
         return result
     return wrapper
