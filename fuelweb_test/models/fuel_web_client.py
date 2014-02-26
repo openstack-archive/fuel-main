@@ -25,6 +25,7 @@ from proboscis.asserts import assert_true
 from fuelweb_test.helpers import checkers
 from fuelweb_test import logwrap
 from fuelweb_test import logger
+from fuelweb_test.helpers.decorators import update_ostf
 from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
@@ -255,6 +256,7 @@ class FuelWebClient(object):
 
     @logwrap
     @upload_manifests
+    @update_ostf
     def create_cluster(self,
                        name,
                        settings=None,
