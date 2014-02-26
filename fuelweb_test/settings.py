@@ -142,6 +142,8 @@ UPLOAD_MANIFESTS_PATH = os.environ.get(
 SITEPP_FOR_UPLOAD = os.environ.get(
     'SITEPP_PATH', '/etc/puppet/modules/osnailyfacter/examples/site.pp')
 
+UPLOAD_PATCHSET = os.environ.get('UPLOAD_PATCHSET', 'false') == 'true'
+GERRIT_REFSPEC = os.environ.get('GERRIT_REFSPEC')
 
 KVM_USE = os.environ.get('KVM_USE', 'false') == 'true'
 DEBUG_MODE = os.environ.get('DEBUG_MODE', 'true') == 'true'
