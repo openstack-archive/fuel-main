@@ -59,7 +59,9 @@ MGMT_FORWARD = os.environ.get('MGMT_FORWARD', FORWARD_DEFAULT)
 PRIVATE_FORWARD = os.environ.get('PRIVATE_FORWARD', FORWARD_DEFAULT)
 STORAGE_FORWARD = os.environ.get('STORAGE_FORWARD', FORWARD_DEFAULT)
 
-INTERFACE_ORDER = ('admin', 'public', 'management', 'private', 'storage')
+DEFAULT_INTERFACE_ORDER = 'admin,public,management,private,storage'
+INTERFACE_ORDER = os.environ.get('INTERFACE_ORDER',
+                                 DEFAULT_INTERFACE_ORDER).split(',')
 
 FORWARDING = {
     'admin': ADMIN_FORWARD,
