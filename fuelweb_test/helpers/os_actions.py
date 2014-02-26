@@ -128,8 +128,8 @@ class OpenStackActions(common.Common):
         curr_host = self.get_srv_host_name(server)
         server.live_migrate(host._info['host_name'])
         helpers.wait(
-            lambda: self.get_instance_detail(server).status == "ACTIVE",
-            timeout=20)
+            lambda: self.get_instance_detail(server).status == "VERIFY_RESIZE",
+            timeout=60 * 2)
         proboscis.asserts.assert_true(
             self.get_srv_host_name(
                 self.get_instance_detail(server)) != curr_host,
