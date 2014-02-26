@@ -19,6 +19,7 @@ import time
 import urllib2
 
 from devops.helpers.helpers import SSHClient
+from devops.helpers import helpers
 from proboscis import SkipTest
 
 from fuelweb_test import settings
@@ -128,3 +129,34 @@ def revert_info(snapshot_name, description=""):
     )
 
     logger.info("<" * 5 + "*" * 100 + ">" * 5)
+
+
+def update_ostf(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        try:
+            if settings.UPLOAD_PATCHSET:
+                if not settings.GERRIT_REFSPEC:
+                    raise ValueError('REFSPEC should be set for CI tests.')
+                logger.info("Uploading new patchset from {0}".format
+                             (settings.GERRIT_REFSPEC))
+                remote = SSHClient(args[0].admin_node_ip,
+                                   username='root',
+                                   password='r00tme')
+                remote.upload(settings.PATCH_FOR_UPLOAD,
+                              '/tmp/')
+                remote.execute('source /opt/fuel_plugins/ostf/bin/activate'
+                               'cd /tmp/fuel-ostf; python setup.py develop')
+                remote.execute('/etc/init.d/supervisord restart')
+                helpers.wait(
+                    lambda: "RUNNING" in
+                    remote.execute("supervisorctl status ostf | awk\
+                                   '{print $2}'")['stdout'][0],
+                    timeout=60)
+                logger.info("OSTF status: RUNNING")
+        except Exception as e:
+            logger.error("Could not upload patch set {e}".format(e=e))
+            raise
+        return result
+    return wrapper
