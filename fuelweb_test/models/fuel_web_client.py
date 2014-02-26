@@ -25,6 +25,7 @@ from proboscis.asserts import assert_true
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import debug
+from fuelweb_test.helpers.decorators import update_ostf
 from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
@@ -422,6 +423,7 @@ class FuelWebClient(object):
             cluster_id, self.client.get_networks(cluster_id)['networks'])
 
     @logwrap
+    @update_ostf
     def run_ostf(self, cluster_id, test_sets=None,
                  should_fail=0, tests_must_be_passed=None,
                  timeout=None, failed_test_name=None):
