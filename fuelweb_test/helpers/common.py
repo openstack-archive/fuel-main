@@ -89,6 +89,7 @@ class Common(object):
         LOGGER.info('server is {0}'.format(server.name))
         return server
 
+    @LOGWRAP
     def get_instance_detail(self, server):
         details = self.nova.servers.get(server)
         return details
