@@ -181,6 +181,7 @@ man-1.6f-32.el6
 mcollective
 mcollective-client
 mcollective-common
+mc
 memcached-1.4.4-3.el6
 mlocate-0.22.2-4.el6
 mod_fastcgi
