@@ -48,6 +48,8 @@ if you do need to override them.
 -r (yes/no) - Should built ISO file be places with build number tag and
               symlinked to the last build or just copied over the last file.
 -b (num)    - Allows you to override Jenkins' build number if you need to.
+-l (dir)    - Path to logs directory. Can be set by LOGS_DIR evironment variable.
+              Uses WORKSPACE/logs if not set.
 -d          - Dry run mode. Only show what would be done and do nothing.
               Useful for debugging.
 -k          - Keep previously created test environment before tests run
@@ -123,7 +125,7 @@ GlobalVariables() {
 }
 
 GetoptsVariables() {
-  while getopts ":w:j:i:t:o:a:A:m:U:r:b:V:dkKeh" opt; do
+  while getopts ":w:j:i:t:o:a:A:m:U:r:b:V:l:dkKe:h" opt; do
     case $opt in
       w)
         WORKSPACE="${OPTARG}"
@@ -160,6 +162,9 @@ GetoptsVariables() {
         ;;
       V)
         VENV_PATH="${OPTARG}"
+        ;;
+      l)
+        LOGS_DIR="${OPTARG}"
         ;;
       k)
         KEEP_BEFORE="yes"
@@ -363,8 +368,12 @@ RunTest() {
       ENV_NAME="${JOB_NAME}_system_test"
     fi
 
+    if [ "${LOGS_DIR}" = "" ]; then
+      LOGS_DIR="${WORKSPACE}/logs"
+    fi
+
     export ENV_NAME
-    export LOGS_DIR="${WORKSPACE}/logs"
+    export LOGS_DIR
     export ISO_PATH
 
     if [ "${KEEP_BEFORE}" != "yes" ]; then
