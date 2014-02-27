@@ -129,7 +129,7 @@ class OpenStackActions(common.Common):
         server.live_migrate(host._info['host_name'])
         helpers.wait(
             lambda: self.get_instance_detail(server).status == "ACTIVE",
-            timeout=20)
+            timeout=60)
         proboscis.asserts.assert_true(
             self.get_srv_host_name(
                 self.get_instance_detail(server)) != curr_host,
