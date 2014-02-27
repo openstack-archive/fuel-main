@@ -1,8 +1,7 @@
-.PHONY: nailgun shotgun fuelclient
+.PHONY: nailgun fuelclient
 
 $(BUILD_DIR)/packages/eggs/build.done: \
 		$(BUILD_DIR)/packages/eggs/nailgun.done \
-		$(BUILD_DIR)/packages/eggs/shotgun.done \
 		$(BUILD_DIR)/packages/eggs/fuelclient.done
 	mkdir -p $(LOCAL_MIRROR_EGGS)
 	find $(BUILD_DIR)/packages/eggs/ -maxdepth 1 -type f ! -name "build.done" \
@@ -40,7 +39,6 @@ $(eval $(call build_egg,GateOne,bb003114b4e84e9425fd02fd1ee615d4dd2113e7,gateone
 $(eval PBR_VERSION=0.2.5 SKIP_GIT_SDIST=1 $(call build_egg,python-heatclient,7685f8ac19482086f72d6d733fc21a31c5e35d16,python-heatclient,0.2.5))
 
 nailgun: $(BUILD_DIR)/packages/eggs/nailgun.done
-shotgun: $(BUILD_DIR)/packages/eggs/shotgun.done
 fuelclient: $(BUILD_DIR)/packages/eggs/fuelclient.done
 
 $(BUILD_DIR)/packages/eggs/nailgun.done: $(call depv,NO_UI_OPTIMIZE) \
@@ -60,12 +58,6 @@ else
 		python setup.py sdist --dist-dir $(BUILD_DIR)/packages/eggs
 endif
 	$(ACTION.TOUCH)
-
-$(BUILD_DIR)/packages/eggs/shotgun.done: \
-		$(call find-files,$(BUILD_DIR)/repos/nailgun/shotgun) \
-		$(BUILD_DIR)/repos/nailgun.done
-	cd $(BUILD_DIR)/repos/nailgun/shotgun && \
-		python setup.py sdist --dist-dir $(BUILD_DIR)/packages/eggs
 
 $(BUILD_DIR)/packages/eggs/fuelclient.done: \
 		$(call find-files,$(BUILD_DIR)/repos/nailgun/fuelclient)
