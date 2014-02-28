@@ -14,6 +14,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
 Vendor: Matthew Mosesohn <mmosesohn@mirantis.com>
+BuildRequires:  python-setuptools
 Requires: bind-utils
 Requires: dhcp_checker
 Requires: nailgun-net-check
