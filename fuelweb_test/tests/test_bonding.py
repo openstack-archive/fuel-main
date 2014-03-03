@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 logwrap = debug(logger)
 
 
-@test(groups=["thread_3", "bonding_simple", "bonding"])
+@test(groups=["bonding_simple", "bonding"])
 class BondingSimple(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_bonding_active_backup"])
@@ -225,7 +225,7 @@ class BondingSimple(TestBasic):
         self.env.make_snapshot("deploy_bonding_balance_slb")
 
 
-@test(groups=["thread_3", "bonding_ha", "bonding"])
+@test(groups=["bonding_ha", "bonding"])
 class BondingHA(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_bonding_ha_active_backup"])
