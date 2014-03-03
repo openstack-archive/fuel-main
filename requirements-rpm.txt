@@ -412,7 +412,7 @@ python-simplejson
 python-six
 python-sphinx10-1.0.8-1.el6
 python-sphinx10-doc-1.0.8-1.el6
-python-sqlalchemy-0.7.9-1.el6.2
+python-sqlalchemy
 python-stevedore
 python-swiftclient
 python-swiftclient-doc
