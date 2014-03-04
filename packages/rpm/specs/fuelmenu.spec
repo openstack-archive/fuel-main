@@ -15,7 +15,6 @@ Prefix: %{_prefix}
 BuildArch: noarch
 Vendor: Matthew Mosesohn <mmosesohn@mirantis.com>
 Requires: bind-utils
-Requires: dhcp_checker
 Requires: nailgun-net-check
 Requires: ntp
 Requires: python-setuptools
