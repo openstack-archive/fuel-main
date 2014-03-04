@@ -52,24 +52,6 @@ $(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: \
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
-$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: export SANDBOX_UP:=$(SANDBOX_UP)
-$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
-$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: $(BUILD_DIR)/repos/nailgun.done
-$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done: \
-		$(BUILD_DIR)/packages/rpm/prep.done \
-		$(SOURCE_DIR)/packages/rpm/specs/dhcp-checker.spec \
-		$(call find-files,$(BUILD_DIR)/repos/nailgun/dhcp-checker)
-	sudo sh -c "$${SANDBOX_UP}"
-	sudo mkdir -p $(SANDBOX)/tmp/SOURCES/dhcp_checker
-	sudo cp -r $(BUILD_DIR)/repos/nailgun/dhcp-checker/* $(SANDBOX)/tmp/SOURCES/dhcp_checker
-	cd $(SANDBOX)/tmp/SOURCES/dhcp_checker && sudo python setup.py sdist -d $(SANDBOX)/tmp/SOURCES
-	sudo cp $(SOURCE_DIR)/packages/rpm/specs/dhcp-checker.spec $(SANDBOX)/tmp
-	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/dhcp-checker.spec
-	cp $(SANDBOX)/tmp/RPMS/x86_64/dhcp_checker-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
-	sudo sh -c "$${SANDBOX_DOWN}"
-	$(ACTION.TOUCH)
-
 $(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
 $(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
@@ -136,7 +118,6 @@ $(BUILD_DIR)/packages/rpm/repo.done: \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-redhat-license.done \
 		$(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done \
-		$(BUILD_DIR)/packages/rpm/rpm-dhcp-checker.done \
 		$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done \
 		$(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
