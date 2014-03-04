@@ -1,31 +1,36 @@
-Name:      nailgun-net-check
+%define name nailgun-net-check
+%define version 0.1
+%define release 1
+
+Name:      %{name}
 Summary:   Network checking package for CentOS6.2
-Version:   0.0.2
-Release:   1
+Version:   %{version}
+Release:   %{release}
 License:   GPLv2
-Source0:   net_probe.py
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-build
+Source0:   %{name}-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 URL:       http://github.com/Mirantis
+
 Requires:  vconfig
 Requires:  scapy
 Requires:  python-argparse
-Requires: python-pypcap
+Requires:  python-pypcap
 
 %description
 This is a network tool that helps to verify networks connectivity
 between hosts in network.
 
 %prep
-rm -rf %{name}-%{version}
-mkdir %{name}-%{version}
+%setup -n %{name}-%{version}
+
+%build
+python setup.py build
 
 %install
-mkdir -p %{buildroot}/usr/bin
-cp %{SOURCE0} %{buildroot}/usr/bin
-
-%files
-%defattr(0755,root,root,-)
-/usr/bin/net_probe.py
+python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
 
 %clean
-rm -rf %{buildroot}
+rm -rf $RPM_BUILD_ROOT
+
+%files -f INSTALLED_FILES
+%defattr(-,root,root)

@@ -41,12 +41,11 @@ $(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: export SANDBOX_DOWN:=$(SAN
 $(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: \
 		$(BUILD_DIR)/packages/rpm/prep.done \
 		$(SOURCE_DIR)/packages/rpm/specs/nailgun-net-check.spec \
-		$(SOURCE_DIR)/packages/rpm/nailgun-net-check/net_probe.py
+		$(call find-files,$(BUILD_DIR)/repos/nailgun/network_checker)
 	sudo sh -c "$${SANDBOX_UP}"
-	sudo mkdir -p $(SANDBOX)/tmp/SOURCES
-	sudo cp $(SOURCE_DIR)/packages/rpm/patches/* $(SANDBOX)/tmp/SOURCES
-	sudo cp $(LOCAL_MIRROR_SRC)/* $(SANDBOX)/tmp/SOURCES
-	sudo cp $(SOURCE_DIR)/packages/rpm/nailgun-net-check/net_probe.py $(SANDBOX)/tmp/SOURCES
+	sudo mkdir -p $(SANDBOX)/tmp/SOURCES/network_checker
+	sudo cp -r $(BUILD_DIR)/repos/nailgun/network_checker/* $(SANDBOX)/tmp/SOURCES/network_checker/
+	cd $(SANDBOX)/tmp/SOURCES/network_checker && sudo python setup.py sdist -d $(SANDBOX)/tmp/SOURCES
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/nailgun-net-check.spec $(SANDBOX)/tmp
 	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/nailgun-net-check.spec
 	cp $(SANDBOX)/tmp/RPMS/x86_64/nailgun-net-check-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
@@ -88,7 +87,6 @@ $(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done: \
 	cp $(SANDBOX)/tmp/RPMS/noarch/python-fuelclient-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
-
 
 $(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
 $(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done: export SANDBOX_UP:=$(SANDBOX_UP)
