@@ -202,17 +202,18 @@ case "${repo}" in
 esac
 
 %post --log=/root/anaconda-post-after-chroot.log
-#!/bin/sh
+#!/bin/bash
 
 set -x
 
 function save_cfg {
     scrFile="/etc/sysconfig/network-scripts/ifcfg-$device"
+    search="domain $domain\nsearch $domain"
     sed -i -e 's#^\(HOSTNAME=\).*$#\1'"$hostname"'#' /etc/sysconfig/network
     grep -q "^\s*$ip\s+$hostname" /etc/hosts || echo "$ip $hostname" >> /etc/hosts
-    echo "nameserver 127.0.0.1" > /etc/resolv.conf
-    [ $dns1 ] && echo "nameserver $dns1" > /etc/resolv.conf
-    [ $dns1 ] && echo "nameserver $dns1" > /etc/dnsmasq.upstream
+    echo "${search}\nnameserver 127.0.0.1" > /etc/resolv.conf
+    [ $dns1 ] && echo "${search}\nnameserver $dns1" > /etc/resolv.conf
+    [ $dns1 ] && echo "${search}\nnameserver $dns1" > /etc/dnsmasq.upstream
     [ $dns2 ] && echo "nameserver $dns2" >> /etc/resolv.conf
     [ $dns2 ] && echo "nameserver $dns2" >> /etc/dnsmasq.upstream
 
@@ -246,6 +247,7 @@ hostname="nailgun.mirantis.com"
 
 for I in `cat /proc/cmdline`; do case "$I" in *=*) eval $I;; esac ; done
 hostname=$hostname
+domain=${hostname#*.}
 ip=$ip
 netmask=$netmask
 gw=$gw
