@@ -140,20 +140,21 @@ class TestHaFailover(TestBasic):
 
         """
         self.env.revert_snapshot("deploy_ha")
-
-        # Verify VIPs are started.
-        ret = self.fuel_web.get_pacemaker_status(
-            self.env.nodes().slaves[0].name)
-        assert_true(
-            re.search('vip__management_old\s+\(ocf::heartbeat:IPaddr2\):'
-                      '\s+Started node', ret), 'vip management started')
-        assert_true(
-            re.search('vip__public_old\s+\(ocf::heartbeat:IPaddr2\):'
-                      '\s+Started node', ret), 'vip public started')
-
+        cluster_id = \
+            self.fuel_web.client.get_cluster_id(self.__class__.__name__)
         interfaces = ('eth1', 'eth2')
+        slaves = self.env.nodes().slaves[:3]
         ips_amount = 0
-        for devops_node in self.env.nodes().slaves[:3]:
+        for devops_node in slaves:
+            # Verify VIPs are started.
+            ret = self.fuel_web.get_pacemaker_status(devops_node.name)
+            assert_true(
+                re.search('vip__management_old\s+\(ocf::heartbeat:IPaddr2\):'
+                          '\s+Started node', ret), 'vip management started')
+            assert_true(
+                re.search('vip__public_old\s+\(ocf::heartbeat:IPaddr2\):'
+                          '\s+Started node', ret), 'vip public started')
+
             for interface in interfaces:
                 # Look for secondary ip and remove it
                 addresses = self.fuel_web.ip_address_show(
@@ -169,13 +170,22 @@ class TestHaFailover(TestBasic):
                     devops_node.name, interface, ip)
 
                 # The ip should be restored
-                ip_assigned = \
-                    lambda: ip in self.fuel_web.ip_address_show(
-                        devops_node.name, interface, '| grep ka$')
-                wait(ip_assigned, timeout=10)
-                assert_true(ip_assigned(),
-                            'Secondary IP is restored')
+                ip_assigned = lambda nodes: \
+                    any([ip in self.fuel_web.ip_address_show(
+                        n.name, interface, '| grep ka$') for n in nodes])
+
+                wait(lambda: ip_assigned(slaves), timeout=10)
+                assert_true(ip_assigned(slaves), 'Secondary IP is restored')
                 ips_amount += 1
+                # Run OSTF tests
+                failed_test_name = ['Create volume and attach it to instance']
+                self.fuel_web.run_ostf(
+                    cluster_id=cluster_id,
+                    test_sets=['ha', 'smoke', 'sanity'],
+                    should_fail=1,
+                    failed_test_name=failed_test_name)
+                # Revert initial state. VIP could be moved to other controller
+                self.env.revert_snapshot("deploy_ha")
         assert_equal(ips_amount, 2, 'Secondary IPs amount')
 
     @test(depends_on_groups=['deploy_ha'],
