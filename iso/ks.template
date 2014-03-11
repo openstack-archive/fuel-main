@@ -22,51 +22,66 @@ skipx
 
 # hard drives
 drives=""
+removable_drives=""
 for drv in `ls -1 /sys/block | grep "sd\|hd\|vd\|cciss"`; do
+    d=`echo ${drv} | sed -e 's/!/\//'`
     if (grep -q 0 /sys/block/${drv}/removable); then
-        d=`echo ${drv} | sed -e 's/!/\//'`
         drives="${drives} ${d}"
+    else
+        removable_drives="${removable_drives} ${d}"
     fi
 done
+default_drive=`echo ${drives} ${removable_drives} | awk '{print $1}'`
 
 installdrive="undefined"
 for I in `cat /proc/cmdline`; do case "$I" in *=*) eval $I;; esac ; done
 
-set ${drives}
+set ${drives} ${removable_drives}
 numdrives=`echo $#`
 
-tgtdrive="${installdrive}"
+count_attempts=1
+max_count_attempts=5
 
+tgtdrive="${installdrive}"
 if [ ${numdrives} -gt 1 ]; then
     exec < /dev/tty3 > /dev/tty3 2>&1
     chvt 3
     while [ "${tgtdrive}" = "undefined" ]; do
         clear
         echo
-        echo '********************************************************************************'
-        echo '*                                 W A R N I N G                                *'
-        echo '*                                                                              *'
-        echo '*  Which of the detected hard drives do you want to be used as                 *'
-        echo '*  installation target?                                                        *'
-        echo '*                                                                              *'
-        echo '********************************************************************************'
+        echo '****************************************************************'
+        echo '*                      W A R N I N G                           *'
+        echo '*                                                              *'
+        echo '*  Which of the detected hard drives do you want to be used as *'
+        echo '*  installation target?                                        *'
+        echo '*                                                              *'
+        echo '****************************************************************'
         echo
-        echo "Possible choices: ${drives}"
+        echo "Possible choices:"
+        echo "Persistent drives: ${drives}"
+        echo "Removable drives: ${removable_drives}"
+        echo "Attempt ${count_attempts} from ${max_count_attempts}"
+        echo "${default_drive} will be chosen after ${max_count_attempts} unsuccessful attempts"
         echo
         read -p "Choose hard drive: " tgtdrive
         match="no"
-        for drive in ${drives[@]}; do
+        for drive in ${drives[@]} ${removable_drives[@]}; do
           [[ "$drive" == "$tgtdrive" ]] && match="yes" && break
         done
         if [[ "$match" == "no" ]]; then
-          tgtdrive="undefined"
-          read -p "Invalid choice. Press Enter to continue." _
+          if [[ $count_attempts -ge $max_count_attempts ]]; then
+            tgtdrive=${default_drive}
+          else
+            tgtdrive="undefined"
+            read -p "Invalid choice. Press Enter to continue." _
+          fi
+          count_attempts=$(($count_attempts + 1))
         fi
     done
     clear
     chvt 1
 else
-    tgtdrive=`echo ${drives} | sed -e "s/^\s*//" -e "s/\s*$//"`
+    tgtdrive=`echo ${drives} ${removable_drives} | sed -e "s/^\s*//" -e "s/\s*$//"`
 fi
 
 # verify tgtdrive is at least 30GB
