@@ -22,14 +22,17 @@ skipx
 
 # hard drives
 drives=""
+removable_drives=""
 for drv in `ls -1 /sys/block | grep "sd\|hd\|vd\|cciss"`; do
+    d=`echo ${drv} | sed -e 's/!/\//'`
     if (grep -q 0 /sys/block/${drv}/removable); then
-        d=`echo ${drv} | sed -e 's/!/\//'`
         drives="${drives} ${d}"
+    else
+        removable_drives="${removable_drives} ${d}"
     fi
 done
 
-set ${drives}
+set ${drives} ${removable_drives}
 numdrives=`echo $#`
 tgtdrive="undefined"
 if [ ${numdrives} -gt 1 ]; then
@@ -38,19 +41,21 @@ if [ ${numdrives} -gt 1 ]; then
     while [ "${tgtdrive}" = "undefined" ]; do
         clear
         echo
-        echo '********************************************************************************'
-        echo '*                                 W A R N I N G                                *'
-        echo '*                                                                              *'
-        echo '*  Which of the detected hard drives do you want to be used as                 *'
-        echo '*  installation target?                                                        *'
-        echo '*                                                                              *'
-        echo '********************************************************************************'
+        echo '****************************************************************'
+        echo '*                                 W A R N I N G                *'
+        echo '*                                                              *'
+        echo '*  Which of the detected hard drives do you want to be used as *'
+        echo '*  installation target?                                        *'
+        echo '*                                                              *'
+        echo '****************************************************************'
         echo
-        echo "Possible choices: ${drives}"
+        echo "Possible choices:"
+        echo "Persistent drives: ${drives}"
+        echo "Removable drives: ${removable_drives}"
         echo
         read -p "Choose hard drive: " tgtdrive
         match="no"
-        for drive in ${drives[@]}; do
+        for drive in ${drives[@]} ${removable_drives[@]}; do
           [[ "$drive" == "$tgtdrive" ]] && match="yes" && break
         done
         if [[ "$match" == "no" ]]; then
@@ -61,7 +66,7 @@ if [ ${numdrives} -gt 1 ]; then
     clear
     chvt 1
 else
-    tgtdrive=`echo ${drives} | sed -e "s/^\s*//" -e "s/\s*$//"`
+    tgtdrive=`echo ${drives} ${removable_drives} | sed -e "s/^\s*//" -e "s/\s*$//"`
 fi
 
 # verify tgtdrive is at least 30GB
