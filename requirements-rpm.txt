@@ -141,7 +141,7 @@ gperftools-libs-2.0-11.el6.3
 gpxe-bootimgs
 haproxy
 hdparm-9.16-3.4.el6
-hiera-1.2.0-1.el6
+hiera
 htop
 http-parser-2.0-4.20121128gitcd01361.el6
 httpd-2.2.15-15.el6.1
