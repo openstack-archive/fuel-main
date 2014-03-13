@@ -2,13 +2,11 @@
 
 RAEMON_VERSION:=0.3.0
 RAEMON_COMMIT:=b78eaae57c8e836b8018386dd96527b8d9971acc
-MCOLLECTIVE_VERSION:=2.3.3
 
 $(BUILD_DIR)/packages/gems/build.done: \
 		$(call depv,BUILD_MIRROR_GEMS) \
 		$(BUILD_DIR)/packages/gems/naily.done \
 		$(BUILD_DIR)/packages/gems/astute.done \
-		$(BUILD_DIR)/packages/gems/mcollective.done \
 		$(BUILD_DIR)/packages/gems/raemon-$(RAEMON_VERSION).gem
 	mkdir -p $(BUILD_MIRROR_GEMS)/gems
 	cp $(BUILD_DIR)/packages/gems/*.gem $(BUILD_MIRROR_GEMS)/gems
@@ -26,11 +24,6 @@ $(BUILD_DIR)/packages/gems/raemon-$(RAEMON_VERSION).gem: \
 	mv $(BUILD_DIR)/packages/gems/raemon-$(RAEMON_COMMIT) $(BUILD_DIR)/packages/gems/raemon
 	(cd $(BUILD_DIR)/packages/gems/raemon && gem build raemon.gemspec)
 	cp $(BUILD_DIR)/packages/gems/raemon/raemon-$(RAEMON_VERSION).gem $(BUILD_DIR)/packages/gems
-
-$(BUILD_DIR)/packages/gems/mcollective.done: \
-		$(BUILD_DIR)/mirror/build.done
-	cp $(LOCAL_MIRROR_SRC)/mcollective-client-$(MCOLLECTIVE_VERSION).gem $(BUILD_DIR)/packages/gems
-	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/packages/gems/astute.done: \
 		$(BUILD_DIR)/repos/astute.done \
