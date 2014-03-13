@@ -395,6 +395,21 @@ class FuelWebClient(object):
         return None
 
     @logwrap
+    def find_devops_node_by_nailgun_fqdn(self, fqdn, devops_nodes):
+        def get_nailgun_node(fqdn):
+            for nailgun_node in self.client.list_nodes():
+                if nailgun_node['meta']['system']['fqdn'] == fqdn:
+                    return nailgun_node
+
+        nailgun_node = get_nailgun_node(fqdn)
+        macs = {i['mac'] for i in nailgun_node['meta']['interfaces']}
+        for devops_node in devops_nodes:
+            devops_macs = {i.mac_address.upper()
+                           for i in devops_node.interfaces}
+            if devops_macs == macs:
+                return devops_node
+
+    @logwrap
     def get_ssh_for_node(self, node_name):
         ip = self.get_nailgun_node_by_devops_node(
             self.environment.get_virtual_environment().
