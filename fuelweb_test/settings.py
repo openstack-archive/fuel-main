@@ -189,4 +189,9 @@ OS_IMAGE = os.environ.get('OS_IMAGE', DEFAULT_IMAGES_CENTOS)
 OSTF_TEST_NAME = os.environ.get('OSTF_TEST_NAME',
                                 'Check network connectivity'
                                 ' from instance via floating IP')
-OSTF_TEST_RETRIES_COUNT = os.environ.get('OSTF_TEST_RETRIES_COUNT', 50)
+OSTF_TEST_RETRIES_COUNT = int(os.environ.get('OSTF_TEST_RETRIES_COUNT', 50))
+
+# The variable below is only for test:
+#       fuelweb_test.tests.tests_strength.test_ostf_repeatable_tests
+#       :OstfRepeatableTests.run_ostf_n_times_against_custom_deployment
+DEPLOYMENT_NAME = os.environ.get('DEPLOYMENT_NAME')

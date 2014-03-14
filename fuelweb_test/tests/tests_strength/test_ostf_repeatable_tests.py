@@ -29,6 +29,37 @@ logwrap = debug(logger)
 
 @test(groups=["thread_5"])
 class OstfRepeatableTests(base_test_case.TestBasic):
+
+    def _run_OSTF(self, cluster_id):
+        res = []
+        d_key = hlp_date.OSTF_TEST_NAME
+        passed_count = []
+        failed_count = []
+        test_path = map_ostf.OSTF_TEST_MAPPING.get(hlp_date.OSTF_TEST_NAME)
+        logger.info('Test path is {0}'.format(test_path))
+
+        for i in range(0, hlp_date.OSTF_TEST_RETRIES_COUNT):
+            result = self.fuel_web.run_single_ostf_test(
+                cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
+                test_name=test_path,
+                retries=True)
+            res.append(result)
+            logger.info('res is {0}'.format(res))
+
+        logger.info('full res is {0}'.format(res))
+        for element in res:
+            [passed_count.append(test)
+             for test in element if test.get(d_key) == 'success']
+            [failed_count.append(test)
+             for test in element if test.get(d_key) == 'failure']
+            [failed_count.append(test)
+             for test in element if test.get(d_key) == 'error']
+
+        asserts.assert_true(
+            len(passed_count) == hlp_date.OSTF_TEST_RETRIES_COUNT,
+            'not all retries were successful,'
+            ' fail {0} retries'.format(len(failed_count)))
+
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
           groups=["create_delete_ip_n_times_nova_vlan"])
     @log_snapshot_on_error
@@ -66,32 +97,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         self.fuel_web.verify_network(cluster_id)
-        res = []
-        passed_count = []
-        failed_count = []
-        d_key = hlp_date.OSTF_TEST_NAME
-        test_path = map_ostf.OSTF_TEST_MAPPING.get(hlp_date.OSTF_TEST_NAME)
-
-        for i in range(0, hlp_date.OSTF_TEST_RETRIES_COUNT):
-            result = self.fuel_web.run_single_ostf_test(
-                cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
-                test_name=test_path,
-                retries=True)
-            res.append(result)
-            logger.info('res is {0}'.format(res))
-
-        for element in res:
-            [passed_count.append(test)
-             for test in element if test[d_key] == 'success']
-            [failed_count.append(test)
-             for test in element if test[d_key] == 'failure']
-            [failed_count.append(test)
-             for test in element if test[d_key] == 'error']
-
-        asserts.assert_true(
-            len(passed_count) == hlp_date.OSTF_TEST_RETRIES_COUNT,
-            'not all retries were successful, '
-            'fail {0} retries'.format(len(failed_count)))
+        self._run_OSTF(cluster_id)
 
         self.env.make_snapshot("create_delete_ip_n_times_nova_vlan")
 
@@ -128,36 +134,14 @@ class OstfRepeatableTests(base_test_case.TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        task = self.fuel_web.run_network_verify(cluster_id)
-        self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
-
-        res = []
-        d_key = hlp_date.OSTF_TEST_NAME
-        passed_count = []
-        failed_count = []
-        test_path = map_ostf.OSTF_TEST_MAPPING.get(hlp_date.OSTF_TEST_NAME)
-        logger.info('Test path is {0}'.format(test_path))
-
-        for i in range(0, hlp_date.OSTF_TEST_RETRIES_COUNT):
-            result = self.fuel_web.run_single_ostf_test(
-                cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
-                test_name=test_path,
-                retries=True)
-            res.append(result)
-            logger.info('res is {0}'.format(res))
-
-        logger.info('full res is {0}'.format(res))
-        for element in res:
-            [passed_count.append(test)
-             for test in element if test[d_key] == 'success']
-            [failed_count.append(test)
-             for test in element if test[d_key] == 'failure']
-            [failed_count.append(test)
-             for test in element if test[d_key] == 'error']
-
-        asserts.assert_true(
-            len(passed_count) == hlp_date.OSTF_TEST_RETRIES_COUNT,
-            'not all retries were successful,'
-            ' fail {0} retries'.format(len(failed_count)))
+        self.fuel_web.verify_network(cluster_id)
+        self._run_OSTF(cluster_id)
 
         self.env.make_snapshot("create_delete_ip_n_times_nova_flat")
+
+    @test(groups=["run_ostf_n_times_against_custom_environment"])
+    @log_snapshot_on_error
+    def run_ostf_n_times_against_custom_deployment(self):
+        cluster_id = self.fuel_web.client.get_cluster_id(
+            hlp_date.DEPLOYMENT_NAME)
+        self._run_OSTF(cluster_id)
