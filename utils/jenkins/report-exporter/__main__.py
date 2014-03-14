@@ -37,13 +37,18 @@ for b in job.builds:
         logger.info(
             'job #{0} is building. Go to previous build'.format(b.number))
         continue
+
     test_report = b.test_report
+    if test_report is None:
+        raise Exception('Test report has not been found. Job: {0}. '
+                        'Build #{1}'.format(options.job_name, b.number))
+
     build = b
     break
 
 if build is None:
-    logger.info('finished build has not been found')
-    raise
+    raise Exception('Finished build has not been found. '
+                    'Job: {0}'.format(options.job_name))
 
 # Open google spreadsheet
 doc = BuildsDocument(options.spreadsheet)

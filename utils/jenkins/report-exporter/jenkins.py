@@ -24,10 +24,13 @@ class JSONResource(object):
         self.url = url
 
     def get_data(self):
-        req = urllib2.Request(urlparse.urljoin(self.url, 'api/json'))
-        opener = urllib2.build_opener(urllib2.HTTPHandler)
-        str = opener.open(req).read()
-        return json.loads(str)
+        try:
+            req = urllib2.Request(urlparse.urljoin(self.url, 'api/json'))
+            opener = urllib2.build_opener(urllib2.HTTPHandler)
+            s = opener.open(req).read()
+            return json.loads(s)
+        except urllib2.HTTPError:
+            return None
 
 
 class Job(JSONResource):
