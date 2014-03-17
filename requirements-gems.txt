@@ -22,7 +22,7 @@ mixlib-log 1.4.1
 mixlib-shellout 1.0.0
 moneta 0.6.0
 mysql 2.8.1
-net-ssh 2.2.2
+net-ssh 2.8.0
 net-ssh-gateway 1.1.0
 net-ssh-multi 1.1
 ohai 6.14.0
