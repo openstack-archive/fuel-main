@@ -149,10 +149,10 @@ KVM_USE = os.environ.get('KVM_USE', 'false') == 'true'
 DEBUG_MODE = os.environ.get('DEBUG_MODE', 'true') == 'true'
 
 #Services tests
-SERVTEST_LOCAL_PATH = '/tmp'
-SERVTEST_USERNAME = 'admin'
-SERVTEST_PASSWORD = SERVTEST_USERNAME
-SERVTEST_TENANT = SERVTEST_USERNAME
+SERVTEST_LOCAL_PATH = os.environ.get('SERVTEST_LOCAL_PATH', '/tmp')
+SERVTEST_USERNAME = os.environ.get('SERVTEST_USERNAME', 'admin')
+SERVTEST_PASSWORD = os.environ.get('SERVTEST_PASSWORD', SERVTEST_USERNAME)
+SERVTEST_TENANT = os.environ.get('SERVTEST_TENANT', SERVTEST_USERNAME)
 SERVTEST_SAVANNA_SERVER_URL = 'http://savanna-files.mirantis.com'
 SERVTEST_SAVANNA_IMAGE = 'savanna-0.3-vanilla-1.2.1-ubuntu-13.04.qcow2'
 SERVTEST_SAVANNA_IMAGE_NAME = 'savanna'
