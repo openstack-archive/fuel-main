@@ -3,8 +3,8 @@ http://pypcap.googlecode.com/files/pypcap-1.1.tar.gz
 http://osci-obs.vm.mirantis.net:82/centos-fuel-4.1.1-stable/b78eaae57c8e836b8018386dd96527b8d9971acc.zip
 http://download.mirantis.com/fuelweb-gems/gems/mcollective-client-2.3.3.gem
 https://github.com/sstephenson/rbenv/archive/382db59cd0c16518d0cec0974e220a2c46aa7a25.zip
-https://github.com/sstephenson/ruby-build/archive/1fb955eead087646f4d73ac36786432c380309a9.zip
+https://github.com/sstephenson/ruby-build/archive/5ae03b839494d20435faad5bc31e2e95d10c4f33.zip
 http://pyyaml.org/download/libyaml/yaml-0.1.4.tar.gz
-http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p392.tar.gz
+http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p484.tar.gz
 https://github.com/liftoff/GateOne/archive/bb003114b4e84e9425fd02fd1ee615d4dd2113e7.zip
 https://github.com/e0ne/python-heatclient/archive/7685f8ac19482086f72d6d733fc21a31c5e35d16.zip
