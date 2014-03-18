@@ -16,6 +16,9 @@ Requires:  scapy
 Requires:  python-argparse
 Requires:  python-pypcap
 Requires: python-cliff-tablib
+Requires: python-stevedore
+Requires: python-daemonize
+
 
 %description
 This is a network tool that helps to verify networks connectivity
