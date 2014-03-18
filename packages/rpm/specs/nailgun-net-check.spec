@@ -15,6 +15,7 @@ Requires:  vconfig
 Requires:  scapy
 Requires:  python-argparse
 Requires:  python-pypcap
+Requires:  python-daemonize
 
 %description
 This is a network tool that helps to verify networks connectivity
