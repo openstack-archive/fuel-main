@@ -537,7 +537,6 @@ class FloatingIPs(TestBasic):
         self.env.make_snapshot("deploy_floating_ips")
 
 
-@test(groups=["thread_1"])
 class SimpleCinder(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_simple_cinder"])
@@ -709,6 +708,8 @@ class NodeDiskSizes(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
+
+        self.fuel_web.run_ostf(cluster_id=cluster_id)
 
         nodes_dict = {
             'slave-01': ['controller'],
