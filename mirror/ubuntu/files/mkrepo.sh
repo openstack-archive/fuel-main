@@ -1,5 +1,9 @@
 #!/bin/bash
 apt-get update
+apt-get -y dist-upgrade
+rm -rf /var/cache/apt/archives/*deb
+apt-get clean
+apt-get install --download-only --reinstall $(dpkg-query --show | awk '{print $1,$2}' | sed 's~ ~=~g' | xargs)
 for pkg in $(cat /requirements-deb.txt); do
 	apt-get -dy install $pkg || exit 1
 done
