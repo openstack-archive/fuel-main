@@ -39,7 +39,6 @@ BOOTSTRAP_RPMS_GARBAGE:=\
 	byacc \
 	flex \
 	gcc \
-	make \
 	ruby-devel.x86_64 \
 
 
