@@ -120,7 +120,8 @@ class SavannaSimple(TestBasic):
             cluster_id=cluster_id, test_sets=['platform_tests'],
             test_name=('fuel_health.tests.platform_tests.'
                        'test_platform_savanna.PlatformSavannaTests.'
-                       'test_platform_savanna'), should_fail=1)
+                       'test_platform_savanna'), should_fail=1,
+            timeout=60*100)
 
         self.env.make_snapshot("deploy_savanna_simple")
 
