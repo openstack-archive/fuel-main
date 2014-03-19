@@ -637,6 +637,7 @@ python-configobj
 python-crypto
 python-d2to1
 python-daemon
+python-daemonize
 python-dateutil
 python-dbus
 python-dbus-dev
