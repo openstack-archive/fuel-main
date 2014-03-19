@@ -1,5 +1,7 @@
 #!/bin/bash
 apt-get update
+apt-get -y dist-upgrade
+rm -rf /var/cache/apt/archives/*deb
 for pkg in $(cat /requirements-deb.txt); do
 	apt-get -dy install $pkg || exit 1
 done
