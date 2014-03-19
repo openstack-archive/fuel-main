@@ -59,7 +59,7 @@ test: test-unit test-integration
 
 clean:
 	sudo rm -rf $(BUILD_DIR)
-deep_clean: clean
+deep_clean: clean-ubuntu clean
 	sudo rm -rf $(LOCAL_MIRROR)
 
 distclean: deep_clean clean-integration-test
