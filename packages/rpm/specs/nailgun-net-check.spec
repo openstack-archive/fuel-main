@@ -1,5 +1,5 @@
 %define name nailgun-net-check
-%define version 0.1
+%define version 0.2
 %define release 1
 
 Name:      %{name}
@@ -15,6 +15,7 @@ Requires:  vconfig
 Requires:  scapy
 Requires:  python-argparse
 Requires:  python-pypcap
+Requires: python-cliff-tablib
 
 %description
 This is a network tool that helps to verify networks connectivity
