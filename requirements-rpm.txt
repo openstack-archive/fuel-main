@@ -330,7 +330,7 @@ python-actdiag-0.4.3-1
 python-alembic
 python-amqp
 python-amqplib-1.0.2-1.el6
-python-anyjson-0.3.3-2.el6
+python-anyjson-0.3.1
 python-argparse-1.2.1-2.el6
 python-blockdiag-1.2.4-1
 python-boto-2.5.2-3.el6
@@ -373,7 +373,7 @@ python-keyring-0.7-1.el6
 python-keystone
 python-keystoneclient
 python-keystoneclient-doc
-python-kombu
+python-kombu-2.1.8
 python-lockfile-0.8-3.el6
 python-markdown-2.0.1-3.1.el6
 python-meld3-0.6.7-1.el6
@@ -398,6 +398,8 @@ python-paste-deploy1.5-1.5.0-5.el6
 python-pbr
 python-pip
 python-prettytable-0.6.1-1.el6
+python-psycopg2-2.5.1
+python-sqlalchemy-0.8.2
 python-py-1.4.15-1.el6
 python-pygments-1.1.1-1.el6
 python-pyudev-0.15-1.el6
@@ -555,3 +557,5 @@ yum-3.2.29-40.el6.centos
 yum-utils-1.1.30-14.el6
 zlib-devel-1.2.3-29.el6
 python-pypcap
+nailgun
+fuel-ostf
