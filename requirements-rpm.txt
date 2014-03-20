@@ -552,3 +552,5 @@ yum-3.2.29-40.el6.centos
 yum-utils-1.1.30-14.el6
 zlib-devel-1.2.3-29.el6
 python-pypcap
+nailgun
+fuel-ostf
