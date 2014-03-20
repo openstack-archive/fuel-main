@@ -1,0 +1,12 @@
+Source: nailgun-net-check
+Section: admin
+Priority: optional
+Maintainer: Mirantis Product <product@mirantis.com> 
+Build-Depends: debhelper (>= 7), python-setuptools
+Standards-Version: 3.9.2
+
+Package: nailgun-net-check
+Architecture: all
+Depends: ${misc:Depends}, ${shlibs:Depends}, python-pypcap, vlan, python-scapy, cliff-tablib
+Description: NailGun client net-check
+ .

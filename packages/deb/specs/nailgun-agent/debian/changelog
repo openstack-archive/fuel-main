@@ -1,0 +1,11 @@
+nailgun-agent (3.9.2-1ubuntu10) precise; urgency=low
+
+  * Add new version code 
+
+ -- roman <roman@roman-System-Product-Name>  Thu, 12 Sep 2013 16:44:14 +0400
+
+nailgun-agent (3.9.2-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- roman <roman@unknown>  Tue, 10 Sep 2013 18:51:51 +0400
