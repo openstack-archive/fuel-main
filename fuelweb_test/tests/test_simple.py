@@ -123,41 +123,22 @@ class SimpleFlat(TestBasic):
 
         self.env.make_snapshot("deploy_simple_flat")
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+    @test(depends_on=[deploy_simple_flat],
           groups=["simple_flat_node_deletion"])
     @log_snapshot_on_error
     def simple_flat_node_deletion(self):
         """Remove controller from cluster in simple mode with flat nova-network
 
          Scenario:
-            1. Create cluster
-            2. Add 1 node with controller role
-            3. Add 1 node with compute role
-            4. Deploy the cluster
-            5. Validate cluster was set up correctly, there are no dead
-            services, there are no errors in logs
-            6. Remove controller nodes
-            7. Deploy changes
-            8. Verify node returns to unallocated pull
+            1. Revert "simple flat" environment
+            2. Remove controller nodes
+            3. Deploy changes
+            4. Verify node returns to unallocated pull
 
         """
-        self.env.revert_snapshot("ready_with_3_slaves")
+        self.env.revert_snapshot("deploy_simple_flat")
 
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller'],
-                'slave-02': ['compute']
-            }
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
-
+        cluster_id = self.fuel_web.get_last_created_cluster()
         nailgun_nodes = self.fuel_web.update_nodes(
             cluster_id, {'slave-01': ['controller']}, False, True)
         task = self.fuel_web.deploy_cluster(cluster_id)
@@ -786,38 +767,22 @@ class MultinicBootstrap(TestBasic):
 
 @test(groups=["thread_2", "test"])
 class DeleteEnvironment(TestBasic):
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3])
+    @test(depends_on=[SimpleFlat.deploy_simple_flat],
+          groups=["delete_environment"])
     @log_snapshot_on_error
     def delete_environment(self):
         """Delete existing environment
         and verify nodes returns to unallocated state
 
         Scenario:
-            1. Create cluster
-            2. Add 1 node with controller role
-            3. Add 1 node with compute role
-            4. Deploy the cluster
+            1. Revert "simple flat" environment
             2. Delete environment
             3. Verify node returns to unallocated pull
 
         """
-        self.env.revert_snapshot("ready_with_3_slaves")
+        self.env.revert_snapshot("deploy_simple_flat")
 
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller'],
-                'slave-02': ['compute']
-            }
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
-
+        cluster_id = self.fuel_web.get_last_created_cluster()
         self.fuel_web.client.delete_cluster(cluster_id)
         nailgun_nodes = self.fuel_web.client.list_nodes()
         nodes = filter(lambda x: x["pending_deletion"] is True, nailgun_nodes)
