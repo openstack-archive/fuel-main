@@ -41,6 +41,7 @@ ceph-test
 cirros-testvm
 cluster-glue-libs-1.0.11-59.1
 cman
+cman
 cobbler
 cobbler-web
 corosync
@@ -189,7 +190,11 @@ mod_ssl-2.2.15-15.el6.1
 mod_wsgi-3.2-1.el6
 mtools-4.0.17-3.el6
 murano-api
+murano-common
+murano-conductor
 murano-dashboard
+murano-metadataclient
+murano-repository
 nagios-3.5.0-1.el6
 nagios-common-3.5.0-1.el6
 nagios-plugins-1.4.16-5.el6
@@ -552,3 +557,5 @@ yum-3.2.29-40.el6.centos
 yum-utils-1.1.30-14.el6
 zlib-devel-1.2.3-29.el6
 python-pypcap
+nailgun
+fuel-ostf
