@@ -45,6 +45,7 @@ SANDBOX_PACKAGES:=\
 
 
 define SANDBOX_UP
+echo "Starting SANDBOX up"
 mkdir -p $(SANDBOX)/etc/yum.repos.d
 cat > $(SANDBOX)/etc/yum.conf <<EOF
 $(sandbox_yum_conf)
@@ -56,8 +57,10 @@ EOF
 rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
 echo "centos-release already installed"
 rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
+echo 'Rebuilding RPM DB'
 rpm --root=$(SANDBOX) --rebuilddb
-yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install $(SANDBOX_PACKAGES)
+echo 'Installing packages for Sandbox'
+yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --exclude=ruby-2.1.1-1.1.x86_64 --nogpgcheck install $(SANDBOX_PACKAGES)
 mount | grep -q $(SANDBOX)/proc || sudo mount --bind /proc $(SANDBOX)/proc
 mount | grep -q $(SANDBOX)/dev || sudo mount --bind /dev $(SANDBOX)/dev
 endef

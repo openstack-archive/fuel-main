@@ -87,21 +87,6 @@ $(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done: \
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
-$(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: export SANDBOX_UP:=$(SANDBOX_UP)
-$(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
-$(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done: \
-		$(BUILD_DIR)/packages/rpm/prep.done \
-		$(SOURCE_DIR)/packages/rpm/specs/rbenv-ruby-1.9.3-p484.spec
-	sudo sh -c "$${SANDBOX_UP}"
-	sudo mkdir -p $(SANDBOX)/tmp/SOURCES
-	sudo cp $(LOCAL_MIRROR_SRC)/* $(SANDBOX)/tmp/SOURCES
-	sudo cp $(SOURCE_DIR)/packages/rpm/specs/rbenv-ruby-1.9.3-p484.spec $(SANDBOX)/tmp
-	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/rbenv-ruby-1.9.3-p484.spec
-	cp $(SANDBOX)/tmp/RPMS/x86_64/rbenv-ruby-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
-	sudo sh -c "$${SANDBOX_DOWN}"
-	$(ACTION.TOUCH)
-
 $(BUILD_DIR)/packages/rpm/rpm-nailgun-redhat-license.done: \
 		$(BUILD_DIR)/packages/rpm/prep.done \
 		$(SOURCE_DIR)/packages/rpm/specs/nailgun-redhat-license.spec \
@@ -117,7 +102,6 @@ $(BUILD_DIR)/packages/rpm/repo.done: \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-mcagents.done \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done \
 		$(BUILD_DIR)/packages/rpm/rpm-nailgun-redhat-license.done \
-		$(BUILD_DIR)/packages/rpm/rpm-rbenv-ruby.done \
 		$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done \
 		$(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
