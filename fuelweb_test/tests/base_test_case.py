@@ -36,7 +36,7 @@ console.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s %(filename)s:'
                               '%(lineno)d -- %(message)s')
 console.setFormatter(formatter)
-logging.getLogger(__name__).addHandler(console)
+logging.getLogger('').addHandler(console)
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
