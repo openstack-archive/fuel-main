@@ -26,7 +26,7 @@ class HTTPClient(object):
 
     def __init__(self, url, user=None, password=None):
         self.url = url
-        logging.info('url from helpers http_client %s' % self.url)
+        logger.info('url from helpers http_client %s' % self.url)
 
         if user and password:
             creds = '{0}:{1}'.format(user, password)
