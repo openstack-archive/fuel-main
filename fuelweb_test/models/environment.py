@@ -315,13 +315,13 @@ class EnvironmentModel(object):
 
     def revert_snapshot(self, name):
         if self.get_virtual_environment().has_snapshot(name):
-            logging.info('We have snapshot with such name %s' % name)
+            logger.info('We have snapshot with such name %s' % name)
 
             self.get_virtual_environment().revert(name)
-            logging.info('Starting snapshot reverting ....')
+            logger.info('Starting snapshot reverting ....')
 
             self.get_virtual_environment().resume()
-            logging.info('Starting snapshot resuming ...')
+            logger.info('Starting snapshot resuming ...')
 
             time.sleep(10)
 
@@ -336,7 +336,7 @@ class EnvironmentModel(object):
                     self.sync_node_time(self.get_ssh_to_remote(
                         node.get_ip_address_by_network_name(self.admin_net)))
                 except Exception as e:
-                    logging.warn(
+                    logger.warn(
                         'Paramiko exception catched while'
                         ' trying to run ntpdate: %s' % e)
             return True
@@ -379,7 +379,7 @@ class EnvironmentModel(object):
         )
 
     def wait_bootstrap(self):
-        logging.info("Waiting while bootstrapping is in progress")
+        logger.info("Waiting while bootstrapping is in progress")
         log_path = "/var/log/puppet/bootstrap_admin_node.log"
         wait(
             lambda: not

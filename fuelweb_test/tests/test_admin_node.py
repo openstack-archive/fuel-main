@@ -74,10 +74,10 @@ class TestAdminNode(TestBasic):
         self.env.revert_snapshot("empty")
         ps_output = self.env.get_admin_remote().execute('ps ax')['stdout']
         naily_master = filter(lambda x: 'naily master' in x, ps_output)
-        logging.debug("Found naily processes: %s" % naily_master)
+        logger.info("Found naily processes: %s" % naily_master)
         assert_equal(len(naily_master), 1)
         naily_workers = filter(lambda x: 'naily worker' in x, ps_output)
-        logging.debug(
+        logger.info(
             "Found %d naily worker processes: %s" %
             (len(naily_workers), naily_workers))
         assert_equal(True, len(naily_workers) > 1)
