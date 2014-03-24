@@ -74,6 +74,9 @@ endef
 
 YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --installroot=$(INITRAMROOT) -y --nogpgcheck
 
+KERNEL_PATTERN:=kernel-lt-3.10.*
+KERNEL_FIRMWARE_PATTERN:=kernel-lt-firmware-3.10.*
+
 clean: clean-bootstrap
 
 clean-bootstrap:
@@ -93,7 +96,7 @@ $(BUILD_DIR)/bootstrap/initramfs.img: \
 
 $(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/build.done
 	mkdir -p $(BUILD_DIR)/bootstrap
-	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'kernel-2.*' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		(cd $(BUILD_DIR)/bootstrap/; cpio -imd './boot/vmlinuz*')
 	mv $(BUILD_DIR)/bootstrap/boot/vmlinuz* $(BUILD_DIR)/bootstrap/linux
 	rm -r $(BUILD_DIR)/bootstrap/boot
@@ -197,9 +200,9 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 	-sudo chroot $(INITRAMROOT) chkconfig postfix off
 
 	# Installing kernel modules
-	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'kernel-2.*' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/modules/*' './boot/vmlinuz*' )
-	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'kernel-firmware-2.*' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/firmware/*' )
 	for version in `ls -1 $(INITRAMROOT)/lib/modules`; do \
 		sudo depmod -b $(INITRAMROOT) $$version; \
