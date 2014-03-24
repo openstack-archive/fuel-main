@@ -372,6 +372,9 @@ RunTest() {
       LOGS_DIR="${WORKSPACE}/logs"
     fi
 
+    if [ ! -f "$LOGS_DIR" ]; then
+      mkdir -p $LOGS_DIR
+
     export ENV_NAME
     export LOGS_DIR
     export ISO_PATH
