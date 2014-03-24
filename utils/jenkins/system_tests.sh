@@ -370,6 +370,8 @@ RunTest() {
 
     if [ "${LOGS_DIR}" = "" ]; then
       LOGS_DIR="${WORKSPACE}/logs"
+      if [ ! -f "$LOGS_DIR" ]; then
+        mkdir -p $LOGS_DIR
     fi
 
     export ENV_NAME
