@@ -253,16 +253,16 @@ class FuelWebClient(object):
         """
 
         release_id = self.client.get_release_id(release_name=release_name)
-        logging.info('Release_id is %s' % str(release_id))
+        logger.info('Release_id is %s' % str(release_id))
 
         if settings is None:
             settings = {}
 
-        logging.info('I pass if with settings')
+        logger.info('I pass if with settings')
 
         cluster_id = self.client.get_cluster_id(name)
         if not cluster_id:
-            logging.info('I have no id')
+            logger.info('I have no id')
             data = {
                 "name": name,
                 "release": str(release_id),

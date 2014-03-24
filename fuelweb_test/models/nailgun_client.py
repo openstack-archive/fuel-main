@@ -178,7 +178,7 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def create_cluster(self, data):
-        logging.info('Before post to nailgun')
+        logger.info('Before post to nailgun')
         return self.client.post(
             "/api/clusters",
             data=data)
@@ -251,8 +251,8 @@ class NailgunClient(object):
     def get_cluster_id(self, name):
         for cluster in self.list_clusters():
             if cluster["name"] == name:
-                logging.info('cluster name is %s' % name)
-                logging.info('cluster id is %s' % cluster["id"])
+                logger.info('cluster name is %s' % name)
+                logger.info('cluster id is %s' % cluster["id"])
                 return cluster["id"]
 
     @logwrap
