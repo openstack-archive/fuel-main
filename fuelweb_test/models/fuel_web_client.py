@@ -61,6 +61,8 @@ class FuelWebClient(object):
 
     @logwrap
     def _ostf_test_wait(self, cluster_id, timeout):
+        logger.info('Wait OSTF tests at cluster #%s for %s seconds',
+                    cluster_id, timeout)
         wait(
             lambda: all([run['status'] == 'finished'
                          for run in
@@ -74,16 +76,22 @@ class FuelWebClient(object):
 
     @logwrap
     def add_syslog_server(self, cluster_id, host, port):
+        logger.info('Add syslog server %s:%s to cluster #%s',
+                    host, port, cluster_id)
         self.client.add_syslog_server(cluster_id, host, port)
 
     @logwrap
     def assert_cluster_floating_list(self, node_name, expected_ips):
+        logger.info('Assert floating IPs at node %s. Expected %s',
+                    node_name, expected_ips)
         current_ips = self.get_cluster_floating_list(node_name)
-        assert_equal(set(expected_ips), set(current_ips))
+        assert_equal(set(expected_ips), set(current_ips),
+                     'Current floating IPs {0}'.format(current_ips))
 
     @logwrap
     def assert_cluster_ready(self, node_name, smiles_count,
                              networks_count=1, timeout=300):
+        logger.info('Assert cluster services are UP')
         remote = self.environment.get_ssh_to_remote(
             self.get_nailgun_node_by_devops_node(
                 self.environment.get_virtual_environment().
@@ -99,6 +107,8 @@ class FuelWebClient(object):
     @logwrap
     def assert_ostf_run_certain(self, cluster_id, tests_must_be_passed,
                                 timeout=10 * 60):
+        logger.info('Assert OSTF tests are passed at cluster #%s: %s',
+                    cluster_id, tests_must_be_passed)
         set_result_list = self._ostf_test_wait(cluster_id, timeout)
         tests_pass_count = 0
         tests_count = len(tests_must_be_passed)
@@ -110,8 +120,7 @@ class FuelWebClient(object):
                 for test_class in tests_must_be_passed:
                     if test_id['id'].find(test_class) > -1:
                         tests_pass_count += 1
-                        logger.debug('Passed OSTF test {} found'.format(
-                                     test_class))
+                        logger.info('Passed OSTF tests %s found', test_class)
         if tests_pass_count == tests_count:
             result = True
         assert_true(result)
@@ -119,7 +128,9 @@ class FuelWebClient(object):
     @logwrap
     def assert_ostf_run(self, cluster_id, should_fail=0,
                         failed_test_name=None, timeout=15 * 60):
-
+        logger.info('Assert OSTF run at cluster #%s. '
+                    'Should fail %s tests named %s',
+                    cluster_id, should_fail, failed_test_name)
         set_result_list = self._ostf_test_wait(cluster_id, timeout)
         failed_tests_res = []
         failed = 0
@@ -160,12 +171,16 @@ class FuelWebClient(object):
                                              failed_tests_res))
 
     def assert_release_state(self, release_name, state='available'):
+        logger.info('Assert release %s has state %s', release_name, state)
         for release in self.client.get_releases():
             if release["name"].find(release_name) != -1:
-                assert_equal(release['state'], state)
+                assert_equal(release['state'], state,
+                             'Release state {0}'.format(release['state']))
                 return release["id"]
 
     def assert_release_role_present(self, release_name, role_name):
+        logger.info('Assert role %s is available in release %s',
+                    role_name, release_name)
         id = self.assert_release_state(release_name)
         release_data = self.client.get_releases_details(release_id=id)
         assert_equal(
@@ -176,6 +191,7 @@ class FuelWebClient(object):
     @logwrap
     def assert_task_success(
             self, task, timeout=130 * 60, interval=5, progress=None):
+        logger.info('Assert task %s is success', task)
         if not progress:
             task = self.task_wait(task, timeout, interval)
             assert_equal(
@@ -194,6 +210,7 @@ class FuelWebClient(object):
 
     @logwrap
     def assert_task_failed(self, task, timeout=70 * 60, interval=5):
+        logger.info('Assert task %s is failed', task)
         task = self.task_wait(task, timeout, interval)
         assert_equal(
             'error', task['status'],
@@ -204,6 +221,7 @@ class FuelWebClient(object):
 
     @logwrap
     def fqdn(self, devops_node):
+        logger.info('Get FQDN of a devops node %s', devops_node.name)
         nailgun_node = self.get_nailgun_node_by_devops_node(devops_node)
         if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
             return nailgun_node['meta']['system']['fqdn']
@@ -211,6 +229,8 @@ class FuelWebClient(object):
 
     @logwrap
     def assert_pacemaker(self, ctrl_node, online_nodes, offline_nodes):
+        logger.info('Assert pacemaker status at devops node %s',
+                    ctrl_node.name)
         fqdn_names = lambda nodes: sorted([self.fqdn(n) for n in nodes])
 
         # Assert online nodes list
@@ -219,7 +239,8 @@ class FuelWebClient(object):
         wait(lambda: online in self.get_pacemaker_status(
             ctrl_node), timeout=30)
         assert_true(
-            online in self.get_pacemaker_status(ctrl_node))
+            online in self.get_pacemaker_status(ctrl_node),
+            'Online nodes {0}'.format(online))
 
         # Assert offline nodes list
         if len(offline_nodes) > 0:
@@ -229,7 +250,8 @@ class FuelWebClient(object):
             wait(lambda: offline in self.get_pacemaker_status(
                 ctrl_node), timeout=30)
             assert_true(
-                offline in self.get_pacemaker_status(ctrl_node))
+                offline in self.get_pacemaker_status(ctrl_node),
+                'Offline nodes {0}'.format(offline_nodes))
 
     @logwrap
     @upload_manifests
@@ -247,18 +269,16 @@ class FuelWebClient(object):
         :param port:
         :return: cluster_id
         """
-
+        logger.info('Create cluster with name %s', name)
         release_id = self.client.get_release_id(release_name=release_name)
-        logger.info('Release_id is %s' % str(release_id))
+        logger.info('Release_id of %s is %s', release_name, str(release_id))
 
         if settings is None:
             settings = {}
 
-        logger.info('I pass if with settings')
-
         cluster_id = self.client.get_cluster_id(name)
         if not cluster_id:
-            logger.info('I have no id')
+            logger.info('I have no id :(')
             data = {
                 "name": name,
                 "release": str(release_id),
@@ -276,7 +296,9 @@ class FuelWebClient(object):
 
             self.client.create_cluster(data=data)
             cluster_id = self.client.get_cluster_id(name)
+            logger.info('The cluster id is %s', cluster_id)
 
+            logger.info('Set cluster settings to %s', settings)
             attributes = self.client.get_cluster_attributes(cluster_id)
 
             for option in settings:
@@ -290,13 +312,13 @@ class FuelWebClient(object):
                     attributes['editable'][section][option]['value'] =\
                         settings[option]
 
+            logger.info('Set DEBUG MODE to %s', help_data.DEBUG_MODE)
             attributes['editable']['common']['debug']['value'] = \
                 help_data.DEBUG_MODE
 
-            hpv_data = attributes['editable']['common']['libvirt_type']
-
             if KVM_USE:
-                logger.debug('KVM is used to clusters')
+                logger.info('Set Hypervisor type to KVM')
+                hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "kvm"
 
             self.client.update_cluster_attributes(cluster_id, attributes)
@@ -313,11 +335,14 @@ class FuelWebClient(object):
     def deploy_cluster_wait(self, cluster_id, is_feature=False,
                             timeout=50 * 60, interval=30):
         if not is_feature:
+            logger.info('Deploy cluster %s', cluster_id)
             task = self.deploy_cluster(cluster_id)
             self.assert_task_success(task, interval=interval)
         else:
+            logger.info('Provision nodes of a cluster %s', cluster_id)
             task = self.client.provision_nodes(cluster_id)
             self.assert_task_success(task, timeout=timeout, interval=interval)
+            logger.info('Deploy nodes of a cluster %s', cluster_id)
             task = self.client.deploy_nodes(cluster_id)
             self.assert_task_success(task, timeout=timeout, interval=interval)
 
@@ -328,10 +353,12 @@ class FuelWebClient(object):
     @logwrap
     def deploy_cluster(self, cluster_id):
         """Return hash with task description."""
+        logger.info('Launch deployment of a cluster #%s', cluster_id)
         return self.client.deploy_cluster_changes(cluster_id)
 
     @logwrap
     def get_cluster_floating_list(self, node_name):
+        logger.info('Get floating IPs list at %s devops node', node_name)
         remote = self.get_ssh_for_node(node_name)
         ret = remote.check_call('/usr/bin/nova-manage floating list')
         ret_str = ''.join(ret['stdout'])
@@ -339,23 +366,27 @@ class FuelWebClient(object):
 
     @logwrap
     def get_cluster_block_devices(self, node_name):
+        logger.info('Get %s node block devices (lsblk)', node_name)
         remote = self.get_ssh_for_node(node_name)
         ret = remote.check_call('/bin/lsblk')
         return ''.join(ret['stdout'])
 
     @logwrap
     def get_pacemaker_status(self, controller_node_name):
+        logger.info('Get pacemaker status at %s node', controller_node_name)
         remote = self.get_ssh_for_node(controller_node_name)
         return ''.join(remote.check_call('crm_mon -1')['stdout'])
 
     @logwrap
     def get_pacemaker_config(self, controller_node_name):
+        logger.info('Get pacemaker config at %s node', controller_node_name)
         remote = self.get_ssh_for_node(controller_node_name)
         return ''.join(remote.check_call('crm configure show')['stdout'])
 
     @logwrap
     def get_last_created_cluster(self):
         # return id of last created cluster
+        logger.info('Get ID of a last created cluster')
         clusters = self.client.list_clusters()
         if len(clusters) > 0:
             return clusters.pop()['id']
@@ -373,6 +404,7 @@ class FuelWebClient(object):
 
     @logwrap
     def get_nailgun_node_by_name(self, node_name):
+        logger.info('Get nailgun node by %s devops node', node_name)
         return self.get_nailgun_node_by_devops_node(
             self.environment.get_virtual_environment().node_by_name(node_name))
 
@@ -383,7 +415,7 @@ class FuelWebClient(object):
         registered. Otherwise return None.
         """
         devops_macs = {i.mac_address.upper() for i in devops_node.interfaces}
-
+        logger.info('Look for nailgun node by macs %s', devops_macs)
         for nailgun_node in self.client.list_nodes():
             macs = {i['mac'] for i in nailgun_node['meta']['interfaces']}
             if devops_macs == macs:
@@ -412,6 +444,7 @@ class FuelWebClient(object):
 
     @logwrap
     def run_network_verify(self, cluster_id):
+        logger.info('Run network verification at cluster %s', cluster_id)
         return self.client.verify_networks(
             cluster_id, self.client.get_networks(cluster_id)['networks'])
 
@@ -458,6 +491,7 @@ class FuelWebClient(object):
 
     @logwrap
     def task_wait(self, task, timeout, interval=5):
+        logger.info('Wait for task %s %s seconds', task, timeout)
         try:
             wait(
                 lambda: self.client.get_task(
@@ -644,6 +678,7 @@ class FuelWebClient(object):
 
     @logwrap
     def update_network_configuration(self, cluster_id):
+        logger.info('Update network settings of cluster %s', cluster_id)
         net_config = self.client.get_networks(cluster_id)
         net_provider = self.client.get_cluster(cluster_id)['net_provider']
 
@@ -665,7 +700,7 @@ class FuelWebClient(object):
             neutron_params['floating'] = self.get_range(
                 self.environment.get_network('public'), 1)[0]
 
-        print(network_configuration)
+        logger.info('Network settings %s for push', network_configuration)
         return network_configuration
 
     def set_network(self, net_config, net_name):
@@ -711,14 +746,19 @@ class FuelWebClient(object):
         return ip_ranges, expected_ips
 
     def warm_restart_nodes(self, devops_nodes):
+        logger.info('Reboot (warm restart) nodes %s',
+                    [n.name for n in devops_nodes])
         for node in devops_nodes:
+            logger.info('Shutdown node %s', node.name)
             remote = self.get_ssh_for_node(node.name)
             remote.check_call('/sbin/shutdown -Ph now')
 
         for node in devops_nodes:
+            logger.info('Wait a %s node offline status', node.name)
             wait(
                 lambda: not self.get_nailgun_node_by_devops_node(node)[
                     'online'])
+            logger.info('Start %s node', node.name)
             node.destroy()
             node.create()
 
@@ -727,11 +767,16 @@ class FuelWebClient(object):
                 lambda: self.get_nailgun_node_by_devops_node(node)['online'])
 
     def cold_restart_nodes(self, devops_nodes):
+        logger.info('Cold restart nodes %s',
+                    [n.name for n in devops_nodes])
         for node in devops_nodes:
+            logger.info('Destroy node %s', node.name)
             node.destroy()
         for node in devops_nodes:
+            logger.info('Wait a %s node offline status', node.name)
             wait(lambda: not self.get_nailgun_node_by_devops_node(
                  node)['online'])
+            logger.info('Start %s node', node.name)
             node.create()
         for node in devops_nodes:
             wait(
@@ -745,42 +790,49 @@ class FuelWebClient(object):
                 'ip address show {0} {1}'.format(interface, pipe_str))
             return ' '.join(ret['stdout'])
         except DevopsCalledProcessError as err:
-            print(err.message)
+            logger.error(err.message)
         return ''
 
     @logwrap
     def ip_address_del(self, node_name, interface, ip):
+        logger.info('Delete %s ip address of %s interface at %s node',
+                    ip, interface, node_name)
         remote = self.get_ssh_for_node(node_name)
         remote.check_call(
             'ip addr del {0} dev {1}'.format(ip, interface))
 
     @logwrap
     def provisioning_cluster_wait(self, cluster_id, progress=None):
+        logger.info('Start cluster #%s provisioning', cluster_id)
         task = self.client.provision_nodes(cluster_id)
         self.assert_task_success(task, progress=progress)
 
     @logwrap
     def deploy_task_wait(self, cluster_id, progress):
+        logger.info('Start cluster #%s deployment', cluster_id)
         task = self.client.deploy_nodes(cluster_id)
         self.assert_task_success(
             task, progress=progress)
 
     @logwrap
     def stop_deployment_wait(self, cluster_id):
+        logger.info('Stop cluster #%s deployment', cluster_id)
         task = self.client.stop_deployment(cluster_id)
         self.assert_task_success(task, timeout=50 * 60, interval=30)
 
     @logwrap
     def stop_reset_env_wait(self, cluster_id):
+        logger.info('Reset cluster #%s', cluster_id)
         task = self.client.reset_environment(cluster_id)
         self.assert_task_success(task, timeout=50 * 60, interval=30)
 
     @logwrap
     def wait_nodes_get_online_state(self, nodes):
         for node in nodes:
+            logger.info('Wait for %s node online status', node.name)
             wait(lambda:
                  self.get_nailgun_node_by_devops_node(node)['online'],
                  timeout=60 * 4)
             node = self.get_nailgun_node_by_devops_node(node)
             assert_true(node['online'],
-                        'Node {} is online'.format(node['mac']))
+                        'Node {0} is online'.format(node['mac']))
