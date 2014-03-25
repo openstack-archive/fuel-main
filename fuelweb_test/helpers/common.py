@@ -12,19 +12,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 import time
+
+from fuelweb_test import logger as LOGGER
+from fuelweb_test import logwrap as LOGWRAP
+
 
 from cinderclient import client as cinderclient
 from glanceclient.v1 import Client as glanceclient
 from keystoneclient.v2_0 import Client as keystoneclient
 from novaclient.v1_1 import Client as novaclient
 from proboscis.asserts import assert_equal
-
-from fuelweb_test.helpers.decorators import debug
-
-LOGGER = logging.getLogger(__name__)
-LOGWRAP = debug(LOGGER)
 
 
 class Common(object):
