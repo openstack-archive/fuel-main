@@ -28,7 +28,7 @@ SANDBOX_PACKAGES:=\
 	gcc \
 	glibc-devel \
 	glibc-headers \
-	kernel-headers \
+	kernel-lt-headers \
 	make \
 	openssl-devel \
 	postgresql-devel \
