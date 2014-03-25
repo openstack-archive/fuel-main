@@ -38,7 +38,7 @@ class SavannaSimple(TestBasic):
     Put Savanna image before start
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_savanna_simple"])
+          groups=["deploy_sahara_simple"])
     @log_snapshot_on_error
     def deploy_savanna_simple(self):
         """Deploy cluster in simple mode with Savanna
@@ -50,8 +50,8 @@ class SavannaSimple(TestBasic):
             4. Deploy the cluster
             5. Verify savanna services
             6. Run OSTF
-            7. Register savanna image
-            8. Run OSTF platform savanna tests only
+            7. Register sahara image
+            8. Run OSTF platform sahara tests only
 
         Snapshot: deploy_savanna_simple
 
@@ -68,11 +68,11 @@ class SavannaSimple(TestBasic):
         asserts.assert_true(check_image)
 
         self.env.revert_snapshot("ready_with_3_slaves")
-        LOGGER.debug('Create cluster for savanna tests')
+        LOGGER.debug('Create cluster for sahara tests')
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             settings={
-                'savanna': True,
+                'sahara': True,
                 "net_provider": 'neutron',
                 "net_segment_type": 'gre'
             }
@@ -123,7 +123,7 @@ class SavannaSimple(TestBasic):
                        'test_platform_savanna'), should_fail=1,
             timeout=60 * 100)
 
-        self.env.make_snapshot("deploy_savanna_simple")
+        self.env.make_snapshot("deploy_sahara_simple")
 
 
 @test(groups=["services", "services.murano"])
