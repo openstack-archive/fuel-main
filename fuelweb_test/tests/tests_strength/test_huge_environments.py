@@ -51,7 +51,7 @@ class HugeEnvironments(base_test_case.TestBasic):
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True,
-                'savanna': True,
+                'sahara': True,
                 'ceilometer': True
             }
         )
@@ -110,7 +110,7 @@ class HugeEnvironments(base_test_case.TestBasic):
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True,
-                'savanna': True,
+                'sahara': True,
                 'ceilometer': True,
                 'net_provider': 'neutron',
                 'net_segment_type': 'gre'
