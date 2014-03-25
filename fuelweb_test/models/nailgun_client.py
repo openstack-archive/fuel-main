@@ -12,17 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-import logging
-
-from fuelweb_test.helpers.decorators import debug
+from fuelweb_test import logwrap
+from fuelweb_test import logger
 from fuelweb_test.helpers.decorators import json_parse
 from fuelweb_test.helpers.http import HTTPClient
 from fuelweb_test.settings import OPENSTACK_RELEASE
-
-
-logger = logging.getLogger(__name__)
-logwrap = debug(logger)
 
 
 class NailgunClient(object):

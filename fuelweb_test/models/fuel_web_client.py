@@ -12,7 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 import re
 
 from devops.error import DevopsCalledProcessError
@@ -24,7 +23,8 @@ from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_true
 
 from fuelweb_test.helpers import checkers
-from fuelweb_test.helpers.decorators import debug
+from fuelweb_test import logwrap
+from fuelweb_test import logger
 from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
@@ -35,10 +35,6 @@ from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 
 import fuelweb_test.settings as help_data
-
-
-logger = logging.getLogger(__name__)
-logwrap = debug(logger)
 
 
 class FuelWebClient(object):

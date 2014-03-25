@@ -12,23 +12,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 from proboscis import asserts
 from proboscis import SkipTest
 from proboscis import test
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.common import Common
-from fuelweb_test.helpers.decorators import debug
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import settings
+from fuelweb_test import logger as LOGGER
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
-
-
-LOGGER = logging.getLogger(__name__)
-LOGWRAP = debug(LOGGER)
 
 
 @test(groups=["services", "services.savanna"])

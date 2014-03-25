@@ -12,9 +12,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import hashlib
-import logging
 
-from fuelweb_test.helpers.decorators import debug
+from fuelweb_test import logger
+from fuelweb_test import logwrap
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_true
@@ -23,9 +23,6 @@ from devops.helpers.helpers import wait
 import os
 from time import sleep
 import urllib
-
-logger = logging.getLogger(__name__)
-logwrap = debug(logger)
 
 
 @logwrap

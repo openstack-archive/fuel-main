@@ -14,10 +14,9 @@
 
 import base64
 import json
-import logging
 import urllib2
 
-logger = logging.getLogger(__name__)
+from fuelweb_test import logger
 
 
 class HTTPClient(object):
