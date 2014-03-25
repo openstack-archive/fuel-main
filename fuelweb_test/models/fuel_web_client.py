@@ -285,7 +285,7 @@ class FuelWebClient(object):
 
             for option in settings:
                 section = False
-                if option in ('savanna', 'murano', 'ceilometer'):
+                if option in ('sahara', 'murano', 'ceilometer'):
                     section = 'additional_components'
                 if option in ('volumes_ceph', 'images_ceph', 'ephemeral_ceph',
                               'objects_ceph', 'osd_pool_size', 'volumes_lvm'):
