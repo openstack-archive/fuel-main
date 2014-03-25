@@ -12,7 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 import paramiko
 import proboscis
 import random
@@ -20,9 +19,7 @@ import time
 
 from devops.helpers import helpers
 from fuelweb_test.helpers import common
-
-
-logger = logging.getLogger(__name__)
+from fuelweb_test import logger
 
 
 class OpenStackActions(common.Common):

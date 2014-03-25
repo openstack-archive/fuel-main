@@ -12,7 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 import time
 
 from devops.helpers.helpers import _get_file_size
@@ -23,14 +22,11 @@ from ipaddr import IPNetwork
 from paramiko import RSAKey
 
 from fuelweb_test.helpers import checkers
-from fuelweb_test.helpers.decorators import debug
 from fuelweb_test.helpers.eb_tables import Ebtables
 from fuelweb_test.models.fuel_web_client import FuelWebClient
 from fuelweb_test import settings
-
-
-logger = logging.getLogger('integration')
-logwrap = debug(logger)
+from fuelweb_test import logwrap
+from fuelweb_test import logger
 
 
 class EnvironmentModel(object):
