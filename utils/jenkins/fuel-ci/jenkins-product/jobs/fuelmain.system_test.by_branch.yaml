@@ -56,7 +56,7 @@
             - all
             - fuelweb_test.integration.test_admin_node:TestAdminNode.test_puppetmaster_alive
             - fuelweb_test.integration.test_admin_node:TestAdminNode.test_cobbler_alive
-            - fuelweb_test.integration.test_admin_node:TestAdminNode.test_nailyd_alive
+            - fuelweb_test.integration.test_admin_node:TestAdminNode.test_astuted_alive
             - fuelweb_test.integration.test_node:TestNode.test_release_upload
             - fuelweb_test.integration.test_node:TestNode.test_http_returns_no_error
             - fuelweb_test.integration.test_node:TestNode.test_create_empty_cluster

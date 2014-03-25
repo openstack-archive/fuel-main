@@ -56,8 +56,8 @@ class TestAdminNode(TestBasic):
 
     @test(depends_on=[SetupEnvironment.setup_master])
     @log_snapshot_on_error
-    def test_nailyd_alive(self):
-        """Test naily master and worker processes are alive on master node
+    def test_astuted_alive(self):
+        """Test astute master and worker processes are alive on master node
 
         Scenario:
             1. Revert snapshot "empty"
@@ -68,11 +68,11 @@ class TestAdminNode(TestBasic):
             raise SkipTest()
         self.env.revert_snapshot("empty")
         ps_output = self.env.get_admin_remote().execute('ps ax')['stdout']
-        naily_master = filter(lambda x: 'naily master' in x, ps_output)
-        logger.info("Found naily processes: %s" % naily_master)
-        assert_equal(len(naily_master), 1)
-        naily_workers = filter(lambda x: 'naily worker' in x, ps_output)
+        astute_master = filter(lambda x: 'astute master' in x, ps_output)
+        logger.info("Found astute processes: %s" % astute_master)
+        assert_equal(len(astute_master), 1)
+        astute_workers = filter(lambda x: 'astute worker' in x, ps_output)
         logger.info(
-            "Found %d naily worker processes: %s" %
-            (len(naily_workers), naily_workers))
-        assert_equal(True, len(naily_workers) > 1)
+            "Found %d astute worker processes: %s" %
+            (len(astute_workers), astute_workers))
+        assert_equal(True, len(astute_workers) > 1)
