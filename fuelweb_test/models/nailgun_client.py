@@ -12,26 +12,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-import logging
-
-from fuelweb_test.helpers.decorators import debug
+from fuelweb_test import logwrap
+from fuelweb_test import logger
 from fuelweb_test.helpers.decorators import json_parse
 from fuelweb_test.helpers.http import HTTPClient
 from fuelweb_test.settings import OPENSTACK_RELEASE
 
 
-logger = logging.getLogger(__name__)
-logwrap = debug(logger)
-
-
 class NailgunClient(object):
     def __init__(self, admin_node_ip, user=None, password=None):
-        self.client = HTTPClient(url="http://{}:8000".format(admin_node_ip),
-                                 user=user, password=password)
-        logger.info(
-            'Init of client by url %s' % "http://{}:8000".format(
-                admin_node_ip))
+        url = "http://{0}:8000".format(admin_node_ip)
+        logger.info('Initiate Nailgun client with url %s', url)
+        self.client = HTTPClient(url=url, user=user, password=password)
         super(NailgunClient, self).__init__()
 
     @logwrap
@@ -105,12 +97,14 @@ class NailgunClient(object):
             "/api/clusters/{}/".format(cluster_id)
         )
 
+    @logwrap
     @json_parse
     def update_node(self, node_id, data):
         return self.client.put(
             "/api/nodes/{}/".format(node_id), data
         )
 
+    @logwrap
     @json_parse
     def update_nodes(self, data):
         return self.client.put(
@@ -188,10 +182,12 @@ class NailgunClient(object):
     def get_ostf_test_sets(self, cluster_id):
         return self.client.get("/ostf/testsets/{}".format(cluster_id))
 
+    @logwrap
     @json_parse
     def get_ostf_tests(self, cluster_id):
         return self.client.get("/ostf/tests/{}".format(cluster_id))
 
+    @logwrap
     @json_parse
     def get_ostf_test_run(self, cluster_id):
         return self.client.get("/ostf/testruns/last/{}".format(cluster_id))
@@ -199,6 +195,8 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def ostf_run_tests(self, cluster_id, test_sets_list):
+        logger.info('Run OSTF tests at cluster #%s: %s',
+                    cluster_id, test_sets_list)
         data = []
         for test_set in test_sets_list:
             data.append(
@@ -320,7 +318,5 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def do_stop_reset_actions(self, cluster_id, action="stop_deployment"):
-        resp = self.client.put(
+        return self.client.put(
             "/api/clusters/{0}/{1}/".format(str(cluster_id), action))
-        logger.info('response for cluster action {0}'.format(resp))
-        return resp

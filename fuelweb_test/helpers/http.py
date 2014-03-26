@@ -14,10 +14,9 @@
 
 import base64
 import json
-import logging
 import urllib2
 
-logger = logging.getLogger(__name__)
+from fuelweb_test import logger
 
 
 class HTTPClient(object):
@@ -25,11 +24,11 @@ class HTTPClient(object):
     base64string = None
 
     def __init__(self, url, user=None, password=None):
+        logger.info('Initiate HTTPClient with url %s', url)
         self.url = url
-        logger.info('url from helpers http_client %s' % self.url)
-
         if user and password:
             creds = '{0}:{1}'.format(user, password)
+            logger.info('Set credentials to %s', creds)
             self.base64string = base64.standard_b64encode(creds)
 
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)

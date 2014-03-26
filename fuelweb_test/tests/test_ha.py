@@ -12,19 +12,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 from proboscis import test
 
-from fuelweb_test.helpers.decorators import debug
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
-
-
-logger = logging.getLogger(__name__)
-logwrap = debug(logger)
 
 
 @test(groups=["thread_3", "ha"])

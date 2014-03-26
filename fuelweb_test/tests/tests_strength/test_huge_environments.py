@@ -12,19 +12,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
-
 from proboscis import SkipTest
 from proboscis import test
 
-from fuelweb_test.helpers.decorators import debug
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import settings
 from fuelweb_test.tests import base_test_case
-
-
-logger = logging.getLogger(__name__)
-logwrap = debug(logger)
 
 
 @test(groups=["huge_environments"])
@@ -58,7 +51,7 @@ class HugeEnvironments(base_test_case.TestBasic):
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True,
-                'savanna': True,
+                'sahara': True,
                 'ceilometer': True
             }
         )
@@ -117,7 +110,7 @@ class HugeEnvironments(base_test_case.TestBasic):
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True,
-                'savanna': True,
+                'sahara': True,
                 'ceilometer': True,
                 'net_provider': 'neutron',
                 'net_segment_type': 'gre'
