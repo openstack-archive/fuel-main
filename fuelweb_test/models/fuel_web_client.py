@@ -229,8 +229,7 @@ class FuelWebClient(object):
 
     @logwrap
     def assert_pacemaker(self, ctrl_node, online_nodes, offline_nodes):
-        logger.info('Assert pacemaker status at devops node %s',
-                    ctrl_node.name)
+        logger.info('Assert pacemaker status at devops node %s', ctrl_node)
         fqdn_names = lambda nodes: sorted([self.fqdn(n) for n in nodes])
 
         # Assert online nodes list
