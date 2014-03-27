@@ -20,6 +20,7 @@ from proboscis import SkipTest
 from proboscis import test
 
 from fuelweb_test.helpers import os_actions
+from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.checkers import check_ceph_health
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import settings
@@ -439,3 +440,104 @@ class VmBackedWithCephMigrationBasic(TestBasic):
 
         self.env.make_snapshot(
             "vm_backed_with_ceph_live_migration")
+
+
+@test(groups=["thread_1", "ceph_partitions"])
+class CheckCephPartitionsAfterReboot(TestBasic):
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["ceph_partitions"])
+    @log_snapshot_on_error
+    def check_ceph_partitions_after_reboot(self):
+        """Check that Ceph OSD partitions are remounted after reboot
+
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 1 node with compute and Ceph OSD roles
+            4. Add 1 node with Ceph OSD role
+            5. Deploy the cluster
+            7. Check Ceph status
+            8. Read current partitions
+            9. Warm-reboot Ceph nodes
+            10. Read partitions again
+            11. Check Ceph health
+            12. Cold-reboot Ceph nodes
+            13. Read partitions again
+            14. Check Ceph health
+
+        Snapshot check_ceph_partitions_after_reboot
+
+        """
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+            raise proboscis.SkipTest()
+
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'volumes_ceph': True,
+                'images_ceph': True,
+                'ephemeral_ceph': True,
+                'volumes_lvm': False
+            }
+        )
+
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute', 'ceph-osd'],
+                'slave-03': ['ceph-osd']
+            }
+        )
+        # Deploy cluster
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        for node in ["slave-02", "slave-03"]:
+            logger.info("Get partitions for {node}".format(node=node))
+            before_reboot_partitions = [checkers.get_ceph_partitions(
+                self.env.get_ssh_to_remote_by_name(node),
+                "/dev/vd{p}".format(p=part)) for part in ["b", "c"]]
+
+            logger.info("Warm-restart nodes")
+            self.fuel_web.warm_restart_nodes(
+                [self.fuel_web.environment.get_virtual_environment().
+                    node_by_name(node)])
+
+            logger.info("Get partitions for {node} once again".format(
+                node=node
+            ))
+            after_reboot_partitions = [checkers.get_ceph_partitions(
+                self.env.get_ssh_to_remote_by_name(node),
+                "/dev/vd{p}".format(p=part)) for part in ["b", "c"]]
+
+            if before_reboot_partitions != after_reboot_partitions:
+                logger.info("Partitions don`t match")
+                logger.info("Before reboot: %s" % before_reboot_partitions)
+                logger.info("After reboot: %s" % after_reboot_partitions)
+                raise Exception()
+
+            logger.info("Check Ceph health is ok after reboot")
+            check_ceph_health(
+                self.env.get_ssh_to_remote_by_name(node))
+
+            logger.info("Cold-restart nodes")
+            self.fuel_web.cold_restart_nodes(
+                [self.fuel_web.environment.get_virtual_environment().
+                    node_by_name(node)])
+
+            after_reboot_partitions = [checkers.get_ceph_partitions(
+                self.env.get_ssh_to_remote_by_name(node),
+                "/dev/vd{p}".format(p=part)) for part in ["b", "c"]]
+
+            if before_reboot_partitions != after_reboot_partitions:
+                logger.info("Partitions don`t match")
+                logger.info("Before reboot: %s" % before_reboot_partitions)
+                logger.info("After reboot: %s" % after_reboot_partitions)
+                raise Exception()
+
+            logger.info("Check Ceph health is ok after reboot")
+            check_ceph_health(
+                self.env.get_ssh_to_remote_by_name(node))

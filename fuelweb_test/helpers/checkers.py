@@ -144,3 +144,15 @@ def verify_service_list(remote, smiles_count):
             "Services still not read. Sleeping for 60 seconds and retrying")
         sleep(60)
         _verify()
+
+
+@logwrap
+def get_ceph_partitions(remote, device, type="xfs"):
+    ret = remote.check_call("parted {device} print | grep {type}".format(
+                            device=device, type=type))['stdout']
+    if not ret:
+        logger.error("Partition not present! {partitions}: ".format(
+                     remote.check_call("parted {device} print")))
+        raise Exception
+    logger.debug("Partitions: {part}".format(part=ret))
+    return ret
