@@ -53,9 +53,9 @@ def log_snapshot_on_error(func):
             status = "fail"
             name = 'error_%s' % func.__name__
             description = "Failed in method '%s'." % func.__name__
-            logging.debug("=" * 100)
-            logging.debug("{} Make snapshot: {}".format(description, name))
-            logging.debug(
+            logging.info("<" * 5 + "*" * 100 + ">" * 5)
+            logging.info("{} Make snapshot: {}".format(description, name))
+            logging.info(
                 "You could revert this snapshot using [{command}]".format(
                     command=
                     "dos.py revert {env} --snapshot-name {name} && "
@@ -68,7 +68,7 @@ def log_snapshot_on_error(func):
                     )
                 )
             )
-            logging.debug("=" * 100)
+            logging.info("<" * 5 + "*" * 100 + ">" * 5)
             if args[0].env is not None:
                 args[0].env.make_snapshot(snapshot_name=name[-50:])
             raise
