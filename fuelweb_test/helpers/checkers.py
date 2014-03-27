@@ -144,3 +144,24 @@ def verify_service_list(remote, smiles_count):
             "Services still not read. Sleeping for 60 seconds and retrying")
         sleep(60)
         _verify()
+
+
+@logwrap
+def check_unallocated_space(disks, contr_img_ceph=False):
+    for disk in disks:
+        # In case we have Ceph for images all space on controller
+        # should be given to Base System space:
+        if contr_img_ceph:
+            logger.info("Check that all space on /dev/{d} is allocated for "
+                        "Base System Space".format(d=disk['name']))
+            if not bool(disk["volumes"][0]["size"] == disk["size"]):
+                return False
+        else:
+            logger.info("Get overall size of volumes")
+            sizes = [v['size'] for v in disk["volumes"]]
+            logger.info("Space on disk: {s}".format(s=disk['size']))
+            logger.info("Summary space of disks on /dev/{d}: {s}".format(
+                d=disk["name"], s=sum(sizes)))
+            if not bool(sum(sizes) == disk["size"]):
+                return False
+    return True
