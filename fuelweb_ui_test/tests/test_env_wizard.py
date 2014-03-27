@@ -8,6 +8,7 @@ from settings import OPENSTACK_RELEASE_UBUNTU, OPENSTACK_RELEASE_REDHAT
 from settings import OPENSTACK_REDHAT, REDHAT_USERNAME, REDHAT_PASSWORD
 from settings import REDHAT_SATELLITE, REDHAT_ACTIVATION_KEY
 from tests.base import BaseTestCase
+from nose.plugins.attrib import attr
 
 
 class TestEnvWizard(BaseTestCase):
@@ -71,6 +72,7 @@ class TestEnvWizard(BaseTestCase):
                           format(name),
                           w.name.find_element_by_xpath('..').text)
 
+
     def test_release_field(self):
         """Test environment release field
 
@@ -89,6 +91,7 @@ class TestEnvWizard(BaseTestCase):
             self.assertEqual(w.release.first_selected_option.text,
                              OPENSTACK_RELEASE_UBUNTU)
 
+    @attr('skip')
     def test_rhel_empty_form(self):
         """Test validation of empty RHEL form
 
@@ -124,6 +127,7 @@ class TestEnvWizard(BaseTestCase):
                 'Invalid activation key',
                 w.redhat_activation_key.find_element_by_xpath('..').text)
 
+    @attr('skip')
     def test_rhel_form(self):
         """Test RHEL form on presence of necessary fields
 
@@ -370,6 +374,7 @@ class TestEnvWizardRedHat(BaseTestCase):
         BaseTestCase.setUp(self)
         Environments().create_cluster_box.click()
 
+    @attr('skip')
     def test_rhsm(self):
         """Download RHEL and RHOS by RHSM
 
@@ -399,6 +404,7 @@ class TestEnvWizardRedHat(BaseTestCase):
                 'Active', r.dict[OPENSTACK_REDHAT].status.text,
                 'RHOS status is active')
 
+    @attr('skip')
     def test_rhn_satellite(self):
         """Download RHEL and RHOS by RHN satellite
 

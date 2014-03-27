@@ -6,6 +6,7 @@ from settings import OPENSTACK_REDHAT, REDHAT_USERNAME, REDHAT_PASSWORD, \
     REDHAT_SATELLITE, REDHAT_ACTIVATION_KEY, OPENSTACK_CENTOS, \
     OPENSTACK_UBUNTU
 from tests.base import BaseTestCase
+from nose.plugins.attrib import attr
 
 
 class TestReleases(BaseTestCase):
@@ -43,6 +44,7 @@ class TestReleases(BaseTestCase):
                 'Active', r.dict[OPENSTACK_UBUNTU].status.text,
                 'Ubuntu status is active')
 
+    @attr('skip')
     def test_rhos_is_active(self):
         """Check RHOS status is active on releases tab
 
@@ -55,6 +57,7 @@ class TestReleases(BaseTestCase):
                 'Not available', r.dict[OPENSTACK_REDHAT].status.text,
                 'RHOS status is Not available')
 
+    @attr('skip')
     def test_rhsm(self):
         """Download RHEL with RHSM option
 
@@ -79,6 +82,7 @@ class TestReleases(BaseTestCase):
                 'Active', r.dict[OPENSTACK_REDHAT].status.text,
                 'RHOS status is active')
 
+    @attr('skip')
     def test_rhn_satellite(self):
         """Download RHEL with RHN option
 
