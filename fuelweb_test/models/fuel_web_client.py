@@ -414,7 +414,7 @@ class FuelWebClient(object):
         registered. Otherwise return None.
         """
         devops_macs = {i.mac_address.upper() for i in devops_node.interfaces}
-        logger.info('Look for nailgun node by macs %s', devops_macs)
+        logger.debug('Look for nailgun node by macs %s', devops_macs)
         for nailgun_node in self.client.list_nodes():
             macs = {i['mac'] for i in nailgun_node['meta']['interfaces']}
             if devops_macs == macs:
