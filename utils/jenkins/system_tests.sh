@@ -404,11 +404,11 @@ RunTest() {
     # run python test set to create environments, deploy and test product
     if [ "${DRY_RUN}" = "yes" ]; then
         echo export PYTHONPATH="${WORKSPACE} ${PYTHONPATH}"
-        echo python fuelweb_test/run_tests.py -v -s --with-xunit ${OPTS}
+        echo python fuelweb_test/run_tests.py -q --nologcapture --with-xunit ${OPTS}
     else
         export PYTHONPATH=${WORKSPACE} ${PYTHONPATH}
         echo ${PYTHONPATH}
-        python fuelweb_test/run_tests.py -v -s --with-xunit ${OPTS}
+        python fuelweb_test/run_tests.py -q --nologcapture --with-xunit ${OPTS}
 
     fi
     ec=$?
