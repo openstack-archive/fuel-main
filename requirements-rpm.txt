@@ -539,6 +539,7 @@ tinyproxy
 tmux
 unzip-6.0-1.el6
 usermode-1.102-3.el6
+uwsgi
 v8-3.14.5.7-3.el6
 vim-enhanced-7.2.411-1.8.el6
 virt-what-1.11-1.2.el6
