@@ -22,6 +22,7 @@ from ipaddr import IPNetwork
 from paramiko import RSAKey
 
 from fuelweb_test.helpers import checkers
+from fuelweb_test.helpers.decorators import revert_info
 from fuelweb_test.helpers.eb_tables import Ebtables
 from fuelweb_test.models.fuel_web_client import FuelWebClient
 from fuelweb_test import settings
@@ -299,6 +300,7 @@ class EnvironmentModel(object):
     def make_snapshot(self, snapshot_name):
         self.get_virtual_environment().suspend(verbose=False)
         self.get_virtual_environment().snapshot(snapshot_name, force=True)
+        revert_info(snapshot_name)
 
     def nailgun_nodes(self, devops_nodes):
         return map(

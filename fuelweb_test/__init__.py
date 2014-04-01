@@ -11,11 +11,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
+import functools
 import logging
 import os
-
-from fuelweb_test.helpers.decorators import debug
 from fuelweb_test.settings import LOGS_DIR
 
 logging.basicConfig(level=logging.DEBUG,
@@ -32,5 +30,22 @@ console.setFormatter(formatter)
 
 logger = logging.getLogger(__name__)
 logger.addHandler(console)
+
+
+def debug(logger):
+    def wrapper(func):
+        @functools.wraps(func)
+        def wrapped(*args, **kwargs):
+            logger.debug(
+                "Calling: {} with args: {} {}".format(
+                    func.__name__, args, kwargs
+                )
+            )
+            result = func(*args, **kwargs)
+            logger.debug(
+                "Done: {} with result: {}".format(func.__name__, result))
+            return result
+        return wrapped
+    return wrapper
 
 logwrap = debug(logger)

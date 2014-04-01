@@ -14,7 +14,6 @@
 
 import functools
 import json
-import logging
 import os
 import time
 import urllib2
@@ -23,17 +22,18 @@ from devops.helpers.helpers import SSHClient
 from proboscis import SkipTest
 
 from fuelweb_test import settings
+from fuelweb_test import logger
 
 
 def save_logs(url, filename):
-    logging.info('Saving logs to "{}" file'.format(filename))
+    logger.info('Saving logs to "{}" file'.format(filename))
     try:
         with open(filename, 'w') as f:
             f.write(
                 urllib2.urlopen(url).read()
             )
     except urllib2.HTTPError as e:
-        logging.error(e)
+        logger.error(e)
 
 
 def log_snapshot_on_error(func):
@@ -53,22 +53,7 @@ def log_snapshot_on_error(func):
             status = "fail"
             name = 'error_%s' % func.__name__
             description = "Failed in method '%s'." % func.__name__
-            logging.info("<" * 5 + "*" * 100 + ">" * 5)
-            logging.info("{} Make snapshot: {}".format(description, name))
-            logging.info(
-                "You could revert this snapshot using [{command}]".format(
-                    command=
-                    "dos.py revert {env} --snapshot-name {name} && "
-                    "dos.py resume {env} && "
-                    "virsh net-dumpxml {env}_admin | grep -P {pattern} -o "
-                    "| awk {awk_command}".format(
-                        env=settings.ENV_NAME, name=name,
-                        pattern="\"(\d+\.){3}\"",
-                        awk_command="'{print \"Admin node IP: \"$0\"2\"}'"
-                    )
-                )
-            )
-            logging.info("<" * 5 + "*" * 100 + ">" * 5)
+            revert_info(description, name)
             if args[0].env is not None:
                 args[0].env.make_snapshot(snapshot_name=name[-50:])
             raise
@@ -93,23 +78,6 @@ def log_snapshot_on_error(func):
     return wrapper
 
 
-def debug(logger):
-    def wrapper(func):
-        @functools.wraps(func)
-        def wrapped(*args, **kwargs):
-            logger.debug(
-                "Calling: {} with args: {} {}".format(
-                    func.__name__, args, kwargs
-                )
-            )
-            result = func(*args, **kwargs)
-            logger.debug(
-                "Done: {} with result: {}".format(func.__name__, result))
-            return result
-        return wrapped
-    return wrapper
-
-
 def json_parse(func):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
@@ -124,7 +92,7 @@ def upload_manifests(func):
         result = func(*args, **kwargs)
         try:
             if settings.UPLOAD_MANIFESTS:
-                logging.info("Uploading new manifests from %s" %
+                logger.info("Uploading new manifests from %s" %
                              settings.UPLOAD_MANIFESTS_PATH)
                 remote = SSHClient(args[0].admin_node_ip,
                                    username='root',
@@ -132,12 +100,29 @@ def upload_manifests(func):
                 remote.execute('rm -rf /etc/puppet/modules/*')
                 remote.upload(settings.UPLOAD_MANIFESTS_PATH,
                               '/etc/puppet/modules/')
-                logging.info("Copying new site.pp from %s" %
+                logger.info("Copying new site.pp from %s" %
                              settings.SITEPP_FOR_UPLOAD)
                 remote.execute("cp %s /etc/puppet/manifests" %
                                settings.SITEPP_FOR_UPLOAD)
         except Exception:
-            logging.error("Could not upload manifests")
+            logger.error("Could not upload manifests")
             raise
         return result
     return wrapper
+
+
+def revert_info(snapshot_name, description=""):
+    logger.info("<" * 5 + "*" * 100 + ">" * 5)
+    logger.info("{} Make snapshot: {}".format(description, snapshot_name))
+    logger.info(
+        "You could revert this snapshot using [{command}]".format(
+        command=
+        "dos.py revert {env} --snapshot-name {name} && "
+        "dos.py resume {env} && "
+        "virsh net-dumpxml {env}_admin | grep -P {pattern} -o "
+        "| awk {awk_command}".format(
+        env=settings.ENV_NAME, name=snapshot_name,
+        pattern="\"(\d+\.){3}\"",
+        awk_command="'{print \"Admin node IP: \"$0\"2\"}'"
+        )))
+    logger.info("<" * 5 + "*" * 100 + ">" * 5)
