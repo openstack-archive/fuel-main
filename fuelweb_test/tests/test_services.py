@@ -25,11 +25,11 @@ from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
 
-@test(groups=["services", "services.savanna"])
+@test(groups=["services", "services.sahara"])
 class SavannaSimple(TestBasic):
     """Savanna simple test.
     Don't recommend to start tests without kvm
-    Put Savanna image before start
+    Put Sahara image before start
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_sahara_simple"])
@@ -38,16 +38,16 @@ class SavannaSimple(TestBasic):
         """Deploy cluster in simple mode with Savanna
 
         Scenario:
-            1. Create cluster. Set install Savanna option
+            1. Create cluster. Set install Sahara option
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Deploy the cluster
-            5. Verify savanna services
+            5. Verify sahara services
             6. Run OSTF
             7. Register sahara image
             8. Run OSTF platform sahara tests only
 
-        Snapshot: deploy_savanna_simple
+        Snapshot: deploy_sahara_simple
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -83,7 +83,7 @@ class SavannaSimple(TestBasic):
             'slave-01', smiles_count=5, networks_count=1, timeout=300)
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
-            service_name='savanna-api')
+            service_name='sahara-api')
 
         controller_ip = self.fuel_web.get_nailgun_node_by_name(
             'slave-01')['ip']
