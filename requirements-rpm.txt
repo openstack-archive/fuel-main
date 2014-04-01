@@ -187,6 +187,9 @@ mlocate-0.22.2-4.el6
 mod_fastcgi
 mod_ssl-2.2.15-15.el6.1
 mod_wsgi-3.2-1.el6
+libmongodb-2.4.6
+mongodb-2.4.6 
+mongodb-server-2.4.6
 mtools-4.0.17-3.el6
 murano-api
 murano-common
