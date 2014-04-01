@@ -12,6 +12,7 @@ Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
+BuildRequires:  python-setuptools
 Requires: PyYAML
 
 %description

@@ -11,6 +11,8 @@ Source0:   %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 URL:       http://github.com/Mirantis
 
+BuildRequires:  python-setuptools
+
 Requires:  vconfig
 Requires:  scapy
 Requires:  python-argparse
