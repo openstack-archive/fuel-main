@@ -57,6 +57,7 @@ if [ -z $iso_path ]; then
     exit 1
 fi
 echo "OK"
+echo "Going to use Mirantis OpenStack ISO file $iso_path"
 
 # Check if SSH is installed. Cygwin does not install SSH by default.
 echo "Checking if SSH client installed... "
