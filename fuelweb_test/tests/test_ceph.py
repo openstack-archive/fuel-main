@@ -91,11 +91,12 @@ class CephCompactWithCinder(TestBasic):
 
         Scenario:
             1. Create cluster
-            2. Add 1 node with controller and ceph OSD roles
+            2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Add 2 nodes with cinder and ceph OSD roles
             5. Deploy the cluster
             6. Check ceph status
+            7. Check partitions on controller node
 
         Snapshot ceph_multinode_with_cinder
 
@@ -111,7 +112,7 @@ class CephCompactWithCinder(TestBasic):
             mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'volumes_ceph': True,
-                'images_ceph': False,
+                'images_ceph': True,
                 'volumes_lvm': False
             }
         )
@@ -127,6 +128,16 @@ class CephCompactWithCinder(TestBasic):
         # Cluster deploy
         self.fuel_web.deploy_cluster_wait(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+
+        logger.info("Check unallocated space")
+        disks = self.fuel_web.client.get_node_disks(
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['id'])
+
+        logger.info("Current disk partitions are: \n{d}".format(d=disks))
+
+        assert_true(
+            checkers.check_unallocated_space(disks, contr_img_ceph=True),
+            "Check unallocated space on controller")
 
         # Run ostf
         self.fuel_web.run_ostf(cluster_id=cluster_id)
