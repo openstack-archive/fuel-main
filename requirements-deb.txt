@@ -709,7 +709,7 @@ python-pypcap
 python-pyudev
 python-requests
 python-routes
-python-savannaclient
+python-saharaclient
 python-scapy
 python-scgi
 python-setuptools
@@ -766,8 +766,8 @@ ruby-yajl
 ruby1.8
 ruby1.8-dev
 rubygems
-savanna
-savanna-dashboard
+sahara
+sahara-dashboard
 screen
 scrub
 seabios
