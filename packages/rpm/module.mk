@@ -47,7 +47,7 @@ $(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: \
 	sudo cp -r $(BUILD_DIR)/repos/nailgun/network_checker/* $(SANDBOX)/tmp/SOURCES/network_checker/
 	cd $(SANDBOX)/tmp/SOURCES/network_checker && sudo python setup.py sdist -d $(SANDBOX)/tmp/SOURCES
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/nailgun-net-check.spec $(SANDBOX)/tmp
-	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/nailgun-net-check.spec
+	sudo chroot $(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/nailgun-net-check.spec
 	cp $(SANDBOX)/tmp/RPMS/x86_64/nailgun-net-check-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
@@ -65,7 +65,7 @@ $(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done: \
 	sudo cp -r $(BUILD_DIR)/repos/nailgun/fuelclient/* $(SANDBOX)/tmp/SOURCES/python-fuelclient
 	cd $(SANDBOX)/tmp/SOURCES/python-fuelclient && sudo python setup.py sdist -d $(SANDBOX)/tmp/SOURCES
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/python-fuelclient.spec $(SANDBOX)/tmp
-	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/python-fuelclient.spec
+	sudo chroot $(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/python-fuelclient.spec
 	cp $(SANDBOX)/tmp/RPMS/noarch/python-fuelclient-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
@@ -82,7 +82,7 @@ $(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done: \
 	sudo cp -r $(BUILD_DIR)/repos/nailgun/fuelmenu/* $(SANDBOX)/tmp/SOURCES/fuelmenu
 	cd $(SANDBOX)/tmp/SOURCES/fuelmenu && sudo python setup.py sdist -d $(SANDBOX)/tmp/SOURCES
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/fuelmenu.spec $(SANDBOX)/tmp
-	sudo chroot $(SANDBOX) rpmbuild -vv --define "_topdir /tmp" -ba /tmp/fuelmenu.spec
+	sudo chroot $(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/fuelmenu.spec
 	cp $(SANDBOX)/tmp/RPMS/noarch/fuelmenu-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
 	sudo sh -c "$${SANDBOX_DOWN}"
 	$(ACTION.TOUCH)
