@@ -40,6 +40,7 @@ ceilometer-agent-central
 ceilometer-api
 ceilometer-collector
 ceilometer-common
+ceilometer-agent-notification
 ceph
 ceph-deploy
 ceph-mds
@@ -557,7 +558,6 @@ neutron-common
 neutron-dhcp-agent
 neutron-l3-agent
 neutron-metadata-agent
-neutron-ovs-cleanup
 neutron-plugin-openvswitch
 neutron-plugin-openvswitch-agent
 neutron-server
@@ -707,6 +707,7 @@ python-pypcap
 python-pyudev
 python-requests
 python-routes
+python-saharaclient
 python-scapy
 python-scgi
 python-setuptools
@@ -763,6 +764,8 @@ ruby-yajl
 ruby1.8
 ruby1.8-dev
 rubygems
+sahara
+sahara-dashboard
 screen
 scrub
 seabios
