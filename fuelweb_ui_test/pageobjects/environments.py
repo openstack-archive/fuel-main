@@ -145,7 +145,7 @@ class Wizard(Popup, RedhatAccountPopup):
     def install_savanna(self):
         return self.parent.\
             find_element_by_xpath(
-                self.XPATH_CHECKBOX.format('savanna'))
+                self.XPATH_CHECKBOX.format('sahara'))
 
     @property
     def install_murano(self):
