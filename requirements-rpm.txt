@@ -403,7 +403,7 @@ python-requests
 python-rhsm
 python-routes
 python-routes1.12-1.12.3-4.el6
-#python-saharaclient
+python-saharaclient
 python-seqdiag-0.8.2-1
 python-setuptools-0.6.10-3.el6
 python-simplejson
@@ -511,8 +511,8 @@ rubygem-tzinfo-0.3.37-1.el6
 rubygem-uuidtools-2.1.2-1.el6
 rubygem-yajl-ruby-1.1.0-2~1.el6
 rubygems
-#sahara
-#sahara-dashboard
+sahara
+sahara-dashboard
 scapy-2.0.0.10-5.el6
 screen-4.0.3-16.el6
 selinux-policy
