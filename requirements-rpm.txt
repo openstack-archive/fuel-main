@@ -410,7 +410,7 @@ python-requests
 python-rhsm
 python-routes
 python-routes1.12-1.12.3-4.el6
-#python-saharaclient
+python-saharaclient
 python-seqdiag-0.8.2-1
 python-setuptools-0.6.10-3.el6
 python-simplejson
