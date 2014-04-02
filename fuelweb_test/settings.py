@@ -135,7 +135,7 @@ NEUTRON_SEGMENT = {
     'vlan': 'vlan'
 }
 
-LOGS_DIR = os.environ.get('LOGS_DIR')
+LOGS_DIR = os.environ.get('LOGS_DIR', os.getcwd())
 USE_ALL_DISKS = os.environ.get('USE_ALL_DISKS', 'true') == 'true'
 
 UPLOAD_MANIFESTS = os.environ.get('UPLOAD_MANIFESTS', 'false') == 'true'
