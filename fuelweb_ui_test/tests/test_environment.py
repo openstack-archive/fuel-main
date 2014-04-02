@@ -6,6 +6,7 @@ from pageobjects.settings import Settings
 from pageobjects.tabs import Tabs
 from settings import OPENSTACK_CENTOS, OPENSTACK_RELEASE_CENTOS
 from tests.base import BaseTestCase
+from pageobjects.base import PageObject
 
 
 class TestEnvironment(BaseTestCase):
@@ -96,9 +97,9 @@ class TestEnvironment(BaseTestCase):
         cb.click()
 
         with Nodes() as n:
-            self.assertEqual(n.env_name.text, OPENSTACK_CENTOS)
-            n.info_icon.click()
-            self.assertIn(OPENSTACK_CENTOS, n.env_details.text)
+            self.assertEqual(PageObject.get_text(n, 'env_name'), OPENSTACK_CENTOS)
+            PageObject.click_element(n, 'info_icon')
+            self.assertIn(OPENSTACK_CENTOS, PageObject.get_text(n, 'env_details'))
             self.assertIn('Multi-node with HA', n.env_details.text)
 
     def test_hypervisor_kvm(self):
@@ -216,8 +217,6 @@ class TestEnvironment(BaseTestCase):
         Tabs().settings.click()
 
         with Settings() as s:
-            self.assertTrue(s.cinder_for_volumes.
-                            find_element_by_tag_name('input').is_selected())
             self.assertTrue(s.ceph_for_volumes.
                             find_element_by_tag_name('input').is_selected())
             self.assertTrue(s.ceph_for_images.

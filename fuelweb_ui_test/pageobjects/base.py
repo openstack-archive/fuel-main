@@ -87,7 +87,7 @@ class PageObject:
     def click_element(page_object, *args):
         attributes = [attribute for attribute in args]
         attempts = 0
-        while attempts < 3:
+        while attempts < 5:
             try:
                 if len(attributes) == 1:
                     getattr(page_object, attributes[0]).click()
@@ -99,29 +99,50 @@ class PageObject:
                                             attributes[0])[attributes[3]],
                                     attributes[1]), attributes[2]).click()
                 break
-            except StaleElementReferenceException:
-                pass
+            except (StaleElementReferenceException, NoSuchElementException):
+                time.sleep(0.5)
             attempts += 1
 
     @staticmethod
     def find_element(page_object, *args):
         attributes = [attribute for attribute in args]
         attempts = 0
-        while attempts < 3:
+        while attempts < 5:
             try:
                 if len(attributes) == 1:
-                    getattr(page_object, attributes[0])
+                    return getattr(page_object, attributes[0])
                 elif len(attributes) == 3:
-                    getattr(getattr(page_object,
-                                    attributes[0])[attributes[2]],
-                            attributes[1])
+                    return getattr(getattr(page_object,
+                                   attributes[0])[attributes[2]],
+                                   attributes[1])
                 elif len(attributes) == 4:
-                    getattr(getattr(getattr(page_object,
-                                            attributes[0])[attributes[3]],
-                                    attributes[1]), attributes[2])
+                    return getattr(getattr(getattr(page_object,
+                                           attributes[0])[attributes[3]],
+                                   attributes[1]), attributes[2])
                 break
-            except StaleElementReferenceException:
-                pass
+            except (StaleElementReferenceException, NoSuchElementException):
+                time.sleep(0.5)
+            attempts += 1
+
+    @staticmethod
+    def get_text(page_object, *args):
+        attributes = [attribute for attribute in args]
+        attempts = 0
+        while attempts < 5:
+            try:
+                if len(attributes) == 1:
+                    return getattr(page_object, attributes[0]).text
+                elif len(attributes) == 3:
+                    return getattr(getattr(page_object,
+                                   attributes[0])[attributes[2]],
+                                   attributes[1]).text
+                elif len(attributes) == 4:
+                    return getattr(getattr(getattr(page_object,
+                                           attributes[0])[attributes[3]],
+                                   attributes[1]), attributes[2]).text
+                break
+            except (StaleElementReferenceException, NoSuchElementException):
+                time.sleep(0.5)
             attempts += 1
 
 
