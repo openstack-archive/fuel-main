@@ -427,8 +427,9 @@ class TestBondingInterfaces(BaseTestCase):
         Scenario:
             1. Verify bond and unbond buttons are disabled
         """
-        PageObject.find_element(InterfacesSettings(), 'bond_interfaces')
-        self.assertFalse(InterfacesSettings().bond_interfaces.is_enabled())
+        self.assertFalse(PageObject.find_element
+                         (InterfacesSettings(), 'bond_interfaces').
+                         is_enabled())
         self.assertFalse(InterfacesSettings().unbond_interfaces.is_enabled())
 
     def test_inactive_one_selected(self):
