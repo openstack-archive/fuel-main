@@ -1,0 +1,13 @@
+Verified+2: Jenkins
+Code-Review+1: Dmitry Mescheryakov <dmescheryakov@mirantis.com>
+Code-Review+1: Alexander Ignatov <aignatov@mirantis.com>
+Code-Review+1: Yaroslav Lobankov <ylobankov@mirantis.com>
+Code-Review+1: Ivan Berezovskiy <iberezovskiy@mirantis.com>
+Approved+1: Vladimir Kuklin <vkuklin@mirantis.com>
+Code-Review+2: Vladimir Kuklin <vkuklin@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 03 Apr 2014 13:28:30 +0000
+Reviewed-on: https://review.openstack.org/84388
+Project: stackforge/fuel-main
+Branch: refs/heads/master
