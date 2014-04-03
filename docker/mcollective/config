@@ -1,0 +1,4 @@
+dockerrepo=https://github.com/adidenko/docker-mcollectived
+dockerref=master
+puppetrepo=https://github.com/stackforge/fuel-library
+puppetref=refs/changes/91/85691/1

@@ -1,0 +1,4 @@
+dockerrepo=https://github.com/adidenko/docker-postgresql.git
+dockerref=master
+puppetrepo=https://github.com/stackforge/fuel-library
+puppetref=refs/changes/42/82542/8
