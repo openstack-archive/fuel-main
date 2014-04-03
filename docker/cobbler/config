@@ -1,0 +1,4 @@
+dockerrepo=https://github.com/mattymo/fuel-docker-cobbler.git
+dockerref=master
+puppetrepo=https://github.com/stackforge/fuel-library
+puppetref=refs/changes/19/87119/2

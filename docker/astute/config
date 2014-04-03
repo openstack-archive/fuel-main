@@ -1,0 +1,4 @@
+dockerrepo=https://github.com/mattymo/fuel-docker-astute.git
+dockerref=master
+puppetrepo=https://github.com/stackforge/fuel-library
+puppetref=refs/changes/86/87086/5
