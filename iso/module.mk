@@ -51,6 +51,13 @@ $(BUILD_DIR)/iso/isoroot-gems.done: \
 	(cd $(ISOROOT)/gems && gem generate_index gems)
 	$(ACTION.TOUCH)
 
+$(BUILD_DIR)/iso/isoroot-docker.done: \
+		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/packages/build.done
+	mkdir -p $(ISOROOT)/docker
+	rsync -a --delete $(LOCAL_MIRROR_DOCKER)/ $(ISOROOT)/docker
+	$(ACTION.TOUCH)
+
 
 ########################
 # Extra files
