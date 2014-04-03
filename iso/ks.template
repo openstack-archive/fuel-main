@@ -293,14 +293,16 @@ cp -r ${SOURCE}/ubuntu/pool ${repodir}/ubuntu/fuelweb/x86_64
 cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/linux ${repodir}/ubuntu/fuelweb/x86_64/images
 cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz ${repodir}/ubuntu/fuelweb/x86_64/images
 
-# Copying eggs/gems to the nailgun directory
+# Copying eggs/gems/docker images to the nailgun directory
 cp -r ${SOURCE}/eggs ${repodir}
 cp -r ${SOURCE}/gems ${repodir}
+cp -r ${SOURCE}/docker ${repodir}
 
 # Copying bootstrap image
 mkdir -p ${repodir}/bootstrap
 cp -r ${SOURCE}/bootstrap/initramfs.img ${repodir}/bootstrap
 cp -r ${SOURCE}/bootstrap/linux ${repodir}/bootstrap
+
 
 mkdir -p /root/.ssh
 chmod 700 /root/.ssh
