@@ -1,0 +1,4 @@
+dockerrepo=https://github.com/adidenko/docker-rabbitmq
+dockerref=master
+puppetrepo=https://github.com/stackforge/fuel-library
+puppetref=refs/changes/06/82506/3
