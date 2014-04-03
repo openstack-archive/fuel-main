@@ -1,4 +1,4 @@
-.PHONY: all clean test help deep_clean
+.PHONY: all clean test help deep_clean docker
 
 help:
 	@echo 'Build directives (can be overrided by environment variables'
@@ -80,3 +80,6 @@ include $(SOURCE_DIR)/packages/module.mk
 include $(SOURCE_DIR)/bootstrap/module.mk
 include $(SOURCE_DIR)/iso/module.mk
 include $(SOURCE_DIR)/fuelweb_test/module.mk
+
+
+docker: $(BUILD_DIR)/mirror/docker/build.done 

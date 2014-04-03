@@ -68,6 +68,8 @@ LOCAL_MIRROR_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 LOCAL_MIRROR_UBUNTU:=$(LOCAL_MIRROR)/ubuntu
 LOCAL_MIRROR_UBUNTU_OS_BASEURL:=$(LOCAL_MIRROR_UBUNTU)
 LOCAL_MIRROR_RHEL:=$(LOCAL_MIRROR)/rhel
+LOCAL_MIRROR_DOCKER:=$(LOCAL_MIRROR)/docker
+LOCAL_MIRROR_DOCKER_BASEURL=$(LOCAL_MIRROR_DOCKER)
 
 BUILD_MIRROR_GEMS:=$(BUILD_DIR)/packages/gems
 
@@ -79,6 +81,7 @@ USE_MIRROR?=ext
 ifeq ($(USE_MIRROR),ext)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://fuel-repository.mirantis.com/fwm/$(PRODUCT_VERSION)
+MIRROR_DOCKER=$(MIRROR_BASE)/docker
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
@@ -88,6 +91,7 @@ endif
 ifeq ($(USE_MIRROR),srt)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://fuel-mirror.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
+MIRROR_DOCKER=$(MIRROR_BASE)/docker
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
@@ -97,6 +101,17 @@ endif
 ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://fuel-mirror.msk.mirantis.net/fwm/$(PRODUCT_VERSION)
+MIRROR_DOCKER=$(MIRROR_BASE)/docker
+MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_EGGS?=$(MIRROR_BASE)/eggs
+MIRROR_GEMS?=$(MIRROR_BASE)/gems
+MIRROR_SRC?=$(MIRROR_BASE)/src
+endif
+ifeq ($(USE_MIRROR),usa)
+YUM_REPOS?=proprietary
+MIRROR_BASE?=http://ss0078.svwh.net/fwm/$(PRODUCT_VERSION)
+MIRROR_DOCKER=$(MIRROR_BASE)/docker
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
@@ -106,6 +121,7 @@ endif
 ifeq ($(USE_MIRROR),hrk)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://fuel-mirror.kha.mirantis.net/fwm/$(PRODUCT_VERSION)
+MIRROR_DOCKER=$(MIRROR_BASE)/docker
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
@@ -119,6 +135,7 @@ MIRROR_UBUNTU?=http://mirrors.msk.mirantis.net/ubuntu/
 MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
 MIRROR_RHEL?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-6-server-rpms
 MIRROR_RHEL_BOOT?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-server-6.4-x86_64
+MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
 MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-stable/centos/
@@ -172,4 +189,10 @@ KSYAML?=$(SOURCE_DIR)/iso/ks.yaml
 
 # Production variable (prod, dev)
 PRODUCTION?=dev
+DOCKER_REBUILD?=false
+DOCKER_ARCHIVE_SUFFIX=.tar.xz
+DOCKER_ARCHIVER=xz -zc -T0
+##FIXME(aglarendil): remove it after all changes for docker
+##FIXME(aglarendil): are in master fuel library code
+FUELLIB_GERRIT_URL="https://review.openstack.org/stackforge/fuel-library"
 
