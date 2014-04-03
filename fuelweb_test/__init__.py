@@ -16,6 +16,10 @@ import logging
 import os
 from fuelweb_test.settings import LOGS_DIR
 
+
+if not os.path.exists(settings.LOGS_DIR):
+    os.makedirs(settings.LOGS_DIR)
+
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s %(filename)s:'
                     '%(lineno)d -- %(message)s',

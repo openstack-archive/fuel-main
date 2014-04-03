@@ -44,37 +44,18 @@ def log_snapshot_on_error(func):
     """
     @functools.wraps(func)
     def wrapper(*args, **kwagrs):
-        status = "pass"
         try:
             return func(*args, **kwagrs)
         except SkipTest:
             pass
         except Exception:
-            status = "fail"
             name = 'error_%s' % func.__name__
             description = "Failed in method '%s'." % func.__name__
-            revert_info(description, name)
             if args[0].env is not None:
+                create_diagnostic_snapshot(args[0].env, "fail", func.__name__)
                 args[0].env.make_snapshot(snapshot_name=name[-50:])
+                revert_info(description, name)
             raise
-        finally:
-            if settings.LOGS_DIR:
-                if not os.path.exists(settings.LOGS_DIR):
-                    os.makedirs(settings.LOGS_DIR)
-
-                env = args[0].env
-                env.get_virtual_environment().resume()
-                task = env.fuel_web.client.generate_logs()
-                task = env.fuel_web.task_wait(task, 60 * 5)
-                url = "http://{}:8000{}".format(
-                    env.get_admin_node_ip(), task['message']
-                )
-                log_file_name = '{status}_{name}-{time}.tar.gz'.format(
-                    status=status,
-                    name=func.__name__,
-                    time=time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime())
-                )
-                save_logs(url, os.path.join(settings.LOGS_DIR, log_file_name))
     return wrapper
 
 
@@ -128,3 +109,16 @@ def revert_info(snapshot_name, description=""):
     )
 
     logger.info("<" * 5 + "*" * 100 + ">" * 5)
+
+
+def create_diagnostic_snapshot(env, status, name=""):
+    task = env.fuel_web.task_wait(env.fuel_web.client.generate_logs(), 60 * 5)
+    url = "http://{}:8000{}".format(
+        env.get_admin_node_ip(), task['message']
+    )
+    log_file_name = '{status}_{name}-{time}.tar.gz'.format(
+        status=status,
+        name=name,
+        time=time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime())
+    )
+    save_logs(url, os.path.join(settings.LOGS_DIR, log_file_name))
