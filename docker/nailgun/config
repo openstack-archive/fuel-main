@@ -1,0 +1,4 @@
+dockerrepo=https://github.com/mattymo/fuel-docker-nailgun.git
+dockerref=master
+puppetrepo=https://github.com/stackforge/fuel-library
+puppetref=none
