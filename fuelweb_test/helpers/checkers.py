@@ -30,6 +30,10 @@ def check_ceph_health(ssh, recovery_timeout=False):
         logger.debug("Timeout for ceph recovery.")
         sleep(300)
 
+    result = ''.join(ssh.execute('ceph -s')['stdout'])
+    if not ('HEALTH_OK' in result):
+        sleep(60)
+
     # Check Ceph node disk configuration:
     disks = ''.join(ssh.execute(
         'ceph osd tree | grep osd')['stdout'])
