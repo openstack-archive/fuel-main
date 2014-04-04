@@ -18,6 +18,7 @@ from fuelweb_test import logwrap
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_true
+from devops.helpers.helpers import wait
 
 import os
 from time import sleep
@@ -25,10 +26,11 @@ import urllib
 
 
 @logwrap
-def check_ceph_health(ssh, recovery_timeout=False):
-    if recovery_timeout:
-        logger.debug("Timeout for ceph recovery.")
-        sleep(300)
+def check_ceph_health(ssh):
+    wait(
+        lambda: 'HEALTH_OK' in ''.join(ssh.execute('ceph -s')['stdout']),
+        interval=120,
+        timeout=360)
 
     # Check Ceph node disk configuration:
     disks = ''.join(ssh.execute(
