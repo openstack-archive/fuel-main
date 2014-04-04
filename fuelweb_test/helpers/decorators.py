@@ -53,8 +53,8 @@ def log_snapshot_on_error(func):
             description = "Failed in method '%s'." % func.__name__
             if args[0].env is not None:
                 create_diagnostic_snapshot(args[0].env, "fail", func.__name__)
-                args[0].env.make_snapshot(snapshot_name=name[-50:])
-                revert_info(description, name)
+                args[0].env.make_snapshot(snapshot_name=name[-50:],
+                                          description=description)
             raise
     return wrapper
 
