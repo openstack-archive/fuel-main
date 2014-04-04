@@ -60,6 +60,7 @@ debootstrap
 deltaiso-3.5-0.5.20090913git.el6
 deltarpm-3.5-0.5.20090913git.el6
 dhclient
+dhcp
 disktype
 dmidecode-2.11-2.el6
 dnsmasq-2.65-5.el6

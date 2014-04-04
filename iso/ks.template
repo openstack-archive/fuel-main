@@ -153,6 +153,7 @@ curl
 daemonize
 fuelmenu
 gdisk
+dhcp
 man
 mlocate
 ntp
