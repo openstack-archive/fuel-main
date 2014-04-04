@@ -321,7 +321,7 @@ class EnvironmentModel(object):
             self.get_virtual_environment().resume()
             logger.info('Starting snapshot resuming ...')
 
-            time.sleep(10)
+            self.nodes().admin.await(self.admin_net, timeout=10 * 60)
 
             list = self.nodes().slaves
             for node in list:
