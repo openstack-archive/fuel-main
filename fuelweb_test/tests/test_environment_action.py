@@ -204,6 +204,10 @@ class EnvironmentAction(base_test_case.TestBasic):
 
         self.env.make_snapshot("deploy_reset_on_ready")
 
+
+@test(groups=["thread_3", "cluster_actions"])
+class EnvironmentAction(base_test_case.TestBasic):
+
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_5],
           groups=["smoke", "deploy_stop_reset_on_ha"])
     @log_snapshot_on_error
