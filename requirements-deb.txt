@@ -831,3 +831,8 @@ xz-utils
 zerofree
 zfs-fuse
 zlib1g
+zabbix-server-mysql
+zabbix-agent
+zabbix-sender
+zabbix-server-pgsql
+zabbix-frontend-php
