@@ -133,16 +133,14 @@ class CephHARestart(TestBasic):
 
         # Destroy osd-node
         self.env.nodes().slaves[5].destroy()
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'),
-                          recovery_timeout=True)
+        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             should_fail=0)
 
         # Destroy compute node
         self.env.nodes().slaves[4].destroy()
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'),
-                          recovery_timeout=True)
+        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
         # Cold restart
