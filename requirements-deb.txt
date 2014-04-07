@@ -534,6 +534,8 @@ mlocate
 module-init-tools
 mount
 mountall
+mongodb-clients
+mongodb-server
 msr-tools
 mtr-tiny
 multiarch-support
@@ -831,3 +833,5 @@ xz-utils
 zerofree
 zfs-fuse
 zlib1g
+zabbix-server-mysql
+zabbix-agent
