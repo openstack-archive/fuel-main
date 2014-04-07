@@ -305,7 +305,7 @@ class SimpleVlan(TestBasic):
         self.env.make_snapshot("deploy_simple_vlan")
 
 
-@test(groups=["thread_3", "multirole"])
+@test(groups=["thread_2", "multirole"])
 class MultiroleControllerCinder(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_multirole_controller_cinder"])
@@ -346,7 +346,7 @@ class MultiroleControllerCinder(TestBasic):
         self.env.make_snapshot("deploy_multirole_controller_cinder")
 
 
-@test(groups=["thread_3", "multirole"])
+@test(groups=["thread_2", "multirole"])
 class MultiroleComputeCinder(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_multirole_compute_cinder"])
