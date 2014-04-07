@@ -22,7 +22,7 @@ from fuelweb_test.tests import base_test_case
 from fuelweb_test import logger
 
 
-@test(groups=["thread_5"])
+@test(groups=["ostf_repeatable_tests"])
 class OstfRepeatableTests(base_test_case.TestBasic):
 
     def _run_OSTF(self, cluster_id):
