@@ -18,7 +18,7 @@ MASTER_DNS?=10.20.0.1
 MASTER_NETMASK?=255.255.255.0
 MASTER_GW?=10.20.0.1
 
-PRODUCT_VERSION:=4.1
+PRODUCT_VERSION:=4.1A
 
 CENTOS_MAJOR:=6
 CENTOS_MINOR:=4
@@ -78,7 +78,7 @@ BUILD_MIRROR_GEMS:=$(BUILD_DIR)/packages/gems
 USE_MIRROR?=ext
 ifeq ($(USE_MIRROR),ext)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://fuel-repository.mirantis.com/fwm/$(PRODUCT_VERSION)
+MIRROR_BASE?=http://fuel-repository.mirantis.com/fwm/4.1
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
@@ -87,7 +87,7 @@ MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),srt)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://fuel-mirror.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
+MIRROR_BASE?=http://fuel-mirror.srt.mirantis.net/fwm/4.1
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
@@ -96,7 +96,7 @@ MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://fuel-mirror.msk.mirantis.net/fwm/$(PRODUCT_VERSION)
+MIRROR_BASE?=http://fuel-mirror.msk.mirantis.net/fwm/4.1
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
@@ -105,7 +105,7 @@ MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),usa)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://ss0078.svwh.net/fwm/$(PRODUCT_VERSION)
+MIRROR_BASE?=http://ss0078.svwh.net/fwm/4.1
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
@@ -114,7 +114,7 @@ MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),hrk)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://fuel-mirror.kha.mirantis.net/fwm/$(PRODUCT_VERSION)
+MIRROR_BASE?=http://fuel-mirror.kha.mirantis.net/fwm/4.1
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_EGGS?=$(MIRROR_BASE)/eggs
@@ -130,8 +130,8 @@ MIRROR_RHEL?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-6-server-rpms
 MIRROR_RHEL_BOOT?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-server-6.4-x86_64
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
-MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-stable/centos/
-MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-stable/reprepro
+MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-4.1-stable/centos/
+MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-4.1-stable/reprepro
 # It can be any a list of links (--find-links) or a pip index (--index-url).
 MIRROR_EGGS?=http://pypi.python.org/simple
 # NOTE(mihgen): removed gemcutter - it redirects to rubygems.org and has issues w/certificate now
