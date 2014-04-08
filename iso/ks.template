@@ -176,7 +176,7 @@ yum
 # HERE ARE COMMANDS THAT WILL BE LAUNCHED JUST AFTER
 # INSTALLATION ITSELF COMPLETED
 %post
-echo -e "modprobe nf_conntrack_ipv4\nmodprobe nf_conntrack_ipv6" >> /etc/rc.modules
+echo -e "modprobe nf_conntrack_ipv4\nmodprobe nf_conntrack_ipv6\nmodprobe nf_conntrack_tftp\nmodprobe nf_nat_tftp" >> /etc/rc.modules
 chmod +x /etc/rc.modules
 echo -e "net.nf_conntrack_max=1048576" >> /etc/sysctl.conf
 mkdir -p /var/log/coredump
