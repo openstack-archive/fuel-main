@@ -158,9 +158,9 @@ mlocate
 ntp
 openssh-clients
 policycoreutils
-puppet
-rubygem-netaddr
-rubygem-openstack
+ruby21-puppet
+ruby21-rubygem-netaddr
+ruby21-rubygem-openstack
 selinux-policy-targeted
 subscription-manager
 system-config-firewall-base
