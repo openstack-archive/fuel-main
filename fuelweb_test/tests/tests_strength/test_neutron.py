@@ -12,7 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import logging
 import time
 import re
 
@@ -21,12 +20,8 @@ from proboscis import asserts
 from proboscis import test
 
 from fuelweb_test import settings
-from fuelweb_test.helpers.decorators import debug
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.tests import base_test_case
-
-logger = logging.getLogger(__name__)
-logwrap = debug(logger)
 
 
 @test(groups=["thread_5", "ha"])
