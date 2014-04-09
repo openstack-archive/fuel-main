@@ -378,7 +378,7 @@ python-meld3-0.6.7-1.el6
 python-migrate-0.7.2-4.el6
 python-muranoclient
 python-netaddr-0.7.5-4.el6
-python-netifaces-0.5-1.el6
+python-netifaces
 python-neutron
 python-neutronclient
 python-nose-cover3
