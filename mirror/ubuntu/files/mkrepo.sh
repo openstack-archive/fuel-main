@@ -1,6 +1,6 @@
 #!/bin/bash
 apt-get update
-for pkg in $(cat /requirements-deb.txt); do
+for pkg in $(cat /requirements-deb.txt | grep -Ev "^#"); do
 	apt-get -dy install $pkg || exit 1
 done
 # Make structure and mocks for multiarch
