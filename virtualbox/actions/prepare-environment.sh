@@ -18,8 +18,6 @@
 #
 # This script performs initial check and configuration of the host system. It:
 #   - verifies that all available command-line tools are present on the host system
-#   - check that there is no previous installation of Mirantis OpenStack (if there is one, the script deletes it)
-#   - creates host-only network interfaces
 #
 # We are avoiding using 'which' because of http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script 
 #
@@ -93,18 +91,5 @@ case "$(uname)" in
 esac
 echo "OK"
 
-# Delete all VMs from the previous Mirantis OpenStack installation
-delete_vms_multiple $vm_name_prefix
-
-# Delete all host-only interfaces
-delete_all_hostonly_interfaces
-
-# Create the required host-only interfaces
-# Change {0..2} to {0..4} below if you are going to create 5 interfaces instead of 3
-for idx in $(eval echo {0..2}); do
-  create_hostonly_interface "${host_nic_name[$idx]}" ${host_nic_ip[$idx]} ${host_nic_mask[$idx]}
-done
-
 # Report success
 echo "Setup is done."
-
