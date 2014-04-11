@@ -103,15 +103,6 @@ MIRROR_EGGS?=$(MIRROR_BASE)/eggs
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
-ifeq ($(USE_MIRROR),usa)
-YUM_REPOS?=proprietary
-MIRROR_BASE?=http://ss0078.svwh.net/fwm/$(PRODUCT_VERSION)
-MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
-MIRROR_EGGS?=$(MIRROR_BASE)/eggs
-MIRROR_GEMS?=$(MIRROR_BASE)/gems
-MIRROR_SRC?=$(MIRROR_BASE)/src
-endif
 ifeq ($(USE_MIRROR),hrk)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://fuel-mirror.kha.mirantis.net/fwm/$(PRODUCT_VERSION)
