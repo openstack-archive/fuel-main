@@ -34,6 +34,6 @@ OPENSTACK_UBUNTU = openstack_name(OPENSTACK_RELEASE_UBUNTU)
 
 NAILGUN_FIXTURES = os.environ.get('NAILGUN_FIXTURES', '')
 
-URL_HOME = os.environ.get('URL_HOME', 'http://localhost:8000/')
+URL_HOME = os.environ.get('URL_HOME', 'http://localhost:5544/')
 
 SELENIUM_IMPLICIT_WAIT = os.environ.get('SELENIUM_IMPLICIT_WAIT', 10)
