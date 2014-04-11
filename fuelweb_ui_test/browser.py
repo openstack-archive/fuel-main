@@ -29,6 +29,9 @@ def start_driver(browser=None):
             executable_path=CHROME_EXECUTABLE_PATH,
             desired_capabilities=DesiredCapabilities.CHROME)
 
+    def start_phantom():
+        return webdriver.PhantomJS()
+
     global driver
     if browser == "iexplore":
         driver = start_iexplore()
@@ -38,6 +41,8 @@ def start_driver(browser=None):
         driver = start_firefox()
     elif browser == "headless":
         driver = start_headless()
+    elif browser == "phantom":
+        driver = start_phantom()
 
     #driver.set_window_size(1024, 768)
     driver.maximize_window()
