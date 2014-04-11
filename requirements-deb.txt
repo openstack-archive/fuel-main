@@ -558,6 +558,7 @@ neutron-dhcp-agent
 neutron-l3-agent
 neutron-metadata-agent
 neutron-ovs-cleanup
+neutron-plugin-nicira
 neutron-plugin-openvswitch
 neutron-plugin-openvswitch-agent
 neutron-server
