@@ -13,6 +13,7 @@
 #    under the License.
 
 import logging
+import os
 
 from proboscis import SkipTest
 from proboscis import test
@@ -21,13 +22,21 @@ from fuelweb_test.helpers.decorators import debug
 from fuelweb_test.models.environment import EnvironmentModel
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_REDHAT
+from fuelweb_test.settings import LOGS_DIR
 
 
-logging.basicConfig(
-    format='%(asctime)s - %(levelname)s %(filename)s:'
-           '%(lineno)d -- %(message)s',
-    level=logging.DEBUG
-)
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(levelname)s %(filename)s:'
+                    '%(lineno)d -- %(message)s',
+                    filename=os.path.join(LOGS_DIR, 'sys_test.log'),
+                    filemode='w')
+
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s %(filename)s:'
+                              '%(lineno)d -- %(message)s')
+console.setFormatter(formatter)
+logging.getLogger(__name__).addHandler(console)
 
 logger = logging.getLogger(__name__)
 logwrap = debug(logger)
