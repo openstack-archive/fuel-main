@@ -278,6 +278,7 @@ openstack-heat-engine
 openstack-keystone
 openstack-neutron
 openstack-neutron-linuxbridge
+openstack-neutron-nicira
 openstack-neutron-openvswitch
 openstack-nova
 openstack-nova-api
