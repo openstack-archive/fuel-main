@@ -1,0 +1,10 @@
+Change-Id: Ib6f4e7a550968d3881dc204905a44ad3fa53b21f
+Verified+2: Jenkins
+Approved+1: Roman Vyalov <rvyalov@mirantis.com>
+Code-Review+2: Roman Vyalov <rvyalov@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 11 Apr 2014 11:00:57 +0000
+Reviewed-on: https://review.openstack.org/86867
+Project: stackforge/fuel-main
+Branch: refs/heads/master
