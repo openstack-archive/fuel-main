@@ -37,7 +37,7 @@ rsync /var/www/fwm/$mirror/* rsync://fuel-mirror.msk.mirantis.net/ostf-mirror/fw
 
 rsync /var/www/fwm/$mirror/* rsync://fuel-mirror.srt.mirantis.net/ostf-mirror/fwm/$mirror/ -r -t -v $extra || mirrors_fail+=" srt"
 
-rsync /var/www/fwm/$mirror/* ss0078.svwh.net:/var/www/fwm/$mirror/ -r -t -v $extra || mirrors_fail+=" us"
+rsync /var/www/fwm/$mirror/* rsync://fuel-repository.vm.mirantis.net/ostf-mirror/fwm/$mirror/ -r -t -v $extra || mirrors_fail+=" us"
 
 ssh srv08-srt.srt.mirantis.net sudo rsync -vaP /var/www/fwm/$mirror/ rsync://repo.srt.mirantis.net/repo/fuelweb-repo/$mirror/ -c $extra || mirrors_fail+=" ext"
 
