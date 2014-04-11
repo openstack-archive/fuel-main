@@ -1,4 +1,5 @@
 %define name python-fuelclient
+%define unmangled_name fuelclient
 %define version 0.2
 %define release 1
 
@@ -6,7 +7,7 @@ Summary: Console utility for working with fuel rest api
 Name: %{name}
 Version: %{version}
 Release: %{release}
-Source0: %{name}-%{version}.tar.gz
+Source0: %{unmangled_name}-%{version}.tar.gz
 License: Apache
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
@@ -19,7 +20,7 @@ Requires: PyYAML
 Summary: Console utility for working with fuel rest api
 
 %prep
-%setup -n %{name}-%{version} -n %{name}-%{version}
+%setup -n %{unmangled_name}-%{version}
 
 %build
 python setup.py build
