@@ -279,7 +279,6 @@ class FuelWebClient(object):
 
         cluster_id = self.client.get_cluster_id(name)
         if not cluster_id:
-            logger.info('I have no id :(')
             data = {
                 "name": name,
                 "release": str(release_id),
@@ -678,11 +677,13 @@ class FuelWebClient(object):
                 'eth4': ['storage'],
             }
 
-            if cluster['net_segment_type'] == NEUTRON_SEGMENT['vlan']:
+            if self.client.get_networks(cluster_id).\
+                get("networking_parameters").\
+                get("segmentation_type") == NEUTRON_SEGMENT['vlan']:
                 assigned_networks.update({'eth3': ['private']})
         else:
             assigned_networks = {
-                'eth1': ['floating', 'public'],
+                'eth1': ['public'],
                 'eth2': ['management'],
                 'eth3': ['fixed'],
                 'eth4': ['storage'],
@@ -708,16 +709,16 @@ class FuelWebClient(object):
             self.set_network(net_config=net,
                              net_name=net['name'])
 
-        if NEUTRON == net_provider:
-            net_inf = network_configuration['neutron_parameters']
-            neutron_params = net_inf['predefined_networks']['net04_ext']['L3']
-            neutron_params['cidr'] = self.environment.get_network('public')
-            neutron_params['gateway'] = self.environment.router('public')
-            neutron_params['floating'] = self.get_range(
-                self.environment.get_network('public'), 1)[0]
-
+        self.common_net_settings(network_configuration)
         logger.info('Network settings %s for push', network_configuration)
         return network_configuration
+
+    def common_net_settings(self, network_configuration):
+        nc = network_configuration["networking_parameters"]
+        private = IPNetwork(self.environment.get_network("private"))
+        nc["fixed_networks_cidr"] = str(private)
+        public = IPNetwork(self.environment.get_network("public"))
+        nc["floating_ranges"] = self.get_range(public, 1)
 
     def set_network(self, net_config, net_name):
         if 'floating' == net_name:
