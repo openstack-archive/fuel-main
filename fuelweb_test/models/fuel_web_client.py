@@ -682,7 +682,7 @@ class FuelWebClient(object):
                 assigned_networks.update({'eth3': ['private']})
         else:
             assigned_networks = {
-                'eth1': ['floating', 'public'],
+                'eth1': ['public'],
                 'eth2': ['management'],
                 'eth3': ['fixed'],
                 'eth4': ['storage'],
@@ -709,19 +709,17 @@ class FuelWebClient(object):
                              net_name=net['name'])
 
         if NEUTRON == net_provider:
-            net_inf = network_configuration['neutron_parameters']
-            neutron_params = net_inf['predefined_networks']['net04_ext']['L3']
-            neutron_params['cidr'] = self.environment.get_network('public')
-            neutron_params['gateway'] = self.environment.router('public')
-            neutron_params['floating'] = self.get_range(
-                self.environment.get_network('public'), 1)[0]
+            neutron_params = network_configuration['networking_parameters']
+            neutron_params['floating_ranges'] = [self.get_range(
+                self.environment.get_network('public'), 1)[0]]
 
         logger.info('Network settings %s for push', network_configuration)
         return network_configuration
 
     def set_network(self, net_config, net_name):
         if 'floating' == net_name:
-            self.net_settings(net_config, 'public', True)
+            pass
+            # self.net_settings(net_config, 'public', True)
         elif net_name in ['management', 'storage', 'public']:
             self.net_settings(net_config, net_name)
 
@@ -733,8 +731,8 @@ class FuelWebClient(object):
         else:
             net_config['ip_ranges'] = self.get_range(ip_network)
 
-        net_config['network_size'] = len(list(ip_network))
-        net_config['netmask'] = self.environment.get_net_mask(net_name)
+        # net_config['network_size'] = len(list(ip_network))
+        # net_config['netmask'] = self.environment.get_net_mask(net_name)
         net_config['vlan_start'] = None
         net_config['cidr'] = str(ip_network)
         net_config['gateway'] = self.environment.router(net_name)
