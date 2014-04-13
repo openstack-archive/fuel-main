@@ -279,7 +279,6 @@ class FuelWebClient(object):
 
         cluster_id = self.client.get_cluster_id(name)
         if not cluster_id:
-            logger.info('I have no id :(')
             data = {
                 "name": name,
                 "release": str(release_id),
@@ -289,9 +288,7 @@ class FuelWebClient(object):
             if "net_provider" in settings:
                 data.update(
                     {
-                        'net_provider': settings["net_provider"],
-                        'net_segment_type': settings[
-                            "net_segment_type"]
+                        'net_provider': settings["net_provider"]
                     }
                 )
 
@@ -323,6 +320,9 @@ class FuelWebClient(object):
                 hpv_data['value'] = "kvm"
 
             self.client.update_cluster_attributes(cluster_id, attributes)
+            #TODO: first monday isuue
+            segmentation_type = settings.get("net_segment_type")
+            #self.client.update_segmentation_type(cluster_id, segmentation_type)
             self.update_network_configuration(cluster_id)
 
         if not cluster_id:
@@ -669,7 +669,7 @@ class FuelWebClient(object):
 
     @logwrap
     def update_nodes_interfaces(self, cluster_id):
-        cluster = self.client.get_cluster(cluster_id)
+        #cluster = self.client.get_cluster(cluster_id)
         net_provider = self.client.get_cluster(cluster_id)['net_provider']
         if NEUTRON == net_provider:
             assigned_networks = {
@@ -678,11 +678,13 @@ class FuelWebClient(object):
                 'eth4': ['storage'],
             }
 
-            if cluster['net_segment_type'] == NEUTRON_SEGMENT['vlan']:
+            if self.client.get_networks(cluster_id).\
+                get("networking_parameters").\
+                get("segmentation_type") == NEUTRON_SEGMENT['vlan']:
                 assigned_networks.update({'eth3': ['private']})
         else:
             assigned_networks = {
-                'eth1': ['floating', 'public'],
+                'eth1': ['public'],
                 'eth2': ['management'],
                 'eth3': ['fixed'],
                 'eth4': ['storage'],
@@ -708,16 +710,25 @@ class FuelWebClient(object):
             self.set_network(net_config=net,
                              net_name=net['name'])
 
-        if NEUTRON == net_provider:
-            net_inf = network_configuration['neutron_parameters']
-            neutron_params = net_inf['predefined_networks']['net04_ext']['L3']
-            neutron_params['cidr'] = self.environment.get_network('public')
-            neutron_params['gateway'] = self.environment.router('public')
-            neutron_params['floating'] = self.get_range(
-                self.environment.get_network('public'), 1)[0]
+        #if NEUTRON == net_provider:
+        #    net_inf = network_configuration['neutron_parameters']
+        #    neutron_params = net_inf['predefined_networks']['net04_ext']['L3']
+        #    neutron_params['cidr'] = self.environment.get_network('public')
+        #    neutron_params['gateway'] = self.environment.router('public')
+        #    neutron_params['floating'] = self.get_range(
+        #        self.environment.get_network('public'), 1)[0]
 
+        #TODO: first monday issue
+        self.sabbatic_issue(network_configuration)
         logger.info('Network settings %s for push', network_configuration)
         return network_configuration
+
+    def sabbatic_issue(self, network_configuration):
+        nc = network_configuration["networking_parameters"]
+        private = IPNetwork(self.environment.get_network("private"))
+        nc["fixed_networks_cidr"] = str(private)
+        public = IPNetwork(self.environment.get_network("public"))
+        nc["floating_ranges"] = self.get_range(public, 1)
 
     def set_network(self, net_config, net_name):
         if 'floating' == net_name:

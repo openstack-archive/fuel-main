@@ -15,9 +15,9 @@
 
 import os
 
-ENV_NAME = os.environ.get("ENV_NAME", "fuel_system_test")
+ENV_NAME = os.environ.get("ENV_NAME", "fuel_broken_master")
 
-ISO_PATH = os.environ.get('ISO_PATH')
+ISO_PATH = os.environ.get('ISO_PATH', '/home/alan/Downloads/fuel-5.0-99-2014-04-12_11-10-34.iso')
 DNS = os.environ.get('DNS', '8.8.8.8')
 
 OPENSTACK_RELEASE_CENTOS = 'CentOS 6.5'

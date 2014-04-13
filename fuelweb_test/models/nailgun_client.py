@@ -228,6 +228,20 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
+    def update_segmentation_type(self, cluster_id, segmentation_type):
+        data = {"networking_parameters":
+                    {"segmentation_type": segmentation_type}}
+        net_provider = self.get_cluster(cluster_id)['net_provider']
+        return self.client.put(
+            "/api/clusters/{}/network_configuration/{}".format(
+                cluster_id, net_provider
+            ),
+            data
+        )
+
+
+    @logwrap
+    @json_parse
     def update_network(self, cluster_id, networks=None,
                        net_manager=None, all_set=False):
         data = {}
