@@ -413,7 +413,7 @@ class UntaggedNetwork(TestBasic):
 
         vlan_turn_off = {'vlan_start': None}
         interfaces = {
-            'eth1': ["public", "floating"],
+            'eth1': ["public"],
             'eth2': ["management"],
             'eth3': ["fixed"],
             'eth4': ["storage"]
@@ -489,11 +489,11 @@ class FloatingIPs(TestBasic):
         )
         # set ip ranges for floating network
         networks = self.fuel_web.client.get_networks(cluster_id)
-        for interface, network in enumerate(networks['networks']):
-            if network['name'] == 'floating':
-                networks['networks'][interface]['ip_ranges'] = \
-                    self.fuel_web.get_floating_ranges()[0]
-                break
+        #for interface, network in enumerate(networks['networks']):
+        #    if network['name'] == 'floating':
+        #        networks['networks'][interface]['ip_ranges'] = \
+        #            self.fuel_web.get_floating_ranges()[0]
+        #        break
 
         self.fuel_web.client.update_network(
             cluster_id,
@@ -581,7 +581,7 @@ class NodeMultipleInterfaces(TestBasic):
         self.env.revert_snapshot("ready_with_3_slaves")
 
         interfaces_dict = {
-            'eth1': ['floating', 'public'],
+            'eth1': ['public'],
             'eth2': ['storage'],
             'eth3': ['fixed'],
             'eth4': ['management'],
@@ -819,7 +819,7 @@ class UntaggedNetworksNegative(TestBasic):
         vlan_turn_off = {'vlan_start': None}
         interfaces = {
             'eth0': ["fixed"],
-            'eth1': ["public", "floating"],
+            'eth1': ["public"],
             'eth2': ["management", "storage"],
             'eth3': []
         }
