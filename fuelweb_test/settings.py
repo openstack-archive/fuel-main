@@ -123,6 +123,14 @@ POOLS = {
         DEFAULT_POOLS.get('storage')).split(':'),
 }
 
+# Just don`t define this varable for tests without bonding
+BONDING = os.environ.get("BONDING")
+
+BONDING_INTERFACES = {
+    'admin': ['eth0'],
+    'public': ['eth1', 'eth2', 'eth3', 'eth4']
+}
+
 NETWORK_MANAGERS = {
     'flat': 'FlatDHCPManager',
     'vlan': 'VlanManager'
