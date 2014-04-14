@@ -229,7 +229,8 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def update_network(self, cluster_id, networks=None,
-                       net_manager=None, all_set=False):
+                       net_manager=None, all_set=False,
+                       fixed_settings=None, floating_ranges=None):
         data = {}
         net_provider = self.get_cluster(cluster_id)['net_provider']
         if networks is not None:
@@ -238,6 +239,10 @@ class NailgunClient(object):
             data.update({'net_manager': net_manager})
         if all_set:
             data = networks
+        if fixed_settings:
+            data.update(fixed_settings)
+        if floating_ranges:
+            data.update(floating_ranges)
         return self.client.put(
             "/api/clusters/{}/network_configuration/{}".format(
                 cluster_id, net_provider
@@ -265,11 +270,11 @@ class NailgunClient(object):
     @logwrap
     def get_cluster_vlans(self, cluster_id):
         cluster_vlans = []
-        for network in self.get_networks(cluster_id)['networks']:
-            if network['vlan_start'] is not None:
-                amount = network.get('amount', 1)
-                cluster_vlans.extend(range(network['vlan_start'],
-                                           network['vlan_start'] + amount))
+        nc = self.get_networks(cluster_id)['networking_parameters']
+        vlan_start = nc["fixed_networks_vlan_start"]
+        network_amound = nc["fixed_networks_amount"]
+        cluster_vlans.extend([vlan_start, vlan_start + network_amound])
+
         return cluster_vlans
 
     @logwrap

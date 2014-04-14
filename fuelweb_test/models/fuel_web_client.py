@@ -650,16 +650,15 @@ class FuelWebClient(object):
     @logwrap
     def update_vlan_network_fixed(
             self, cluster_id, amount=1, network_size=256):
-        network_list = self.client.get_networks(cluster_id)['networks']
-        for network in network_list:
-            if network["name"] == 'fixed':
-                network['amount'] = amount
-                network['network_size'] = network_size
+        fixed_settings = {"networking_parameters": {
+            "fixed_network_size": network_size,
+            "fixed_networks_amount": amount}
+        }
 
         self.client.update_network(
             cluster_id,
-            networks=network_list,
-            net_manager=help_data.NETWORK_MANAGERS['vlan'])
+            net_manager=help_data.NETWORK_MANAGERS['vlan'],
+            fixed_settings=fixed_settings)
 
     @logwrap
     def verify_network(self, cluster_id):
