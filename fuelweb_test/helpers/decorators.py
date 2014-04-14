@@ -110,6 +110,7 @@ def revert_info(snapshot_name, description=""):
     )
 
     logger.info("<" * 5 + "*" * 100 + ">" * 5)
+    settings.BONDING = False
 
 
 def update_ostf(func):
