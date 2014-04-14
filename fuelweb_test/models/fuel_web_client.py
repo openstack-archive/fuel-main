@@ -747,7 +747,10 @@ class FuelWebClient(object):
         if 'floating' == net_name:
             self.net_settings(net_config, 'public', True)
         elif net_name in ['management', 'storage', 'public']:
-            self.net_settings(net_config, net_name)
+            if not BONDING:
+                self.net_settings(net_config, net_name)
+            else:
+                self.net_settings(net_config, "public")
 
     def net_settings(self, net_config, net_name, floating=False):
         ip_network = IPNetwork(self.environment.get_network(net_name))
