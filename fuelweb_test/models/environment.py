@@ -44,6 +44,7 @@ class EnvironmentModel(object):
         self._keys = None
         self.manager = Manager()
         self.os_image = os_image
+        self.bonding = bool(settings.BONDING)
         self._fuel_web = FuelWebClient(self.get_admin_node_ip(), self)
 
     def _get_or_create(self):
@@ -122,8 +123,14 @@ class EnvironmentModel(object):
 
     def create_interfaces(self, networks, node,
                           model=settings.INTERFACE_MODEL):
-        for network in networks:
-            self.manager.interface_create(network, node=node, model=model)
+        if self.bonding:
+            for network in networks:
+                self.manager.interface_create(
+                    network, node=node, model=model,
+                    interface_map=settings.BONDING_INTERFACES)
+        else:
+            for network in networks:
+                self.manager.interface_create(network, node=node, model=model)
 
     def describe_environment(self):
         """Environment
@@ -131,24 +138,31 @@ class EnvironmentModel(object):
         """
         environment = self.manager.environment_create(self.env_name)
         networks = []
-        for name in settings.INTERFACE_ORDER:
-            ip_networks = [
-                IPNetwork(x) for x in settings.POOLS.get(name)[0].split(',')]
-            new_prefix = int(settings.POOLS.get(name)[1])
-            pool = self.manager.create_network_pool(networks=ip_networks,
-                                                    prefix=int(new_prefix))
-            networks.append(self.manager.network_create(
-                name=name,
-                environment=environment,
-                pool=pool,
-                forward=settings.FORWARDING.get(name),
-                has_dhcp_server=settings.DHCP.get(name)))
+        interfaces = settings.INTERFACE_ORDER
+        if self.bonding:
+            interfaces = settings.BONDING_INTERFACES.keys()
+
+        for name in interfaces:
+            networks.append(self.create_networks(name, environment))
 
         for name in self.node_roles.admin_names:
             self.describe_admin_node(name, networks)
         for name in self.node_roles.other_names:
             self.describe_empty_node(name, networks)
         return environment
+
+    def create_networks(self, name, environment):
+        ip_networks = [
+            IPNetwork(x) for x in settings.POOLS.get(name)[0].split(',')]
+        new_prefix = int(settings.POOLS.get(name)[1])
+        pool = self.manager.create_network_pool(networks=ip_networks,
+                                                prefix=int(new_prefix))
+        return self.manager.network_create(
+            name=name,
+            environment=environment,
+            pool=pool,
+            forward=settings.FORWARDING.get(name),
+            has_dhcp_server=settings.DHCP.get(name))
 
     def devops_nodes_by_names(self, devops_node_names):
         return map(
