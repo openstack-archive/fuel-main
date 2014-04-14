@@ -34,6 +34,7 @@ from fuelweb_test.settings import NEUTRON
 from fuelweb_test.settings import NEUTRON_SEGMENT
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
+from fuelweb_test.settings import BONDING
 
 import fuelweb_test.settings as help_data
 
@@ -722,7 +723,10 @@ class FuelWebClient(object):
         if 'floating' == net_name:
             self.net_settings(net_config, 'public', True)
         elif net_name in ['management', 'storage', 'public']:
-            self.net_settings(net_config, net_name)
+            if not self.environment.bonding:
+                self.net_settings(net_config, net_name)
+            else:
+                self.net_settings(net_config, "public")
 
     def net_settings(self, net_config, net_name, floating=False):
         ip_network = IPNetwork(self.environment.get_network(net_name))
