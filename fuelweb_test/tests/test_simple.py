@@ -150,7 +150,7 @@ class SimpleFlat(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["simple_flat_blocked_vlan"])
-    @log_snapshot_on_error
+    #@log_snapshot_on_error
     def simple_flat_blocked_vlan(self):
         """Verify network verification with blocked VLANs
 
@@ -489,17 +489,17 @@ class FloatingIPs(TestBasic):
         )
         # set ip ranges for floating network
         networks = self.fuel_web.client.get_networks(cluster_id)
-        #for interface, network in enumerate(networks['networks']):
-        #    if network['name'] == 'floating':
-        #        networks['networks'][interface]['ip_ranges'] = \
-        #            self.fuel_web.get_floating_ranges()[0]
-        #        break
+
+        floating_ranges = {"networking_parameters": {
+            "floating_ranges": self.fuel_web.get_floating_ranges()[0]}
+        }
 
         self.fuel_web.client.update_network(
             cluster_id,
             net_manager=networks['net_manager'],
-            networks=networks['networks']
+            floating_ranges=floating_ranges
         )
+
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         # assert ips
