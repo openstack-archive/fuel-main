@@ -4,7 +4,7 @@ mirror: $(BUILD_DIR)/mirror/build.done
 
 clean: clean-mirror
 
-clean-mirror: clean-mirror-eggs clean-ubuntu
+clean-mirror: clean-mirror-eggs
 	sudo rm -rf $(BUILD_DIR)/mirror
 
 include $(SOURCE_DIR)/mirror/src/module.mk
