@@ -125,8 +125,8 @@ def update_ostf(func):
                 remote = SSHClient(args[0].admin_node_ip,
                                    username='root',
                                    password='r00tme')
-                remote.upload(settings.PATCH_FOR_UPLOAD,
-                              '/tmp/')
+                remote.upload(settings.PATCH_PATH.rstrip('/'),
+                              '/tmp/fuel-ostf')
                 remote.execute('source /opt/fuel_plugins/ostf/bin/activate'
                                'cd /tmp/fuel-ostf; python setup.py develop')
                 remote.execute('/etc/init.d/supervisord restart')
