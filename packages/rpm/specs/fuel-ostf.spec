@@ -26,16 +26,16 @@ Requires:    python-muranoclient >= 0.2.11
 Requires:    python-savannaclient >= 0.3
 Requires:    python-paramiko >= 1.10.1
 Requires:    python-requests >= 1.1
-Requires:    python-requests < 1.2.3 
 Requires:    python-unittest2 >= 0.5.1
 Requires:    PyYAML >= 3.10
 Requires:    python-testresources >= 0.2.7
 
 # fuel_ostf_reqs
 Requires:    python-nose >= 1.3.0
-Requires:    python-sqlalchemy >= 0.8.2
+Requires:    python-sqlalchemy >= 0.7.8
+Requires:    python-sqlalchemy < 1.0
 Requires:    python-alembic >= 0.5.0
-Requires:    python-gevent >= 0.13.8
+Requires:    python-gevent == 0.13.8
 Requires:    python-pecan >= 0.3.0
 Requires:    python-psycopg2 >= 2.5.1
 Requires:    python-stevedore >= 0.10
