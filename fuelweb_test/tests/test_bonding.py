@@ -92,7 +92,8 @@ class BondingSimple(TestBasic):
             ]
         }
 
-        nets = self.fuel_web.client.get_networks(cluster_id)['networks']
+        net_params = self.fuel_web.client.get_networks(cluster_id)
+        nets = net_params['networks']
         vlan_start = 100
 
         for net in nets:
@@ -110,10 +111,10 @@ class BondingSimple(TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
-        # assert_equal(str(cluster['net_segment_type']), segment_type)
+        assert_equal(str(net_params["networking_parameters"]
+                         ['segmentation_type']), segment_type)
 
-        # TODO(Tatyana) uncomment when it will be implemented)
-        # self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
@@ -188,7 +189,8 @@ class BondingSimple(TestBasic):
             ]
         }
 
-        nets = self.fuel_web.client.get_networks(cluster_id)['networks']
+        net_params = self.fuel_web.client.get_networks(cluster_id)
+        nets = net_params['networks']
         vlan_start = 100
 
         for net in nets:
@@ -206,10 +208,10 @@ class BondingSimple(TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
-        # assert_equal(str(cluster['net_segment_type']), segment_type)
+        assert_equal(str(net_params["networking_parameters"]
+                         ['segmentation_type']), segment_type)
 
-        # TODO(Tatyana) uncomment when it will be implemented)
-        # self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
@@ -291,7 +293,9 @@ class BondingHA(TestBasic):
             ]
         }
 
-        nets = self.fuel_web.client.get_networks(cluster_id)['networks']
+        net_params = self.fuel_web.client.get_networks(cluster_id)
+        nets = net_params['networks']
+
         vlan_start = 100
 
         for net in nets:
@@ -309,10 +313,10 @@ class BondingHA(TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
-        # assert_equal(str(cluster['net_segment_type']), segment_type)
+        assert_equal(str(net_params["networking_parameters"]
+                         ['segmentation_type']), segment_type)
 
-        # TODO(Tatyana) uncomment when it will be implemented)
-        # self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
@@ -390,7 +394,8 @@ class BondingHA(TestBasic):
             ]
         }
 
-        nets = self.fuel_web.client.get_networks(cluster_id)['networks']
+        net_params = self.fuel_web.client.get_networks(cluster_id)
+        nets = net_params['networks']
         vlan_start = 100
 
         for net in nets:
@@ -408,10 +413,10 @@ class BondingHA(TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
-        # assert_equal(str(cluster['net_segment_type']), segment_type)
+        assert_equal(str(net_params["networking_parameters"]
+                         ['segmentation_type']), segment_type)
 
-        # TODO(Tatyana) uncomment when it will be implemented)
-        # self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
