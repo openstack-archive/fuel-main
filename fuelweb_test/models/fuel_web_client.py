@@ -28,6 +28,7 @@ from fuelweb_test import logger
 from fuelweb_test.helpers.decorators import update_ostf
 from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
+from fuelweb_test.settings import BONDING
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.settings import KVM_USE
 from fuelweb_test.settings import NEUTRON
@@ -723,7 +724,10 @@ class FuelWebClient(object):
         if 'floating' == net_name:
             self.net_settings(net_config, 'public', True)
         elif net_name in ['management', 'storage', 'public']:
-            self.net_settings(net_config, net_name)
+            if not BONDING:
+                self.net_settings(net_config, net_name)
+            else:
+                self.net_settings(net_config, "public")
 
     def net_settings(self, net_config, net_name, floating=False):
         ip_network = IPNetwork(self.environment.get_network(net_name))

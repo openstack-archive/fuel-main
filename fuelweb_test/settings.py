@@ -123,6 +123,13 @@ POOLS = {
         DEFAULT_POOLS.get('storage')).split(':'),
 }
 
+BONDING = os.environ.get("BONDING", 'false') == 'true'
+
+BONDING_INTERFACES = {
+    'admin': ['eth0'],
+    'public': ['eth1', 'eth2', 'eth3', 'eth4']
+}
+
 NETWORK_MANAGERS = {
     'flat': 'FlatDHCPManager',
     'vlan': 'VlanManager'
