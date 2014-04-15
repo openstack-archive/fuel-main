@@ -70,7 +70,8 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/bootstrap_admin_node.conf \
 		$(ISOROOT)/send2syslog.py \
 		$(ISOROOT)/version.yaml \
-		$(ISOROOT)/puppet-slave.tgz
+		$(ISOROOT)/puppet-slave.tgz \
+		$(ISOROOT)/docker.done
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
@@ -106,6 +107,15 @@ $(ISOROOT)/puppet-slave.tgz: \
 	gzip -c -9 $(ISOROOT)/puppet-slave.tar > $@ && \
 		rm $(ISOROOT)/puppet-slave.tar
 
+$(ISOROOT)/docker.done:
+	mkdir -p $(ISOROOT)/docker/images
+	wget -q -O $(ISOROOT)/docker/images/fuel-images.tar.lrz http://srv11-msk.msk.mirantis.net/docker-test/fuel-images.tar.lrz
+	(cd $(BUILD_DIR)/repos && git clone --depth 1 https://github.com/mattymo/fuel-dockerctl)
+	(cd $(BUILD_DIR)/repos && tar cf $(ISOROOT)/fuel-dockerctl.tar fuel-dockerctl)
+	gzip -c -9 $(ISOROOT)/fuel-dockerctl.tar > $(ISOROOT)/fuel-dockerctl.tar.gz && \
+		rm $(ISOROOT)/fuel-dockerctl.tar
+	rm -rf $(BUILD_DIR)/repos/fuel-dockerctl
+	$(ACTION.TOUCH)
 
 ########################
 # Bootstrap image.
