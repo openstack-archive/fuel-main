@@ -157,6 +157,7 @@ dhcp
 man
 mlocate
 ntp
+lrzip
 openssh-clients
 policycoreutils
 ruby21-puppet
@@ -313,6 +314,9 @@ cp /etc/puppet/modules/osnailyfacter/examples/site.pp /etc/puppet/manifests/site
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 #ln -s /etc/puppet/modules/mcollective /etc/puppet/modules/nailgun /etc/puppet/modules/osnailyfacter  /etc/puppet/modules/stdlib /etc/puppet/modules/rabbitmq /etc/puppet/modules/puppetdb/ /etc/puppet/modules/postgresql/ /etc/puppet/modules/inifile/ /etc/puppet/modules/sysctl/ /opt/nailgun_puppet/
 
+# Deploy docker images and ctl tools
+cp -r ${SOURCE}/docker ${repodir}/docker
+
 # Prepare local repository specification
 rm /etc/yum.repos.d/CentOS*.repo
 cat > /etc/yum.repos.d/nailgun.repo << EOF
@@ -337,11 +341,13 @@ cp ${SOURCE}/bootstrap_admin_node.conf /etc/init/bootstrap_admin_node.conf
 echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
 
 # Copying version.yaml file. It contains COMMIT_SHA of last commit.
-mkdir -p /etc/nailgun
+mkdir -p /etc/nailgun /etc/fuel
+#FIXME(mattymo): teach nailgun to read version.yaml from /etc/fuel/nailgun.yaml
 cp ${SOURCE}/version.yaml /etc/nailgun/version.yaml
+cp ${SOURCE}/version.yaml /etc/fuel/version.yaml
 
 # Generete Fuel UUID
-uuidgen > /etc/fuel-uuid
+uuidgen > /etc/fuel/fuel-uuid
 
 ###Run fuel menu
 [ -z "$showmenu" ] && showmenu="no"
