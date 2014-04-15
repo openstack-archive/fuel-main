@@ -534,6 +534,8 @@ mlocate
 module-init-tools
 mount
 mountall
+mongodb-clients
+mongodb-server
 msr-tools
 mtr-tiny
 multiarch-support
