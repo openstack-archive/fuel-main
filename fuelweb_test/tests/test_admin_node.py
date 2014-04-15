@@ -30,7 +30,8 @@ from fuelweb_test import logger
 
 @test(groups=["thread_1"])
 class TestAdminNode(TestBasic):
-    @test(depends_on=[SetupEnvironment.setup_master])
+    @test(depends_on=[SetupEnvironment.setup_master],
+          groups=["test_cobbler_alive"])
     def test_cobbler_alive(self):
         """Test current installation has correctly setup cobbler
 
