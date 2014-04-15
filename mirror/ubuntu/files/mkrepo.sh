@@ -28,18 +28,28 @@ mkdir -p ${wrkdir}/apt.tmp/sources
 mkdir -p ${wrkdir}/apt.tmp/cache
 
 # Extract all specified repos (except backports repo)
-for list in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do
+for list in /etc/apt/sources.list.d/*.list; do
   for repo in `cat $list| grep -v backports | sed 's| \+|\||g' | grep "^deb|"`; do
      repourl=`echo $repo | awk -F '|' '{print $2}'`
      repodist=`echo $repo | awk -F '|' '{print $3}'`
      repos=`echo $repo | awk -F '|' '{for(i=4; i<=NF; ++i) {print $i}}'`
      for repo in $repos; do
-       bz=${repourl}/dists/${repodist}/${repo}/debian-installer/binary-amd64/Packages.bz2
        echo "deb ${repourl} ${repodist} ${repo}/debian-installer" >> ${wrkdir}/apt.tmp/sources/sources.list
-       wget -qO - $bz | bzip2 -cdq | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+       packagesfile=`wget -qO - ${repourl}/dists/${repodist}/Release | \
+                     egrep '[0-9a-f]{64}' | \
+                     grep ${repo}/debian-installer/binary-amd64/Packages.bz2 | \
+                     awk '{print $3}'`
+       if [ -n "$packagesfile" ]; then
+         bz=${repourl}/dists/${repodist}/$packagesfile
+         wget -qO - $bz | bzip2 -cdq | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+       else
+         bz=${repourl}/dists/${repodist}/${repo}/debian-installer/binary-amd64/Packages
+         wget -qO - $bz | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+       fi
        # Getting indices
        wget -O - ${repourl}/indices/override.${repodist}.${repo} >> ${wrkdir}/override.precise.main
        wget -O - ${repourl}/indices/override.${repodist}.extra.${repo} >> ${wrkdir}/override.precise.extra.main
+       wget -O - ${repourl}/indices/override.${repodist}.${repo}.debian-installer >> ${wrkdir}/override.precise.main.debian-installer
      done
   done
 done
@@ -91,10 +101,10 @@ cd /repo/pool/main
 for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; done
 mkdir -p /repo/indices
 cd /repo/indices
-for idx in override.precise.main override.precise.extra.main ; do
+for idx in override.precise.main override.precise.extra.main override.precise.main.debian-installer; do
   cat ${wrkdir}/$idx | sort -u > /repo/indices/$idx
 done
-rm -f ${wrkdir}/override.precise.main ${wrkdir}/override.precise.extra.main
+rm -f ${wrkdir}/override.precise.main ${wrkdir}/override.precise.extra.main ${wrkdir}/override.precise.main.debian-installer
 cd /repo
 # Just because apt scan will produce crap
 cp -a Release-amd64 Release-i386
