@@ -34,9 +34,18 @@ for list in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do
      repodist=`echo $repo | awk -F '|' '{print $3}'`
      repos=`echo $repo | awk -F '|' '{for(i=4; i<=NF; ++i) {print $i}}'`
      for repo in $repos; do
-       bz=${repourl}/dists/${repodist}/${repo}/debian-installer/binary-amd64/Packages.bz2
        echo "deb ${repourl} ${repodist} ${repo}/debian-installer" >> ${wrkdir}/apt.tmp/sources/sources.list
-       wget -qO - $bz | bzip2 -cdq | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+       packagesfile=`wget -qO - ${repourl}/dists/${repodist}/Release | \
+                     egrep '[0-9a-f]{64}' | \
+                     grep ${repo}/debian-installer/binary-amd64/Packages.bz2 | \
+                     awk '{print $3}'`
+       if [ -n "$packagesfile" ]; then
+         bz=${repourl}/dists/${repodist}/$packagesfile
+         wget -qO - $bz | bzip2 -cdq | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+       else
+         bz=${repourl}/dists/${repodist}/${repo}/debian-installer/binary-amd64/Packages
+         wget -qO - $bz | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+       fi
        # Getting indices
        wget -O - ${repourl}/indices/override.${repodist}.${repo} >> ${wrkdir}/override.precise.main
        wget -O - ${repourl}/indices/override.${repodist}.extra.${repo} >> ${wrkdir}/override.precise.extra.main
