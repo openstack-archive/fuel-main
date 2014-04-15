@@ -318,6 +318,9 @@ cp /etc/puppet/modules/osnailyfacter/examples/site.pp /etc/puppet/manifests/site
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 #ln -s /etc/puppet/modules/mcollective /etc/puppet/modules/nailgun /etc/puppet/modules/osnailyfacter  /etc/puppet/modules/stdlib /etc/puppet/modules/rabbitmq /etc/puppet/modules/puppetdb/ /etc/puppet/modules/postgresql/ /etc/puppet/modules/inifile/ /etc/puppet/modules/sysctl/ /opt/nailgun_puppet/
 
+# Deploy docker images and ctl tools
+cp -r ${SOURCE}/docker ${repodir}/docker
+
 # Prepare local repository specification
 rm /etc/yum.repos.d/CentOS*.repo
 cat > /etc/yum.repos.d/nailgun.repo << EOF
