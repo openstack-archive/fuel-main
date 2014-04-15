@@ -585,7 +585,7 @@ openssl
 openstack-dashboard
 openstack-dashboard-ubuntu-theme
 openvswitch-common
-openvswitch-datapath-lts-raring-dkms
+openvswitch-datapath-lts-saucy-dkms
 openvswitch-switch
 os-prober
 pacemaker
