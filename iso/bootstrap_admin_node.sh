@@ -52,4 +52,32 @@ primary="$(grep mnbs_internal_interface= /etc/naily.facts | cut -d'=' -f2) "
 echo "sed -i \"s%\(^.*able on:\).*$%\1 http://\`ip address show $primary | awk '/inet / {print \$2}' | cut -d/ -f1 -\`:8000%\" /etc/issue" >>/etc/rc.local
 sed -i "s%\(^.*able on:\).*$%\1 http://`ip address show $primary | awk '/inet / {print \$2}' | cut -d/ -f1 -`:8000%" /etc/issue
 
-puppet apply  /etc/puppet/modules/nailgun/examples/site.pp
+# apply puppet
+puppet apply -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
+
+### docker stuff
+dockerctl="/root/fuel-dockerctl/dockerctl"
+images_dir="/var/www/nailgun/docker/images"
+
+# prepare our tools
+tar -C /root/ -xzf /var/www/nailgun/docker/fuel-dockerctl.tar.gz
+
+# extract docker images
+mkdir -p $images_dir
+rm -f $images_dir/*tar
+pushd $images_dir &>/dev/null
+lrzuntar "$images_dir/fuel-images.tar.lrz"
+popd &>/dev/null
+
+# load docker images
+for image in $images_dir/*tar ; do
+    echo "Docker loading $image"
+    cat "$image" | docker load
+done
+
+# clean up extracted images
+rm -f $images_dir/*tar
+
+# run containers
+$dockerctl start all
+
