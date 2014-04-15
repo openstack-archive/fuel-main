@@ -113,9 +113,9 @@ MIRROR_GEMS?=$(MIRROR_BASE)/gems
 MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 
-MIRROR_CENTOS?=http://mirrors.msk.mirantis.net/centos/$(CENTOS_RELEASE)
+MIRROR_CENTOS?=http://mirror.yandex.ru/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
-MIRROR_UBUNTU?=http://mirrors.msk.mirantis.net/ubuntu/
+MIRROR_UBUNTU?=http://mirror.yandex.ru/ubuntu/
 MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
 MIRROR_RHEL?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-6-server-rpms
 MIRROR_RHEL_BOOT?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-server-6.4-x86_64
