@@ -44,7 +44,6 @@ help:
 	@echo 'Custom location:'
 	@echo 'make iso YUM_REPOS=proprietary \
 MIRROR_CENTOS=http://<your_mirror>/centos \
-MIRROR_EGGS=http://<your_mirror>/eggs \
 MIRROR_GEMS=http://<your_mirror>/gems \
 MIRROR_SRC=http://<your_mirror>/src'
 
