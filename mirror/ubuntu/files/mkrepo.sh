@@ -54,8 +54,8 @@ for list in /etc/apt/sources.list.d/*.list; do
   done
 done
 
-# linux-image-3.2.0-23 used for installer
-apt-get -dy install linux-image-3.2.0-23 || exit 1
+# linux-image-3.11.0-18 used for installer
+apt-get -dy install linux-image-3.11.0-18 || exit 1
 
 ## Get latest kernel version
 ## Exact kernel version specified in requirements-deb.txt
@@ -67,8 +67,8 @@ apt-get -dy install linux-image-3.2.0-23 || exit 1
 # Collect all udebs except packages with suffux generic or virtual
 packages=`cat ${wrkdir}/UPackages.tmp | sort -u | egrep -v "generic|virtual"`
 
-# Find modules for 3.2.0-23 kernel (installer runs with this version)
-for package in `cat ${wrkdir}/UPackages.tmp | egrep "generic|virtual" | grep 3.2.0-23`; do
+# Find modules for 3.11.0-18 kernel (installer runs with this version)
+for package in `cat ${wrkdir}/UPackages.tmp | egrep "generic|virtual" | grep 3.11.0-18`; do
   packages="$packages $package"
 done
 
