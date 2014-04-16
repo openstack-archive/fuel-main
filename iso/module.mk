@@ -35,13 +35,6 @@ ifeq ($(CACHE_RHEL),1)
 endif
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/iso/isoroot-eggs.done: \
-		$(BUILD_DIR)/mirror/build.done \
-		$(BUILD_DIR)/packages/build.done
-	mkdir -p $(ISOROOT)/eggs
-	rsync -a --delete $(LOCAL_MIRROR_EGGS)/ $(ISOROOT)/eggs
-	$(ACTION.TOUCH)
-
 $(BUILD_DIR)/iso/isoroot-gems.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/packages/build.done
@@ -88,7 +81,7 @@ $(ISOROOT)/version.yaml: $(call depv,PRODUCT_VERSION)
 $(ISOROOT)/version.yaml: $(BUILD_DIR)/repos/repos.done
 	echo "VERSION:" > $@
 	echo "  mirantis: \"$(MIRANTIS)\"" >> $@
-	echo "  production: \"$(PRODUCTION)\"" >> $@
+	echo "  production: \"prod\"" >> $@
 	echo "  release: \"$(PRODUCT_VERSION)\"" >> $@
 ifdef BUILD_NUMBER
 	echo "  build_number: \"$(BUILD_NUMBER)\"" >> $@
@@ -136,7 +129,6 @@ $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
 		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-rhel.done \
-		$(BUILD_DIR)/iso/isoroot-eggs.done \
 		$(BUILD_DIR)/iso/isoroot-gems.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
 		$(BUILD_DIR)/iso/isoroot-bootstrap.done

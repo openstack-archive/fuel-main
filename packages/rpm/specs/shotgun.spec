@@ -1,4 +1,5 @@
-%define name Shotgun
+%define name shotgun
+%define unmangled_name Shotgun
 %define version 0.1.0
 %define release 1
 
@@ -7,7 +8,7 @@ Name: %{name}
 Version: %{version}
 Release: %{release}
 URL:     http://mirantis.com
-Source0: %{name}-%{version}.tar.gz
+Source0: %{unmangled_name}-%{version}.tar.gz
 License: Apache
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -21,7 +22,7 @@ Requires:    python-fabric == 1.7.0
 Shotgun package
 
 %prep
-%setup -n %{name}-%{version} -n %{name}-%{version}
+%setup -n %{unmangled_name}-%{version}
 
 %build
 python setup.py build

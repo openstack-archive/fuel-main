@@ -39,7 +39,7 @@ Requires:    python-webpy == 0.37
 Requires:    python-wsgilog == 0.3
 Requires:    python-wsgiref == 0.1.2
 Requires:    PyYAML == 3.10
-Requires:    Shotgun == 0.1.0
+Requires:    shotgun == 0.1.0
 # Workaroud for babel bug
 Requires:    pytz
 

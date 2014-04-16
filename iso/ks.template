@@ -295,7 +295,6 @@ cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/a
 cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz ${repodir}/ubuntu/fuelweb/x86_64/images
 
 # Copying eggs/gems to the nailgun directory
-cp -r ${SOURCE}/eggs ${repodir}
 cp -r ${SOURCE}/gems ${repodir}
 
 # Copying bootstrap image
