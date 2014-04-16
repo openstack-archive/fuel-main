@@ -112,10 +112,11 @@ class SimpleFlat(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             should_fail=2,
-            failed_test_name=['Create volume and attach it to instance',
+            failed_test_name=['Create volume and attach it to instance'
                               #TODO: issue with remove floating ip
                               # https://bugs.launchpad.net/fuel/+bug/1263916
-                              ])
+                              ]
+        )
 
         self.env.make_snapshot("deploy_simple_flat")
 
@@ -389,72 +390,6 @@ class MultiroleComputeCinder(TestBasic):
 
 
 @test(groups=["thread_2"])
-class UntaggedNetwork(TestBasic):
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_untagged_network"])
-    @log_snapshot_on_error
-    def deploy_untagged_network(self):
-        """Deploy cluster with untagged networks
-
-        Scenario:
-            1. Create cluster
-            2. Add 1 node with controller role
-            3. Add 1 node with compute role
-            4. Split networks on existing physical interfaces
-            5. Remove VLAN tagging from networks which are not on eth0
-            6. Run network verification
-            7. Deploy the cluster
-            8. Run network verification
-
-        Snapshot: deploy_untagged_network
-
-        """
-        self.env.revert_snapshot("ready_with_3_slaves")
-
-        vlan_turn_off = {'vlan_start': None}
-        interfaces = {
-            'eth1': ["public"],
-            'eth2': ["management"],
-            'eth3': ["fixed"],
-            'eth4': ["storage"]
-        }
-
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller'],
-                'slave-02': ['compute']
-            }
-        )
-        nets = self.fuel_web.client.get_networks(cluster_id)['networks']
-
-        nailgun_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
-        for node in nailgun_nodes:
-            self.fuel_web.update_node_networks(node['id'], interfaces)
-
-        # select networks that will be untagged:
-        [net.update(vlan_turn_off)
-         for net in nets if net["name"] != "storage"]
-
-        # stop using VLANs:
-        self.fuel_web.client.update_network(cluster_id, networks=nets)
-
-        self.fuel_web.verify_network(cluster_id)
-
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
-
-        self.fuel_web.verify_network(cluster_id)
-
-        self.env.make_snapshot("deploy_untagged_network")
-
-
-@test(groups=["thread_2"])
 class FloatingIPs(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_floating_ips"])
@@ -487,17 +422,13 @@ class FloatingIPs(TestBasic):
                 'slave-02': ['compute']
             }
         )
-        # set ip ranges for floating network
-        networks = self.fuel_web.client.get_networks(cluster_id)
 
-        floating_ranges = {"networking_parameters": {
+        networking_parameters = {
             "floating_ranges": self.fuel_web.get_floating_ranges()[0]}
-        }
 
         self.fuel_web.client.update_network(
             cluster_id,
-            net_manager=networks['net_manager'],
-            floating_ranges=floating_ranges
+            networking_parameters=networking_parameters
         )
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
