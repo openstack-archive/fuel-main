@@ -1,13 +1,13 @@
 include $(SOURCE_DIR)/packages/rpm/module.mk
-include $(SOURCE_DIR)/packages/eggs/module.mk
-include $(SOURCE_DIR)/packages/gems/module.mk
 
 .PHONY: packages
 
+ifneq ($(BUILD_PACKAGES),0)
 $(BUILD_DIR)/packages/build.done: \
-		$(BUILD_DIR)/packages/rpm/build.done \
-		$(BUILD_DIR)/packages/eggs/build.done \
-		$(BUILD_DIR)/packages/gems/build.done
+		$(BUILD_DIR)/packages/rpm/build.done
+endif
+
+$(BUILD_DIR)/packages/build.done:
 	$(ACTION.TOUCH)
 
 packages: $(BUILD_DIR)/packages/build.done
