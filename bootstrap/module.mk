@@ -109,7 +109,7 @@ $(BUILD_DIR)/bootstrap/etc/yum.conf $(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.
 
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: $(call depv,BOOTSTRAP_RPMS_CUSTOM)
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
-		$(BUILD_DIR)/packages/rpm/build.done \
+		$(BUILD_DIR)/packages/build.done \
 		$(BUILD_DIR)/bootstrap/prepare-initram-root.done \
 		$(call find-files,$(SOURCE_DIR)/bootstrap/sync) \
 		$(BUILD_DIR)/repos/nailgun.done \
