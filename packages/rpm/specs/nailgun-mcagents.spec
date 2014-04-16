@@ -3,6 +3,7 @@ Summary:   MCollective Agents
 Version:   0.1.0
 Release:   1
 License:   GPLv2
+Source0:   mcagents.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}
 Requires:  mcollective >= 2.2
 URL:       http://mirantis.com
@@ -13,7 +14,7 @@ MCollective agents
 %prep
 rm -rf %{name}-%{version}
 mkdir %{name}-%{version}
-cp %{_sourcedir}/%{name}/* %{name}-%{version}
+tar -xf %{SOURCE0} -C %{name}-%{version}
 
 %install
 cd %{name}-%{version}
