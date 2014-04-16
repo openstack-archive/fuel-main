@@ -561,6 +561,7 @@ neutron-ovs-cleanup
 neutron-plugin-openvswitch
 neutron-plugin-openvswitch-agent
 neutron-server
+nfs-common
 nginx
 node-less
 nodejs
