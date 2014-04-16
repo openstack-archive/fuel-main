@@ -55,7 +55,7 @@ for list in /etc/apt/sources.list.d/*.list; do
 done
 
 # linux-image-3.2.0-23 used for installer
-apt-get -dy install linux-image-3.2.0-23 || exit 1
+apt-get -dy install linux-image-3.2.0-60 || exit 1
 
 ## Get latest kernel version
 ## Exact kernel version specified in requirements-deb.txt
@@ -68,7 +68,7 @@ apt-get -dy install linux-image-3.2.0-23 || exit 1
 packages=`cat ${wrkdir}/UPackages.tmp | sort -u | egrep -v "generic|virtual"`
 
 # Find modules for 3.2.0-23 kernel (installer runs with this version)
-for package in `cat ${wrkdir}/UPackages.tmp | egrep "generic|virtual" | grep 3.2.0-23`; do
+for package in `cat ${wrkdir}/UPackages.tmp | egrep "generic|virtual" | grep 3.2.0-60`; do
   packages="$packages $package"
 done
 
