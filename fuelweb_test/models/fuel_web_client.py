@@ -650,15 +650,14 @@ class FuelWebClient(object):
     @logwrap
     def update_vlan_network_fixed(
             self, cluster_id, amount=1, network_size=256):
-        fixed_settings = {"networking_parameters": {
-            "fixed_network_size": network_size,
-            "fixed_networks_amount": amount}
-        }
-
         self.client.update_network(
             cluster_id,
-            net_manager=help_data.NETWORK_MANAGERS['vlan'],
-            fixed_settings=fixed_settings)
+            networking_parameters={
+                "net_manager": help_data.NETWORK_MANAGERS['vlan'],
+                "fixed_network_size": network_size,
+                "fixed_networks_amount": amount
+            }
+        )
 
     @logwrap
     def verify_network(self, cluster_id):
@@ -697,14 +696,15 @@ class FuelWebClient(object):
     def update_network_configuration(self, cluster_id):
         logger.info('Update network settings of cluster %s', cluster_id)
         net_config = self.client.get_networks(cluster_id)
-        net_provider = self.client.get_cluster(cluster_id)['net_provider']
 
+        new_settings = self.update_net_settings(net_config)
         self.client.update_network(
             cluster_id=cluster_id,
-            networks=self.update_net_settings(net_config, net_provider),
-            all_set=True)
+            networking_parameters=new_settings["networking_parameters"],
+            networks=new_settings["networks"]
+        )
 
-    def update_net_settings(self, network_configuration, net_provider):
+    def update_net_settings(self, network_configuration):
         for net in network_configuration.get('networks'):
             self.set_network(net_config=net,
                              net_name=net['name'])
