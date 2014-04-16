@@ -9,101 +9,80 @@ clean-rpm:
 
 RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
 
-$(BUILD_DIR)/packages/rpm/prep.done: $(BUILD_DIR)/mirror/src/build.done
-	mkdir -p $(RPM_SOURCES)
-	cp -f $(LOCAL_MIRROR_SRC)/* $(RPM_SOURCES)
-	$(ACTION.TOUCH)
+# Usage:
+# (eval (call prepare_source,package_name,file_name,source_path))
+define prepare_source
+$(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/rpm/sources/$1/$2
+$(BUILD_DIR)/packages/rpm/sources/$1/$2: $(call find-files,$3)
+	mkdir -p $(BUILD_DIR)/packages/rpm/sources/$1
+ifeq ($1,nailgun-mcagents)
+	cd $3 && tar zcf $(BUILD_DIR)/packages/rpm/sources/$1/$2 *
+else
+ifeq ($(findstring .tar.gz,$2),.tar.gz)
+ifeq ($1,nailgun)
+	cd $3 && npm install && grunt build
+endif # /nailgun
+	cd $3 && python setup.py sdist -d $(BUILD_DIR)/packages/rpm/sources/$1
+else # not tar.gz
+	cp $3 $(BUILD_DIR)/packages/rpm/sources/$1/$2
+endif # /tar.gz
+endif # /mcagents
+endef
 
-$(BUILD_DIR)/packages/rpm/rpm-nailgun-agent.done: \
-		$(BUILD_DIR)/packages/rpm/prep.done \
-		$(SOURCE_DIR)/packages/rpm/specs/nailgun-agent.spec \
-		$(BUILD_DIR)/repos/nailgun.done \
-		$(call find-files,$(BUILD_DIR)/repos/nailgun/bin)
-	cp -f $(BUILD_DIR)/repos/nailgun/bin/agent $(BUILD_DIR)/repos/nailgun/bin/nailgun-agent.cron $(RPM_SOURCES)
-	rpmbuild -vv --define "_topdir $(BUILD_DIR)/packages/rpm" -ba \
-		$(SOURCE_DIR)/packages/rpm/specs/nailgun-agent.spec
-	$(ACTION.TOUCH)
+# Usage:
+# (eval (call build_rpm,package_name))
+define build_rpm
+$(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/packages/rpm/$1.done
+$(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/packages/rpm/$1-repocleanup.done
 
-$(BUILD_DIR)/packages/rpm/rpm-nailgun-mcagents.done: \
-		$(BUILD_DIR)/packages/rpm/prep.done \
-		$(SOURCE_DIR)/packages/rpm/specs/nailgun-mcagents.spec \
-		$(BUILD_DIR)/repos/astute.done \
-		$(call find-files,$(BUILD_DIR)/astute/mcagents)
-	mkdir -p $(BUILD_DIR)/packages/rpm/SOURCES/nailgun-mcagents
-	cp -f $(BUILD_DIR)/repos/astute/mcagents/* $(RPM_SOURCES)/nailgun-mcagents
-	rpmbuild -vv --define "_topdir $(BUILD_DIR)/packages/rpm" -ba \
-		$(SOURCE_DIR)/packages/rpm/specs/nailgun-mcagents.spec
-	$(ACTION.TOUCH)
+$(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/mirror/src/build.done
 
-$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
-$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: export SANDBOX_UP:=$(SANDBOX_UP)
-$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
-$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done: \
-		$(BUILD_DIR)/packages/rpm/prep.done \
-		$(SOURCE_DIR)/packages/rpm/specs/nailgun-net-check.spec \
-		$(call find-files,$(BUILD_DIR)/repos/nailgun/network_checker)
-	sudo sh -c "$${SANDBOX_UP}"
-	sudo mkdir -p $(SANDBOX)/tmp/SOURCES/network_checker
-	sudo cp -r $(BUILD_DIR)/repos/nailgun/network_checker/* $(SANDBOX)/tmp/SOURCES/network_checker/
-	cd $(SANDBOX)/tmp/SOURCES/network_checker && sudo python setup.py sdist -d $(SANDBOX)/tmp/SOURCES
-	sudo cp $(SOURCE_DIR)/packages/rpm/specs/nailgun-net-check.spec $(SANDBOX)/tmp
-	sudo chroot $(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/nailgun-net-check.spec
-	cp $(SANDBOX)/tmp/RPMS/x86_64/nailgun-net-check-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
-	sudo sh -c "$${SANDBOX_DOWN}"
-	$(ACTION.TOUCH)
+$(BUILD_DIR)/packages/rpm/$1.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
+$(BUILD_DIR)/packages/rpm/$1.done: export SANDBOX_UP:=$$(SANDBOX_UP)
+$(BUILD_DIR)/packages/rpm/$1.done: export SANDBOX_DOWN:=$$(SANDBOX_DOWN)
+$(BUILD_DIR)/packages/rpm/$1.done: \
+		$(SOURCE_DIR)/packages/rpm/specs/$1.spec \
+		$(BUILD_DIR)/repos/repos.done
+	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
+	sudo sh -c "$$$${SANDBOX_UP}"
+	sudo mkdir -p $$(SANDBOX)/tmp/SOURCES
+	sudo cp -r $(BUILD_DIR)/packages/rpm/sources/$1/* $$(SANDBOX)/tmp/SOURCES
+	sudo cp $(SOURCE_DIR)/packages/rpm/specs/$1.spec $$(SANDBOX)/tmp
+	sudo chroot $$(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/$1.spec
+	cp $$(SANDBOX)/tmp/RPMS/*/$1-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
+	sudo sh -c "$$$${SANDBOX_DOWN}"
+	$$(ACTION.TOUCH)
 
-$(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
-$(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done: export SANDBOX_UP:=$(SANDBOX_UP)
-$(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
-$(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done: $(BUILD_DIR)/repos/nailgun.done
-$(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done: \
-		$(BUILD_DIR)/packages/rpm/prep.done \
-		$(SOURCE_DIR)/packages/rpm/specs/python-fuelclient.spec \
-		$(call find-files,$(BUILD_DIR)/repos/nailgun/fuelclient)
-	sudo sh -c "$${SANDBOX_UP}"
-	sudo mkdir -p $(SANDBOX)/tmp/SOURCES/python-fuelclient
-	sudo cp -r $(BUILD_DIR)/repos/nailgun/fuelclient/* $(SANDBOX)/tmp/SOURCES/python-fuelclient
-	cd $(SANDBOX)/tmp/SOURCES/python-fuelclient && sudo python setup.py sdist -d $(SANDBOX)/tmp/SOURCES
-	sudo cp $(SOURCE_DIR)/packages/rpm/specs/python-fuelclient.spec $(SANDBOX)/tmp
-	sudo chroot $(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/python-fuelclient.spec
-	cp $(SANDBOX)/tmp/RPMS/noarch/python-fuelclient-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
-	sudo sh -c "$${SANDBOX_DOWN}"
-	$(ACTION.TOUCH)
+$(BUILD_DIR)/packages/rpm/$1-repocleanup.done:
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages -regex '.*/$1-[^-]+-[^-]+' -delete
+	$$(ACTION.TOUCH)
+endef
 
-$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
-$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done: export SANDBOX_UP:=$(SANDBOX_UP)
-$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
-$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done: \
-               $(BUILD_DIR)/packages/rpm/prep.done \
-               $(SOURCE_DIR)/packages/rpm/specs/fuelmenu.spec \
-               $(call find-files,$(BUILD_DIR)/repos/nailgun/fuelmenu)
-	sudo sh -c "$${SANDBOX_UP}"
-	sudo mkdir -p $(SANDBOX)/tmp/SOURCES/fuelmenu
-	sudo cp -r $(BUILD_DIR)/repos/nailgun/fuelmenu/* $(SANDBOX)/tmp/SOURCES/fuelmenu
-	cd $(SANDBOX)/tmp/SOURCES/fuelmenu && sudo python setup.py sdist -d $(SANDBOX)/tmp/SOURCES
-	sudo cp $(SOURCE_DIR)/packages/rpm/specs/fuelmenu.spec $(SANDBOX)/tmp
-	sudo chroot $(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/fuelmenu.spec
-	cp $(SANDBOX)/tmp/RPMS/noarch/fuelmenu-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64/
-	sudo sh -c "$${SANDBOX_DOWN}"
-	$(ACTION.TOUCH)
+$(eval $(call prepare_source,fencing-agent,fencing-agent.rb,$(BUILD_DIR)/repos/nailgun/bin/fencing-agent.rb))
+$(eval $(call prepare_source,fencing-agent,fencing-agent.cron,$(BUILD_DIR)/repos/nailgun/bin/fencing-agent.cron))
+$(eval $(call prepare_source,fuel-ostf,fuel-ostf-0.1.tar.gz,$(BUILD_DIR)/repos/ostf))
+$(eval $(call prepare_source,fuelmenu,fuelmenu-0.1.tar.gz,$(BUILD_DIR)/repos/nailgun/fuelmenu))
+$(eval $(call prepare_source,nailgun-agent,agent,$(BUILD_DIR)/repos/nailgun/bin/agent))
+$(eval $(call prepare_source,nailgun-agent,nailgun-agent.cron,$(BUILD_DIR)/repos/nailgun/bin/nailgun-agent.cron))
+$(eval $(call prepare_source,nailgun-mcagents,mcagents.tar.gz,$(BUILD_DIR)/repos/astute/mcagents))
+$(eval $(call prepare_source,nailgun-net-check,nailgun-net-check-0.2.tar.gz,$(BUILD_DIR)/repos/nailgun/network_checker))
+$(eval $(call prepare_source,nailgun,nailgun-0.1.0.tar.gz,$(BUILD_DIR)/repos/nailgun/nailgun))
+$(eval $(call prepare_source,python-fuelclient,fuelclient-0.2.tar.gz,$(BUILD_DIR)/repos/nailgun/fuelclient))
+$(eval $(call prepare_source,shotgun,Shotgun-0.1.0.tar.gz,$(BUILD_DIR)/repos/nailgun/shotgun))
+$(eval $(call prepare_source,nailgun-redhat-license,get_redhat_licenses,$(SOURCE_DIR)/packages/rpm/nailgun-redhat-license/get_redhat_licenses))
 
-$(BUILD_DIR)/packages/rpm/rpm-nailgun-redhat-license.done: \
-		$(BUILD_DIR)/packages/rpm/prep.done \
-		$(SOURCE_DIR)/packages/rpm/specs/nailgun-redhat-license.spec \
-		$(SOURCE_DIR)/packages/rpm/nailgun-redhat-license/get_redhat_licenses
-	mkdir -p $(RPM_SOURCES)/nailgun-redhat-license
-	cp -f $(SOURCE_DIR)/packages/rpm/nailgun-redhat-license/* $(RPM_SOURCES)/nailgun-redhat-license
-	rpmbuild -vv --define "_topdir $(BUILD_DIR)/packages/rpm" -ba \
-		$(SOURCE_DIR)/packages/rpm/specs/nailgun-redhat-license.spec
-	$(ACTION.TOUCH)
+$(eval $(call build_rpm,fencing-agent))
+$(eval $(call build_rpm,fuelmenu))
+$(eval $(call build_rpm,nailgun-mcagents))
+$(eval $(call build_rpm,nailgun-net-check))
+$(eval $(call build_rpm,nailgun))
+$(eval $(call build_rpm,shotgun))
+$(eval $(call build_rpm,fuel-ostf))
+$(eval $(call build_rpm,nailgun-agent))
+$(eval $(call build_rpm,nailgun-redhat-license))
+$(eval $(call build_rpm,python-fuelclient))
 
-$(BUILD_DIR)/packages/rpm/repo.done: \
-		$(BUILD_DIR)/packages/rpm/rpm-nailgun-agent.done \
-		$(BUILD_DIR)/packages/rpm/rpm-nailgun-mcagents.done \
-		$(BUILD_DIR)/packages/rpm/rpm-nailgun-net-check.done \
-		$(BUILD_DIR)/packages/rpm/rpm-nailgun-redhat-license.done \
-		$(BUILD_DIR)/packages/rpm/rpm-fuelmenu.done \
-		$(BUILD_DIR)/packages/rpm/rpm-python-fuelclient.done
+$(BUILD_DIR)/packages/rpm/repo.done:
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
