@@ -252,6 +252,7 @@ nagios-plugins-time-1.4.16-5.el6
 nagios-plugins-ups-1.4.16-5.el6
 nagios-plugins-users-1.4.16-5.el6
 nagios-plugins-wave-1.4.16-5.el6
+nfs-utils
 nginx-1.0.15-4.el6
 nodejs-0.10.4-1.el6
 nodejs-less-1.3.3-3.el6
