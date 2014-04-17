@@ -1,0 +1,15 @@
+HOSTNAME: fuel
+DNS_DOMAIN: domain.tld
+DNS_SEARCH: domain.tld
+DNS_UPSTREAM: 8.8.8.8
+NTP1: 0.pool.ntp.org
+NTP2: 1.pool.ntp.org
+NTP3: 2.pool.ntp.org
+ADMIN_NETWORK:
+  dhcp_pool_start: 10.20.0.128
+  static_pool_start: 10.20.0.3
+  netmask: 255.255.255.0
+  dhcp_pool_end: 10.20.0.254
+  interface: eth0
+  static_pool_end: 10.20.0.127
+  ipaddress: 10.20.0.2
