@@ -1,0 +1,19 @@
+HOSTNAME: fuel
+DNS_DOMAIN: domain.tld
+DNS_SEARCH: domain.tld
+DNS_UPSTREAM: 8.8.8.8
+NTP1: time.nist.gov
+NTP2: time-a.nist.gov
+NTP3: time-b.nist.gov
+ADMIN_NETWORK:
+  interface: eth0
+  ipaddress: 10.20.0.2
+  netmask: 255.255.255.0
+  cidr: 10.20.0.0/24
+  size: '256'
+  static_pool_start: 10.20.0.10
+  static_pool_end: 10.20.0.120
+  dhcp_pool_start: 10.20.0.130
+  dhcp_pool_end: 10.20.0.254
+uid: master
+TEST_DNS: www.google.com
