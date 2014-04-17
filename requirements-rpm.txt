@@ -380,7 +380,7 @@ python-kombu
 python-lockfile-0.8-3.el6
 python-markdown-2.0.1-3.1.el6
 python-meld3-0.6.7-1.el6
-python-migrate-0.7.2-4.el6
+python-migrate
 python-muranoclient
 python-netaddr-0.7.5-4.el6
 python-netifaces
@@ -401,7 +401,7 @@ python-paste-1.7.5.1-4.20111221hg1498.el6
 python-paste-deploy1.5-1.5.0-5.el6
 python-pbr
 python-pip
-python-prettytable-0.6.1-1.el6
+python-prettytable
 python-py-1.4.15-1.el6
 python-pygments-1.1.1-1.el6
 python-pyudev-0.15-1.el6
