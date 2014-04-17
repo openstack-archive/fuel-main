@@ -7,6 +7,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}
 Source0:   fencing-agent.rb
 Source1:   fencing-agent.cron
 URL:       http://mirantis.com
+Requires:  rubygem-ohai
 %description
 Agent for periodic checks for additional fencing criterias (free space, etc)
 

@@ -608,4 +608,3 @@ zabbix-server-pgsql
 zabbix-web
 zabbix-web-mysql
 zabbix-web-pgsql
-
