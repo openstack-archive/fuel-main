@@ -410,7 +410,7 @@ python-requests
 python-rhsm
 python-routes
 python-routes1.12-1.12.3-4.el6
-#python-saharaclient
+python-saharaclient
 python-seqdiag-0.8.2-1
 python-setuptools-0.6.10-3.el6
 python-simplejson
@@ -548,8 +548,8 @@ ruby21-mcollective-common
 libselinux-ruby-2.0.94
 ruby21-augeas
 ruby21-rubygem-shadow
-#sahara
-#sahara-dashboard
+sahara
+sahara-dashboard
 scapy-2.0.0.10-5.el6
 screen-4.0.3-16.el6
 selinux-policy
