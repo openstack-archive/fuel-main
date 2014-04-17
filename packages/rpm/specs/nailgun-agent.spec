@@ -7,6 +7,12 @@ BuildRoot: %{_tmppath}/%{name}-%{version}
 Source0:   agent
 Source1:   nailgun-agent.cron
 URL:       http://mirantis.com
+Requires:  rubygem-rethtool
+Requires:  rubygem-ohai
+Requires:  rubygem-httpclient
+Requires:  rubygem-ipaddress
+Requires:  rubygem-json
+Requires:  rubygems
 %description
 Nailgun starup agent that register node at Nailgun and make a little setup
 of other services.
