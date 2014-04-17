@@ -382,7 +382,7 @@ class EnvironmentModel(object):
         wait(
             lambda: not
             self.get_admin_remote().execute(
-                "grep 'Finished catalog run' '%s'" % log_path
+                "grep 'Fuel deployment complete' '%s'" % log_path
             )['exit_code'],
             timeout=self.puppet_timeout
         )
