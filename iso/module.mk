@@ -35,13 +35,6 @@ ifeq ($(CACHE_RHEL),1)
 endif
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/iso/isoroot-gems.done: \
-		$(BUILD_DIR)/mirror/build.done
-	mkdir -p $(ISOROOT)/gems
-	rsync -a --delete $(LOCAL_MIRROR_GEMS)/ $(ISOROOT)/gems
-	(cd $(ISOROOT)/gems && gem generate_index gems)
-	$(ACTION.TOUCH)
-
 
 ########################
 # Extra files
@@ -127,7 +120,6 @@ $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
 		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-rhel.done \
-		$(BUILD_DIR)/iso/isoroot-gems.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
 		$(BUILD_DIR)/iso/isoroot-bootstrap.done
 	$(ACTION.TOUCH)
