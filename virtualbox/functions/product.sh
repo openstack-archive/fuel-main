@@ -35,7 +35,7 @@ is_product_vm_operational() {
         expect "*?assword:*"
         send "$password\r"
         expect "$prompt"
-        send "grep -o 'Finished catalog run' /var/log/puppet/bootstrap_admin_node.log\r"
+        send "grep -o 'Fuel bootstrap complete' /var/log/puppet/bootstrap_admin_node.log\r"
         expect "$prompt"
 ENDOFEXPECT
     )
