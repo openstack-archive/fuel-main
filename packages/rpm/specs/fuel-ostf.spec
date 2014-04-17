@@ -18,6 +18,7 @@ BuildArch: noarch
 
 # fuel_health_reqs
 Requires:    python-oslo-config >= 1.1.1
+Requires:    python-ceilometerclient >= 1.0.5
 Requires:    python-cinderclient >= 1.0.6
 Requires:    python-keystoneclient >= 1:0.4.1
 Requires:    python-novaclient >= 1:2.15.0
