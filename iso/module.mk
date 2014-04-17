@@ -53,7 +53,11 @@ $(ISOROOT)/isolinux/splash.jpg: $(SOURCE_DIR)/iso/isolinux/splash.jpg ; $(ACTION
 $(ISOROOT)/ks.cfg: $(call depv,KSYAML)
 $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(KSYAML)
 	python $(SOURCE_DIR)/iso/ks.py -t $(SOURCE_DIR)/iso/ks.template -c $(KSYAML) -o $@
+ifeq ($(PRODUCTION),docker)
+$(ISOROOT)/bootstrap_admin_node.sh: $(SOURCE_DIR)/iso/bootstrap_admin_node.docker.sh ; $(ACTION.COPY)
+else
 $(ISOROOT)/bootstrap_admin_node.sh: $(SOURCE_DIR)/iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
+endif
 $(ISOROOT)/bootstrap_admin_node.conf: $(SOURCE_DIR)/iso/bootstrap_admin_node.conf ; $(ACTION.COPY)
 $(ISOROOT)/send2syslog.py: $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py ; $(ACTION.COPY)
 $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/nailgun.done
@@ -61,7 +65,7 @@ $(ISOROOT)/version.yaml: $(call depv,PRODUCT_VERSION)
 $(ISOROOT)/version.yaml: $(BUILD_DIR)/repos/repos.done
 	echo "VERSION:" > $@
 	echo "  mirantis: \"$(MIRANTIS)\"" >> $@
-	echo "  production: \"prod\"" >> $@
+	echo "  production: \"$(PRODUCTION)\"" >> $@
 	echo "  release: \"$(PRODUCT_VERSION)\"" >> $@
 ifdef BUILD_NUMBER
 	echo "  build_number: \"$(BUILD_NUMBER)\"" >> $@
@@ -79,6 +83,17 @@ $(ISOROOT)/puppet-slave.tgz: \
 	gzip -c -9 $(ISOROOT)/puppet-slave.tar > $@ && \
 		rm $(ISOROOT)/puppet-slave.tar
 
+ifeq ($(PRODUCTION),docker)
+$(ISOROOT)/docker.done: \
+		$(BUILD_DIR)/docker/build.done
+	mkdir -p $(ISOROOT)/docker/images
+	mv $(BUILD_DIR)/docker/fuel-images.tar.lrz $(ISOROOT)/docker/images/fuel-images.tar.lrz
+	cp -a $(BUILD_DIR)/docker/sources $(ISOROOT)/docker/sources
+	$(ACTION.TOUCH)
+else
+$(ISOROOT)/docker.done:
+	$(ACTION.TOUCH)
+endif
 
 ########################
 # Bootstrap image.
@@ -109,7 +124,8 @@ $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
 		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
-		$(BUILD_DIR)/iso/isoroot-bootstrap.done
+		$(BUILD_DIR)/iso/isoroot-bootstrap.done \
+		$(ISOROOT)/docker.done
 	$(ACTION.TOUCH)
 
 
