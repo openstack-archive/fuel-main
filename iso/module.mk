@@ -43,7 +43,8 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/bootstrap_admin_node.conf \
 		$(ISOROOT)/send2syslog.py \
 		$(ISOROOT)/version.yaml \
-		$(ISOROOT)/puppet-slave.tgz
+		$(ISOROOT)/puppet-slave.tgz \
+		$(ISOROOT)/docker.done
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
@@ -79,6 +80,12 @@ $(ISOROOT)/puppet-slave.tgz: \
 	gzip -c -9 $(ISOROOT)/puppet-slave.tar > $@ && \
 		rm $(ISOROOT)/puppet-slave.tar
 
+$(ISOROOT)/docker.done: \
+		$(BUILD_DIR)/docker/build.done
+	mkdir -p $(ISOROOT)/docker/images
+	mv $(BUILD_DIR)/docker/fuel-images.tar.lrz $(ISOROOT)/docker/images/fuel-images.tar.lrz
+	cp -a $(BUILD_DIR)/docker/sources $(ISOROOT)/docker/sources
+	$(ACTION.TOUCH)
 
 ########################
 # Bootstrap image.

@@ -55,4 +55,39 @@ sed -i "s%\(^.*able on:\).*$%\1 http://`ip address show $primary | awk '/inet / 
 [ -d /var/lib/hiera ] || mkdir -p /var/lib/hiera
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
-puppet apply  /etc/puppet/modules/nailgun/examples/site.pp
+# apply puppet
+puppet apply -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
+
+### docker stuff
+images_dir="/var/www/nailgun/docker/images"
+
+# extract docker images
+mkdir -p $images_dir $sources_dir
+rm -f $images_dir/*tar
+pushd $images_dir &>/dev/null
+lrzuntar "$images_dir/fuel-images.tar.lrz"
+popd &>/dev/null
+
+# load docker images
+for image in $images_dir/*tar ; do
+    echo "Loading docker image ${image}..."
+    docker load -i "$image"
+done
+
+# clean up extracted images
+rm -f $images_dir/*tar
+
+#FIXME(mattymo) Write astute.yaml to /etc/fuel from fuelmenu
+cp -a /etc/astute.yaml /etc/fuel/astute.yaml
+
+# Precreate needed directories
+mkdir -p /var/www/nailgun/dump
+for dir in audit cobbler ConsoleKit coredump httpd lxc nailgun naily nginx ntpstats puppet rabbitmq remote rhsm supervisor ; do
+  mkdir -p /var/log/docker-logs/$dir
+done
+rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
+# build storage containers and run all containers
+$dockerctl build all
+
+echo "Fuel bootstrap complete!"
+

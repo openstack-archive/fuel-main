@@ -134,3 +134,13 @@ NOFORWARD:=1
 
 # Path to yaml configuration file to build ISO ks.cfg
 KSYAML?=$(SOURCE_DIR)/iso/ks.yaml
+
+# Docker prebuilt containers. Default is to build containers during ISO build
+DOCKER_PREBUILT?=false
+
+# Source of docker prebuilt containers archive. Works only if DOCKER_PREBUILT=true
+# Examples:
+# DOCKER_PREBUILT_SOURCE="http://srv11-msk.msk.mirantis.net/docker-test/fuel-images.tar.lrz"
+# DOCKER_PREBUILT_SOURCE=/var/fuel-images.tar.lrz make docker
+DOCKER_PREBUILT_SOURCE?=
+
