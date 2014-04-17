@@ -42,6 +42,7 @@ ceph-deploy
 ceph-radosgw
 ceph-test
 cirros-testvm
+cirros-testvmware
 cluster-glue-libs-1.0.11-59.1
 cman
 cobbler
