@@ -4,7 +4,6 @@ INITRAMROOT:=$(BUILD_DIR)/bootstrap/initram-root
 
 BOOTSTRAP_RPMS:=\
 	bash \
-	byacc \
 	bfa-firmware \
 	ql2100-firmware \
 	ql2200-firmware \
@@ -15,10 +14,7 @@ BOOTSTRAP_RPMS:=\
 	crontabs \
 	dhclient \
 	dmidecode \
-	flex \
-	gcc \
 	iputils \
-	make \
 	mcollective \
 	mingetty \
 	net-tools \
@@ -26,26 +22,22 @@ BOOTSTRAP_RPMS:=\
 	openssh-clients \
 	openssh-server \
 	rsyslog \
-	ruby-devel.x86_64 \
-	rubygems \
 	scapy \
 	tcpdump \
 	vconfig \
 	vim-minimal \
-	wget \
-
-
-BOOTSTRAP_RPMS_GARBAGE:=\
-	byacc \
-	flex \
-	gcc \
-	ruby-devel.x86_64 \
+	wget
 
 
 BOOTSTRAP_RPMS_CUSTOM:=\
 	nailgun-agent \
 	nailgun-mcagents \
 	nailgun-net-check \
+	rubygem-ohai \
+	rubygem-rethtool \
+	rubygem-json_pure \
+	rubygem-ipaddress \
+	rubygem-httpclient
 
 define yum_local_repo
 [mirror]
@@ -177,22 +169,7 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 	sudo mkdir -p $(INITRAMROOT)/var/lib/rpm
 
 	# Installing rpms
-	$(YUM) install $(BOOTSTRAP_RPMS) $(BOOTSTRAP_RPMS_TEMPORARY)
-
-	# Installing gems
-	sudo mkdir -p $(INITRAMROOT)/tmp/gems
-	sudo rsync -a --delete $(LOCAL_MIRROR_GEMS)/ $(INITRAMROOT)/tmp/gems
-	sudo chroot $(INITRAMROOT) gem install httpclient --version 2.2.5  --no-rdoc --no-ri --source file:///tmp/gems
-	sudo chroot $(INITRAMROOT) gem install ipaddress  --version 0.8.0  --no-rdoc --no-ri --source file:///tmp/gems
-	sudo chroot $(INITRAMROOT) gem install json_pure  --version 1.7.5  --no-rdoc --no-ri --source file:///tmp/gems
-	sudo chroot $(INITRAMROOT) gem install ohai       --version 6.14.0 --no-rdoc --no-ri --source file:///tmp/gems
-	sudo chroot $(INITRAMROOT) gem install rethtool   --version 0.0.3  --no-rdoc --no-ri --source file:///tmp/gems
-	sudo rm -rf \
-		$(INITRAMROOT)/tmp/gems \
-		$(INITRAMROOT)/usr/lib/ruby/gems/1.8/cache/*
-
-	# Removing temporary rpms (devel packages, they were needed to install gems)
-	$(YUM) erase $(BOOTSTRAP_RPMS_GARBAGE)
+	$(YUM) install $(BOOTSTRAP_RPMS)
 
 	# Disabling mail server (it have been installed as a dependency)
 	-sudo chroot $(INITRAMROOT) chkconfig exim off
