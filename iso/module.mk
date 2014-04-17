@@ -133,6 +133,7 @@ $(ISOROOT)/bootstrap/bootstrap.rsa: $(SOURCE_DIR)/bootstrap/ssh/id_rsa ; $(ACTIO
 $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/packages/build.done \
+		$(BUILD_DIR)/docker/build.done \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
 		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-rhel.done \
