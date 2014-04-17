@@ -97,6 +97,16 @@ $(ISOROOT)/puppet-slave.tgz: \
 	gzip -c -9 $(ISOROOT)/puppet-slave.tar > $@ && \
 		rm $(ISOROOT)/puppet-slave.tar
 
+$(ISOROOT)/docker.done: \
+		$(BUILD_DIR)/docker/build.done
+	mkdir -p $(ISOROOT)/docker/images
+	mv $(BUILD_DIR)/docker/fuel-images.tar.lrz $(ISOROOT)/docker/images/fuel-images.tar.lrz
+	(cd $(BUILD_DIR)/repos && git clone --depth 1 https://github.com/mattymo/fuel-dockerctl)
+	(cd $(BUILD_DIR)/repos && tar cf $(ISOROOT)/fuel-dockerctl.tar fuel-dockerctl)
+	gzip -c -9 $(ISOROOT)/fuel-dockerctl.tar > $(ISOROOT)/docker/fuel-dockerctl.tar.gz && \
+		rm $(ISOROOT)/fuel-dockerctl.tar
+	rm -rf $(BUILD_DIR)/repos/fuel-dockerctl
+	$(ACTION.TOUCH)
 
 ########################
 # Bootstrap image.
@@ -124,6 +134,7 @@ $(ISOROOT)/bootstrap/bootstrap.rsa: $(SOURCE_DIR)/bootstrap/ssh/id_rsa ; $(ACTIO
 $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/packages/build.done \
+		$(BUILD_DIR)/docker/build.done \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
 		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-rhel.done \
