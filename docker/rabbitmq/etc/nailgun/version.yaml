@@ -1,0 +1,10 @@
+VERSION:
+  production: "docker-build"
+  release: "5.0"
+  build_number: "95"
+  build_id: "2014-02-06_15-07-22"
+  fuellib_sha: "4be40d4d22948151f64d012036cf3b9c53d4612f"
+  nailgun_sha: "5704dc1560670da5a1f27c65a2f3b3d5124ce873"
+  astute_sha: "d002c3bf626cff96a1d4aec9eb92fc4d5f4542c4"
+  ostf_sha: "d15d6b5b952e455e3afff383413ffa6d89ee7981"
+  fuelmain_sha: "09474f193de1be2bea9ba0104edab5b0ab97bf1c"
