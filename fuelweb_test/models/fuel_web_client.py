@@ -92,11 +92,7 @@ class FuelWebClient(object):
     def assert_cluster_ready(self, node_name, smiles_count,
                              networks_count=1, timeout=300):
         logger.info('Assert cluster services are UP')
-        remote = self.environment.get_ssh_to_remote(
-            self.get_nailgun_node_by_devops_node(
-                self.environment.get_virtual_environment().
-                node_by_name(node_name))['ip']
-        )
+        remote = self.environment.get_ssh_to_remote_by_name(node_name)
         _wait(
             lambda: self.get_cluster_status(
                 remote,
@@ -413,11 +409,13 @@ class FuelWebClient(object):
         Returns dict with nailgun slave node description if node is
         registered. Otherwise return None.
         """
-        devops_macs = {i.mac_address.upper() for i in devops_node.interfaces}
-        logger.info('Look for nailgun node by macs %s', devops_macs)
+        d_macs = {i.mac_address.upper() for i in devops_node.interfaces}
+        logger.debug('Look for nailgun node by macs %s', d_macs)
         for nailgun_node in self.client.list_nodes():
             macs = {i['mac'] for i in nailgun_node['meta']['interfaces']}
-            if devops_macs == macs:
+            logger.debug('Look for macs returned by nailgun {0}'.format(macs))
+            #Because our HAproxy may create some interfaces
+            if d_macs.issubset(macs):
                 nailgun_node['devops_name'] = devops_node.name
                 return nailgun_node
         return None
