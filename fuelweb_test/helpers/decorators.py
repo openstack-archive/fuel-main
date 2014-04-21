@@ -57,8 +57,7 @@ def log_snapshot_on_error(func):
             logging.info("{} Make snapshot: {}".format(description, name))
             logging.info(
                 "You could revert this snapshot using [{command}]".format(
-                    command=
-                    "dos.py revert {env} --snapshot-name {name} && "
+                    command="dos.py revert {env} --snapshot-name {name} && "
                     "dos.py resume {env} && "
                     "virsh net-dumpxml {env}_admin | grep -P {pattern} -o "
                     "| awk {awk_command}".format(

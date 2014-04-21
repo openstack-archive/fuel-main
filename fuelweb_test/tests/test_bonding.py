@@ -119,7 +119,7 @@ class BondingSimple(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
-        #TODO(Tatyana) uncomment when it will be implemented)
+        # TODO(Tatyana) uncomment when it will be implemented)
         # self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
@@ -215,7 +215,7 @@ class BondingSimple(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
-        #TODO(Tatyana) uncomment when it will be implemented)
+        # TODO(Tatyana) uncomment when it will be implemented)
         # self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
@@ -316,7 +316,7 @@ class BondingHA(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
-        #TODO(Tatyana) uncomment when it will be implemented)
+        # TODO(Tatyana) uncomment when it will be implemented)
         # self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
@@ -414,7 +414,7 @@ class BondingHA(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         assert_equal(str(cluster['net_segment_type']), segment_type)
 
-        #TODO(Tatyana) uncomment when it will be implemented)
+        # TODO(Tatyana) uncomment when it will be implemented)
         # self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
