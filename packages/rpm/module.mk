@@ -53,7 +53,7 @@ $(BUILD_DIR)/packages/rpm/$1.done: \
 	sudo sh -c "$$$${SANDBOX_DOWN}"
 	$$(ACTION.TOUCH)
 
-$(BUILD_DIR)/packages/rpm/$1-repocleanup.done:
+$(BUILD_DIR)/packages/rpm/$1-repocleanup.done: $(BUILD_DIR)/mirror/build.done
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages -regex '.*/$1-[^-]+-[^-]+' -delete
 	$$(ACTION.TOUCH)
 endef
