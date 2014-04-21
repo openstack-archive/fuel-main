@@ -135,7 +135,7 @@ NEUTRON_SEGMENT = {
     'vlan': 'vlan'
 }
 
-LOGS_DIR = os.environ.get('LOGS_DIR')
+LOGS_DIR = os.environ.get('LOGS_DIR', os.getcwd())
 USE_ALL_DISKS = os.environ.get('USE_ALL_DISKS', 'true') == 'true'
 
 UPLOAD_MANIFESTS = os.environ.get('UPLOAD_MANIFESTS', 'false') == 'true'
@@ -148,7 +148,7 @@ SITEPP_FOR_UPLOAD = os.environ.get(
 KVM_USE = os.environ.get('KVM_USE', 'false') == 'true'
 DEBUG_MODE = os.environ.get('DEBUG_MODE', 'true') == 'true'
 
-#Services tests
+# Services tests
 SERVTEST_LOCAL_PATH = os.environ.get('SERVTEST_LOCAL_PATH', '/tmp')
 SERVTEST_USERNAME = os.environ.get('SERVTEST_USERNAME', 'admin')
 SERVTEST_PASSWORD = os.environ.get('SERVTEST_PASSWORD', SERVTEST_USERNAME)
