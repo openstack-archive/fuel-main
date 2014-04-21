@@ -38,9 +38,6 @@ BUILD_PACKAGES?=1
 # Do not compress javascript and css files
 NO_UI_OPTIMIZE:=0
 
-# Do not copy RHEL repo to the iso
-CACHE_RHEL:=0
-
 # Repos and versions
 FUELLIB_COMMIT?=master
 NAILGUN_COMMIT?=master
@@ -63,13 +60,11 @@ NAILGUN_GERRIT_COMMIT?=none
 ASTUTE_GERRIT_COMMIT?=none
 OSTF_GERRIT_COMMIT?=none
 
-LOCAL_MIRROR_SRC:=$(LOCAL_MIRROR)/src
 LOCAL_MIRROR_GEMS:=$(LOCAL_MIRROR)/gems
 LOCAL_MIRROR_CENTOS:=$(LOCAL_MIRROR)/centos
 LOCAL_MIRROR_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 LOCAL_MIRROR_UBUNTU:=$(LOCAL_MIRROR)/ubuntu
 LOCAL_MIRROR_UBUNTU_OS_BASEURL:=$(LOCAL_MIRROR_UBUNTU)
-LOCAL_MIRROR_RHEL:=$(LOCAL_MIRROR)/rhel
 
 BUILD_MIRROR_GEMS:=$(BUILD_DIR)/packages/gems
 
@@ -84,7 +79,6 @@ MIRROR_BASE?=http://fuel-repository.mirantis.com/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
-MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),srt)
 YUM_REPOS?=proprietary
@@ -92,7 +86,6 @@ MIRROR_BASE?=http://fuel-mirror.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
-MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
@@ -100,7 +93,6 @@ MIRROR_BASE?=http://fuel-mirror.msk.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
-MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 ifeq ($(USE_MIRROR),hrk)
 YUM_REPOS?=proprietary
@@ -108,15 +100,12 @@ MIRROR_BASE?=http://fuel-mirror.kha.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_GEMS?=$(MIRROR_BASE)/gems
-MIRROR_SRC?=$(MIRROR_BASE)/src
 endif
 
 MIRROR_CENTOS?=http://mirrors.msk.mirantis.net/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 MIRROR_UBUNTU?=http://mirror.yandex.ru/ubuntu/
 MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
-MIRROR_RHEL?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-6-server-rpms
-MIRROR_RHEL_BOOT?=http://srv11-msk.msk.mirantis.net/rhel6/rhel-server-6.4-x86_64
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
 MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-stable/centos/
@@ -124,10 +113,8 @@ MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VER
 # NOTE(mihgen): removed gemcutter - it redirects to rubygems.org and has issues w/certificate now
 MIRROR_GEMS?=http://rubygems.org
 
-# FYI: For rhel cache we parse fuel/deployment/puppet/rpmcache/files/required-rpms.txt
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
 REQUIRED_DEBS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-deb.txt)
-REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 
 # Which repositories to use for making local centos mirror.
 # Possible values you can find out from mirror/centos/yum_repos.mk file.
@@ -135,9 +122,6 @@ REQUIRED_SRCS:=$(shell grep -v ^\\s*\# $(SOURCE_DIR)/requirements-src.txt)
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
 YUM_REPOS?=official fuel subscr_manager
-ifeq ($(CACHE_RHEL),1)
-YUM_REPOS:=$(YUM_REPOS) rhel
-endif
 
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.
@@ -151,10 +135,6 @@ EXTRA_RPM_REPOS?=
 # Example:
 # EXTRA_DEB_REPOS="http://mrr.lcl raring main|http://mirror.yandex.ru/ubuntu precise main"'
 EXTRA_DEB_REPOS?=
-
-# Mirror of source packages. Bareword 'internet' is used to download packages
-# directly from the internet
-MIRROR_SRC?=internet
 
 MIRANTIS?=no
 

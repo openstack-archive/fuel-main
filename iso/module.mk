@@ -12,7 +12,7 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)
 	rsync -rp $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(ISOROOT)
-	createrepo -g $(ISOROOT)/comps.xml -x 'rhel/*' \
+	createrepo -g $(ISOROOT)/comps.xml \
 		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 
@@ -22,17 +22,6 @@ $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)/ubuntu
 	rsync -rp $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ $(ISOROOT)/ubuntu/
-	$(ACTION.TOUCH)
-
-$(BUILD_DIR)/iso/isoroot-rhel.done: $(call depv,CACHE_RHEL)
-$(BUILD_DIR)/iso/isoroot-rhel.done: \
-		$(BUILD_DIR)/mirror/build.done \
-		$(BUILD_DIR)/packages/build.done \
-		$(BUILD_DIR)/iso/isoroot-dotfiles.done
-ifeq ($(CACHE_RHEL),1)
-	mkdir -p $(ISOROOT)/rhel
-	rsync -rp $(LOCAL_MIRROR_RHEL)/ $(ISOROOT)/rhel
-endif
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/iso/isoroot-gems.done: \
@@ -126,7 +115,6 @@ $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/packages/build.done \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
 		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
-		$(BUILD_DIR)/iso/isoroot-rhel.done \
 		$(BUILD_DIR)/iso/isoroot-gems.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
 		$(BUILD_DIR)/iso/isoroot-bootstrap.done
