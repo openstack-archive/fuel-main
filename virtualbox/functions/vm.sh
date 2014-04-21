@@ -117,11 +117,12 @@ delete_vm() {
     fi
 
     # Virtualbox does not fully delete VM file structure, so we need to delete the corresponding directory with files as well 
-    if [ -d "$vm_path"  ]; then
-        echo "Deleting existing virtual machine $name..."
-        VBoxManage unregistervm $name --delete
-        rm -rf "$vm_path"
-    fi
+    echo "Deleting existing virtual machine $name..."
+    until VBoxManage unregistervm $name --delete
+    do
+        echo "retrying"
+    done
+    rm -rf "$vm_path"
 }
 
 delete_vms_multiple() {
