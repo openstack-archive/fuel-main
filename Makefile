@@ -10,10 +10,6 @@ help:
 	@echo '  MIRROR_CENTOS:    $(MIRROR_CENTOS)'
 	@echo '  EXTRA_RPM_REPOS:  $(EXTRA_RPM_REPOS)'
 	@echo '  EXTRA_DEB_REPOS:  $(EXTRA_DEB_REPOS)'
-	@echo '  MIRROR_RHEL:      $(MIRROR_RHEL)'
-	@echo '  MIRROR_EGGS:      $(MIRROR_EGGS)'
-	@echo '  MIRROR_GEMS:      $(MIRROR_GEMS)'
-	@echo '  MIRROR_SRC:       $(MIRROR_SRC)'
 	@echo '  ISO_DIR/ISO_NAME: $(ISO_PATH)'
 	@echo '  ENV_NAME:         $(ENV_NAME)'
 	@echo '  KSYAML:           $(KSYAML)'
@@ -42,10 +38,7 @@ help:
 	@echo 'make iso USE_MIRROR=msk'
 	@echo
 	@echo 'Custom location:'
-	@echo 'make iso YUM_REPOS=proprietary \
-MIRROR_CENTOS=http://<your_mirror>/centos \
-MIRROR_GEMS=http://<your_mirror>/gems \
-MIRROR_SRC=http://<your_mirror>/src'
+	@echo 'make iso YUM_REPOS=proprietary MIRROR_CENTOS=http://<your_mirror>/centos'
 
 # Path to the sources.
 # Default value: directory with Makefile
