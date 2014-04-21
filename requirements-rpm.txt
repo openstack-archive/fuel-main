@@ -517,7 +517,9 @@ rubygem-thor-0.14.6-1.el6
 rubygem-treetop-1.4.10-1.el6
 rubygem-tzinfo-0.3.37-1.el6
 rubygem-uuidtools-2.1.2-1.el6
-rubygem-yajl-ruby-1.1.0-2~1.el6
+rubygem-yajl-ruby
+rubygem-ohai
+rubygem-rethtool
 rubygems
 augeas-libs-1.0.0-5.mira1
 libyaml-0.1.3-1.el6
