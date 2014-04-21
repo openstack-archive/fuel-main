@@ -32,7 +32,7 @@ def save_logs(url, filename):
             f.write(
                 urllib2.urlopen(url).read()
             )
-    except urllib2.HTTPError as e:
+    except (urllib2.HTTPError, urllib2.URLError) as e:
         logger.error(e)
 
 
