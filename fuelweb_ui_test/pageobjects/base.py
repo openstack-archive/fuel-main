@@ -162,7 +162,7 @@ class Popup(PageObject):
         element = browser.driver.find_element_by_css_selector('div.modal')
         PageObject.__init__(self, element)
         time.sleep(0.5)
-        #PageObject.wait_until_moving(self.parent)
+        # PageObject.wait_until_moving(self.parent)
 
     def wait_until_exists(self):
         try:

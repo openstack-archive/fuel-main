@@ -81,7 +81,7 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
             settings.SERVTEST_PASSWORD,
             settings.SERVTEST_TENANT)
 
-        #create instance
+        # create instance
         server = common_func.create_instance()
 
         # get_instance details

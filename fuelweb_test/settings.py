@@ -152,7 +152,7 @@ PATCH_PATH = os.environ.get(
 KVM_USE = os.environ.get('KVM_USE', 'false') == 'true'
 DEBUG_MODE = os.environ.get('DEBUG_MODE', 'true') == 'true'
 
-#Services tests
+# Services tests
 SERVTEST_LOCAL_PATH = os.environ.get('SERVTEST_LOCAL_PATH', '/tmp')
 SERVTEST_USERNAME = os.environ.get('SERVTEST_USERNAME', 'admin')
 SERVTEST_PASSWORD = os.environ.get('SERVTEST_PASSWORD', SERVTEST_USERNAME)

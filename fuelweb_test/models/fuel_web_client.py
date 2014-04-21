@@ -667,7 +667,6 @@ class FuelWebClient(object):
 
     @logwrap
     def update_nodes_interfaces(self, cluster_id):
-        #cluster = self.client.get_cluster(cluster_id)
         net_provider = self.client.get_cluster(cluster_id)['net_provider']
         if NEUTRON == net_provider:
             assigned_networks = {

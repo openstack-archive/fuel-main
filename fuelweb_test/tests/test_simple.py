@@ -113,7 +113,7 @@ class SimpleFlat(TestBasic):
             cluster_id=cluster_id,
             should_fail=2,
             failed_test_name=['Create volume and attach it to instance'
-                              #TODO: issue with remove floating ip
+                              # TODO: issue with remove floating ip
                               # https://bugs.launchpad.net/fuel/+bug/1263916
                               ]
         )
@@ -151,7 +151,7 @@ class SimpleFlat(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["simple_flat_blocked_vlan"])
-    #@log_snapshot_on_error
+    @log_snapshot_on_error
     def simple_flat_blocked_vlan(self):
         """Verify network verification with blocked VLANs
 
