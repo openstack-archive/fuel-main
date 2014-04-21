@@ -116,8 +116,8 @@ class SimpleFlat(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             should_fail=2,
-            failed_test_name=['Create volume and attach it to instance',
-                              #TODO: issue with remove floating ip
+            failed_test_name=['Create volume and attach it to instance'
+                              # TODO: issue with remove floating ip
                               # https://bugs.launchpad.net/fuel/+bug/1263916
                               ])
 
