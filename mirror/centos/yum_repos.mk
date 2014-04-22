@@ -68,7 +68,7 @@ endef
 
 define yum_repo_proprietary
 [proprietary]
-name = RHEL $(CENTOS_RELEASE) - Proprietary
+name = CentOS $(CENTOS_RELEASE) - Proprietary
 baseurl = $(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 gpgcheck = 0
 enabled = 1
