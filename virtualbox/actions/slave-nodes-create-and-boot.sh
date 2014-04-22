@@ -26,8 +26,6 @@ source functions/vm.sh
 # Create and start slave nodes
 for idx in $(eval echo {1..$cluster_size}); do
   name="${vm_name_prefix}slave-${idx}"
-  echo
-  delete_vm $name
   vm_ram=${vm_slave_memory_mb[$idx]}
   [ -z $vm_ram ] && vm_ram=$vm_slave_memory_default
   echo
