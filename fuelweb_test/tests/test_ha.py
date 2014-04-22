@@ -190,3 +190,65 @@ class TestHaFlatAddCompute(TestBasic):
             failed_test_name=['Create volume and attach it to instance'])
 
         self.env.make_snapshot("ha_flat_add_compute")
+
+
+@test(groups=["thread_4", "ha"])
+class TestHaFlatScalability(TestBasic):
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["ha_flat_scalability"])
+    @log_snapshot_on_error
+    def ha_flat_scalability(self):
+        """Check HA mode on scalability
+
+        Scenario:
+            1. Create cluster
+            2. Add 1 controller node
+            3. Deploy the cluster
+            4. Add 2 controller nodes
+            5. Deploy changes
+            6. Run network verification
+            7. Add 2 controller nodes
+            8. Deploy changes
+            9. Run network verification
+            10. Run OSTF
+
+        Snapshot ha_flat_scalability
+
+        """
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_HA
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.update_nodes(
+            cluster_id, {'slave-02': ['controller'],
+                         'slave-03': ['controller']},
+            True, False
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
+
+        self.fuel_web.update_nodes(
+            cluster_id, {'slave-04': ['controller'],
+                         'slave-05': ['controller']},
+            True, False
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'sanity'], should_fail=2,
+            failed_test_name=['Check internet connectivity from a compute',
+                              'Check DNS resolution on compute node'])
+
+        self.env.make_snapshot("ha_flat_scalability")
