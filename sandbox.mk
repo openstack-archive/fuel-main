@@ -22,27 +22,7 @@ pluginconfpath=$(SANDBOX)/etc/yum/pluginconf.d
 reposdir=$(SANDBOX)/etc/yum.repos.d
 endef
 
-SANDBOX_PACKAGES:=\
-	byacc \
-	flex \
-	gcc \
-	glibc-devel \
-	glibc-headers \
-	kernel-lt-headers \
-	make \
-	openssl-devel \
-	postgresql-devel \
-	python-devel.x86_64 \
-	python-pip \
-	rpm-build \
-	ruby \
-	ruby-devel \
-	rubygem-rake \
-	rubygems \
-	tar \
-	which \
-	zlib-devel
-
+SANDBOX_PACKAGES:=bash
 
 define SANDBOX_UP
 echo "Starting SANDBOX up"
