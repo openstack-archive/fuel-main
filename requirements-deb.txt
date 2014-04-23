@@ -562,6 +562,7 @@ neutron-metadata-agent
 neutron-plugin-openvswitch
 neutron-plugin-openvswitch-agent
 neutron-server
+nfs-common
 nginx
 node-less
 nodejs
