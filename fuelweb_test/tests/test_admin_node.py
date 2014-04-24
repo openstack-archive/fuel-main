@@ -55,7 +55,8 @@ class TestAdminNode(TestBasic):
         # raises an error if something isn't right
         server.login('cobbler', 'cobbler')
 
-    @test(depends_on=[SetupEnvironment.setup_master])
+    @test(depends_on=[SetupEnvironment.setup_master],
+          groups=["test_astuted_alive"])
     @log_snapshot_on_error
     def test_astuted_alive(self):
         """Test astute master and worker processes are alive on master node
