@@ -149,10 +149,10 @@ class TestHaFailover(TestBasic):
             # Verify VIPs are started.
             ret = self.fuel_web.get_pacemaker_status(devops_node.name)
             assert_true(
-                re.search('vip__management_old\s+\(ocf::heartbeat:IPaddr2\):'
+                re.search('vip__management_old\s+\(ocf::mirantis:ns_IPaddr2\):'
                           '\s+Started node', ret), 'vip management started')
             assert_true(
-                re.search('vip__public_old\s+\(ocf::heartbeat:IPaddr2\):'
+                re.search('vip__public_old\s+\(ocf::mirantis:ns_IPaddr2\):'
                           '\s+Started node', ret), 'vip public started')
 
             for interface in interfaces:
