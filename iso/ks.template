@@ -24,8 +24,7 @@ skipx
 drives=""
 for drv in `ls -1 /sys/block | grep "sd\|hd\|vd\|cciss"`; do
     if (grep -q 0 /sys/block/${drv}/removable); then
-        d=`echo ${drv} | sed -e 's/!/\//'`
-        drives="${drives} ${d}"
+        drives="${drives} ${drv}"
     fi
 done
 
@@ -87,6 +86,9 @@ if [ $tgtdrivesize -lt 30720 ]; then
     read -p "Press Enter to restart: " _
     reboot
 fi
+
+# paths in /dev have "/" instead of "!" for cciss devices
+tgtdrive=$(echo $tgtdrive | sed -e 's/!/\//')
 
 # source
 if test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
