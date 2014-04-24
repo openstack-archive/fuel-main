@@ -225,7 +225,7 @@ class MuranoSimple(TestBasic):
         self.env.make_snapshot("deploy_murano_simple")
 
 
-@test(groups=["thread_1", "services", "services.ceilometer"])
+@test(groups=["services", "services.ceilometer"])
 class CeilometerSimple(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
