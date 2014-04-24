@@ -726,7 +726,7 @@ class NodeDiskSizes(TestBasic):
                 ))
 
 
-@test(groups=["thread_2"])
+@test(groups=["thread_1"])
 class MultinicBootstrap(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_release],
           groups=["multinic_bootstrap_booting"])

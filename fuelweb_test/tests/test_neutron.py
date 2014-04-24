@@ -25,7 +25,7 @@ from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
 
-@test(groups=["thread_3", "neutron"])
+@test(groups=["thread_1", "neutron", "bvt_1"])
 class NeutronGre(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
@@ -85,7 +85,7 @@ class NeutronGre(TestBasic):
         self.env.make_snapshot("deploy_neutron_gre")
 
 
-@test(groups=["thread_3", "neutron"])
+@test(groups=["thread_1", "neutron"])
 class NeutronVlan(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
@@ -205,7 +205,7 @@ class NeutronGreHa(TestBasic):
         self.env.make_snapshot("deploy_neutron_gre_ha")
 
 
-@test(groups=["thread_3", "neutron", "ha", "neutron_ha"])
+@test(groups=["thread_3", "neutron", "ha", "neutron_ha", "bvt_1"])
 class NeutronVlanHa(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],

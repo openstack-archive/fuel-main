@@ -134,7 +134,7 @@ class CephCompactWithCinder(TestBasic):
         self.env.make_snapshot("ceph_multinode_with_cinder")
 
 
-@test(groups=["thread_1", "ceph"])
+@test(groups=["thread_3", "ceph"])
 class CephHA(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
@@ -190,7 +190,7 @@ class CephHA(TestBasic):
         self.env.make_snapshot("ceph_ha")
 
 
-@test(groups=["thread_1", "ceph"])
+@test(groups=["thread_4", "ceph"])
 class CephRadosGW(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
