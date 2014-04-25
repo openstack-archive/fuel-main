@@ -35,7 +35,7 @@ class EnvironmentModel(object):
     domain = 'test.domain.local'
     installation_timeout = 1800
     deployment_timeout = 1800
-    puppet_timeout = 1000
+    puppet_timeout = 2000
     nat_interface = ''  # INTERFACES.get('admin')
     admin_net = 'admin'
 
@@ -382,7 +382,7 @@ class EnvironmentModel(object):
         wait(
             lambda: not
             self.get_admin_remote().execute(
-                "grep 'Finished catalog run' '%s'" % log_path
+                "grep 'Fuel bootstrap complete' '%s'" % log_path
             )['exit_code'],
             timeout=self.puppet_timeout
         )
