@@ -64,3 +64,9 @@ class TestPullRequest(TestBasic):
         )
 
         self.fuel_web.deploy_cluster_wait(cluster_id, is_feature=True)
+        
+        self.fuel_web.run_ostf(
+            cluster_id=self.fuel_web.get_last_created_cluster(),
+            should_fail=1
+        )
+
