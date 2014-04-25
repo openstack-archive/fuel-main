@@ -18,7 +18,7 @@
 # and Fuel became operational, and also enabling outbound network/internet access for this VM through the
 # host system
 
-ssh_options='-oConnectTimeout=5 -oStrictHostKeyChecking=no -oCheckHostIP=no -oUserKnownHostsFile=/dev/null -oRSAAuthentication=no'
+ssh_options='-oConnectTimeout=5 -oStrictHostKeyChecking=no -oCheckHostIP=no -oUserKnownHostsFile=/dev/null -oRSAAuthentication=no -oPubkeyAuthentication=no'
 
 is_product_vm_operational() {
     ip=$1
