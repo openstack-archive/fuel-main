@@ -645,6 +645,7 @@ python-decorator
 python-dingus
 python-django
 python-django-horizon
+python-guestfs
 python-eventlet
 python-feedparser
 python-formencode
