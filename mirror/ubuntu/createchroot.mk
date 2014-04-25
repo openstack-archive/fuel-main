@@ -18,7 +18,7 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	fi
 	sed -i -e "s/@@UBUNTU_RELEASE@@/$(UBUNTU_RELEASE)/g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf
 	sed -i -e "s]@@MIRROR_UBUNTU@@]$(MIRROR_UBUNTU)]g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf
-	sudo mount -t proc none $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc
+	mount | grep -q $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc || sudo mount -t proc none $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc
 	sudo multistrap -a amd64  -f $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf -d $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "dpkg --configure -a || exit 0"
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "rm -rf /var/run/*"
