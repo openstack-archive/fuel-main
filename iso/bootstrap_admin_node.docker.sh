@@ -79,7 +79,8 @@ rm -f $images_dir/*tar
 cp -a /etc/astute.yaml /etc/fuel/astute.yaml
 
 # apply puppet
-puppet apply -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
+# LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
+LANG=en_US.UTF-8 puppet apply -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
 rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
 
 echo -n "Waiting for Fuel UI to be ready..."
