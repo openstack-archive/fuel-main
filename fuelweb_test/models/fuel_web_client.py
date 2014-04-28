@@ -420,8 +420,7 @@ class FuelWebClient(object):
             self.environment.get_virtual_environment().node_by_name(node_name))
 
     @logwrap
-    def get_nailgun_node_by_devops_node(self, devops_node,
-                                        attempts=None):
+    def get_nailgun_node_by_devops_node(self, devops_node):
         """Return slave node description.
         Returns dict with nailgun slave node description if node is
         registered. Otherwise return None.
@@ -429,9 +428,10 @@ class FuelWebClient(object):
         d_macs = {i.mac_address.upper() for i in devops_node.interfaces}
         logger.debug('Verify that nailgun api is running')
         attempts = ATTEMPTS
-        logger.info('current timeouts is {0}'
-                    ' count of attempts is {1}'.format(attempts, TIMEOUT))
         while attempts > 0:
+            logger.debug(
+                'current timeouts is {0} count of '
+                'attempts is {1}'.format(TIMEOUT, attempts))
             try:
                 self.client.list_nodes()
                 attempts = 0
