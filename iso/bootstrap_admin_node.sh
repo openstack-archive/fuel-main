@@ -55,4 +55,4 @@ sed -i "s%\(^.*able on:\).*$%\1 http://`ip address show $primary | awk '/inet / 
 [ -d /var/lib/hiera ] || mkdir -p /var/lib/hiera
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
-puppet apply  /etc/puppet/modules/nailgun/examples/site.pp
+LANG=en_US.UTF-8 puppet apply  /etc/puppet/modules/nailgun/examples/site.pp
