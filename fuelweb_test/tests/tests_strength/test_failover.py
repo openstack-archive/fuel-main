@@ -76,6 +76,7 @@ class TestHaFailover(TestBasic):
             3. Revert environment
             4. Destroy second controller
             5. Check pacemaker status
+            5. Run OSTF
 
         Snapshot deploy_ha
 
@@ -90,6 +91,15 @@ class TestHaFailover(TestBasic):
                 set(self.env.nodes().slaves[:3]) - {devops_node},
                 [devops_node])
 
+        cluster_id = self.fuel_web.client.get_cluster_id(
+            self.__class__.__name__)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
+
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_disconnect_controllers"])
     @log_snapshot_on_error
@@ -102,6 +112,7 @@ class TestHaFailover(TestBasic):
             3. Revert environment
             4. Disconnect eth3 of the second controller
             5. Check pacemaker status
+            6. Run OSTF
 
         Snapshot deploy_ha
 
@@ -117,6 +128,15 @@ class TestHaFailover(TestBasic):
                 set(self.env.nodes().slaves[:3]) - {devops_node},
                 [devops_node])
 
+        cluster_id = self.fuel_web.client.get_cluster_id(
+            self.__class__.__name__)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
+
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_delete_vips"])
     @log_snapshot_on_error
@@ -130,6 +150,7 @@ class TestHaFailover(TestBasic):
             1. Delete all secondary VIP
             2. Wait while it is being restored
             3. Verify it is restored
+            4. Run OSTF
 
         Snapshot deploy_ha
 
@@ -172,16 +193,17 @@ class TestHaFailover(TestBasic):
                 wait(lambda: ip_assigned(slaves), timeout=10)
                 assert_true(ip_assigned(slaves), 'Secondary IP is restored')
                 ips_amount += 1
-                # Run OSTF tests
-                failed_test_name = ['Create volume and attach it to instance']
-                self.fuel_web.run_ostf(
-                    cluster_id=cluster_id,
-                    test_sets=['ha', 'smoke', 'sanity'],
-                    should_fail=1,
-                    failed_test_name=failed_test_name)
+
                 # Revert initial state. VIP could be moved to other controller
                 self.env.revert_snapshot("deploy_ha")
         assert_equal(ips_amount, 2, 'Secondary IPs amount')
+
+        failed_test_name = ['Create volume and attach it to instance']
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=failed_test_name)
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_mysql_termination"])
@@ -194,6 +216,7 @@ class TestHaFailover(TestBasic):
             2. Wait while it is being restarted
             3. Verify it is restarted
             4. Go to another controller
+            5. Run OSTF
 
         Snapshot deploy_ha
 
@@ -211,6 +234,15 @@ class TestHaFailover(TestBasic):
             wait(mysql_started, timeout=300)
             assert_true(mysql_started(), 'MySQL restarted')
 
+        cluster_id = self.fuel_web.client.get_cluster_id(
+            self.__class__.__name__)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
+
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_haproxy_termination"])
     @log_snapshot_on_error
@@ -222,6 +254,7 @@ class TestHaFailover(TestBasic):
             2. Wait while it is being restarted
             3. Verify it is restarted
             4. Go to another controller
+            5. Run OSTF
 
         Snapshot deploy_ha
 
@@ -237,6 +270,15 @@ class TestHaFailover(TestBasic):
                     'ps aux | grep "/usr/sbin/haproxy"')['stdout']) == 3
             wait(mysql_started, timeout=20)
             assert_true(mysql_started(), 'haproxy restarted')
+
+        cluster_id = self.fuel_web.client.get_cluster_id(
+            self.__class__.__name__)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=['Create volume and attach it to instance'])
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_pacemaker_configuration"])
