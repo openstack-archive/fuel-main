@@ -612,3 +612,5 @@ zabbix-web-mysql
 zabbix-web-pgsql
 rubygem-rethtool
 rubygem-ohai
+gzip
+bzip2
