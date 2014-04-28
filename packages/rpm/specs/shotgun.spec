@@ -16,6 +16,7 @@ Prefix: %{_prefix}
 BuildRequires:  python-setuptools
 BuildArch: noarch
 
+Requires:    postgresql
 Requires:    python-fabric == 1.7.0
 
 %description
