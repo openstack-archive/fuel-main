@@ -17,6 +17,7 @@ BuildRequires:  python-setuptools
 BuildArch: noarch
 
 Requires:    python-fabric == 1.7.0
+Requires:    tar
 
 %description
 Shotgun package
