@@ -51,7 +51,7 @@ ENDOFEXPECT
 
     for line in $result; do
         IFS="${OIFS}"
-        if [[ $line == Finished* ]]; then
+        if [[ $line == Fuel* ]]; then
 	    IFS="${NIFS}"
             return 0;
         fi    
