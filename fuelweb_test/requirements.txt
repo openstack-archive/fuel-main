@@ -9,5 +9,4 @@ python-keystoneclient>=0.3.2
 python-novaclient>=2.15.0
 python-cinderclient>=1.0.5
 Jinja2
-gdata==2.0.18
 AllPairs==2.0.1
