@@ -48,7 +48,7 @@ $(BUILD_DIR)/docker/build.done: \
 		$(BUILD_DIR)/docker/postgres.done \
 		$(BUILD_DIR)/docker/rsyslog.done \
 		$(BUILD_DIR)/docker/busybox.done
-ifeq ($(DOCKER_PREBUILT),false)
+ifeq ($(DOCKER_PREBUILT),0)
 	(cd $(BUILD_DIR)/docker/containers && tar cf fuel-images.tar *.tar)
 	lrzip -L2 -U -D -f $(BUILD_DIR)/docker/containers/fuel-images.tar -o $(BUILD_DIR)/docker/fuel-images.tar.lrz
 	rm -f $(BUILD_DIR)/docker/*tar
