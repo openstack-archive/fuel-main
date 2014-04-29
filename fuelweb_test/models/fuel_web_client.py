@@ -13,6 +13,8 @@
 #    under the License.
 
 import re
+import time
+import traceback
 
 from devops.error import DevopsCalledProcessError
 from devops.error import TimeoutError
@@ -411,6 +413,16 @@ class FuelWebClient(object):
         registered. Otherwise return None.
         """
         d_macs = {i.mac_address.upper() for i in devops_node.interfaces}
+        logger.debug('Verify is nailgun api is running')
+        attemp = 5
+        while attemp > 0:
+            try:
+                self.client.list_nodes()
+                attemp = 0
+            except Exception:
+                logger.debug(traceback.format_exc())
+                attemp -= 1
+                time.sleep(10)
         logger.debug('Look for nailgun node by macs %s', d_macs)
         for nailgun_node in self.client.list_nodes():
             macs = {i['mac'] for i in nailgun_node['meta']['interfaces']}
