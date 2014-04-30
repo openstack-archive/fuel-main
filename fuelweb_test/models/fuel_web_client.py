@@ -418,6 +418,8 @@ class FuelWebClient(object):
         d_macs = {i.mac_address.upper() for i in devops_node.interfaces}
         logger.debug('Verify that nailgun api is running')
         attempts = ATTEMPTS
+        logger.info('current timeouts is {0}'
+                    ' count of attempts is {1}'.format(attempts, TIMEOUT))
         while attempts > 0:
             try:
                 self.client.list_nodes()

@@ -201,5 +201,5 @@ OSTF_TEST_RETRIES_COUNT = int(os.environ.get('OSTF_TEST_RETRIES_COUNT', 50))
 DEPLOYMENT_NAME = os.environ.get('DEPLOYMENT_NAME')
 
 # Need for iso with docker
-TIMEOUT = int(os.environ.get('TIMEOUT'), 10)
-ATTEMPTS = int(os.environ.get('ATTEMPTS'), 5)
+TIMEOUT = int(os.environ.get('TIMEOUT', 10))
+ATTEMPTS = int(os.environ.get('ATTEMPTS', 5))
