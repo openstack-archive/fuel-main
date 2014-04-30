@@ -12,6 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import traceback
+
 from proboscis import asserts
 from proboscis import SkipTest
 from proboscis import test
@@ -120,15 +122,9 @@ class EnvironmentAction(base_test_case.TestBasic):
             cluster_id=cluster_id, progress=20)
         try:
             self.fuel_web.stop_deployment_wait(cluster_id)
-        except Exception as e:
-            logger.debug('current massage is {0}'.format(e.read()))
-            logger.debug('code is {0}'.format(e.code))
+        except Exception:
+            logger.debug(traceback.format_exc())
 
-            if e.code == 400:
-                logger.debug('try to skip tests - feature is not implemented')
-                raise SkipTest(e.read())
-            else:
-                raise e
         self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:2])
         self.fuel_web.update_nodes(
             cluster_id,
