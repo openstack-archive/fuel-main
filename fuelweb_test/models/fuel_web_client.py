@@ -30,12 +30,14 @@ from fuelweb_test import logger
 from fuelweb_test.helpers.decorators import update_ostf
 from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
+from fuelweb_test.settings import ATTEMPTS
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.settings import KVM_USE
 from fuelweb_test.settings import NEUTRON
 from fuelweb_test.settings import NEUTRON_SEGMENT
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
+from fuelweb_test.settings import TIMEOUT
 
 import fuelweb_test.settings as help_data
 
@@ -407,22 +409,23 @@ class FuelWebClient(object):
             self.environment.get_virtual_environment().node_by_name(node_name))
 
     @logwrap
-    def get_nailgun_node_by_devops_node(self, devops_node):
+    def get_nailgun_node_by_devops_node(self, devops_node,
+                                        attempts=None):
         """Return slave node description.
         Returns dict with nailgun slave node description if node is
         registered. Otherwise return None.
         """
         d_macs = {i.mac_address.upper() for i in devops_node.interfaces}
-        logger.debug('Verify is nailgun api is running')
-        attemp = 5
-        while attemp > 0:
+        logger.debug('Verify that nailgun api is running')
+        attempts = ATTEMPTS
+        while attempts > 0:
             try:
                 self.client.list_nodes()
-                attemp = 0
+                attempts = 0
             except Exception:
                 logger.debug(traceback.format_exc())
-                attemp -= 1
-                time.sleep(10)
+                attempts -= 1
+                time.sleep(TIMEOUT)
         logger.debug('Look for nailgun node by macs %s', d_macs)
         for nailgun_node in self.client.list_nodes():
             macs = {i['mac'] for i in nailgun_node['meta']['interfaces']}
