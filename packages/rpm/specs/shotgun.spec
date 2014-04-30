@@ -21,6 +21,7 @@ Requires:    python-fabric == 1.7.0
 Requires:    tar
 Requires:    gzip
 Requires:    bzip2
+Requires:    openssh-clients
 
 %description
 Shotgun package
