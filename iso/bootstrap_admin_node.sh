@@ -8,7 +8,7 @@ function countdown() {
     sleep 1
   done
 }
-
+export LANG=en_US.UTF8
 showmenu="no"
 bold=$(tput bold)
 normal=$(tput sgr0)
@@ -56,5 +56,5 @@ sed -i "s%\(^.*able on:\).*$%\1 http://`ip address show $primary | awk '/inet / 
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
-LANG=en_US.UTF-8 puppet apply  /etc/puppet/modules/nailgun/examples/site.pp
+puppet apply  /etc/puppet/modules/nailgun/examples/site.pp
 echo "Fuel node deployment complete!"
