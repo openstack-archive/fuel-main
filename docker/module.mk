@@ -9,7 +9,8 @@ define build_container
 $(BUILD_DIR)/docker/$1.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/repos/repos.done \
-		$(BUILD_DIR)/iso/isoroot-files.done
+		$(BUILD_DIR)/iso/isoroot-files.done \
+		$(BUILD_DIR)/docker/base-images.done
 ifeq ($(DOCKER_PREBUILT),0)
 	(cd $(LOCAL_MIRROR_CENTOS) && python $(SOURCE_DIR)/utils/simple_http_daemon.py $(RANDOM_PORT) /tmp/simple_http_daemon_$(RANDOM_PORT).pid)
 	mkdir -p "$(BUILD_DIR)/docker/containers"
@@ -29,8 +30,11 @@ endif
 	$$(ACTION.TOUCH)
 endef
 
+$(BUILD_DIR)/docker/base-images.done:
+	find $(LOCAL_MIRROR_DOCKER_BASEURL)/ -regex '.*xz' | xargs -n1 sudo docker load -i
+	$(ACTION.TOUCH)
+
 $(BUILD_DIR)/docker/busybox.done:
-	sudo docker pull busybox
 	mkdir -p "$(BUILD_DIR)/docker/containers"
 	sudo docker save busybox > $(BUILD_DIR)/docker/containers/busybox.tar
 	$(ACTION.TOUCH)

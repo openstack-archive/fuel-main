@@ -64,6 +64,9 @@ LOCAL_MIRROR_CENTOS:=$(LOCAL_MIRROR)/centos
 LOCAL_MIRROR_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 LOCAL_MIRROR_UBUNTU:=$(LOCAL_MIRROR)/ubuntu
 LOCAL_MIRROR_UBUNTU_OS_BASEURL:=$(LOCAL_MIRROR_UBUNTU)
+LOCAL_MIRROR_DOCKER:=$(LOCAL_MIRROR)/docker
+LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
+
 
 # Use download.mirantis.com mirror by default. Other possible values are
 # 'msk', 'srt', 'usa', 'hrk'.
@@ -75,30 +78,36 @@ YUM_REPOS?=proprietary
 MIRROR_BASE?=http://fuel-repository.mirantis.com/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 endif
 ifeq ($(USE_MIRROR),srt)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://fuel-mirror.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 endif
 ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://fuel-mirror.msk.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 endif
 ifeq ($(USE_MIRROR),hrk)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://fuel-mirror.kha.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 endif
 
 MIRROR_CENTOS?=http://mirrors.msk.mirantis.net/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 MIRROR_UBUNTU?=http://mirror.yandex.ru/ubuntu/
 MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
+MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
 MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-stable/centos/
