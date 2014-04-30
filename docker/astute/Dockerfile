@@ -25,4 +25,5 @@ RUN chmod +x /usr/local/bin/start.sh
 RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/fuelweb/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo
 RUN yum clean all
 
+VOLUME /etc/astute
 CMD /usr/local/bin/start.sh
