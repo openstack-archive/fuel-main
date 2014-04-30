@@ -10,7 +10,7 @@ WORKDIR /root
 RUN rm -rf /etc/yum.repos.d/*
 RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/os/x86_64/\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo
 RUN yum clean all
-RUN yum --quiet install -y ruby21-puppet
+RUN yum --quiet install -y ruby21-puppet logrotate
 RUN mkdir -p /opt/gateone/users/ANONYMOUS/
 RUN mkdir -p /var/log/nailgun
 
