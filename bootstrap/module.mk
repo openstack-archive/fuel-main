@@ -15,6 +15,7 @@ BOOTSTRAP_RPMS:=\
 	dhclient \
 	dmidecode \
 	iputils \
+	pciutils \
 	mcollective \
 	mingetty \
 	net-tools \
