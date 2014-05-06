@@ -4,7 +4,7 @@ function countdown() {
   local i
   sleep 1
   for ((i=$1-1; i>=1; i--)); do
-    printf '\b\b%02d' "$i"
+    printf '..%02d' "$i"
     sleep 1
   done
 }
