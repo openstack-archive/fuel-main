@@ -29,7 +29,7 @@ for idx in $(eval echo {1..$cluster_size}); do
   vm_ram=${vm_slave_memory_mb[$idx]}
   [ -z $vm_ram ] && vm_ram=$vm_slave_memory_default
   echo
-  create_vm $name "${host_nic_name[0]}" $vm_slave_cpu_cores $vm_ram $vm_slave_first_disk_mb
+  create_vm $name "${host_nic_name[0]}" $vm_slave_cpu_cores $vm_ram $vm_slave_first_disk_mb net:disk:none:none
 
   # Add additional NICs to VM
   if [ ${#host_nic_name[*]} -gt 1 ]; then
