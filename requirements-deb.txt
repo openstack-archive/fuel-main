@@ -543,6 +543,7 @@ mtr-tiny
 multiarch-support
 murano-api
 murano-dashboard
+murano-apps
 mysql-client
 mysql-common
 mysql-server-wsrep

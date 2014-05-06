@@ -198,6 +198,7 @@ mod_wsgi-3.2-1.el6
 mtools-4.0.17-3.el6
 murano-api
 murano-dashboard
+murano-apps
 nagios-3.5.0-1.el6
 nagios-common-3.5.0-1.el6
 nagios-plugins-1.4.16-5.el6
