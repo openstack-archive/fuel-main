@@ -226,113 +226,9 @@ class MuranoSimple(TestBasic):
 
 
 @test(groups=["services", "services.ceilometer"])
-class CeilometerSimple(TestBasic):
-
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_ceilometer_simple"])
-    @log_snapshot_on_error
-    def deploy_ceilometer_simple(self):
-        """Deploy cluster in simple mode with Ceilometer
-
-        Scenario:
-            1. Create cluster. Set install Ceilometer option
-            2. Add 1 node with controller role
-            3. Add 1 nodes with compute role
-            4. Add 1 node with cinder role
-            4. Deploy the cluster
-            5. Verify ceilometer api is running
-            6. Run ostf
-
-        Snapshot: deploy_ceilometer_simple
-
-        """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        self.env.revert_snapshot("ready_with_3_slaves")
-
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            settings={
-                'ceilometer': True
-            }
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller'],
-                'slave-02': ['compute'],
-                'slave-03': ['compute']
-            }
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-
-        checkers.verify_service(
-            self.env.get_ssh_to_remote_by_name("slave-01"),
-            service_name='ceilometer-api')
-
-        # run ostf smoke and sanity
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=1,
-            failed_test_name=['Create volume and attach it to instance'])
-
-        # verify if needed image exists
-        LOGGER.debug('Check MD5 of image')
-        check_image = checkers.check_image(
-            settings.SERVTEST_HEAT_SERVER_URL,
-            settings.SERVTEST_HEAT_IMAGE,
-            settings.SERVTEST_HEAT_IMAGE_MD5,
-            settings.SERVTEST_LOCAL_PATH)
-        asserts.assert_true(check_image)
-
-        controller_ip = self.fuel_web.get_nailgun_node_by_name(
-            'slave-01')['ip']
-        common_func = Common(controller_ip,
-                             settings.SERVTEST_USERNAME,
-                             settings.SERVTEST_PASSWORD,
-                             settings.SERVTEST_TENANT)
-
-        LOGGER.debug('Import image')
-        common_func.image_import(
-            settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_HEAT_IMAGE,
-            settings.SERVTEST_HEAT_IMAGE_NAME,
-            settings.SERVTEST_HEAT_IMAGE_META)
-
-        # run ostf platform tests for ceilometer and heat
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['platform_tests'],
-            should_fail=1, timeout=3500,
-            failed_test_name=['Create volume and attach it to instance'])
-
-        self.env.make_snapshot("deploy_ceilometer_simple")
-
-
-@test(groups=["services", "services.ceilometer"])
 class CeilometerSimpleMongo(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5])
-    def verify_mongo_role_available(self):
-        """Check if mongo role available
-        Scenario:
-            1. Revert ready 5 slave environment
-            2. Check if mongo role is available
-
-        Snapshot: deploy_mongo_available
-
-        """
-        asserts.assert_false(
-            settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT,
-            'Ceilometer is not supported on RHEL')
-
-        self.env.revert_snapshot("ready_with_5_slaves")
-        self.fuel_web.assert_release_role_present(
-            settings.OPENSTACK_RELEASE, role_name='mongo')
-        self.env.make_snapshot("deploy_mongo_available")
-
-    @test(depends_on=[verify_mongo_role_available],
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_ceilometer_simple_with_mongo"])
     @log_snapshot_on_error
     def deploy_ceilometer_simple_with_mongo(self):
@@ -351,7 +247,7 @@ class CeilometerSimpleMongo(TestBasic):
         Snapshot: deploy_ceilometer_simple_with_mongo
 
         """
-        self.env.revert_snapshot("deploy_mongo_available")
+        self.env.revert_snapshot("ready_with_5_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -385,7 +281,7 @@ class CeilometerSimpleMongo(TestBasic):
 
         self.env.make_snapshot("deploy_ceilometer_simple_with_mongo")
 
-    @test(depends_on=[verify_mongo_role_available],
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_ceilometer_ha_with_mongo"])
     @log_snapshot_on_error
     def deploy_ceilometer_ha_with_mongo(self):
@@ -404,7 +300,7 @@ class CeilometerSimpleMongo(TestBasic):
 
         """
 
-        self.env.revert_snapshot("deploy_mongo_available")
+        self.env.revert_snapshot("ready_with_5_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -443,7 +339,7 @@ class CeilometerSimpleMongo(TestBasic):
 
         self.env.make_snapshot("deploy_ceilometer_ha_with_mongo")
 
-    @test(depends_on=[verify_mongo_role_available],
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_ceilometer_simple_multirole"])
     @log_snapshot_on_error
     def deploy_ceilometer_simple_multirole(self):
@@ -461,7 +357,7 @@ class CeilometerSimpleMongo(TestBasic):
         Snapshot: deploy_ceilometer_simple_multirole
 
         """
-        self.env.revert_snapshot("deploy_mongo_available")
+        self.env.revert_snapshot("ready_with_5_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -497,7 +393,7 @@ class CeilometerSimpleMongo(TestBasic):
 
         self.env.make_snapshot("deploy_ceilometer_simple_mulirole")
 
-    @test(depends_on=[verify_mongo_role_available],
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_ceilometer_ha_multirole"])
     @log_snapshot_on_error
     def deploy_ceilometer_ha_multirole(self):
@@ -515,7 +411,7 @@ class CeilometerSimpleMongo(TestBasic):
         Snapshot: deploy_ceilometer_ha_multirole
 
         """
-        self.env.revert_snapshot("deploy_mongo_available")
+        self.env.revert_snapshot("ready_with_5_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
