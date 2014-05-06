@@ -148,13 +148,15 @@ class FuelWebClient(object):
             )
 
             [actual_failed_names.append(test['name'])
-             for test in set_result['tests'] if test['status'] != 'success']
+             for test in set_result['tests']
+             if test['status'] != 'success' and test['status'] != 'disabled']
 
             [test_result.update({test['name']:test['status']})
              for test in set_result['tests']]
 
             [failed_tests_res.append({test['name']:test['message']})
-             for test in set_result['tests'] if test['status'] != 'success']
+             for test in set_result['tests']
+             if test['status'] != 'success' and test['status'] != 'disabled']
 
         logger.info('OSTF test statuses are : {0}'.format(test_result))
 
