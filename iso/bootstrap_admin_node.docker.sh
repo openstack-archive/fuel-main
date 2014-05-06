@@ -4,16 +4,13 @@ function countdown() {
   local i
   sleep 1
   for ((i=$1-1; i>=1; i--)); do
-    printf '\b\b%02d' "$i"
+    printf '..%02d' "$i"
     sleep 1
   done
 }
 
 export LANG=en_US.UTF8
 showmenu="no"
-bold=$(tput bold)
-normal=$(tput sgr0)
-red=$(tput setaf 1)
 if [ -f /root/.showfuelmenu ]; then
   . /root/.showfuelmenu
 fi
