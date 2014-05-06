@@ -4,7 +4,7 @@ function countdown() {
   local i
   sleep 1
   for ((i=$1-1; i>=1; i--)); do
-    printf '\b\b%02d' "$i"
+    printf '..%02d' "$i"
     sleep 1
   done
 }
@@ -22,7 +22,7 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
   #Give user 30 seconds to enter fuelmenu or else continue
   echo
   echo -n "${bold}${red}Press a key to enter Fuel Setup (or press ESC to skip)... 15"
-  countdown 15 & pid=$!
+  countdown 15 && pid=$!
   if ! read -s -n 1 -t 15 key; then
     echo "$normal"
     echo -e "\n${normal}Skipping Fuel Setup..."
