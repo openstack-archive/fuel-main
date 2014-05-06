@@ -57,7 +57,7 @@ create_vm() {
     cpu_cores=$3
     memory_mb=$4
     disk_mb=$5
-    os=${6:-'RedHat_64'}
+    os='RedHat_64'
 
     # There is a chance that some files are left from previous VM instance
     vm_base_path=$(get_vm_base_path)
@@ -74,6 +74,7 @@ create_vm() {
 
     # Configure main network interface for management/PXE network
     add_hostonly_adapter_to_vm $name 1 "$nic"
+    VBoxManage modifyvm $name --boot1 disk --boot2 dvd --boot3 net --boot4 none
 
     # Configure storage controllers
     VBoxManage storagectl $name --name 'IDE' --add ide --hostiocache on
@@ -174,6 +175,6 @@ enable_network_boot_for_vm() {
     name=$1
 
     # Set the right boot priority
-    VBoxManage modifyvm $name --boot1 disk --boot2 net --boot3 none --boot4 none --nicbootprio1 1
+    VBoxManage modifyvm $name --boot1 net --boot2 disk --boot3 none --boot4 none --nicbootprio1 1
 }
 
