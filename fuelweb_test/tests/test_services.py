@@ -179,9 +179,6 @@ class MuranoSimple(TestBasic):
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='murano-api')
-        checkers.verify_service(
-            self.env.get_ssh_to_remote_by_name("slave-01"),
-            service_name='muranoconductor')
 
         controller_ip = self.fuel_web.get_nailgun_node_by_name(
             'slave-01')['ip']
