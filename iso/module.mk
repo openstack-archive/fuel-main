@@ -71,6 +71,7 @@ $(ISOROOT)/version.yaml: $(BUILD_DIR)/repos/repos.done
 	echo "  mirantis: \"$(MIRANTIS)\"" >> $@
 	echo "  production: \"$(PRODUCTION)\"" >> $@
 	echo "  release: \"$(PRODUCT_VERSION)\"" >> $@
+	echo "  api: \"1.0\"" >> $@
 ifdef BUILD_NUMBER
 	echo "  build_number: \"$(BUILD_NUMBER)\"" >> $@
 endif
