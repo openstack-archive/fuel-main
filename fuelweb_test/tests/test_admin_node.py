@@ -47,7 +47,7 @@ class TestAdminNode(TestBasic):
         self.env.revert_snapshot("empty")
         wait(
             lambda: http(host=self.env.get_admin_node_ip(), url='/cobbler_api',
-                         waited_code=502),
+                         waited_code=501),
             timeout=60
         )
         server = xmlrpclib.Server(
