@@ -389,6 +389,10 @@ class EnvironmentModel(object):
             )['exit_code'],
             timeout=self.puppet_timeout
         )
+        # TODO(mihgen): let's get rid of it once we sort out issues
+        # with order of docker images start up
+        # See details at https://bugs.launchpad.net/fuel/+bug/1315865
+        time.sleep(120)
 
 
 class NodeRoles(object):
