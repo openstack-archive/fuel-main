@@ -58,7 +58,7 @@ rm -f $images_dir/*tar
 pushd $images_dir &>/dev/null
 
 echo "Extracting and loading docker images. (This may take a while)"
-lrzuntar "$images_dir/fuel-images.tar.lrz"
+lrzip -d -o fuel-images.tar fuel-images.tar.lrz && tar -xf fuel-images.tar && rm -f fuel-images.tar
 popd &>/dev/null
 service docker start
 
@@ -66,10 +66,9 @@ service docker start
 for image in $images_dir/*tar ; do
     echo "Loading docker image ${image}..."
     docker load -i "$image"
+    # clean up extracted image
+    rm -f "$image"
 done
-
-# clean up extracted images
-rm -f $images_dir/*tar
 
 #TODO(mattymo,LP#1313288) Write astute.yaml to /etc/fuel from fuelmenu
 cp -a /etc/astute.yaml /etc/fuel/astute.yaml
