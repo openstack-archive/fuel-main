@@ -812,23 +812,25 @@ class FuelWebClient(object):
                 lambda: self.get_nailgun_node_by_devops_node(node)['online'])
 
     @logwrap
-    def ip_address_show(self, node_name, interface, pipe_str=''):
+    def ip_address_show(self, node_name, namespace, interface, pipe_str=''):
         try:
             remote = self.get_ssh_for_node(node_name)
             ret = remote.check_call(
-                'ip address show {0} {1}'.format(interface, pipe_str))
+                'ip netns exec {0} ip address show {1} {2}'.format(
+                    namespace, interface, pipe_str))
             return ' '.join(ret['stdout'])
         except DevopsCalledProcessError as err:
             logger.error(err.message)
         return ''
 
     @logwrap
-    def ip_address_del(self, node_name, interface, ip):
+    def ip_address_del(self, node_name, namespace, interface, ip):
         logger.info('Delete %s ip address of %s interface at %s node',
                     ip, interface, node_name)
         remote = self.get_ssh_for_node(node_name)
         remote.check_call(
-            'ip addr del {0} dev {1}'.format(ip, interface))
+            'ip netns exec {0} ip addr'
+            ' del {1} dev {2}'.format(namespace, ip, interface))
 
     @logwrap
     def provisioning_cluster_wait(self, cluster_id, progress=None):

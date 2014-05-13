@@ -21,6 +21,7 @@ from proboscis.asserts import assert_true
 from proboscis import test
 
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test import logger
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
@@ -121,7 +122,7 @@ class TestHaFailover(TestBasic):
           groups=["ha_delete_vips"])
     @log_snapshot_on_error
     def ha_delete_vips(self):
-        """Delete all secondary VIPs on all controller nodes.
+        """Delete all management and public VIPs on all controller nodes.
         Verify that they are restored.
         Verify total amount of secondary IPs. Should be 2:
         management and public
@@ -134,43 +135,68 @@ class TestHaFailover(TestBasic):
         Snapshot deploy_ha
 
         """
+        logger.debug('Start reverting of deploy_ha snapshot')
         self.env.revert_snapshot("deploy_ha")
         cluster_id = \
             self.fuel_web.client.get_cluster_id(self.__class__.__name__)
-        interfaces = ('eth1', 'eth2')
+        logger.debug('Cluster id is {0}'.format(cluster_id))
+        interfaces = ('hapr-p', 'hapr-m')
         slaves = self.env.nodes().slaves[:3]
+        logger.debug("Current nodes are {0}".format([i.name for i in slaves]))
         ips_amount = 0
         for devops_node in slaves:
             # Verify VIPs are started.
             ret = self.fuel_web.get_pacemaker_status(devops_node.name)
+            logger.debug("Pacemaker status {0} for node {1}".format
+                         (ret, devops_node.name))
             assert_true(
                 re.search('vip__management_old\s+\(ocf::mirantis:ns_IPaddr2\):'
-                          '\s+Started node', ret), 'vip management started')
+                          '\s+Started node', ret),
+                'vip management not started. '
+                'Current pacemaker status is {0}'.format(ret))
             assert_true(
                 re.search('vip__public_old\s+\(ocf::mirantis:ns_IPaddr2\):'
-                          '\s+Started node', ret), 'vip public started')
+                          '\s+Started node', ret),
+                'vip public not started. '
+                'Current pacemaker status is {0}'.format(ret))
 
             for interface in interfaces:
-                # Look for secondary ip and remove it
+                # Look for management and public ip in namespace and remove it
+                logger.debug("Start to looking for ip of Vips")
                 addresses = self.fuel_web.ip_address_show(
-                    devops_node.name, interface)
+                    devops_node.name, interface=interface,
+                    namespace='haproxy', pipe_str='| grep hapr-p$')
+                logger.debug("Vip addresses is {0} for node {1} and interface"
+                             " {2}".format(addresses, devops_node.name,
+                                           interface))
                 ip_search = re.search(
-                    'inet (?P<ip>\d+\.\d+\.\d+.\d+/\d+) brd '
-                    '(?P<mask>\d+\.\d+\.\d+.\d+) scope global '
-                    '{0}:ka'.format(interface), addresses)
+                    'inet (?P<ip>\d+\.\d+\.\d+.\d+/\d+) scope global '
+                    '{0}'.format(interface), addresses)
+
                 if ip_search is None:
+                    logger.debug("Ip show output does not"
+                                 " match in regex. Current value is None")
                     continue
                 ip = ip_search.group('ip')
+                logger.debug("Founded ip is {0}".format(ip))
+                logger.debug("Start ip {0} deletion on node {1} and "
+                             "interface {2} ".format(ip, devops_node.name,
+                                                     interface))
                 self.fuel_web.ip_address_del(
-                    devops_node.name, interface, ip)
+                    node_name=devops_node.name,
+                    interface=interface,
+                    ip=ip, namespace='haproxy')
 
                 # The ip should be restored
                 ip_assigned = lambda nodes: \
                     any([ip in self.fuel_web.ip_address_show(
-                        n.name, interface, '| grep ka$') for n in nodes])
-
+                        n.name, 'haproxy',
+                        interface, '| grep {0}$'.format(interface))
+                        for n in nodes])
+                logger.debug("Waiting while deleted ip restores ...")
                 wait(lambda: ip_assigned(slaves), timeout=10)
-                assert_true(ip_assigned(slaves), 'Secondary IP is restored')
+                assert_true(ip_assigned(slaves),
+                            "IP isn't restored restored.")
                 ips_amount += 1
                 # Run OSTF tests
                 failed_test_name = ['Create volume and attach it to instance']
@@ -181,7 +207,8 @@ class TestHaFailover(TestBasic):
                     failed_test_name=failed_test_name)
                 # Revert initial state. VIP could be moved to other controller
                 self.env.revert_snapshot("deploy_ha")
-        assert_equal(ips_amount, 2, 'Secondary IPs amount')
+        assert_equal(ips_amount, 2,
+                     'Not all vips were recovered after fail in 10s')
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_mysql_termination"])
