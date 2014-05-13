@@ -267,14 +267,11 @@ class CeilometerSimpleMongo(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='ceilometer-api')
 
-        # run ostf smoke and sanity
+        # run ostf
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=0)
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['platform_tests'],
-            should_fail=2, timeout=3500)
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity',
+                                              'platform_tests'],
+            should_fail=1, timeout=5300)
 
         self.env.make_snapshot("deploy_ceilometer_simple_with_mongo")
 
@@ -321,16 +318,11 @@ class CeilometerSimpleMongo(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='ceilometer-api')
 
-        # run ostf smoke and sanity
+        # run ostf
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=1)
-
-        # run ostf platform
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['platform_tests', 'ha'],
-            should_fail=2, timeout=3500,
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity',
+                                              'platform_tests', 'ha'],
+            should_fail=2, timeout=5300,
             failed_test_name=['Create volume and attach it to instance',
                               'Check stack autoscaling'])
 
@@ -377,16 +369,12 @@ class CeilometerSimpleMongo(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='ceilometer-api')
 
-        # run ostf smoke and sanity
+        # run ostf
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=0)
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['platform_tests'],
-            should_fail=2, timeout=3500,
-            failed_test_name=['Create volume and attach it to instance',
-                              'Check stack autoscaling'])
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity',
+                                              'platform_tests'],
+            should_fail=1, timeout=5300,
+            failed_test_name=['Check stack autoscaling'])
 
         self.env.make_snapshot("deploy_ceilometer_simple_mulirole")
 
@@ -432,15 +420,11 @@ class CeilometerSimpleMongo(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='ceilometer-api')
 
-        # run ostf smoke and sanity
+        # run ostf
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=0)
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['platform_tests', 'ha'],
-            should_fail=2, timeout=3500,
-            failed_test_name=['Create volume and attach it to instance',
-                              'Check stack autoscaling'])
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity',
+                                              'platform_tests', 'ha'],
+            should_fail=1, timeout=5300,
+            failed_test_name=['Check stack autoscaling'])
 
         self.env.make_snapshot("deploy_ceilometer_ha_mulirole")
