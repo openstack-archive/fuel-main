@@ -346,10 +346,11 @@ cp ${SOURCE}/bootstrap_admin_node.conf /etc/init/bootstrap_admin_node.conf
 echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
 
 # Copying version.yaml file. It contains COMMIT_SHA of last commit.
-mkdir -p /etc/nailgun /etc/fuel
-#TODO(mattymo, LP#1313303): teach nailgun to read version.yaml from /etc/fuel/nailgun.yaml
+RELEASE=$(awk '/release/{gsub(/"/, "");print $2}' ${SOURCE}/version.yaml)
+mkdir -p /etc/nailgun /etc/fuel/${RELEASE}
 cp ${SOURCE}/version.yaml /etc/nailgun/version.yaml
-cp ${SOURCE}/version.yaml /etc/fuel/version.yaml
+cp ${SOURCE}/version.yaml /etc/fuel/${RELEASE}/version.yaml
+ln -s /etc/fuel/${RELEASE}/version.yaml /etc/fuel/version.yaml
 
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
