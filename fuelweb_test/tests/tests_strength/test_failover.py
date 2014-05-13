@@ -121,7 +121,7 @@ class TestHaFailover(TestBasic):
           groups=["ha_delete_vips"])
     @log_snapshot_on_error
     def ha_delete_vips(self):
-        """Delete all secondary VIPs on all controller nodes.
+        """Delete all management and public VIPs on all controller nodes.
         Verify that they are restored.
         Verify total amount of secondary IPs. Should be 2:
         management and public
@@ -137,7 +137,7 @@ class TestHaFailover(TestBasic):
         self.env.revert_snapshot("deploy_ha")
         cluster_id = \
             self.fuel_web.client.get_cluster_id(self.__class__.__name__)
-        interfaces = ('eth1', 'eth2')
+        interfaces = ('hapr-p', 'hapr-m')
         slaves = self.env.nodes().slaves[:3]
         ips_amount = 0
         for devops_node in slaves:
@@ -151,13 +151,13 @@ class TestHaFailover(TestBasic):
                           '\s+Started node', ret), 'vip public started')
 
             for interface in interfaces:
-                # Look for secondary ip and remove it
+                # Look for management and public ip in namespace and remove it
                 addresses = self.fuel_web.ip_address_show(
-                    devops_node.name, interface)
+                    devops_node.name, 'haproxy', interface)
                 ip_search = re.search(
                     'inet (?P<ip>\d+\.\d+\.\d+.\d+/\d+) brd '
                     '(?P<mask>\d+\.\d+\.\d+.\d+) scope global '
-                    '{0}:ka'.format(interface), addresses)
+                    '{0}'.format(interface), addresses)
                 if ip_search is None:
                     continue
                 ip = ip_search.group('ip')
@@ -167,10 +167,12 @@ class TestHaFailover(TestBasic):
                 # The ip should be restored
                 ip_assigned = lambda nodes: \
                     any([ip in self.fuel_web.ip_address_show(
-                        n.name, interface, '| grep ka$') for n in nodes])
+                        n.name, 'haproxy',
+                        interface, '| grep {0}$'.format(interface))
+                        for n in nodes])
 
                 wait(lambda: ip_assigned(slaves), timeout=10)
-                assert_true(ip_assigned(slaves), 'Secondary IP is restored')
+                assert_true(ip_assigned(slaves), 'Management IP is restored')
                 ips_amount += 1
                 # Run OSTF tests
                 failed_test_name = ['Create volume and attach it to instance']
@@ -181,7 +183,8 @@ class TestHaFailover(TestBasic):
                     failed_test_name=failed_test_name)
                 # Revert initial state. VIP could be moved to other controller
                 self.env.revert_snapshot("deploy_ha")
-        assert_equal(ips_amount, 2, 'Secondary IPs amount')
+        assert_equal(ips_amount, 2,
+                     'Not all vips were recovered after fail in 10s')
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_mysql_termination"])
