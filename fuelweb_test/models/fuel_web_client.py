@@ -810,11 +810,12 @@ class FuelWebClient(object):
                 lambda: self.get_nailgun_node_by_devops_node(node)['online'])
 
     @logwrap
-    def ip_address_show(self, node_name, interface, pipe_str=''):
+    def ip_address_show(self, node_name, namespace, interface, pipe_str=''):
         try:
             remote = self.get_ssh_for_node(node_name)
             ret = remote.check_call(
-                'ip address show {0} {1}'.format(interface, pipe_str))
+                'ip netns exec {0} ip address show {1} {2}'.format(
+                    namespace, interface, pipe_str))
             return ' '.join(ret['stdout'])
         except DevopsCalledProcessError as err:
             logger.error(err.message)
