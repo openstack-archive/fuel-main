@@ -77,6 +77,7 @@ install -d -m 755 %{buildroot}%{_localstatedir}/log/astute
 %{gemdir}/gems/astute-0.0.2/lib/astute/deployment_engine/nailyfact.rb
 # %{gemdir}/gems/astute-0.0.2/lib/astute/deployment_engine/simple_puppet.rb
 # %{gemdir}/gems/astute-0.0.2/lib/astute/metadata.rb
+%{gemdir}/gems/astute-0.0.2/lib/astute/rsyslogd.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/cobbler_manager.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/dump.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/exceptions.rb
@@ -116,6 +117,7 @@ install -d -m 755 %{buildroot}%{_localstatedir}/log/astute
 %{gemdir}/gems/astute-0.0.2/examples/example_astute_config.yaml
 %{gemdir}/gems/astute-0.0.2/spec/integration/mcollective_spec.rb
 %{gemdir}/gems/astute-0.0.2/spec/spec_helper.rb
+%{gemdir}/gems/astute-0.0.2/spec/unit/rsyslogd_spec.rb
 %{gemdir}/gems/astute-0.0.2/spec/unit/deployment_engine_spec.rb
 %{gemdir}/gems/astute-0.0.2/spec/unit/dump_spec.rb
 %{gemdir}/gems/astute-0.0.2/spec/unit/fixtures/common_attrs.rb
