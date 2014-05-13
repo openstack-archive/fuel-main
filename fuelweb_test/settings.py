@@ -37,6 +37,7 @@ DEPLOYMENT_MODE_HA = "ha_compact"
 DEPLOYMENT_MODE = os.environ.get("DEPLOYMENT_MODE", DEPLOYMENT_MODE_HA)
 
 ADMIN_NODE_SETUP_TIMEOUT = os.environ.get("ADMIN_NODE_SETUP_TIMEOUT", 30)
+PUPPET_TIMEOUT = os.environ.get("PUPPET_TIMEOUT", 3000)
 
 HARDWARE = {
     "admin_node_memory": os.environ.get("ADMIN_NODE_MEMORY", 1024),
