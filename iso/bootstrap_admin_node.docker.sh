@@ -78,22 +78,6 @@ cp -a /etc/astute.yaml /etc/fuel/astute.yaml
 puppet apply -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
 rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
 
-echo -n "Waiting for Fuel UI to be ready..."
-tries=0
-failure=0
-until [ $(curl --connect-timeout 1 -s -w %{http_code} http://127.0.0.1:8000/api/version -o /dev/null) = "200" ]; do
-  ((tries++))
-  if [ $tries -gt 240 ];then
-    failure=1
-    break
-  fi
-  sleep 1
-done
-
-if [ $failure -eq 1 ]; then
-  echo "failed! Check logs for details."
-else
-  echo "done!"
-fi
+dockerctl check
 
 echo "Fuel node deployment complete!"
