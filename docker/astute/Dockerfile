@@ -10,7 +10,7 @@ WORKDIR /root
 RUN rm -rf /etc/yum.repos.d/*
 RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/os/x86_64/\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo
 RUN yum clean all
-RUN yum --quiet install -y ruby21-puppet ruby21-nailgun-mcagents
+RUN yum --quiet install -y ruby21-puppet ruby21-nailgun-mcagents logrotate
 
 #FIXME(mattymo): workaround until astute has this dependency
 RUN yum --quiet install -y openssh-clients
