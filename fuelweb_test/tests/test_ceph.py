@@ -111,9 +111,9 @@ class CephCompactWithCinder(TestBasic):
             name=self.__class__.__name__,
             mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
-                'volumes_ceph': True,
+                'volumes_ceph': False,
                 'images_ceph': True,
-                'volumes_lvm': False
+                'volumes_lvm': True
             }
         )
         self.fuel_web.update_nodes(
