@@ -334,6 +334,7 @@ class EnvironmentModel(object):
                         nailgun_node['status'] not in ['provisioned', 'ready']:
                     continue
                 try:
+                    logger.info("Syncing time on node %s" % node.name)
                     self.sync_node_time(self.get_ssh_to_remote(
                         node.get_ip_address_by_network_name(self.admin_net)))
                 except Exception as e:
@@ -365,6 +366,8 @@ class EnvironmentModel(object):
                        " sed '/^#/d' | awk '{print $2}' |"
                        " tail -n 1)")
         remote.execute('hwclock -w')
+        remote_date = remote.execute('date')['stdout']
+        logger.info("Node time: %s" % remote_date)
 
     def sync_time_admin_node(self):
         self.sync_node_time(self.get_admin_remote())
