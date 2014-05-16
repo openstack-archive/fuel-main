@@ -166,7 +166,8 @@ class TestHaFailover(TestBasic):
                 logger.debug("Start to looking for ip of Vips")
                 addresses = self.fuel_web.ip_address_show(
                     devops_node.name, interface=interface,
-                    namespace='haproxy', pipe_str='| grep hapr-p$')
+                    namespace='haproxy',
+                    pipe_str='| grep {0}$'.format(interface))
                 logger.debug("Vip addresses is {0} for node {1} and interface"
                              " {2}".format(addresses, devops_node.name,
                                            interface))
