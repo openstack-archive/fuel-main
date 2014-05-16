@@ -329,16 +329,15 @@ class EnvironmentModel(object):
 
             self.nodes().admin.await(self.admin_net, timeout=10 * 60)
 
-            list = self.nodes().slaves
-            for node in list:
-                nailgun_node = self.fuel_web.get_nailgun_node_by_devops_node(
-                    node)
-                if not node.driver.node_active(node) or \
-                        nailgun_node['status'] not in ['provisioned', 'ready']:
+            self.sync_time_admin_node()
+
+            for node in self.nodes().slaves:
+                if not node.driver.node_active(node):
                     continue
                 try:
-                    self.sync_node_time(self.get_ssh_to_remote(
-                        node.get_ip_address_by_network_name(self.admin_net)))
+                    logger.info("Sync time on revert for node %s" % node.name)
+                    self.sync_node_time(
+                        self.get_ssh_to_remote_by_name(node.name))
                 except Exception as e:
                     logger.warn(
                         'Paramiko exception catched while'
@@ -363,13 +362,14 @@ class EnvironmentModel(object):
     @logwrap
     def sync_node_time(self, remote):
         remote.execute('hwclock --hctosys')
-        remote.execute("ntpdate -u "
-                       "$(egrep '^server' /etc/ntp.conf |"
-                       " sed '/^#/d' | awk '{print $2}' |"
-                       " tail -n 1)")
+        remote.execute("ntpdate -u $(egrep '^server' /etc/ntp.conf | "
+                        "sed '/^#/d' | awk '{print $2}')")
         remote.execute('hwclock -w')
+        remote_date = remote.execute('date')['stdout']
+        logger.info("Node time: %s" % remote_date)
 
     def sync_time_admin_node(self):
+        logger.info("Sync time on revert for admin")
         self.sync_node_time(self.get_admin_remote())
 
     def verify_node_service_list(self, node_name, smiles_count):
