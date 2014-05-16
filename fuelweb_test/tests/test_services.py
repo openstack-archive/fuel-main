@@ -208,8 +208,7 @@ class MuranoSimple(TestBasic):
         LOGGER.debug('Run OSTF platform tests')
         test_class_main = ('fuel_health.tests.platform_tests'
                            '.test_murano.MuranoDeploymentSmokeTests')
-        tests_names = ['test_deploy_demo_service',
-                       'test_deploy_telnet_service',
+        tests_names = ['test_deploy_telnet_service',
                        'test_deploy_apache_service']
         test_classes = []
         for test_name in tests_names:
