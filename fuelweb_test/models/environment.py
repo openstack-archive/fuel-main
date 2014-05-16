@@ -20,6 +20,7 @@ from devops.helpers.helpers import wait
 from devops.manager import Manager
 from ipaddr import IPNetwork
 from paramiko import RSAKey
+from proboscis.asserts import assert_equal
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import revert_info
@@ -111,6 +112,8 @@ class EnvironmentModel(object):
         Start vms and wait until they are registered on nailgun.
         :rtype : List of registered nailgun nodes
         """
+        self.dhcrelay_check()
+
         for node in devops_nodes:
             node.start()
             #TODO(aglarendil): LP#1317213 temporary sleep
@@ -391,6 +394,14 @@ class EnvironmentModel(object):
             )['exit_code'],
             timeout=(float(settings.PUPPET_TIMEOUT))
         )
+
+    def dhcrelay_check(self):
+        admin_remote = self.get_admin_remote()
+        out = admin_remote.execute("dhcpcheck discover "
+                                   "--ifaces eth0")['stdout']
+        master_ip = filter(lambda x: self.get_admin_node_ip() in x, out)
+        logger.info("dhcpcheck discover: %s" % master_ip)
+        assert_equal(len(master_ip), 1)
 
 
 class NodeRoles(object):
