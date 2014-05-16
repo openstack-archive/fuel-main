@@ -162,9 +162,9 @@ SERVTEST_SAVANNA_SERVER_URL = 'http://savanna-files.mirantis.com'
 SERVTEST_SAVANNA_IMAGE = 'savanna-0.3-vanilla-1.2.1-ubuntu-13.04.qcow2'
 SERVTEST_SAVANNA_IMAGE_NAME = 'savanna'
 SERVTEST_SAVANNA_IMAGE_MD5 = '9ab37ec9a13bb005639331c4275a308d'
-SERVTEST_SAVANNA_IMAGE_META = {'_savanna_tag_1.2.1': 'True',
-                               '_savanna_tag_vanilla': 'True',
-                               '_savanna_username': 'ubuntu'}
+SERVTEST_SAVANNA_IMAGE_META = {'_sahara_tag_1.2.1': 'True',
+                               '_sahara_tag_vanilla': 'True',
+                               '_sahara_username': 'ubuntu'}
 
 SERVTEST_MURANO_SERVER_URL = "http://murano-files.mirantis.com"
 SERVTEST_MURANO_IMAGE = "cloud-fedora.qcow2"
