@@ -40,7 +40,7 @@ ADMIN_NODE_SETUP_TIMEOUT = os.environ.get("ADMIN_NODE_SETUP_TIMEOUT", 30)
 PUPPET_TIMEOUT = os.environ.get("PUPPET_TIMEOUT", 3000)
 
 HARDWARE = {
-    "admin_node_memory": os.environ.get("ADMIN_NODE_MEMORY", 1024),
+    "admin_node_memory": os.environ.get("ADMIN_NODE_MEMORY", 1536),
     "admin_node_cpu": os.environ.get("ADMIN_NODE_CPU", 2),
     "slave_node_cpu": os.environ.get("SLAVE_NODE_CPU", 1),
 }
