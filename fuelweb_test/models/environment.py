@@ -398,7 +398,8 @@ class EnvironmentModel(object):
     def dhcrelay_check(self):
         admin_remote = self.get_admin_remote()
         out = admin_remote.execute("dhcpcheck discover "
-                                   "--ifaces eth0")['stdout']
+                                   "--ifaces eth0 "
+                                   "--repeat 3")['stdout']
         master_ip = filter(lambda x: self.get_admin_node_ip() in x, out)
         logger.info("dhcpcheck discover: %s" % master_ip)
         assert_equal(len(master_ip), 1)
