@@ -79,7 +79,8 @@ class SetupEnvironment(TestBasic):
 
         self.env.make_snapshot("ready")
 
-    @test(depends_on=[prepare_release])
+    @test(depends_on=[prepare_release],
+          groups=["prepare_slaves_3"])
     def prepare_slaves_3(self):
         """Bootstrap 3 slave nodes
 
@@ -95,7 +96,8 @@ class SetupEnvironment(TestBasic):
         self.env.bootstrap_nodes(self.env.nodes().slaves[:3])
         self.env.make_snapshot("ready_with_3_slaves")
 
-    @test(depends_on=[prepare_release])
+    @test(depends_on=[prepare_release], 
+          groups=["prepare_slaves_5"])
     def prepare_slaves_5(self):
         """Bootstrap 5 slave nodes
 
