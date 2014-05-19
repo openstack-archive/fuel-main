@@ -4,6 +4,11 @@ mkdir -p /var/log/cobbler/{anamon,kicklog,syslog,tasks}
 #reset authorized_keys file so puppet can a write new one
 rm -f /etc/cobbler/authorized_keys
 
+# Make sure services are not running (no pids, etc), puppet will
+# configure and bring them up.
+/etc/init.d/httpd stop
+/etc/init.d/xinetd stop
+
 #Run puppet to apply custom config
 puppet apply -v /etc/puppet/modules/nailgun/examples/cobbler-only.pp
 #stop cobbler and dnsmasq
@@ -11,7 +16,5 @@ puppet apply -v /etc/puppet/modules/nailgun/examples/cobbler-only.pp
 /etc/init.d/cobblerd stop
 
 #Set up nailgun DB
-/etc/init.d/httpd start
-/etc/init.d/xinetd start
 dnsmasq -d &
 cobblerd -F
