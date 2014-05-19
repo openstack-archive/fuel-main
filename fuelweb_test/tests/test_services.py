@@ -149,15 +149,16 @@ class MuranoSimple(TestBasic):
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
+        self.env.revert_snapshot("ready_with_3_slaves")
+
         LOGGER.debug('Check MD5 of image')
         check_image = checkers.check_image(
             settings.SERVTEST_MURANO_SERVER_URL,
             settings.SERVTEST_MURANO_IMAGE,
             settings.SERVTEST_MURANO_IMAGE_MD5,
             settings.SERVTEST_LOCAL_PATH)
-        asserts.assert_true(check_image)
+        asserts.assert_true(check_image, "Image verification failed")
 
-        self.env.revert_snapshot("ready_with_3_slaves")
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             settings={
