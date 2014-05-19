@@ -121,12 +121,14 @@ class OpenStackActions(common.Common):
         srv = self.nova.servers.get(srv.id)
         return getattr(srv, "OS-EXT-SRV-ATTR:host")
 
-    def migrate_server(self, server, host):
+    def migrate_server(self, server, host, timeout):
         curr_host = self.get_srv_host_name(server)
+        logger.debug("Current compute host is {0}".format(curr_host))
+        logger.debug("Start live migration of instance")
         server.live_migrate(host._info['host_name'])
         helpers.wait(
             lambda: self.get_instance_detail(server).status == "ACTIVE",
-            timeout=60)
+            timeout=timeout)
         proboscis.asserts.assert_true(
             self.get_srv_host_name(
                 self.get_instance_detail(server)) != curr_host,

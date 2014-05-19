@@ -353,7 +353,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
         avail_hosts = os.get_hosts_for_migr(srv_host)
 
         logger.info("Migrating server")
-        new_srv = os.migrate_server(srv, avail_hosts[0])
+        new_srv = os.migrate_server(srv, avail_hosts[0], timeout=120)
         logger.info("Check cluster and server state after migration")
 
         assert_true(new_srv.status == "ACTIVE",
@@ -422,7 +422,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
         avail_hosts = os.get_hosts_for_migr(srv_host)
 
         logger.info("Migrating server")
-        new_srv = os.migrate_server(srv, avail_hosts[0])
+        new_srv = os.migrate_server(srv, avail_hosts[0], timeout=120)
         logger.info("Check cluster and server state after migration")
 
         assert_true(new_srv.status == "ACTIVE",
