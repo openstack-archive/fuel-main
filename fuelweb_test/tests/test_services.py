@@ -115,7 +115,7 @@ class SavannaSimple(TestBasic):
             test_name=('fuel_health.tests.platform_tests.'
                        'test_platform_savanna.PlatformSavannaTests.'
                        'test_platform_savanna'), should_fail=1,
-            timeout=60 * 100)
+            timeout=60 * 200)
 
         self.env.make_snapshot("deploy_sahara_simple")
 
