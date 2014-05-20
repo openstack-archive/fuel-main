@@ -279,7 +279,7 @@ class CeilometerSimpleMongo(TestBasic):
           groups=["deploy_ceilometer_ha_with_mongo"])
     @log_snapshot_on_error
     def deploy_ceilometer_ha_with_mongo(self):
-        """Deploy cluster in simple mode with Ceilometer
+        """Deploy cluster in ha mode with Ceilometer
 
         Scenario:
             1. Create cluster. Set install Ceilometer option
@@ -328,7 +328,7 @@ class CeilometerSimpleMongo(TestBasic):
         # run platfrom tests
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['platform_tests'],
-            should_fail=1, timeout=5300,
+            should_fail=4, timeout=5300,
             failed_test_name=['Check stack autoscaling'])
 
         self.env.make_snapshot("deploy_ceilometer_ha_with_mongo")
@@ -378,7 +378,7 @@ class CeilometerSimpleMongo(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity',
                                               'platform_tests'],
-            should_fail=1, timeout=5300,
+            should_fail=3, timeout=5300,
             failed_test_name=['Check stack autoscaling'])
 
         self.env.make_snapshot("deploy_ceilometer_simple_mulirole")
