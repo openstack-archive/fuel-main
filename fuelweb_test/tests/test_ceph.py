@@ -335,8 +335,6 @@ class VmBackedWithCephMigrationBasic(TestBasic):
             scenario='./fuelweb_test/helpers/instance_initial_scenario')
         logger.info("Srv is currently in status: %s" % srv.status)
 
-        assert_true(srv.status != "ERROR")
-
         logger.info("Assigning floating ip to server")
         floating_ip = os.assign_floating_ip(srv)
         srv_host = os.get_srv_host_name(srv)
@@ -353,12 +351,8 @@ class VmBackedWithCephMigrationBasic(TestBasic):
         avail_hosts = os.get_hosts_for_migr(srv_host)
 
         logger.info("Migrating server")
-        new_srv = os.migrate_server(srv, avail_hosts[0], timeout=120)
+        new_srv = os.migrate_server(srv, avail_hosts[0], timeout=200)
         logger.info("Check cluster and server state after migration")
-
-        assert_true(new_srv.status == "ACTIVE",
-                    "Server didn`t reach ACTIVE status. "
-                    "Status is: %s" % new_srv.status)
 
         md5after = os.get_md5sum(
             "/home/test_file",
@@ -397,7 +391,6 @@ class VmBackedWithCephMigrationBasic(TestBasic):
             scenario='./fuelweb_test/helpers/instance_initial_scenario')
         logger.info("Srv is currently in status: %s" % srv.status)
 
-        assert_true(srv.status != "ERROR")
         logger.info("Assigning floating ip to server")
         floating_ip = os.assign_floating_ip(srv)
         srv_host = os.get_srv_host_name(srv)
@@ -424,10 +417,6 @@ class VmBackedWithCephMigrationBasic(TestBasic):
         logger.info("Migrating server")
         new_srv = os.migrate_server(srv, avail_hosts[0], timeout=120)
         logger.info("Check cluster and server state after migration")
-
-        assert_true(new_srv.status == "ACTIVE",
-                    "Server did not reach active state. "
-                    "Current status is: %s" % new_srv.status)
 
         logger.info("Mount volume after migration")
         out = os.execute_through_host(
