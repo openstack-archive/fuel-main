@@ -49,15 +49,9 @@ class Common(object):
         self.glance = glanceclient(endpoint=glance_endpoint, token=token)
 
     def goodbye_security(self):
-        LOGGER.debug('Create sec group for services ...')
-        if 'serv' not in [i.name for i in self.nova.security_groups.list()]:
-            self.nova.security_groups.create(
-                name='serv',
-                description='Secgroup for service system tests')
-
         secgroup_list = self.nova.security_groups.list()
         LOGGER.debug("Security list is {0}".format(secgroup_list))
-        secgroup_id = [i.id for i in secgroup_list if i.name == 'serv'][0]
+        secgroup_id = [i.id for i in secgroup_list if i.name == 'default'][0]
         LOGGER.debug("Id of security group default is {0}".format(
             secgroup_id))
         LOGGER.debug('Permit all TCP and ICMP in security group default')
