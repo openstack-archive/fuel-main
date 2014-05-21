@@ -13,10 +13,11 @@
 #    under the License.
 
 import paramiko
-import proboscis
+from proboscis import asserts
 import random
 import time
 
+from devops.error import TimeoutError
 from devops.helpers import helpers
 from fuelweb_test.helpers import common
 from fuelweb_test import logger
@@ -64,10 +65,18 @@ class OpenStackActions(common.Common):
                                        flavor=1,
                                        userdata=scenario,
                                        **kwargs)
-        helpers.wait(
-            lambda: self.get_instance_detail(srv).status == "ACTIVE",
-            timeout=100)
-        return self.get_instance_detail(srv.id)
+        try:
+            helpers.wait(
+                lambda: self.get_instance_detail(srv).status == "ACTIVE",
+                timeout=100)
+            return self.get_instance_detail(srv.id)
+        except TimeoutError:
+            logger.debug("Create server for migration failed by timeout")
+            asserts.assert_equal(
+                self.get_instance_detail(srv).status,
+                "ACTIVE",
+                "Instance do not reach active state, current state"
+                " is {0}".format(self.get_instance_detail(srv).status))
 
     def verify_srv_deleted(self, srv):
         try:
@@ -126,10 +135,19 @@ class OpenStackActions(common.Common):
         logger.debug("Current compute host is {0}".format(curr_host))
         logger.debug("Start live migration of instance")
         server.live_migrate(host._info['host_name'])
-        helpers.wait(
-            lambda: self.get_instance_detail(server).status == "ACTIVE",
-            timeout=timeout)
-        proboscis.asserts.assert_true(
+        try:
+            helpers.wait(
+                lambda: self.get_instance_detail(server).status == "ACTIVE",
+                timeout=timeout)
+        except TimeoutError:
+            logger.debug("Instance do not became active after migration")
+            asserts.assert_true(
+                self.get_instance_detail(server).status == "ACTIVE",
+                "Instance do not become Active after live migration, "
+                "current status is {0}".format(
+                    self.get_instance_detail(server).status))
+
+        asserts.assert_true(
             self.get_srv_host_name(
                 self.get_instance_detail(server)) != curr_host,
             "Server did not migrate")
