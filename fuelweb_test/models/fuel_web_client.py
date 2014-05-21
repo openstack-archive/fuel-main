@@ -519,7 +519,7 @@ class FuelWebClient(object):
         if retries:
             return self.return_ostf_results(cluster_id, timeout=timeout)
         else:
-            self.assert_ostf_run(cluster_id, should_fail=should_fail)
+            self.assert_ostf_run(cluster_id, should_fail=should_fail, timeout=timeout)
 
     @logwrap
     def task_wait(self, task, timeout, interval=5):
