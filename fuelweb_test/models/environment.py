@@ -338,6 +338,9 @@ class EnvironmentModel(object):
                     logger.warn(
                         'Paramiko exception catched while'
                         ' trying to run ntpdate: %s' % e)
+
+                self.run_nailgun_agent(
+                    self.get_ssh_to_remote_by_name(node.name))
             return True
         return False
 
@@ -390,6 +393,10 @@ class EnvironmentModel(object):
             )['exit_code'],
             timeout=self.puppet_timeout
         )
+
+    def run_nailgun_agent(self, remote):
+        agent = remote.execute('/opt/nailgun/bin/agent')['exit_code']
+        logger.info("Nailgun agent run with exit_code: %s" % agent)
 
 
 class NodeRoles(object):
