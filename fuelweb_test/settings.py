@@ -160,7 +160,7 @@ SERVTEST_PASSWORD = os.environ.get('SERVTEST_PASSWORD', SERVTEST_USERNAME)
 SERVTEST_TENANT = os.environ.get('SERVTEST_TENANT', SERVTEST_USERNAME)
 SERVTEST_SAVANNA_SERVER_URL = 'http://savanna-files.mirantis.com'
 SERVTEST_SAVANNA_IMAGE = 'savanna-0.3-vanilla-1.2.1-ubuntu-13.04.qcow2'
-SERVTEST_SAVANNA_IMAGE_NAME = 'savanna'
+SERVTEST_SAVANNA_IMAGE_NAME = 'sahara'
 SERVTEST_SAVANNA_IMAGE_MD5 = '9ab37ec9a13bb005639331c4275a308d'
 SERVTEST_SAVANNA_IMAGE_META = {'_sahara_tag_1.2.1': 'True',
                                '_sahara_tag_vanilla': 'True',
