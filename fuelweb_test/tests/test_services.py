@@ -203,7 +203,6 @@ class MuranoSimple(TestBasic):
             settings.SERVTEST_MURANO_IMAGE_NAME,
             settings.SERVTEST_MURANO_IMAGE_META)
         LOGGER.debug('Permit all traffic')
-        common_func.goodbye_security()
         LOGGER.debug('Create key murano-lb-key')
         common_func.create_key('murano-lb-key')
         LOGGER.debug('Run OSTF platform tests')
