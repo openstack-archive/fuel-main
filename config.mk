@@ -39,10 +39,10 @@ BUILD_PACKAGES?=1
 NO_UI_OPTIMIZE:=0
 
 # Repos and versions
-FUELLIB_COMMIT?=master
-NAILGUN_COMMIT?=master
-ASTUTE_COMMIT?=master
-OSTF_COMMIT?=master
+FUELLIB_COMMIT?=stable/5.0
+NAILGUN_COMMIT?=stable/5.0
+ASTUTE_COMMIT?=stable/5.0
+OSTF_COMMIT?=stable/5.0
 
 FUELLIB_REPO?=https://github.com/stackforge/fuel-library.git
 NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
