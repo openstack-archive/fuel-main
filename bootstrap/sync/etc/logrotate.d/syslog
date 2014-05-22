@@ -1,0 +1,27 @@
+/var/log/cron
+/var/log/maillog
+/var/log/messages
+/var/log/secure
+/var/log/spooler
+/var/log/mcollective.log
+/var/log/nailgun-agent.log
+{
+  # This file is used for daily log rotations, do not use size options here
+  sharedscripts
+  daily
+  # rotate only if 30M size or bigger
+  minsize 30M
+  # truncate file, do not delete & recreate
+  copytruncate
+  # keep logs for 7 rotations
+  rotate 7
+  # compression will be postponed to the next rotation, if uncommented
+  compress
+  # ignore missing files
+  missingok
+  # do not rotate empty files
+  notifempty
+  postrotate
+    /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+  endscript
+}

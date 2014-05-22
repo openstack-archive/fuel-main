@@ -15,13 +15,14 @@ BOOTSTRAP_RPMS:=\
 	dhclient \
 	dmidecode \
 	iputils \
-	pciutils \
+        logrotate \
 	mcollective \
 	mingetty \
 	net-tools \
 	ntp \
 	openssh-clients \
 	openssh-server \
+	pciutils \
 	rsyslog \
 	scapy \
 	tcpdump \
