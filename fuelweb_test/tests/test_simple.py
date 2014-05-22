@@ -577,7 +577,8 @@ class NodeDiskSizes(TestBasic):
             for notification in notifications:
                 discover = notification['topic'] == 'discover'
                 current_node = notification['node_id'] == node['id']
-                if current_node and discover:
+                if current_node and discover and \
+                   "discovered" in notification['message']:
                     assert_true(hdd_size in notification['message'])
 
             # assert disks
