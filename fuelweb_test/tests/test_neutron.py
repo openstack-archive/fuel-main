@@ -57,7 +57,10 @@ class NeutronGre(TestBasic):
             mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
                 "net_provider": 'neutron',
-                "net_segment_type": segment_type
+                "net_segment_type": segment_type,
+                'tenant': 'simpleGre',
+                'user': 'simpleGre',
+                'password': 'simpleGre'
             }
         )
         self.fuel_web.update_nodes(
@@ -116,7 +119,10 @@ class NeutronVlan(TestBasic):
             mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
                 "net_provider": 'neutron',
-                "net_segment_type": segment_type
+                "net_segment_type": segment_type,
+                'tenant': 'simpleVlan',
+                'user': 'simpleVlan',
+                'password': 'simpleVlan'
             }
         )
         self.fuel_web.update_nodes(
@@ -175,7 +181,10 @@ class NeutronGreHa(TestBasic):
             mode=DEPLOYMENT_MODE_HA,
             settings={
                 "net_provider": 'neutron',
-                "net_segment_type": segment_type
+                "net_segment_type": segment_type,
+                'tenant': 'haGre',
+                'user': 'haGre',
+                'password': 'haGre'
             }
         )
         self.fuel_web.update_nodes(

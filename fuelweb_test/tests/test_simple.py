@@ -91,7 +91,12 @@ class SimpleFlat(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
+            mode=DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'tenant': 'novaSimpleFlat',
+                'user': 'novaSimpleFlat',
+                'password': 'novaSimpleFlat'
+            }
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -221,7 +226,12 @@ class SimpleFlat(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
+            mode=DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'tenant': 'flatAddCompute',
+                'user': 'flatAddCompute',
+                'password': 'flatAddCompute'
+            }
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -280,7 +290,12 @@ class SimpleVlan(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
+            mode=DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'tenant': 'novaSimpleVlan',
+                'user': 'novaSimpleVlan',
+                'password': 'novaSimpleVlan'
+            }
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -329,7 +344,12 @@ class MultiroleControllerCinder(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
+            mode=DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'tenant': 'multirolecinder',
+                'user': 'multirolecinder',
+                'password': 'multirolecinder'
+            }
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -413,7 +433,12 @@ class FloatingIPs(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
+            mode=DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'tenant': 'floatingip',
+                'user': 'floatingip',
+                'password': 'floatingip'
+            }
         )
         self.fuel_web.update_nodes(
             cluster_id,
