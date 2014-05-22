@@ -367,7 +367,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
 
         res = os.execute_through_host(
             self.env.get_ssh_to_remote_by_name("slave-01"),
-            floating_ip.ip, "ping -q -c3 -w3 %s | grep 'received' |"
+            floating_ip.ip, "ping -q -c3 -w10 %s | grep 'received' |"
             " grep -v '0 packets received'", creds)
         logger.info("Ping 8.8.8.8 result on vm is: %s" % res)
 
