@@ -23,6 +23,7 @@ from fuelweb_test.helpers import os_actions
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.checkers import check_ceph_health
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test import ostf_test_mapping as map_ostf
 from fuelweb_test import settings
 from fuelweb_test import logger
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -242,6 +243,25 @@ class CephRadosGW(TestBasic):
 
         remote = self.fuel_web.get_ssh_for_node('slave-01')
         check_ceph_health(remote)
+
+        def _check():
+            # Run volume test several times with hope that it pass
+            test_path = map_ostf.OSTF_TEST_MAPPING.get(
+                'Create volume and attach it to instance')
+            logger.debug('Start to run test {0}'.format(test_path))
+            self.fuel_web.run_single_ostf_test(
+                cluster_id, test_sets=['smoke'],
+                test_name=test_path,
+                should_fail=0)
+        try:
+            _check()
+        except AssertionError:
+            logger.debug(AssertionError)
+            logger.debug("Test failed from first probe,"
+                         " we sleep 60 second try one more time "
+                         "and if it fails again - test will fails ")
+            time.sleep(60)
+            _check()
 
         # Run ostf
         self.fuel_web.run_ostf(

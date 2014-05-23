@@ -27,12 +27,17 @@ from fuelweb_test import logwrap
 from fuelweb_test import logger
 from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.models.nailgun_client import NailgunClient
+from fuelweb_test import ostf_test_mapping as map_ostf
+from fuelweb_test.settings import ATTEMPTS
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.settings import KVM_USE
 from fuelweb_test.settings import NEUTRON
 from fuelweb_test.settings import NEUTRON_SEGMENT
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
+from fuelweb_test.settings import OSTF_TEST_NAME
+from fuelweb_test.settings import OSTF_TEST_RETRIES_COUNT
+from fuelweb_test.settings import TIMEOUT
 
 import fuelweb_test.settings as help_data
 
@@ -838,3 +843,38 @@ class FuelWebClient(object):
             node = self.get_nailgun_node_by_devops_node(node)
             assert_true(node['online'],
                         'Node {0} is online'.format(node['mac']))
+
+    def run_ostf_repeatably(self, cluster_id, test_name=None,
+                            test_retries=None, checks=None):
+        res = []
+        passed_count = []
+        failed_count = []
+        test_nama_to_ran = test_name or OSTF_TEST_NAME
+        retr = test_retries or OSTF_TEST_RETRIES_COUNT
+        test_path = map_ostf.OSTF_TEST_MAPPING.get(test_nama_to_ran)
+        logger.info('Test path is {0}'.format(test_path))
+
+        for i in range(0, retr):
+            result = self.run_single_ostf_test(
+                cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
+                test_name=test_path,
+                retries=True)
+            res.append(result)
+            logger.info('res is {0}'.format(res))
+
+        logger.info('full res is {0}'.format(res))
+        for element in res:
+            [passed_count.append(test)
+             for test in element if test.get(test_name) == 'success']
+            [failed_count.append(test)
+             for test in element if test.get(test_name) == 'failure']
+            [failed_count.append(test)
+             for test in element if test.get(test_name) == 'error']
+
+        if not checks:
+            assert_true(
+                len(passed_count) == test_retries,
+                'not all retries were successful,'
+                ' fail {0} retries'.format(len(failed_count)))
+        else:
+            return failed_count
