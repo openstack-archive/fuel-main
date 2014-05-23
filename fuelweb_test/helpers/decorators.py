@@ -154,3 +154,22 @@ def create_diagnostic_snapshot(env, status, name=""):
         time=time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime())
     )
     save_logs(url, os.path.join(settings.LOGS_DIR, log_file_name))
+
+
+def retry(count=3, delay=30):
+    def wrapped(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            i = 0
+            while True:
+                try:
+                    return func(*args, **kwargs)
+                except:
+                    i += 1
+                    if i >= count:
+                        raise
+                    time.sleep(delay)
+
+        return wrapper
+
+    return wrapped
