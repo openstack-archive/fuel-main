@@ -8,6 +8,8 @@ rootpw r00tme
 timezone --utc Etc/UTC
 firewall --disabled
 selinux --disabled
+# ignore unsupported hardware warning
+unsupported_hardware
 # SKIP CONFIGURING X
 skipx
 # NEVER ever place zerombr here, it breaks automated installation
