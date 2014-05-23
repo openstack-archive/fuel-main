@@ -48,7 +48,12 @@ class TestHaVLAN(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA
+            mode=DEPLOYMENT_MODE_HA,
+            settings={
+                'tenant': 'novaHAVlan',
+                'user': 'novaHAVlan',
+                'password': 'novaHAVlan'
+            }
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -105,7 +110,12 @@ class TestHaFlat(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA
+            mode=DEPLOYMENT_MODE_HA,
+            settings={
+                'tenant': 'novaHaFlat',
+                'user': 'novaHaFlat',
+                'password': 'novaHaFlat'
+            }
         )
         self.fuel_web.update_nodes(
             cluster_id,

@@ -68,7 +68,10 @@ class SavannaSimple(TestBasic):
             settings={
                 'sahara': True,
                 "net_provider": 'neutron',
-                "net_segment_type": 'gre'
+                "net_segment_type": 'gre',
+                'tenant': 'saharaSimple',
+                'user': 'saharaSimple',
+                'password': 'saharaSimple'
             }
         )
         self.fuel_web.update_nodes(
@@ -164,7 +167,10 @@ class MuranoSimple(TestBasic):
             settings={
                 'murano': True,
                 "net_provider": 'neutron',
-                "net_segment_type": 'gre'
+                "net_segment_type": 'gre',
+                'tenant': 'muranoSimple',
+                'user': 'muranoSimple',
+                'password': 'muranoSimple'
             }
         )
         self.fuel_web.update_nodes(
@@ -247,7 +253,10 @@ class CeilometerSimpleMongo(TestBasic):
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             settings={
-                'ceilometer': True
+                'ceilometer': True,
+                'tenant': 'ceilometerSimple',
+                'user': 'ceilometerSimple',
+                'password': 'ceilometerSimple'
             }
         )
         self.fuel_web.update_nodes(
@@ -351,7 +360,10 @@ class CeilometerHAMongo(TestBasic):
             name=self.__class__.__name__,
             mode=settings.DEPLOYMENT_MODE_HA,
             settings={
-                'ceilometer': True
+                'ceilometer': True,
+                'tenant': 'ceilometerHA',
+                'user': 'ceilometerHA',
+                'password': 'ceilometerHA'
             }
         )
         self.fuel_web.update_nodes(

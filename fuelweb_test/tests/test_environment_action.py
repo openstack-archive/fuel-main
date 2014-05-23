@@ -50,7 +50,13 @@ class EnvironmentAction(base_test_case.TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=hlp_data.DEPLOYMENT_MODE_SIMPLE
+            mode=hlp_data.DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'tenant': 'stop_deploy',
+                'user': 'stop_deploy',
+                'password': 'stop_deploy'
+
+            }
         )
         self.fuel_web.update_nodes(
             cluster_id,

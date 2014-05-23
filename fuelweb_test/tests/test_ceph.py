@@ -59,7 +59,10 @@ class CephCompact(TestBasic):
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True,
-                'volumes_lvm': False
+                'volumes_lvm': False,
+                'tenant': 'ceph1',
+                'user': 'ceph1',
+                'password': 'ceph1'
             }
         )
         self.fuel_web.update_nodes(
@@ -113,7 +116,10 @@ class CephCompactWithCinder(TestBasic):
             settings={
                 'volumes_ceph': False,
                 'images_ceph': True,
-                'volumes_lvm': True
+                'volumes_lvm': True,
+                'tenant': 'ceph2',
+                'user': 'ceph2',
+                'password': 'ceph2'
             }
         )
         self.fuel_web.update_nodes(
@@ -180,7 +186,10 @@ class CephHA(TestBasic):
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True,
-                'volumes_lvm': False
+                'volumes_lvm': False,
+                'tenant': 'cephHA',
+                'user': 'cephHA',
+                'password': 'cephHA'
             }
         )
         self.fuel_web.update_nodes(
@@ -238,7 +247,10 @@ class CephRadosGW(TestBasic):
                 'volumes_lvm': False,
                 'volumes_ceph': True,
                 'images_ceph': True,
-                'objects_ceph': True
+                'objects_ceph': True,
+                'tenant': 'rados',
+                'user': 'rados',
+                'password': 'rados'
             }
         )
         self.fuel_web.update_nodes(

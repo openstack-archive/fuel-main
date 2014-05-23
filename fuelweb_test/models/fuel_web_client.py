@@ -310,6 +310,8 @@ class FuelWebClient(object):
                 if option in ('volumes_ceph', 'images_ceph', 'ephemeral_ceph',
                               'objects_ceph', 'osd_pool_size', 'volumes_lvm'):
                     section = 'storage'
+                if option in ('tenant', 'password', 'user'):
+                    section = 'access'
                 if section:
                     attributes['editable'][section][option]['value'] =\
                         settings[option]
@@ -323,7 +325,11 @@ class FuelWebClient(object):
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "kvm"
 
+            logger.debug("Try to update cluster "
+                         "with next attributes {0}".format(attributes))
             self.client.update_cluster_attributes(cluster_id, attributes)
+            logger.debug("Attributes of cluster were updated,"
+                         " going to update networks ...")
             self.update_network_configuration(cluster_id)
 
         if not cluster_id:
