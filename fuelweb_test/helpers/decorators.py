@@ -18,6 +18,8 @@ import os
 import time
 import urllib2
 
+from time import sleep
+
 from devops.helpers.helpers import SSHClient
 from devops.helpers import helpers
 from proboscis import SkipTest
@@ -154,3 +156,23 @@ def create_diagnostic_snapshot(env, status, name=""):
         time=time.strftime("%Y_%m_%d__%H_%M_%S", time.gmtime())
     )
     save_logs(url, os.path.join(settings.LOGS_DIR, log_file_name))
+
+
+def retry(count=3, delay=30):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            i = 0
+            while True:
+                #noinspection PyBroadException
+                try:
+                    return func(*args, **kwargs)
+                except:
+                    i += 1
+                    if i >= count:
+                        raise
+                    sleep(delay)
+
+        return wrapper
+
+    return decorator
