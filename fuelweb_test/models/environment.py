@@ -24,6 +24,7 @@ from proboscis.asserts import assert_equal
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import revert_info
+from fuelweb_test.helpers.decorators import retry
 from fuelweb_test.helpers.eb_tables import Ebtables
 from fuelweb_test.models.fuel_web_client import FuelWebClient
 from fuelweb_test import settings
@@ -362,6 +363,7 @@ class EnvironmentModel(object):
         time.sleep(10)
         self.sync_time_admin_node()
 
+    @retry
     @logwrap
     def sync_node_time(self, remote):
         remote.execute('hwclock --hctosys')
