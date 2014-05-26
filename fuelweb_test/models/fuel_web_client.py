@@ -486,8 +486,7 @@ class FuelWebClient(object):
     @logwrap
     def run_network_verify(self, cluster_id):
         logger.info('Run network verification at cluster %s', cluster_id)
-        return self.client.verify_networks(
-            cluster_id, self.client.get_networks(cluster_id)['networks'])
+        return self.client.verify_networks(cluster_id)
 
     @logwrap
     def run_ostf(self, cluster_id, test_sets=None,
