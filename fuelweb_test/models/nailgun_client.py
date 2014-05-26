@@ -265,7 +265,7 @@ class NailgunClient(object):
         cluster_vlans = []
         nc = self.get_networks(cluster_id)['networking_parameters']
         vlan_start = nc["fixed_networks_vlan_start"]
-        network_amound = nc["fixed_networks_amount"]
+        network_amound = int(nc["fixed_networks_amount"] - 1)
         cluster_vlans.extend([vlan_start, vlan_start + network_amound])
 
         return cluster_vlans
