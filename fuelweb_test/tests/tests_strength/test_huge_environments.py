@@ -31,7 +31,7 @@ class HugeEnvironments(base_test_case.TestBasic):
         Scenario:
             1. Create cluster
             2. Add 4 nodes as controllers with ceph OSD roles
-            3. Add 5 nodes as compute with ceph OSD roles
+            3. Add 5 nodes as compute with ceph OSD and mongo roles
             4. Turn on Savanna and Ceilometer
             5. Deploy the cluster
             6. Check networks and OSTF
@@ -51,6 +51,7 @@ class HugeEnvironments(base_test_case.TestBasic):
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True,
+                'volumes_lvm': False,
                 'sahara': True,
                 'ceilometer': True
             }
@@ -58,15 +59,15 @@ class HugeEnvironments(base_test_case.TestBasic):
         self.fuel_web.update_nodes(
             cluster_id,
             {
-                'slave-01': ['controller', 'ceph-osd'],
-                'slave-02': ['controller', 'ceph-osd'],
-                'slave-03': ['controller', 'ceph-osd'],
-                'slave-04': ['controller', 'ceph-osd'],
-                'slave-05': ['compute', 'cinder', 'ceph-osd'],
-                'slave-06': ['compute', 'cinder', 'ceph-osd'],
-                'slave-07': ['compute', 'cinder', 'ceph-osd'],
-                'slave-08': ['compute', 'cinder', 'ceph-osd'],
-                'slave-09': ['compute', 'cinder', 'ceph-osd']
+                'slave-01': ['controller', 'mongo'],
+                'slave-02': ['controller', 'mongo'],
+                'slave-03': ['controller', 'mongo'],
+                'slave-04': ['controller', 'mongo'],
+                'slave-05': ['compute', 'ceph-osd'],
+                'slave-06': ['compute', 'ceph-osd'],
+                'slave-07': ['compute', 'ceph-osd'],
+                'slave-08': ['compute', 'ceph-osd'],
+                'slave-09': ['compute', 'ceph-osd']
             }
         )
         # Cluster deploy
@@ -89,7 +90,7 @@ class HugeEnvironments(base_test_case.TestBasic):
             1. Create cluster
             2. Add 3 nodes as controllers
             3. Add 2 nodes as compute
-            4. Add 2 nodes as cinder
+            4. Add 1 node as cinder and 1 as mongo
             5. Add 2 nodes as ceph
             6. Turn on Savanna and Ceilometer
             7. Deploy the cluster
@@ -109,7 +110,8 @@ class HugeEnvironments(base_test_case.TestBasic):
             mode=settings.DEPLOYMENT_MODE_HA,
             settings={
                 'volumes_ceph': True,
-                'images_ceph': True,
+                'images_ceph': False,
+                'volumes_lvm': False,
                 'sahara': True,
                 'ceilometer': True,
                 'net_provider': 'neutron',
@@ -122,12 +124,12 @@ class HugeEnvironments(base_test_case.TestBasic):
                 'slave-01': ['controller'],
                 'slave-02': ['controller'],
                 'slave-03': ['controller'],
-                'slave-04': ['controller'],
+                'slave-04': ['compute'],
                 'slave-05': ['compute'],
                 'slave-06': ['cinder'],
-                'slave-07': ['cinder'],
-                'slave-08': ['ceph'],
-                'slave-09': ['ceph'],
+                'slave-07': ['mongo'],
+                'slave-08': ['ceph-osd'],
+                'slave-09': ['ceph-osd'],
             }
         )
         # Cluster deploy
