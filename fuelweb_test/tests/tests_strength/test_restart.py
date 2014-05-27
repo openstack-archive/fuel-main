@@ -62,7 +62,7 @@ class CephRestart(TestBasic):
             mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'volumes_ceph': True,
-                'images_ceph': True
+                'volumes_lvm': False,
             }
         )
         self.fuel_web.update_nodes(
@@ -91,12 +91,12 @@ class CephHARestart(TestBasic):
           groups=["ceph_ha_restart"])
     @log_snapshot_on_error
     def ceph_ha_restart(self):
-        """Deploy ceph with cinder in HA mode
+        """Deploy ceph with in HA mode
 
         Scenario:
             1. Create cluster
             2. Add 3 nodes with controller and ceph OSD roles
-            3. Add 1 node with cinder and ceph OSD roles
+            3. Add 1 node with ceph OSD roles
             4. Add 2 nodes with compute and ceph OSD roles
             5. Deploy the cluster
             6. Check ceph status
@@ -117,7 +117,8 @@ class CephHARestart(TestBasic):
             mode=settings.DEPLOYMENT_MODE_HA,
             settings={
                 'volumes_ceph': True,
-                'images_ceph': True
+                'images_ceph': True,
+                'volumes_lvm': False,
             }
         )
         self.fuel_web.update_nodes(
@@ -128,7 +129,7 @@ class CephHARestart(TestBasic):
                 'slave-03': ['controller', 'ceph-osd'],
                 'slave-04': ['compute', 'ceph-osd'],
                 'slave-05': ['compute', 'ceph-osd'],
-                'slave-06': ['cinder', 'ceph-osd']
+                'slave-06': ['ceph-osd']
             }
         )
         # Depoy cluster
@@ -148,7 +149,7 @@ class CephHARestart(TestBasic):
         # Destroy compute node
         self.env.nodes().slaves[4].destroy()
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
-        self.fuel_web.run_ostf(cluster_id=cluster_id)
+        self.fuel_web.run_ostf(cluster_id=cluster_id, should_fail=1)
 
         # Cold restart
         self.fuel_web.cold_restart_nodes(self.env.nodes().slaves[:4])
