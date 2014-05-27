@@ -22,6 +22,7 @@ from cinderclient import client as cinderclient
 from glanceclient.v1 import Client as glanceclient
 from keystoneclient.v2_0 import Client as keystoneclient
 from novaclient.v1_1 import Client as novaclient
+import neutronclient.v2_0.client as neutronclient
 from proboscis.asserts import assert_equal
 
 
@@ -41,6 +42,11 @@ class Common(object):
                                        auth_url=auth_url)
         self.cinder = cinderclient.Client(1, user, password,
                                           tenant, auth_url)
+        self.neutron = neutronclient.Client(
+            username=user,
+            password=password,
+            tenant_name=tenant,
+            auth_url=auth_url)
         token = self.keystone.auth_token
         LOGGER.debug('Token is {0}'.format(token))
         glance_endpoint = self.keystone.service_catalog.url_for(
