@@ -14,7 +14,11 @@ cat > /etc/send2syslog.conf <<EOF
             {"tag": "bootstrap/mcollective", "log_type": "ruby",
                 "files": ["/var/log/mcollective.log"]},
             {"tag": "bootstrap/agent", "log_type": "ruby",
-                "files": ["/var/log/nailgun-agent.log"]}
+                "files": ["/var/log/nailgun-agent.log"]},
+            {"tag": "bootstrap/netprobe_sender", "log_type": "netprobe",
+                "files": ["/var/log/netprobe_sender.log"]},
+            {"tag": "bootstrap/netprobe_listener", "log_type": "netprobe",
+                "files": ["/var/log/netprobe_listener.log"]}
         ]
     }
 ]
