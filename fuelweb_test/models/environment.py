@@ -250,7 +250,8 @@ class EnvironmentModel(object):
             " dns1=%(dns1)s\n"
             " hostname=%(hostname)s\n"
             " dhcp_interface=%(nat_interface)s\n"
-            " <Enter>\n"
+            " <Ent"
+            "er>\n"
         ) % params
         return keys
 
@@ -363,7 +364,7 @@ class EnvironmentModel(object):
         time.sleep(10)
         self.sync_time_admin_node()
 
-    @retry
+    @retry()
     @logwrap
     def sync_node_time(self, remote):
         remote.execute('hwclock --hctosys')
