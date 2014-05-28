@@ -15,11 +15,11 @@ FOLDER_SCREEN_CURRENT = os.environ.get(
     'FOLDER_SCREEN_CURRENT', '/home/nfedotov/testscreens/current')
 
 OPENSTACK_RELEASE_CENTOS = os.environ.get(
-    'OPENSTACK_RELEASE_CENTOS', 'Havana on CentOS 6.4 (2013.2.2)')
+    'OPENSTACK_RELEASE_CENTOS', 'Havana on CentOS 6.4 (2013.2.3)')
 OPENSTACK_RELEASE_REDHAT = os.environ.get(
-    'OPENSTACK_RELEASE_REDHAT', 'RHOS 3.0 for RHEL 6.4 (2013.2.2)')
+    'OPENSTACK_RELEASE_REDHAT', 'RHOS 3.0 for RHEL 6.4 (2013.2.3)')
 OPENSTACK_RELEASE_UBUNTU = os.environ.get(
-    'OPENSTACK_RELEASE_UBUNTU', 'Havana on Ubuntu 12.04 (2013.2.2)')
+    'OPENSTACK_RELEASE_UBUNTU', 'Havana on Ubuntu 12.04 (2013.2.3)')
 
 REDHAT_USERNAME = os.environ.get('REDHAT_USERNAME', 'rheltest')
 REDHAT_PASSWORD = os.environ.get('REDHAT_PASSWORD', 'password')
