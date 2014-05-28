@@ -77,8 +77,13 @@ vm_master_username=root
 vm_master_password=r00tme
 vm_master_prompt='root@fuel ~]#'
 
-# Slave node settings
-vm_slave_cpu_cores=1
+# Slave node settings. This section allows you to define CPU count for each slave node.
+vm_slave_cpu_default=1
+# You can specify CPU count for your nodes as you wish, but keep in mind resources of your machine.
+# If you don't, then will be used default parameter
+vm_slave_cpu[1]=1
+vm_slave_cpu[2]=1
+vm_slave_cpu[3]=1
 
 # This section allows you to define RAM size in MB for each slave node.
 # Keep in mind that PXE boot might not work correctly with values lower than 768.
