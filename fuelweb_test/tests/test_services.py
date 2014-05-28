@@ -63,16 +63,19 @@ class SavannaSimple(TestBasic):
 
         self.env.revert_snapshot("ready_with_3_slaves")
         LOGGER.debug('Create cluster for sahara tests')
+        data = {
+            'sahara': True,
+            "net_provider": 'neutron',
+            "net_segment_type": 'gre',
+            'tenant': 'saharaSimple',
+            'user': 'saharaSimple',
+            'password': 'saharaSimple'
+
+        }
+
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            settings={
-                'sahara': True,
-                "net_provider": 'neutron',
-                "net_segment_type": 'gre',
-                'tenant': 'saharaSimple',
-                'user': 'saharaSimple',
-                'password': 'saharaSimple'
-            }
+            settings=data
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -91,9 +94,9 @@ class SavannaSimple(TestBasic):
         controller_ip = self.fuel_web.get_nailgun_node_by_name(
             'slave-01')['ip']
         common_func = Common(controller_ip,
-                             settings.SERVTEST_USERNAME,
-                             settings.SERVTEST_PASSWORD,
-                             settings.SERVTEST_TENANT)
+                             data['user'],
+                             data['password'],
+                             data['tenant'])
 
         test_classes = ['fuel_health.tests.sanity.test_sanity_savanna.'
                         'SanitySavannaTests.test_sanity_savanna']
@@ -162,17 +165,19 @@ class MuranoSimple(TestBasic):
             settings.SERVTEST_LOCAL_PATH)
         asserts.assert_true(check_image, "Image verification failed")
 
+        data = {
+            'murano': True,
+            "net_provider": 'neutron',
+            "net_segment_type": 'gre',
+            'tenant': 'muranoSimple',
+            'user': 'muranoSimple',
+            'password': 'muranoSimple'
+        }
+
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            settings={
-                'murano': True,
-                "net_provider": 'neutron',
-                "net_segment_type": 'gre',
-                'tenant': 'muranoSimple',
-                'user': 'muranoSimple',
-                'password': 'muranoSimple'
-            }
-        )
+            settings=data)
+
         self.fuel_web.update_nodes(
             cluster_id,
             {
@@ -190,9 +195,9 @@ class MuranoSimple(TestBasic):
         controller_ip = self.fuel_web.get_nailgun_node_by_name(
             'slave-01')['ip']
         common_func = Common(controller_ip,
-                             settings.SERVTEST_USERNAME,
-                             settings.SERVTEST_PASSWORD,
-                             settings.SERVTEST_TENANT)
+                             data['user'],
+                             data['password'],
+                             data['tenant'])
 
         LOGGER.debug('Run sanity and functional oSTF tests')
         test_classes = ['fuel_health.tests.sanity.test_sanity_murano.'
