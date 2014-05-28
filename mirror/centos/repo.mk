@@ -43,6 +43,8 @@ $(BUILD_DIR)/mirror/centos/yum.done: \
 		$(BUILD_DIR)/mirror/centos/yum-config.done \
 		$(SOURCE_DIR)/requirements-rpm.txt
 	yum -c $(BUILD_DIR)/mirror/centos/etc/yum.conf clean all
+	# sudo is required because we use 'sudo yum' in several places
+	sudo yum -c $(BUILD_DIR)/mirror/centos/etc/yum.conf clean all
 	rm -rf /var/tmp/yum-$$USER-*/
 	yumdownloader --resolve --archlist=$(CENTOS_ARCH) \
 		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
@@ -57,6 +59,9 @@ $(BUILD_DIR)/mirror/centos/yum.done: \
 	# Yumdownloader workaround number three:
 	# We have exactly four downloading conflicts: django, mysql, kernel-headers and kernel-lt-firmware
 	test `grep "conflicts with" $(BUILD_DIR)/mirror/centos/yumdownloader.log | grep -v '^[[:space:]]' | wc -l` -le 9
+	# Yumdownloader workaround number four:
+	# yumdownloader should fail if some errors appears
+	test `grep "Errno" $(BUILD_DIR)/mirror/centos/yumdownloader.log | wc -l` = 0
 	$(ACTION.TOUCH)
 
 show-yum-urls-centos: \
