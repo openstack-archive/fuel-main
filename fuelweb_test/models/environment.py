@@ -363,7 +363,7 @@ class EnvironmentModel(object):
         time.sleep(10)
         self.sync_time_admin_node()
 
-    @retry
+    @retry()
     @logwrap
     def sync_node_time(self, remote):
         remote.execute('hwclock --hctosys')
