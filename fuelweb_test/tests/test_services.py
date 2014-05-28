@@ -385,8 +385,9 @@ class CeilometerHAMongo(TestBasic):
         # run ostf
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=1, timeout=5300,
-            failed_test_name=['Create volume and attach it to instance'])
+            should_fail=2, timeout=5300,
+            failed_test_name=['Create volume and boot instance from it',
+                              'Create volume and attach it to instance'])
 
         # run platfrom tests
         self.fuel_web.run_ostf(

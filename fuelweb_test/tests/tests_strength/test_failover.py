@@ -204,11 +204,12 @@ class TestHaFailover(TestBasic):
                 time.sleep(60)
 
                 # Run OSTF tests
-                failed_test_name = ['Create volume and attach it to instance']
+                failed_test_name = ['Create volume and boot instance from it',
+                                    'Create volume and attach it to instance']
                 self.fuel_web.run_ostf(
                     cluster_id=cluster_id,
                     test_sets=['ha', 'smoke', 'sanity'],
-                    should_fail=2,
+                    should_fail=3,
                     failed_test_name=failed_test_name)
                 # Revert initial state. VIP could be moved to other controller
                 self.env.revert_snapshot("deploy_ha")
