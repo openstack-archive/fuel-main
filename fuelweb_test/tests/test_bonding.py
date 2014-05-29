@@ -274,7 +274,8 @@ class BondingHA(TestBasic):
             'ovs-bond0': [
                 'public',
                 'management',
-                'storage'
+                'storage',
+                'private'
             ]
         }
 
