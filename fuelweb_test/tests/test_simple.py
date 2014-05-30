@@ -117,10 +117,8 @@ class SimpleFlat(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             should_fail=2,
-            failed_test_name=['Create volume and attach it to instance'
-                              # TODO: issue with remove floating ip
-                              # https://bugs.launchpad.net/fuel/+bug/1263916
-                              ]
+            failed_test_name=['Create volume and boot instance from it',
+                              'Create volume and attach it to instance']
         )
 
         self.env.make_snapshot("deploy_simple_flat")
@@ -258,8 +256,9 @@ class SimpleFlat(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=1,
-            failed_test_name=['Create volume and attach it to instance'])
+            should_fail=2,
+            failed_test_name=['Create volume and boot instance from it',
+                              'Create volume and attach it to instance'])
 
         self.env.make_snapshot("simple_flat_add_compute")
 
@@ -315,8 +314,9 @@ class SimpleVlan(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=1,
-            failed_test_name=['Create volume and attach it to instance'])
+            should_fail=2,
+            failed_test_name=['Create volume and boot instance from it',
+                              'Create volume and attach it to instance'])
 
         self.env.make_snapshot("deploy_simple_vlan")
 
@@ -464,8 +464,9 @@ class FloatingIPs(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=1,
-            failed_test_name=['Create volume and attach it to instance'])
+            should_fail=2,
+            failed_test_name=['Create volume and boot instance from it',
+                              'Create volume and attach it to instance'])
 
         self.env.make_snapshot("deploy_floating_ips")
 

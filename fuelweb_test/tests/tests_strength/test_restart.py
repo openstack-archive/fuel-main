@@ -196,5 +196,6 @@ class SimpleFlatRestart(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            should_fail=1,
-            failed_test_name=['Create volume and attach it to instance'])
+            should_fail=2,
+            failed_test_name=['Create volume and boot instance from it',
+                              'Create volume and attach it to instance'])
