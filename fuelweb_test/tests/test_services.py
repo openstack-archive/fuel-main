@@ -202,11 +202,12 @@ class MuranoSimple(TestBasic):
             settings.SERVTEST_MURANO_IMAGE,
             settings.SERVTEST_MURANO_IMAGE_NAME,
             settings.SERVTEST_MURANO_IMAGE_META)
-        LOGGER.debug('Create key murano-lb-key')
-        common_func.create_key('murano-lb-key')
+
         LOGGER.debug('Run OSTF platform tests')
+
         test_class_main = ('fuel_health.tests.platform_tests'
-                           '.test_murano.MuranoDeploymentSmokeTests')
+                           '.test_platform_murano_linux.'
+                           'MuranoDeployLinuxServicesTests')
         tests_names = ['test_deploy_telnet_service',
                        'test_deploy_apache_service']
         test_classes = []
