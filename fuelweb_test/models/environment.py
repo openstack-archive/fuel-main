@@ -304,10 +304,11 @@ class EnvironmentModel(object):
                 self.get_virtual_environment().network_by_name(
                     net_name).ip_network).netmask)
 
-    def make_snapshot(self, snapshot_name, description=""):
-        self.get_virtual_environment().suspend(verbose=False)
-        self.get_virtual_environment().snapshot(snapshot_name, force=True)
-        revert_info(snapshot_name, description)
+    def make_snapshot(self, snapshot_name, description="", is_make=False):
+        if settings.MAKE_SNAPSHOT or is_make:
+            self.get_virtual_environment().suspend(verbose=False)
+            self.get_virtual_environment().snapshot(snapshot_name, force=True)
+            revert_info(snapshot_name, description)
 
     def nailgun_nodes(self, devops_nodes):
         return map(
