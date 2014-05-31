@@ -160,7 +160,6 @@ kernel-headers-2.6.32-431.el6.x86_64
 kernel-lt
 kernel-lt-devel
 kernel-lt-headers
-kernel-lt-firmware
 leveldb-1.7.0-2.el6
 libaio-0.3.107-10.el6
 libcephfs1
@@ -179,6 +178,7 @@ libuv-0.10.4-1.el6
 libuv-devel-0.10.4-1.el6
 libxml2
 libyaml-0.1.3-1.el6
+linux-firmware
 lrzip
 lzop-1.02-0.9.rc1.el6
 lxc
