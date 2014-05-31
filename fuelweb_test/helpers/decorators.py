@@ -57,7 +57,8 @@ def log_snapshot_on_error(func):
             if args[0].env is not None:
                 create_diagnostic_snapshot(args[0].env, "fail", func.__name__)
                 args[0].env.make_snapshot(snapshot_name=name[-50:],
-                                          description=description)
+                                          description=description,
+                                          is_make=True)
             raise
     return wrapper
 
