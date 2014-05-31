@@ -195,3 +195,6 @@ OSTF_TEST_RETRIES_COUNT = int(os.environ.get('OSTF_TEST_RETRIES_COUNT', 50))
 #       fuelweb_test.tests.tests_strength.test_ostf_repeatable_tests
 #       :OstfRepeatableTests.run_ostf_n_times_against_custom_deployment
 DEPLOYMENT_NAME = os.environ.get('DEPLOYMENT_NAME')
+
+#Create snapshots as last step in test-case
+MAKE_SNAPSHOT = os.environ.get('MAKE_SNAPSHOT', 'false') == 'true'
