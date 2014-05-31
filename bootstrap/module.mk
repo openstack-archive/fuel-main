@@ -8,8 +8,6 @@ BOOTSTRAP_RPMS:=\
 	ql2100-firmware \
 	ql2200-firmware \
 	ql23xx-firmware \
-	ql2400-firmware \
-	ql2500-firmware \
 	cronie-noanacron \
 	crontabs \
 	dhclient \
@@ -63,7 +61,7 @@ endef
 YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --exclude=ruby-2.1.1 --installroot=$(INITRAMROOT) -y --nogpgcheck
 
 KERNEL_PATTERN:=kernel-lt-3.10.*
-KERNEL_FIRMWARE_PATTERN:=kernel-lt-firmware-3.10.*
+KERNEL_FIRMWARE_PATTERN:=linux-firmware*
 
 clean: clean-bootstrap
 
