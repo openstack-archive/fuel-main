@@ -36,3 +36,10 @@ Murano image available only internally.
 4. Murano tests  without Internet connection on the instances will be failed
 5. For Murano tests execute 'export SLAVE_NODE_MEMORY=5120' before tests run.
 6. To get heat autoscale tests passed put image F17-x86_64-cfntools.qcow2 in /tmp before start
+
+================ Run single OSTF tests several times ========================
+1. Export environment variable OSTF_TEST_NAME. Example: export OSTF_TEST_NAME='Request list of networks'
+2. Export environment variable OSTF_TEST_RETRIES_COUNT. Example: export OSTF_TEST_RETRIES_COUNT=120
+3. Execute test_ostf_repetable_tests from tests_strength package
+
+sh "utils/jenkins/system_tests.sh" -t test -w $(pwd) -j "fuelweb_test" -i "$ISO_PATH" -V $(pwd)/venv/fuelweb_test -o --group=create_delete_ip_n_times_nova_flat
