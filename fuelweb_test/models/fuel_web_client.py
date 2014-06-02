@@ -649,6 +649,16 @@ class FuelWebClient(object):
         self.client.put_node_disks(node_id, disks)
 
     @logwrap
+    def get_node_disk_size(self, node_id, disk_name):
+        disks = self.client.get_node_disks(node_id)
+        size = 0
+        for disk in disks:
+            if disk['name'] == disk_name:
+                for volume in disk['volumes']:
+                    size += volume['size']
+        return size
+
+    @logwrap
     def update_redhat_credentials(
             self, license_type=help_data.REDHAT_LICENSE_TYPE,
             username=help_data.REDHAT_USERNAME,
