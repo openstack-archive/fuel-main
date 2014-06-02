@@ -54,7 +54,7 @@ cronie
 cronie-anacron
 cronie-noanacron
 crontabs-1.10-33.el6
-curl-7.19.7-37.el6_4
+curl
 daemonize
 db4-4.7.25-18.el6_4
 db4-cxx-4.7.25-18.el6_4
