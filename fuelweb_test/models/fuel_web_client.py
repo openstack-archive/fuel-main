@@ -382,15 +382,13 @@ class FuelWebClient(object):
         Returns dict with nailgun slave node description if node is
         registered. Otherwise return None.
         """
-        mac_addresses = map(
-            lambda interface: interface.mac_address.capitalize(),
-            devops_node.interfaces
-        )
+        devops_macs = {i.mac_address.upper() for i in devops_node.interfaces}
+
         for nailgun_node in self.client.list_nodes():
-            if nailgun_node['mac'].capitalize() in mac_addresses:
+            macs = {i['mac'] for i in nailgun_node['meta']['interfaces']}
+            if devops_macs == macs:
                 nailgun_node['devops_name'] = devops_node.name
                 return nailgun_node
-
         return None
 
     @logwrap
