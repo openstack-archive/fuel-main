@@ -562,6 +562,7 @@ neutron-l3-agent
 neutron-metadata-agent
 neutron-plugin-openvswitch
 neutron-plugin-openvswitch-agent
+neutron-plugin-vmware
 neutron-server
 nfs-common
 nginx
