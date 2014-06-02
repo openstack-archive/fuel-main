@@ -12,7 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import hashlib
-
+import re
 from fuelweb_test import logger
 from fuelweb_test import logwrap
 from proboscis.asserts import assert_equal
@@ -159,6 +159,16 @@ def get_ceph_partitions(remote, device, type="xfs"):
     logger.debug("Partitions: {part}".format(part=ret))
     return ret
 
+@logwrap
+def get_mongo_partitions(remote, device):
+    ret = remote.check_call("lsblk | grep {device} | awk {size}".format(
+                            device=device, size=re.escape('{print $4}')))['stdout']
+    if not ret:
+        logger.error("Partition not present! {partitions}: ".format(
+                     remote.check_call("parted {device} print")))
+        raise Exception
+    logger.debug("Partitions: {part}".format(part=ret))
+    return ret
 
 @logwrap
 def check_unallocated_space(disks, contr_img_ceph=False):
