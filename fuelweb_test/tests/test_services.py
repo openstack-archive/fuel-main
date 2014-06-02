@@ -308,105 +308,31 @@ class CeilometerSimple(TestBasic):
 
         self.env.make_snapshot("deploy_ceilometer_simple")
 
-
-@test(groups=["services", "services.ceilometer"])
-class CeilometerSimpleMongo(TestBasic):
-
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5])
-    def verify_mongo_role_available(self):
-        """Check if mongo role available
-        Scenario:
-            1. Revert ready 5 slave environment
-            2. Check if mongo role is available
-
-        Snapshot: deploy_mongo_available
-
-        """
-        asserts.assert_false(
-            settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT,
-            'Ceilometer is not supported on RHEL')
-
-        self.env.revert_snapshot("ready_with_5_slaves")
-        self.fuel_web.assert_release_role_present(
-            settings.OPENSTACK_RELEASE, role_name='mongo')
-        self.env.make_snapshot("deploy_mongo_available")
-
-    @test(depends_on=[verify_mongo_role_available],
-          groups=["deploy_ceilometer_simple_with_mongo"])
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_ceilometer_ha"])
     @log_snapshot_on_error
-    def deploy_ceilometer_simple_with_mongo(self):
-        """Deploy cluster in simple mode with Ceilometer
-
-        Scenario:
-            1. Create cluster. Set install Ceilometer option
-            2. Add 1 node with controller role
-            3. Add 1 nodes with compute role
-            4. Add 1 node with cinder role
-            5. Add 1 node with mongo role
-            6. Deploy the cluster
-            7. Verify ceilometer api is running
-            8. Run ostf
-
-        Snapshot: deploy_ceilometer_simple_with_mongo
-
-        """
-        self.env.revert_snapshot("deploy_mongo_available")
-
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            settings={
-                'ceilometer': True
-            }
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller'],
-                'slave-02': ['compute'],
-                'slave-03': ['cinder'],
-                'slave-04': ['mongo']
-            }
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-
-        checkers.verify_service(
-            self.env.get_ssh_to_remote_by_name("slave-01"),
-            service_name='ceilometer-api')
-
-        # run ostf smoke and sanity
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=0)
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['platform_tests'],
-            should_fail=2, timeout=3500)
-
-        self.env.make_snapshot("deploy_ceilometer_simple_with_mongo")
-
-    @test(depends_on=[verify_mongo_role_available],
-          groups=["deploy_ceilometer_ha_with_mongo"])
-    @log_snapshot_on_error
-    def deploy_ceilometer_ha_with_mongo(self):
-        """Deploy cluster in simple mode with Ceilometer
+    def deploy_ceilometer_ha(self):
+        """Deploy cluster in ha mode with Ceilometer
 
         Scenario:
             1. Create cluster. Set install Ceilometer option
             2. Add 3 node with controller role
             3. Add 1 nodes with compute role
-            4. Add 1 node with mongo role
-            5. Deploy the cluster
-            6. Verify ceilometer api is running
-            7. Run ostf
+            4. Deploy the cluster
+            5. Verify ceilometer api is running
+            6. Run ostf
 
-        Snapshot: deploy_ceilometer_ha_with_mongo
+        Snapshot: deploy_ceilometer_ha
 
         """
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
 
-        self.env.revert_snapshot("deploy_mongo_available")
+        self.env.revert_snapshot("ready_with_5_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_HA,
             settings={
                 'ceilometer': True
             }
@@ -418,7 +344,6 @@ class CeilometerSimpleMongo(TestBasic):
                 'slave-02': ['controller'],
                 'slave-03': ['controller'],
                 'slave-04': ['compute'],
-                'slave-05': ['mongo']
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
@@ -441,112 +366,3 @@ class CeilometerSimpleMongo(TestBasic):
                               'Check stack autoscaling'])
 
         self.env.make_snapshot("deploy_ceilometer_ha_with_mongo")
-
-    @test(depends_on=[verify_mongo_role_available],
-          groups=["deploy_ceilometer_simple_multirole"])
-    @log_snapshot_on_error
-    def deploy_ceilometer_simple_multirole(self):
-        """Deploy cluster in simple multirole mode with Ceilometer
-
-        Scenario:
-            1. Create cluster. Set install Ceilometer option
-            2. Add 1 node with controller role
-            3. Add 1 nodes with compute role
-            4. Add 2 nodes with cinder and mongo roles
-            5. Deploy the cluster
-            6. Verify ceilometer api is running
-            7. Run ostf
-
-        Snapshot: deploy_ceilometer_simple_multirole
-
-        """
-        self.env.revert_snapshot("deploy_mongo_available")
-
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            settings={
-                'ceilometer': True
-            }
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller'],
-                'slave-02': ['compute'],
-                'slave-03': ['cinder', 'mongo'],
-                'slave-04': ['cinder', 'mongo']
-            }
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-
-        checkers.verify_service(
-            self.env.get_ssh_to_remote_by_name("slave-01"),
-            service_name='ceilometer-api')
-
-        # run ostf smoke and sanity
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=0)
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['platform_tests'],
-            should_fail=2, timeout=3500,
-            failed_test_name=['Create volume and attach it to instance',
-                              'Check stack autoscaling'])
-
-        self.env.make_snapshot("deploy_ceilometer_simple_mulirole")
-
-    @test(depends_on=[verify_mongo_role_available],
-          groups=["deploy_ceilometer_ha_multirole"])
-    @log_snapshot_on_error
-    def deploy_ceilometer_ha_multirole(self):
-        """Deploy cluster in ha multirole mode with Ceilometer
-
-        Scenario:
-            1. Create cluster. Set install Ceilometer option
-            2. Add 3 node with controller and mongo roles
-            3. Add 1 nodes with compute role
-            4. Add 1 nodes with cinder
-            5. Deploy the cluster
-            6. Verify ceilometer api is running
-            7. Run ostf
-
-        Snapshot: deploy_ceilometer_ha_multirole
-
-        """
-        self.env.revert_snapshot("deploy_mongo_available")
-
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            settings={
-                'ceilometer': True
-            }
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller', 'mongo'],
-                'slave-02': ['controller', 'mongo'],
-                'slave-03': ['controller', 'mongo'],
-                'slave-04': ['compute'],
-                'slave-05': ['cinder']
-            }
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-
-        checkers.verify_service(
-            self.env.get_ssh_to_remote_by_name("slave-01"),
-            service_name='ceilometer-api')
-
-        # run ostf smoke and sanity
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=0)
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['platform_tests', 'ha'],
-            should_fail=2, timeout=3500,
-            failed_test_name=['Create volume and attach it to instance',
-                              'Check stack autoscaling'])
-
-        self.env.make_snapshot("deploy_ceilometer_ha_mulirole")
