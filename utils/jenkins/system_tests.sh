@@ -406,7 +406,7 @@ RunTest() {
         echo export PYTHONPATH="${WORKSPACE} ${PYTHONPATH}"
         echo python fuelweb_test/run_tests.py -q --nologcapture --with-xunit ${OPTS}
     else
-        export PYTHONPATH="${WORKSPACE} ${PYTHONPATH}"
+        export PYTHONPATH=${WORKSPACE} ${PYTHONPATH}
         echo ${PYTHONPATH}
         python fuelweb_test/run_tests.py -q --nologcapture --with-xunit ${OPTS}
 
