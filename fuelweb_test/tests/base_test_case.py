@@ -54,7 +54,7 @@ class SetupEnvironment(TestBasic):
         """
         self.check_run("empty")
         self.env.setup_environment()
-        self.env.make_snapshot("empty")
+        self.env.make_snapshot("empty", is_make=True)
 
     @test(depends_on=[setup_master])
     def prepare_release(self):
@@ -77,7 +77,7 @@ class SetupEnvironment(TestBasic):
                 state='available'
             )
 
-        self.env.make_snapshot("ready")
+        self.env.make_snapshot("ready", is_make=True)
 
     @test(depends_on=[prepare_release],
           groups=["prepare_slaves_3"])
@@ -94,7 +94,7 @@ class SetupEnvironment(TestBasic):
         self.check_run("ready_with_3_slaves")
         self.env.revert_snapshot("ready")
         self.env.bootstrap_nodes(self.env.nodes().slaves[:3])
-        self.env.make_snapshot("ready_with_3_slaves")
+        self.env.make_snapshot("ready_with_3_slaves", is_make=True)
 
     @test(depends_on=[prepare_release],
           groups=["prepare_slaves_5"])
@@ -111,4 +111,4 @@ class SetupEnvironment(TestBasic):
         self.check_run("ready_with_5_slaves")
         self.env.revert_snapshot("ready")
         self.env.bootstrap_nodes(self.env.nodes().slaves[:5])
-        self.env.make_snapshot("ready_with_5_slaves")
+        self.env.make_snapshot("ready_with_5_slaves", is_make=True)
