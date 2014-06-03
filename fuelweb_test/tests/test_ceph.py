@@ -332,6 +332,28 @@ class VmBackedWithCephMigrationBasic(TestBasic):
         # Cluster deploy
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
+        def _check():
+            # Run volume test several times with hope that it pass
+            test_path = map_ostf.OSTF_TEST_MAPPING.get(
+                'Create volume and attach it to instance')
+            logger.debug('Start to run test {0}'.format(test_path))
+            self.fuel_web.run_single_ostf_test(
+                cluster_id, test_sets=['smoke'],
+                test_name=test_path,
+                should_fail=0)
+        try:
+            _check()
+        except AssertionError:
+            logger.debug(AssertionError)
+            logger.debug("Test failed from first probe,"
+                         " we sleep 60 second try one more time "
+                         "and if it fails again - test will fails ")
+            time.sleep(60)
+            _check()
+
+        # Run ostf
+        self.fuel_web.run_ostf(cluster_id)
+
         # Create new server
         os = os_actions.OpenStackActions(
             self.fuel_web.get_nailgun_node_by_name("slave-01")["ip"])
