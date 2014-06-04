@@ -284,6 +284,7 @@ openstack-keystone
 openstack-neutron
 openstack-neutron-linuxbridge
 openstack-neutron-openvswitch
+openstack-neutron-vmware
 openstack-nova
 openstack-nova-api
 openstack-nova-cells
