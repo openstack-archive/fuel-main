@@ -1,4 +1,4 @@
-FROM centos
+FROM fuel/centos
 
 MAINTAINER Aleksandr Didenko adidenko@mirantis.com
 
@@ -7,7 +7,7 @@ WORKDIR /root
 RUN rm -rf /etc/yum.repos.d/*
 RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/os/x86_64/\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo
 RUN yum clean all
-RUN yum --quiet install -y ruby21-puppet rabbitmq-server logrotate
+RUN yum --quiet install -y rabbitmq-server
 
 ADD etc /etc
 

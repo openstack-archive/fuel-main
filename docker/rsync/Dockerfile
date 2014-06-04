@@ -2,7 +2,7 @@
 #
 # Version     0.1
 
-FROM centos
+FROM fuel/centos
 MAINTAINER Matthew Mosesohn mmosesohn@mirantis.com
 
 WORKDIR /root
