@@ -2,33 +2,24 @@
 #
 # Version     0.1
 
-FROM centos
+FROM fuel/centos
 MAINTAINER Matthew Mosesohn mmosesohn@mirantis.com
 
 WORKDIR /root
 
-RUN rm -rf /etc/yum.repos.d/*
-RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/os/x86_64/\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo
-RUN yum clean all
-RUN yum --quiet install -y ruby21-puppet logrotate
-RUN mkdir -p /opt/gateone/users/ANONYMOUS/
-RUN mkdir -p /var/log/nailgun
+RUN rm -rf /etc/yum.repos.d/*;echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/os/x86_64/\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo;yum clean all;mkdir -p /opt/gateone/users/ANONYMOUS/ /var/log/nailgun
 
 ADD etc /etc
+ADD start.sh /usr/local/bin/start.sh
 
 RUN puppet apply -v /etc/puppet/modules/nailgun/examples/nailgun-only.pp
-
-RUN mkdir -p /usr/local/bin /var/log/remote /var/www/nailgun
-ADD start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
+RUN mkdir -p /var/log/remote /var/www/nailgun
 
 #clean everything up
 RUN yum --quiet remove -y gcc-c++ --skip-broken
 
-RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/fuelweb/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo
-RUN yum clean all
+RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/fuelweb/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean all; chmod +x /usr/local/bin/start.sh
 
 EXPOSE 8001
-VOLUME /usr/share/nailgun/static
-VOLUME /etc/nailgun
+VOLUME ["/usr/share/nailgun/static", "/etc/nailgun"]
 CMD /usr/local/bin/start.sh
