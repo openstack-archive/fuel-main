@@ -361,7 +361,7 @@ class CeilometerSimple(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['platform_tests', 'ha'],
-            should_fail=2, timeout=3500,
+            should_fail=4, timeout=3500,
             failed_test_name=['Create volume and attach it to instance',
                               'Check stack autoscaling'])
 
