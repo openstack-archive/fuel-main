@@ -354,6 +354,7 @@ python-cmd2-0.6.4-7.el6
 python-crypto
 python-d2to1-0.2.10-1.el6
 python-daemon-1.5.2-1.el6
+python-daemonize
 python-deltarpm-3.5-0.5.20090913git.el6
 python-devel
 python-django-appconf-0.5-3.el6
