@@ -15,6 +15,9 @@
 
 import os
 
+# Default timezone for clear logging
+TIME_ZONE = 'UTC'
+
 ENV_NAME = os.environ.get("ENV_NAME", "fuel_system_test")
 
 ISO_PATH = os.environ.get('ISO_PATH')
