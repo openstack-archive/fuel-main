@@ -716,14 +716,10 @@ class DeleteEnvironment(TestBasic):
         cluster_id = self.fuel_web.get_last_created_cluster()
         self.fuel_web.client.delete_cluster(cluster_id)
         nailgun_nodes = self.fuel_web.client.list_nodes()
-        nodes = filter(lambda x: x["pending_deletion"] is True, nailgun_nodes)
-        assert_true(
-            len(nodes) == 2, "Verify 2 node has pending deletion status"
-        )
         wait(
             lambda:
-            self.fuel_web.is_node_discovered(nodes[0]) and
-            self.fuel_web.is_node_discovered(nodes[1]),
+            self.fuel_web.is_node_discovered(nailgun_nodes[0]) and
+            self.fuel_web.is_node_discovered(nailgun_nodes[1]),
             timeout=10 * 60,
             interval=15
         )
