@@ -736,6 +736,7 @@ class DeleteEnvironment(TestBasic):
         """
         self.env.revert_snapshot("deploy_simple_flat")
 
+        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:2])
         cluster_id = self.fuel_web.get_last_created_cluster()
         self.fuel_web.client.delete_cluster(cluster_id)
         nailgun_nodes = self.fuel_web.client.list_nodes()
