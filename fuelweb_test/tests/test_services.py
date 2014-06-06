@@ -110,11 +110,15 @@ class SavannaSimple(TestBasic):
 
         LOGGER.debug('Run OSTF savanna platform tests')
 
+        failed_test_name = ['Create volume and attach it to instance']
+
         self.fuel_web.run_single_ostf_test(
             cluster_id=cluster_id, test_sets=['platform_tests'],
             test_name=('fuel_health.tests.platform_tests.'
                        'test_platform_savanna.PlatformSavannaTests.'
-                       'test_platform_savanna'), should_fail=1)
+                       'test_platform_savanna'), should_fail=1,
+            timeout=60 * 200,
+            failed_test_name=failed_test_name)
 
         self.env.make_snapshot("deploy_savanna_simple")
 
