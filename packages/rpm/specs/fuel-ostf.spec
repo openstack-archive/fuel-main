@@ -33,7 +33,7 @@ Requires:    python-testresources >= 0.2.7
 
 # fuel_ostf_reqs
 Requires:    python-nose >= 1.3.0
-Requires:    python-sqlalchemy >= 0.7.8
+Requires:    python-sqlalchemy >= 0.9.4
 Requires:    python-sqlalchemy < 1.0
 Requires:    python-alembic >= 0.5.0
 Requires:    python-gevent == 0.13.8
