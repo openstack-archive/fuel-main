@@ -19,6 +19,7 @@ from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
+from devops.helpers.helpers import wait
 from proboscis import SkipTest
 from proboscis import test
 
@@ -134,6 +135,10 @@ class CephHARestart(TestBasic):
 
         # Destroy osd-node
         self.env.nodes().slaves[5].destroy()
+
+        wait(lambda: not self.fuel_web.get_nailgun_node_by_devops_node(
+            self.env.nodes().slaves[5])['online'], timeout=30 * 8)
+
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
@@ -141,6 +146,10 @@ class CephHARestart(TestBasic):
 
         # Destroy compute node
         self.env.nodes().slaves[4].destroy()
+
+        wait(lambda: not self.fuel_web.get_nailgun_node_by_devops_node(
+            self.env.nodes().slaves[4])['online'], timeout=30 * 8)
+
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(cluster_id=cluster_id, should_fail=1)
 
