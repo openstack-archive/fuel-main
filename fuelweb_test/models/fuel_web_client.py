@@ -219,6 +219,7 @@ class FuelWebClient(object):
     def fqdn(self, devops_node):
         logger.info('Get FQDN of a devops node %s', devops_node.name)
         nailgun_node = self.get_nailgun_node_by_devops_node(devops_node)
+        logger.debug('Nailgun node is {0}'.format(nailgun_node))
         if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
             return nailgun_node['meta']['system']['fqdn']
         return nailgun_node['fqdn']
@@ -231,8 +232,9 @@ class FuelWebClient(object):
         # Assert online nodes list
         online = \
             'Online: [ {0} ]'.format(' '.join(fqdn_names(online_nodes)))
-        wait(lambda: online in self.get_pacemaker_status(
-            ctrl_node), timeout=30)
+        logger.debug('online nodes are {0}'.format(online))
+        wait(lambda: set(online).issubset(set(self.get_pacemaker_status(
+            ctrl_node))), timeout=30)
         assert_true(
             online in self.get_pacemaker_status(ctrl_node),
             'Online nodes {0}'.format(online))
