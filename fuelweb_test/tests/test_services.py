@@ -92,6 +92,8 @@ class SavannaSimple(TestBasic):
                              settings.SERVTEST_PASSWORD,
                              settings.SERVTEST_TENANT)
 
+        failed_test_name = ['Create volume and attach it to instance']
+
         test_classes = ['fuel_health.tests.sanity.test_sanity_savanna.'
                         'SanitySavannaTests.test_sanity_savanna']
         self.fuel_web.run_ostf(
@@ -115,7 +117,7 @@ class SavannaSimple(TestBasic):
             test_name=('fuel_health.tests.platform_tests.'
                        'test_platform_savanna.PlatformSavannaTests.'
                        'test_platform_savanna'), should_fail=1,
-            timeout=60 * 200)
+            timeout=60 * 200, failed_test_name=failed_test_name)
 
         self.env.make_snapshot("deploy_sahara_simple")
 
