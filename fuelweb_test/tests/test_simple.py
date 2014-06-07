@@ -117,7 +117,7 @@ class SimpleFlat(TestBasic):
                               # https://bugs.launchpad.net/fuel/+bug/1263916
                               ])
 
-        self.env.make_snapshot("deploy_simple_flat")
+        self.env.make_snapshot("deploy_simple_flat", is_make=True)
 
     @test(depends_on=[deploy_simple_flat],
           groups=["simple_flat_node_deletion"])

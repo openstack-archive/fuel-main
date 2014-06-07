@@ -64,7 +64,7 @@ class TestHaFailover(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.env.make_snapshot("deploy_ha")
+        self.env.make_snapshot("deploy_ha", is_make=True)
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_destroy_controllers"])
