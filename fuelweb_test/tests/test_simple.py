@@ -118,7 +118,7 @@ class SimpleFlat(TestBasic):
                               ]
         )
 
-        self.env.make_snapshot("deploy_simple_flat")
+        self.env.make_snapshot("deploy_simple_flat", is_make=True)
 
     @test(depends_on=[deploy_simple_flat],
           groups=["simple_flat_node_deletion"])
