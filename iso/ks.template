@@ -31,6 +31,7 @@ for drv in `ls -1 /sys/block | grep "sd\|hd\|vd\|cciss"`; do
 done
 
 installdrive="undefined"
+forceformat="no"
 for I in `cat /proc/cmdline`; do case "$I" in *=*) eval $I;; esac ; done
 
 set ${drives}
@@ -38,6 +39,31 @@ numdrives=`echo $#`
 
 tgtdrive="${installdrive}"
 
+function confirm_format {
+  check_drive="$1"
+  local confirm_format="no"
+
+  if [[ "$forceformat" == "yes" ]] ; then
+    return 0
+  fi
+
+  if parted -s /dev/$check_drive print &>/dev/null ; then
+    echo
+    echo "$check_drive drive contains partition table:"
+    parted -s /dev/$check_drive print
+    echo
+    read -p "Are you sure you want to erase ALL data on disk $check_drive? (y/N)" confirm_format
+    if [[ "$confirm_format" == "y" ]] || [[ "$forceformat" == "yes" ]]; then
+      return 0
+    else
+      return 1
+    fi
+  else
+    return 0
+  fi
+}
+
+format_confirmed="no"
 if [ ${numdrives} -gt 1 ]; then
     exec < /dev/tty3 > /dev/tty3 2>&1
     chvt 3
@@ -48,7 +74,7 @@ if [ ${numdrives} -gt 1 ]; then
         echo '*                                 W A R N I N G                                *'
         echo '*                                                                              *'
         echo '*  Which of the detected hard drives do you want to be used as                 *'
-        echo '*  installation target?                                                        *'
+        echo '*  the installation target?                                                    *'
         echo '*                                                                              *'
         echo '********************************************************************************'
         echo
@@ -57,7 +83,15 @@ if [ ${numdrives} -gt 1 ]; then
         read -p "Choose hard drive: " tgtdrive
         match="no"
         for drive in ${drives[@]}; do
-          [[ "$drive" == "$tgtdrive" ]] && match="yes" && break
+          if [[ "$drive" == "$tgtdrive" ]] && match="yes" ; then
+            if confirm_format $tgtdrive ; then
+              format_confirmed="yes"
+              break
+            else
+              tgtdrive="undefined"
+              read -p "You may select another disk. Press Enter to continue." _
+            fi
+          fi
         done
         if [[ "$match" == "no" ]]; then
           tgtdrive="undefined"
@@ -68,6 +102,26 @@ if [ ${numdrives} -gt 1 ]; then
     chvt 1
 else
     tgtdrive=`echo ${drives} | sed -e "s/^\s*//" -e "s/\s*$//"`
+fi
+
+if [ "$format_confirmed" != "yes" ] ; then
+  exec < /dev/tty3 > /dev/tty3 2>&1
+  chvt 3
+  if ! confirm_format $tgtdrive ; then
+      clear
+      echo
+      echo '********************************************************************'
+      echo '*                            E R R O R                             *'
+      echo '*                                                                  *'
+      echo '*           Disk $tgtdrive contains active partition(s).           *'
+      echo '*        Installation cannot continue without confirmation.        *'
+      echo '*                                                                  *'
+      echo '********************************************************************'
+      echo
+      read -p "Press Enter to restart: " _
+      reboot
+  fi
+  chvt 1
 fi
 
 # verify tgtdrive is at least 30GB
