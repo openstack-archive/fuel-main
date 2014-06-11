@@ -445,6 +445,7 @@ class FloatingIPs(TestBasic):
         self.env.make_snapshot("deploy_floating_ips")
 
 
+@test(groups=["simple_cinder"])
 class SimpleCinder(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_simple_cinder"])
