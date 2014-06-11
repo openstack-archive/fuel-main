@@ -43,7 +43,7 @@ fi
 . /etc/sysconfig/network
 hostname "$HOSTNAME"
 #Update motd for IP
-primary="$(grep mnbs_internal_interface= /etc/naily.facts | cut -d'=' -f2) "
+primary="$(grep "interface:" /etc/fuel/astute.yaml | cut -d':' -f2 | tr -d ' ')"
 echo "sed -i \"s%\(^.*able on:\).*$%\1 http://\`ip address show $primary | awk '/inet / {print \$2}' | cut -d/ -f1 -\`:8000%\" /etc/issue" >>/etc/rc.local
 sed -i "s%\(^.*able on:\).*$%\1 http://`ip address show $primary | awk '/inet / {print \$2}' | cut -d/ -f1 -`:8000%" /etc/issue
 # ruby21-hiera RPM does not include /var/lib/hiera/ directory which may cause errors
