@@ -12,9 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import re
 from gdata.spreadsheet import text_db
 from settings import GOOGLE_LOGIN, GOOGLE_PASSWORD
+
+import logging
+logger = logging.getLogger(__package__)
 
 
 class BuildsDocument(object):
@@ -64,6 +66,7 @@ class BuildSheet:
         """
         name = self.BUILD_COLUMN.format(build_num)
         if self.last_build_column != name:
+            logger.debug("Create column {0}".format(name))
             fields = self.table.fields
             fields.insert(1, name)
             self.table.SetFields(fields)

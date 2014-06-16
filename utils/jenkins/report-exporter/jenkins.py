@@ -18,6 +18,9 @@ import urlparse
 import json
 from settings import JENKINS_HOME
 
+import logging
+logger = logging.getLogger(__package__)
+
 
 class JSONResource(object):
     def __init__(self, url):
@@ -35,7 +38,10 @@ class JSONResource(object):
 
 class Job(JSONResource):
     def __init__(self, name):
-        url = urlparse.urljoin(JENKINS_HOME, 'job/{0}/'.format(urllib.quote(name)))
+        url = urlparse.urljoin(
+            JENKINS_HOME,
+            'job/{0}/'.format(urllib.quote(name))
+        )
         super(Job, self).__init__(url)
 
         self.name = name
@@ -45,6 +51,22 @@ class Job(JSONResource):
         js = self.get_data()
         return [Build(b['number'], b['url']) for b in js['builds']]
 
+    def last_finished_build(self):
+        build = None
+        for b in self.builds:
+            if b.get_data()['building']:
+                logger.info(
+                    'Job #{0} is building.'
+                    'Go to previous build'.format(b.number)
+                )
+                continue
+            build = b
+            break
+        if build is None:
+            raise Exception('Finished build not found. '
+                            'Job: {0}'.format(self.name))
+        return build
+
 
 class Build(JSONResource):
     def __init__(self, number, url):
@@ -53,4 +75,7 @@ class Build(JSONResource):
 
     @property
     def test_report(self):
-        return JSONResource(urlparse.urljoin(self.url, 'testReport/')).get_data()
+        return JSONResource(urlparse.urljoin(
+            self.url,
+            'testReport/')
+        ).get_data()
