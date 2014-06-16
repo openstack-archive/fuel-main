@@ -172,11 +172,16 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 	-sudo chroot $(INITRAMROOT) chkconfig exim off
 	-sudo chroot $(INITRAMROOT) chkconfig postfix off
 
+	# Setting mlx4_core to eth mode
+	sudo echo "options mlx4_core port_type_array=2,2" > $(INITRAMROOT)/etc/modprobe.d/mlx4_core.conf
+
 	# Installing kernel modules
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/modules/*' './boot/vmlinuz*' )
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/firmware/*' )
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'libmlx4*' | xargs rpm2cpio | \
+		( cd $(INITRAMROOT); sudo cpio -idm './etc/libibverbs.d/*' './usr/lib64/*' )
 	for version in `ls -1 $(INITRAMROOT)/lib/modules`; do \
 		sudo depmod -b $(INITRAMROOT) $$version; \
 	done
