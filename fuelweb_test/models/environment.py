@@ -21,6 +21,7 @@ from devops.manager import Manager
 from ipaddr import IPNetwork
 from paramiko import RSAKey
 from proboscis.asserts import assert_equal
+from proboscis.asserts import assert_true
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import revert_info
@@ -409,9 +410,9 @@ class EnvironmentModel(object):
                                    "--ifaces eth0 "
                                    "--repeat 3 "
                                    "--timeout 10")['stdout']
-        master_ip = filter(lambda x: self.get_admin_node_ip() in x, out)
-        logger.info("dhcpcheck discover: %s" % master_ip)
-        assert_equal(len(master_ip), 1)
+
+        assert_true(self.get_admin_node_ip() in "".join(out),
+                    "dhcpcheck dosn't discover master ip")
 
     def run_nailgun_agent(self, remote):
         agent = remote.execute('/opt/nailgun/bin/agent')['exit_code']
