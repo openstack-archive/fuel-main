@@ -1,0 +1,76 @@
+[DEFAULT]
+
+debug=true
+verbose=true
+
+[identity]
+
+disable_ssl_certificate_validation=true
+
+uri=http://{{ management_vip }}:5000/v2.0/
+uri_v3=http://{{ management_vip }}:5000/v3.0/
+
+username={{username}}
+password={{password}}
+tenant_name={{tenant_name}}
+
+admin_username={{admin_username}}
+admin_tenant_name={{admin_tenant_name}}
+admin_password={{admin_password}}
+
+alt_username={{alt_username}}
+alt_password={{alt_password}}
+alt_tenant_name={{alt_tenant_name}}
+
+[dashboard]
+
+dashboard_url=http://{{ management_vip }}/dashboard/
+login_url=http://{{ management_vip }}/dashboard/auth/login/
+
+[network]
+
+tenant_network_cidr={{ internal_cidr }}
+tenant_network_mask_bits={{ internal_mask }}
+public_network_id={{ public_network }}
+public_router_id={{ public_router}}
+
+[network-feature-enabled]
+
+ipv6=false
+
+[service_available]
+{% if net_provider == 'neutron' %}
+neutron=true
+{% endif %}
+
+[object-storage]
+
+operator_role=admin
+
+[compute]
+
+image_ref={{image_ref}}
+image_ssh_user=cirros
+image_ssh_password=cubswin:)
+
+{% if image_ref_alt %}
+image_ref_alt={{image_ref_alt}}
+{% else %}
+image_ref_alt={{image_ref}}
+{% endif %}
+
+{% if net_provider == 'nova_network' %}
+fixed_network_name=novanetwork_0
+network_for_ssh=fixed
+{% endif %}
+
+[compute-feature-enabled]
+
+api_v3=false
+
+[cli]
+
+#Dont provide full path - PATH variable will help us
+cli_dir=
+
+has_manage=false

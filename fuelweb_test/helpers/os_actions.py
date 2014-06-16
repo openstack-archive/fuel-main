@@ -207,3 +207,57 @@ class OpenStackActions(common.Common):
             return output
         except Exception as exc:
             logger.info("An exception occured: %s" % exc)
+
+    def get_tenant(self, tenant_name):
+        tenant_list = self.keystone.tenants.list()
+        for ten in tenant_list:
+            if ten.name == tenant_name:
+                return ten
+        return None
+
+    def get_user(self, username):
+        user_list = self.keystone.users.list()
+        for user in user_list:
+            if user.name == username:
+                return user
+        return None
+
+    def create_tenant(self, tenant_name):
+        tenant = self.get_tenant(tenant_name)
+        if tenant:
+            return tenant
+        return self.keystone.tenants.create(enabled=True,
+                                            tenant_name=tenant_name)
+
+    def create_user(self, username, passw, tenant):
+        user = self.get_user(username)
+        if user:
+            return user
+        return self.keystone.users.create(
+            name=username, password=passw, tenant_id=tenant.id)
+
+    def create_user_and_tenant(self, tenant_name, username, password):
+        tenant = self.create_tenant(tenant_name)
+        return self.create_user(username, password, tenant)
+
+    def get_network(self, network_name):
+        net_list = self.neutron.list_networks()
+        for net in net_list['networks']:
+            if net['name'] == network_name:
+                return net
+        return None
+
+    def get_router(self, network):
+        router_list = self.neutron.list_routers()
+        for router in router_list['routers']:
+            network_id = router['external_gateway_info'].get('network_id')
+            if network_id == network['id']:
+                return router
+        return None
+
+    def get_image(self, image_name):
+        image_list = self.glance.images.list()
+        for img in image_list:
+            if img.name == image_name:
+                return img
+        return None
