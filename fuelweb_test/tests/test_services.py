@@ -11,10 +11,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from __future__ import division
 
 from proboscis import asserts
 from proboscis import SkipTest
 from proboscis import test
+from proboscis.asserts import assert_equal
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.common import Common
@@ -276,12 +278,39 @@ class CeilometerSimpleMongo(TestBasic):
                 'slave-04': ['mongo']
             }
         )
+        nailgun_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
+
+        for node in nailgun_nodes:
+            if node.get('pending_roles') == ['mongo']:
+                disk_mb = self.fuel_web.get_node_disk_size(node.get('id'),
+                                                           "vda")
+
+        LOGGER.debug('disk size is {0}'.format(disk_mb))
+        mongo_disk_mb = 11116
+        os_disk_mb = disk_mb - mongo_disk_mb
+        mongo_disk_gb = ("{0}G".format(round(mongo_disk_mb / 1024, 1)))
+        disk_part = {
+            "vda": {
+                "os": os_disk_mb,
+                "mongo": mongo_disk_mb
+            }
+        }
+
+        for node in nailgun_nodes:
+            if node.get('pending_roles') == ['mongo']:
+                self.fuel_web.update_node_disk(node.get('id'), disk_part)
+
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='ceilometer-api')
 
+        partitions = checkers.get_mongo_partitions(
+            self.env.get_ssh_to_remote_by_name("slave-04"), "vda5")
+        assert_equal(partitions[0].rstrip(), mongo_disk_gb,
+                     'Mongo size {0} before deployment is not equal'
+                     ' to size after {1}'.format(mongo_disk_gb, partitions))
         # run ostf
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity',
