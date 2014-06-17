@@ -203,6 +203,14 @@ echo "cat /tmp/grub.script | chroot /mnt/sysimage /sbin/grub --no-floppy --batch
 
 %packages --nobase --excludedocs
 @Core
+kernel-lt
+kernel-lt-headers
+kernel-lt-devel
+kernel-lt-firmware
+-kernel
+-kernel-headers
+-kernel-firmware
+-kernel-devel
 authconfig
 bind-utils
 cronie
@@ -321,6 +329,14 @@ device="eth0"
 hwaddr=`ifconfig $device | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
 dhcp_interface=$dhcp_interface
 save_cfg
+
+# Clean up 3.10 kernel-lt install
+rpm -e kernel-2.6.32
+rpm -e kernel-devel-2.6.32
+rpm -e kernel-firmware-2.6.32
+rpm -e kernel-headers-2.6.32
+yum install -y --skip-broken kernel-lt-devel kernel-lt-headers
+kernel-lt-firmware
 
 # Mounting installation source
 SOURCE=/tmp/source
