@@ -25,7 +25,8 @@ $(BUILD_DIR)/upgrade/common-part.done: \
 		$(BUILD_DIR)/iso/iso.done
 	rm -f $(BUILD_DIR)/upgrade/common-part.tar
 	mkdir -p $(BUILD_DIR)/upgrade/venv
-	tar cf $(BUILD_DIR)/upgrade/common-part.tar -C $(BUILD_DIR)/repos/fuellib/deployment --xform s:^:upgrade/: puppet
+	tar cf $(BUILD_DIR)/upgrade/common-part.tar -C $(BUILD_DIR)/repos/fuellib/deployment --xform s:^puppet/:upgrade/puppet/modules/: puppet
+	tar rf $(BUILD_DIR)/upgrade/common-part.tar -C $(BUILD_DIR)/repos/fuellib/deployment/puppet/osnailyfacter/examples --xform s:^:upgrade/puppet/manifests/: site.pp
 	# Requires virtualenv, pip, python-dev packages
 	virtualenv $(BUILD_DIR)/upgrade/venv
 	$(BUILD_DIR)/upgrade/venv/bin/pip install -r $(BUILD_DIR)/repos/nailgun/fuel_upgrade_system/fuel_upgrade/requirements.txt
@@ -47,7 +48,8 @@ $(BUILD_DIR)/upgrade/openstack-part.done: \
 		$(BUILD_DIR)/iso/iso.done
 	mkdir -p $(BUILD_DIR)/upgrade
 	rm -f $(BUILD_DIR)/upgrade/openstack-part.tar
-	tar cf $(BUILD_DIR)/upgrade/openstack-part.tar -C $(LOCAL_MIRROR) --xform s:^:upgrade/repos/: centos ubuntu
+	tar cf $(BUILD_DIR)/upgrade/openstack-part.tar -C $(LOCAL_MIRROR) --xform s:^centos/os/x86_64/:upgrade/repos/centos/x86_64/: centos/os/x86_64
+	tar rf $(BUILD_DIR)/upgrade/openstack-part.tar -C $(LOCAL_MIRROR) --xform s:^ubuntu/:upgrade/repos/ubuntu/x86_64/: ubuntu
 	tar rf $(BUILD_DIR)/upgrade/openstack-part.tar -C $(BUILD_DIR)/repos/nailgun/nailgun/nailgun/fixtures --xform s:^:upgrade/config/: openstack.yaml
 	$(ACTION.TOUCH)
 
