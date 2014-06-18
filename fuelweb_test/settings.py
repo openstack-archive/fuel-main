@@ -176,7 +176,6 @@ SERVTEST_SAVANNA_IMAGE_META = {'_sahara_tag_1.2.1': 'True',
                                '_sahara_tag_vanilla': 'True',
                                '_sahara_username': 'ubuntu'}
 
-SERVTEST_MURANO_SERVER_URL = "http://murano-files.mirantis.com"
 SERVTEST_MURANO_IMAGE = "cloud-fedora.qcow2"
 SERVTEST_MURANO_IMAGE_MD5 = '6e5e2f149c54b898b3c272f11ae31125'
 SERVTEST_MURANO_IMAGE_NAME = 'murano'
