@@ -22,7 +22,6 @@ from devops.helpers.helpers import wait
 
 import os
 from time import sleep
-import urllib
 
 
 @logwrap
@@ -44,15 +43,13 @@ def check_ceph_health(ssh):
 
 
 @logwrap
-def check_image(url, image, md5, path):
-    download_url = "{0}/{1}".format(url, image)
+def check_image(image, md5, path):
     local_path = "{0}/{1}".format(path, image)
     logger.debug('Check md5 {0} of image {1}/{2}'.format(md5, path, image))
     if not os.path.isfile(local_path):
-        try:
-            urllib.urlretrieve(download_url, local_path)
-        except Exception as error:
-            logger.error(error)
+        logger.error('Image {0} not found in {1} directory'.format(
+            image, path))
+        return False
     with open(local_path, mode='rb') as fimage:
         digits = hashlib.md5()
         while True:
@@ -62,12 +59,9 @@ def check_image(url, image, md5, path):
             digits.update(buf)
         md5_local = digits.hexdigest()
     if md5_local != md5:
-        logger.debug('MD5 is not correct, download {0} to {1}'.format(
-                     download_url, local_path))
-        try:
-            urllib.urlretrieve(download_url, local_path)
-        except Exception as error:
-            logger.error(error)
+        logger.error('MD5 of {0}/{1} is not correct, aborting'.format(
+            path, image))
+        return False
     return True
 
 
