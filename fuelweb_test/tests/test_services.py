@@ -163,7 +163,6 @@ class MuranoSimple(TestBasic):
 
         LOGGER.debug('Check MD5 of image')
         check_image = checkers.check_image(
-            settings.SERVTEST_MURANO_SERVER_URL,
             settings.SERVTEST_MURANO_IMAGE,
             settings.SERVTEST_MURANO_IMAGE_MD5,
             settings.SERVTEST_LOCAL_PATH)
@@ -203,12 +202,12 @@ class MuranoSimple(TestBasic):
                              data['password'],
                              data['tenant'])
 
-        LOGGER.debug('Run sanity and functional oSTF tests')
-        test_classes = ['fuel_health.tests.sanity.test_sanity_murano.'
-                        'MuranoSanityTests.test_create_and_delete_service']
-        self.fuel_web.run_ostf(
+        LOGGER.debug('Run sanity and functional OSTF tests')
+        self.fuel_web.run_single_ostf_test(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            tests_must_be_passed=test_classes
+            test_sets=['sanity'],
+            test_name=('fuel_health.tests.sanity.test_sanity_murano.'
+                       'MuranoSanityTests.test_create_and_delete_service')
         )
 
         LOGGER.debug('Import image')
