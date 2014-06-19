@@ -100,7 +100,8 @@ class SavannaSimple(TestBasic):
                              data['password'],
                              data['tenant'])
 
-        failed_test_name = ['Create volume and attach it to instance']
+        failed_test_name = ['Create volume and attach it to instance',
+                            'Create volume and boot instance from it']
 
         test_classes = ['fuel_health.tests.sanity.test_sanity_savanna.'
                         'SanitySavannaTests.test_sanity_savanna']
@@ -124,7 +125,7 @@ class SavannaSimple(TestBasic):
             cluster_id=cluster_id, test_sets=['platform_tests'],
             test_name=('fuel_health.tests.platform_tests.'
                        'test_platform_savanna.PlatformSavannaTests.'
-                       'test_platform_savanna'), should_fail=1,
+                       'test_platform_savanna'), should_fail=2,
             timeout=60 * 200, failed_test_name=failed_test_name)
 
         self.env.make_snapshot("deploy_sahara_simple")
