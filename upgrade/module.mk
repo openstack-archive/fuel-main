@@ -52,6 +52,7 @@ $(BUILD_DIR)/upgrade/openstack-part.done: \
 	tar rf $(BUILD_DIR)/upgrade/openstack-part.tar -C $(LOCAL_MIRROR) --xform s:^ubuntu:upgrade/repos/ubuntu/x86_64: ubuntu
 	tar rf $(BUILD_DIR)/upgrade/openstack-part.tar -C $(BUILD_DIR)/repos/nailgun/nailgun/nailgun/fixtures --xform s:^:upgrade/config/: openstack.yaml
 	tar rf $(BUILD_DIR)/upgrade/openstack-part.tar -C $(ISOROOT) --xform s:^:upgrade/puppet/manifests/: centos-versions.yaml ubuntu-versions.yaml
+	tar rf $(BUILD_DIR)/upgrade/openstack-part.tar -C $(SOURCE_DIR) upgrade/config/5.0/centos-versions.yaml upgrade/config/5.0/ubuntu-versions.yaml
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/upgrade/fuel.done: \
