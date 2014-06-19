@@ -33,7 +33,19 @@ ISO_PATH:=$(ISO_DIR)/$(ISO_NAME).iso
 IMG_PATH:=$(ISO_DIR)/$(ISO_NAME).img
 
 # Rebuld packages locally (do not use upstream versions)
-BUILD_PACKAGES?=1
+BUILD_PACKAGES?=\
+	fencing-agent \
+	fuelmenu \
+	nailgun-mcagents \
+	ruby21-nailgun-mcagents \
+	nailgun-net-check \
+	nailgun \
+	shotgun \
+	fuel-ostf \
+	nailgun-agent \
+	nailgun-redhat-license \
+	python-fuelclient \
+	ruby21-rubygem-astute
 
 # Do not compress javascript and css files
 NO_UI_OPTIMIZE:=0

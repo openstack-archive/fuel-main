@@ -74,7 +74,8 @@ $(BUILD_DIR)/packages/rpm/$1.done: \
 	sudo mkdir -p $$(SANDBOX)/tmp/SOURCES
 	sudo cp -r $(BUILD_DIR)/packages/rpm/sources/$1/* $$(SANDBOX)/tmp/SOURCES
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/$1.spec $$(SANDBOX)/tmp
-	sudo chroot $$(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/$1.spec
+	sudo rm -rf $$(SANDBOX)/tmp/RPMS
+	sudo chroot $$(SANDBOX) rpmbuild --nodeps -v --define "_topdir /tmp" -ba /tmp/$1.spec
 	cp $$(SANDBOX)/tmp/RPMS/*/$1-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	sudo sh -c "$$$${SANDBOX_DOWN}"
 	$$(ACTION.TOUCH)
@@ -100,18 +101,8 @@ $(eval $(call prepare_file_source,nailgun-redhat-license,get_redhat_licenses,$(S
 $(eval $(call prepare_file_source,ruby21-rubygem-astute,astute.conf,$(SOURCE_DIR)/packages/rpm/astute.conf))
 $(eval $(call prepare_ruby21_source,ruby21-rubygem-astute,astute-0.0.2.gem,$(BUILD_DIR)/repos/astute))
 
-$(eval $(call build_rpm,fencing-agent))
-$(eval $(call build_rpm,fuelmenu))
-$(eval $(call build_rpm,nailgun-mcagents))
-$(eval $(call build_rpm,ruby21-nailgun-mcagents))
-$(eval $(call build_rpm,nailgun-net-check))
-$(eval $(call build_rpm,nailgun))
-$(eval $(call build_rpm,shotgun))
-$(eval $(call build_rpm,fuel-ostf))
-$(eval $(call build_rpm,nailgun-agent))
-$(eval $(call build_rpm,nailgun-redhat-license))
-$(eval $(call build_rpm,python-fuelclient))
-$(eval $(call build_rpm,ruby21-rubygem-astute))
+comma:=,
+$(foreach pkg,$(subst $(comma), ,$(BUILD_PACKAGES)),$(eval $(call build_rpm,$(pkg))))
 
 $(BUILD_DIR)/packages/rpm/repo.done:
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
