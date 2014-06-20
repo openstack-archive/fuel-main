@@ -68,6 +68,24 @@ function confirm_format {
 }
 
 format_confirmed="no"
+
+if [ $numdrives -lt 1 ]; then
+    exec < /dev/tty3 > /dev/tty3 2>&1
+    chvt 3
+    clear
+    echo
+    echo '********************************************************************'
+    echo '*                            E R R O R                             *'
+    echo '*                                                                  *'
+    echo '*      There is no suitable media available for installation.      *'
+    echo '*                Please attach a drive and try again.              *'
+    echo '*                                                                  *'
+    echo '********************************************************************'
+    echo
+    read -p "Press Enter to shut down the system: " _
+    poweroff
+fi
+
 if [ ${numdrives} -gt 1 ] || [ `echo ${drives} | wc -w` -eq 0 ] ; then
     exec < /dev/tty3 > /dev/tty3 2>&1
     chvt 3
