@@ -17,3 +17,22 @@ ADMIN_NETWORK:
   dhcp_pool_end: 10.20.0.254
 uid: master
 TEST_DNS: www.google.com
+astute:
+  password: naily
+  user: naily
+cobbler:
+  password: cobbler
+  user: cobbler
+mcollective:
+  password: mcollective
+  user: mcollective
+postgres:
+  keystone_dbname: keystone
+  keystone_user: keystone
+  keystone_password: keystone
+  nailgun_dbname: nailgun
+  nailgun_user: nailgun
+  nailgun_password: nailgun
+  ostf_dbname: ostf
+  ostf_user: ostf
+  ostf_password: ostf

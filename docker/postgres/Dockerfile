@@ -9,7 +9,7 @@ ADD etc /etc
 ADD start.sh /usr/local/bin/start.sh
 
 RUN sed -i '/requiretty/s/^/#/g' /etc/sudoers;touch /etc/sysconfig/network;mkdir -p /var/lib/hiera && touch /var/lib/hiera/common.yaml
-RUN /usr/bin/puppet apply -v /etc/puppet/modules/nailgun/examples/postgres-only.pp
+#RUN /usr/bin/puppet apply -v /etc/puppet/modules/nailgun/examples/postgres-only.pp
 
 RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/fuelweb/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo;yum clean all;chmod +x /usr/local/bin/start.sh
 
