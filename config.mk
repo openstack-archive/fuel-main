@@ -20,6 +20,9 @@ MASTER_GW?=10.20.0.1
 
 PRODUCT_VERSION:=5.1
 
+# TEMPORARY: Version of our specs needed for building openstack packages from upstream repos
+OPENSTACK_VERSION:=2014.1
+
 CENTOS_MAJOR:=6
 CENTOS_MINOR:=5
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
@@ -35,6 +38,9 @@ IMG_PATH:=$(ISO_DIR)/$(ISO_NAME).img
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
 
+# Build OpenStack packages from external sources (do not use prepackaged versions)
+BUILD_OPENSTACK_PACKAGES?=neutron,keystone
+
 # Do not compress javascript and css files
 NO_UI_OPTIMIZE:=0
 
@@ -43,22 +49,49 @@ FUELLIB_COMMIT?=master
 NAILGUN_COMMIT?=master
 ASTUTE_COMMIT?=master
 OSTF_COMMIT?=master
+#NEUTRON_COMMIT?=master
+#KEYSTONE_COMMIT?=master
+NEUTRON_COMMIT?=openstack-ci/fuel-$(PRODUCT_VERSION)/$(OPENSTACK_VERSION)
+KEYSTONE_COMMIT?=openstack-ci/fuel-$(PRODUCT_VERSION)/$(OPENSTACK_VERSION)
 
 FUELLIB_REPO?=https://github.com/stackforge/fuel-library.git
 NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
 ASTUTE_REPO?=https://github.com/stackforge/fuel-astute.git
 OSTF_REPO?=https://github.com/stackforge/fuel-ostf.git
 
+# NOTE: prior to 5.1 release these repo urls MUST be replaced by upcoming public gerrit url
+#NEUTRON_REPO?=https://github.com/openstack/neutron.git
+#KEYSTONE_REPO?=https://github.com/openstack/keystone.git
+
+NEUTRON_REPO?=ssh://gerrit.mirantis.com:29418/openstack/neutron.git
+KEYSTONE_REPO?=ssh://gerrit.mirantis.com:29418/openstack/keystone.git
+
+# NOTE: prior to 5.1 release these repo urls MUST be replaced by upcoming public gerrit url
+NEUTRON_SPEC_REPO?=ssh://gerrit.mirantis.com:29418/openstack-ci/openstack/neutron-build.git
+NEUTRON_SPEC_COMMIT?=openstack-ci/fuel-$(PRODUCT_VERSION)/$(OPENSTACK_VERSION)
+
+KEYSTONE_SPEC_REPO?=ssh://gerrit.mirantis.com:29418/openstack-ci/openstack/keystone-build.git
+KEYSTONE_SPEC_COMMIT?=openstack-ci/fuel-$(PRODUCT_VERSION)/$(OPENSTACK_VERSION)
+
 # Gerrit URLs and commits
 FUELLIB_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-library
 NAILGUN_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-web
 ASTUTE_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-astute
 OSTF_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-ostf
+NEUTRON_GERRIT_URL?=https://review.openstack.org/openstack/neutron
+NEUTRON_GERRIT_URL?=https://review.openstack.org/openstack/keystone
+# NOTE: prior to 5.1 release these repo urls MUST be replaced by upcoming public gerrit url
+NEUTRON_SPEC_GERRIT_URL?=ssh://gerrit.mirantis.com:29418/openstack-ci/openstack/neutron-build.git
+KEYSTONE_SPEC_GERRIT_URL?=ssh://gerrit.mirantis.com:29418/openstack-ci/openstack/keystone-build.git
 
 FUELLIB_GERRIT_COMMIT?=none
 NAILGUN_GERRIT_COMMIT?=none
 ASTUTE_GERRIT_COMMIT?=none
 OSTF_GERRIT_COMMIT?=none
+NEUTRON_GERRIT_COMMIT?=none
+NEUTRON_SPEC_GERRIT_COMMIT?=none
+KEYSTONE_GERRIT_COMMIT?=none
+KEYSTONE_SPEC_GERRIT_COMMIT?=none
 
 LOCAL_MIRROR_CENTOS:=$(LOCAL_MIRROR)/centos
 LOCAL_MIRROR_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_CENTOS)/os/$(CENTOS_ARCH)
