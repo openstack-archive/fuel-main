@@ -14,6 +14,7 @@ $(BUILD_DIR)/repos/$1/%: $(BUILD_DIR)/repos/$1.done
 $(BUILD_DIR)/repos/repos.done: $(BUILD_DIR)/repos/$1.done
 
 $(BUILD_DIR)/repos/$1.done:
+	$(foreach pkg,$(subst $(comma), ,$(BUILD_OPENSTACK_PACKAGES)),$(eval $(call set_vars,$(pkg))))
 	# Clone repo and checkout required commit
 	mkdir -p $(BUILD_DIR)/repos
 	rm -rf $(BUILD_DIR)/repos/$1
