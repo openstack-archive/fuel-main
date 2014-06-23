@@ -13,7 +13,7 @@ ADD start.sh /usr/local/bin/start.sh
 RUN puppet apply -v /etc/puppet/modules/nailgun/examples/ostf-only.pp
 
 
-RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/fuelweb/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo yum clean all; chmod +x /usr/local/bin/start.sh
+RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/fuelweb/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean all; chmod +x /usr/local/bin/start.sh
 
 EXPOSE 8777
 CMD /usr/local/bin/start.sh
