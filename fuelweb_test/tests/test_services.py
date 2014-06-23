@@ -21,7 +21,19 @@ from proboscis.asserts import assert_equal
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.common import Common
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
-from fuelweb_test import settings
+from fuelweb_test.settings import DEPLOYMENT_MODE_HA
+from fuelweb_test.settings import SERVTEST_SAVANNA_IMAGE_NAME
+from fuelweb_test.settings import SERVTEST_SAVANNA_IMAGE_META
+from fuelweb_test.settings import SERVTEST_MURANO_IMAGE
+from fuelweb_test.settings import SERVTEST_MURANO_IMAGE_MD5
+from fuelweb_test.settings import SERVTEST_MURANO_IMAGE_NAME
+from fuelweb_test.settings import SERVTEST_MURANO_IMAGE_META
+from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
+from fuelweb_test.settings import OPENSTACK_RELEASE
+from fuelweb_test.settings import OPENSTACK_RELEASE_REDHAT
+from fuelweb_test.settings import SERVTEST_SAVANNA_IMAGE
+from fuelweb_test.settings import SERVTEST_SAVANNA_IMAGE_MD5
+from fuelweb_test.settings import SERVTEST_LOCAL_PATH
 from fuelweb_test import logger as LOGGER
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
@@ -52,15 +64,14 @@ class SavannaSimple(TestBasic):
         Snapshot: deploy_sahara_simple
 
         """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         LOGGER.debug('Check MD5 of image')
         check_image = checkers.check_image(
-            settings.SERVTEST_SAVANNA_SERVER_URL,
-            settings.SERVTEST_SAVANNA_IMAGE,
-            settings.SERVTEST_SAVANNA_IMAGE_MD5,
-            settings.SERVTEST_LOCAL_PATH)
+            SERVTEST_SAVANNA_IMAGE,
+            SERVTEST_SAVANNA_IMAGE_MD5,
+            SERVTEST_LOCAL_PATH)
         asserts.assert_true(check_image)
 
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -112,10 +123,10 @@ class SavannaSimple(TestBasic):
 
         LOGGER.debug('Import image')
         common_func.image_import(
-            settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_SAVANNA_IMAGE,
-            settings.SERVTEST_SAVANNA_IMAGE_NAME,
-            settings.SERVTEST_SAVANNA_IMAGE_META)
+            SERVTEST_LOCAL_PATH,
+            SERVTEST_SAVANNA_IMAGE,
+            SERVTEST_SAVANNA_IMAGE_NAME,
+            SERVTEST_SAVANNA_IMAGE_META)
 
         common_func.goodbye_security()
 
@@ -157,16 +168,16 @@ class MuranoSimple(TestBasic):
         Snapshot: deploy_murano_simple
 
         """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+        if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
         self.env.revert_snapshot("ready_with_3_slaves")
 
         LOGGER.debug('Check MD5 of image')
         check_image = checkers.check_image(
-            settings.SERVTEST_MURANO_IMAGE,
-            settings.SERVTEST_MURANO_IMAGE_MD5,
-            settings.SERVTEST_LOCAL_PATH)
+            SERVTEST_MURANO_IMAGE,
+            SERVTEST_MURANO_IMAGE_MD5,
+            SERVTEST_LOCAL_PATH)
         asserts.assert_true(check_image, "Image verification failed")
 
         data = {
@@ -213,10 +224,10 @@ class MuranoSimple(TestBasic):
 
         LOGGER.debug('Import image')
         common_func.image_import(
-            settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_MURANO_IMAGE,
-            settings.SERVTEST_MURANO_IMAGE_NAME,
-            settings.SERVTEST_MURANO_IMAGE_META)
+            SERVTEST_LOCAL_PATH,
+            SERVTEST_MURANO_IMAGE,
+            SERVTEST_MURANO_IMAGE_NAME,
+            SERVTEST_MURANO_IMAGE_META)
 
         LOGGER.debug('Run OSTF platform tests')
 
@@ -280,6 +291,7 @@ class CeilometerSimpleMongo(TestBasic):
         )
         nailgun_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
 
+        disk_mb = 0
         for node in nailgun_nodes:
             if node.get('pending_roles') == ['mongo']:
                 disk_mb = self.fuel_web.get_node_disk_size(node.get('id'),
@@ -395,7 +407,7 @@ class CeilometerHAMongo(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE_HA,
             settings={
                 'ceilometer': True,
                 'tenant': 'ceilometerHA',
@@ -456,7 +468,7 @@ class CeilometerHAMongo(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE_HA,
             settings={
                 'ceilometer': True
             }
