@@ -57,7 +57,6 @@ class SavannaSimple(TestBasic):
 
         LOGGER.debug('Check MD5 of image')
         check_image = checkers.check_image(
-            settings.SERVTEST_SAVANNA_SERVER_URL,
             settings.SERVTEST_SAVANNA_IMAGE,
             settings.SERVTEST_SAVANNA_IMAGE_MD5,
             settings.SERVTEST_LOCAL_PATH)
@@ -265,6 +264,7 @@ class CeilometerSimpleMongo(TestBasic):
         )
         nailgun_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
 
+        disk_mb = 0
         for node in nailgun_nodes:
             if node.get('pending_roles') == ['mongo']:
                 disk_mb = self.fuel_web.get_node_disk_size(node.get('id'),
