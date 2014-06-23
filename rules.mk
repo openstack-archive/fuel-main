@@ -35,3 +35,9 @@ $(BUILD_DIR)/%/.dir:
 
 assert-variable=$(if $($1),,$(error Variable $1 need to be defined))
 find-files=$(shell test -e $1 && find $1 -type f 2> /dev/null)
+
+# uppercase conversion routine
+# usage: UPPER_VAR = $(call uc,$(VAR))
+uc = $(shell echo $(1) | tr a-z A-Z)
+
+comma:=,
