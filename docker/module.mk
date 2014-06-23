@@ -45,6 +45,7 @@ $(BUILD_DIR)/docker/build.done: \
 		$(BUILD_DIR)/docker/cobbler.done \
 		$(BUILD_DIR)/docker/mcollective.done \
 		$(BUILD_DIR)/docker/nailgun.done \
+		$(BUILD_DIR)/docker/keystone.done \
 		$(BUILD_DIR)/docker/nginx.done \
 		$(BUILD_DIR)/docker/ostf.done \
 		$(BUILD_DIR)/docker/rsync.done \
@@ -72,6 +73,7 @@ $(eval $(call build_container,astute))
 $(eval $(call build_container,cobbler))
 $(eval $(call build_container,mcollective))
 $(eval $(call build_container,nailgun))
+$(eval $(call build_container,keystone))
 $(eval $(call build_container,nginx))
 $(eval $(call build_container,ostf))
 $(eval $(call build_container,rsync))
