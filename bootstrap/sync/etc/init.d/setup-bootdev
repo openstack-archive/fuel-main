@@ -78,7 +78,7 @@ case "$1" in
 
     if [ $rc -eq 0 ]; then
         for name in $dev; do
-            content="DEVICE=$name\nBOOTPROTO=dhcp\nONBOOT=yes"
+            content="DEVICE=$name\nBOOTPROTO=dhcp\nONBOOT=yes\nLINKDELAY=30" 
             echo -e "$content" > "./ifcfg-$name"
         done
     fi
