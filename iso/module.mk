@@ -43,6 +43,8 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/bootstrap_admin_node.conf \
 		$(ISOROOT)/send2syslog.py \
 		$(ISOROOT)/version.yaml \
+		$(ISOROOT)/centos-versions.yaml \
+		$(ISOROOT)/ubuntu-versions.yaml \
 		$(ISOROOT)/puppet-slave.tgz
 	$(ACTION.TOUCH)
 
@@ -80,6 +82,14 @@ ifdef BUILD_ID
 endif
 	cat $(BUILD_DIR)/repos/version.yaml >> $@
 
+
+$(ISOROOT)/centos-versions.yaml: \
+		$(BUILD_DIR)/packages/build.done
+	rpm -qi -p $(LOCAL_MIRROR)/centos/os/x86_64/Packages/*.rpm | $(SOURCE_DIR)/iso/pkg-versions.awk > $@
+
+$(ISOROOT)/ubuntu-versions.yaml: \
+		$(BUILD_DIR)/packages/build.done
+	cat $(LOCAL_MIRROR)/ubuntu/dists/precise/main/binary-amd64/Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $@
 
 $(ISOROOT)/puppet-slave.tgz: \
 		$(BUILD_DIR)/repos/fuellib.done \
