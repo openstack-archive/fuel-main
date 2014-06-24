@@ -17,3 +17,5 @@ ADMIN_NETWORK:
   dhcp_pool_end: 10.20.0.254
 uid: master
 TEST_DNS: www.google.com
+FUEL_ACCESS:
+  password: admin
