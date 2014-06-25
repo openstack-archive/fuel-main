@@ -214,8 +214,8 @@ def upload_tarball(node_ssh, tar_path, tar_target):
     try:
         logger.debug("Start to upload tar file")
         node_ssh.upload(tar_path, tar_target)
-    except Exception as e:
-        logger.error('Failed to upload file with error {0}'.format(e))
+    except Exception:
+        logger.error('Failed to upload file')
         logger.error(traceback.format_exc())
 
 
@@ -254,12 +254,15 @@ def run_with_rollback(node_ssh, script_path, script_name):
 
 
 @logwrap
-def wait_upgrade_is_done(node_ssh, timeout):
-    logger.debug('start waiting for upgrade done')
-    wait(
-        lambda: not node_ssh.execute(
-            "grep 'upgrade is done!' /var/log/fuel_upgrade.log"
-        )['exit_code'], timeout=timeout)
+def wait_upgrade_is_done(node_ssh, timeout, phrase):
+    cmd = "grep '{0}' /var/log/fuel_upgrade.log".format(phrase)
+    try:
+        wait(
+            lambda: not node_ssh.execute(cmd)['exit_code'], timeout=timeout)
+    except Exception as e:
+        a = node_ssh.execute(cmd)
+        logger.error(e)
+        assert_equal(0, a['exit_code'], a['stderr'])
 
 
 @logwrap
@@ -269,3 +272,17 @@ def wait_rollback_is_done(node_ssh, timeout):
         lambda: not node_ssh.execute(
             "grep 'UPGRADE FAILED' /var/log/fuel_upgrade.log"
         )['exit_code'], timeout=timeout)
+
+
+@logwrap
+def get_package_versions_from_node(remote, name, os_type):
+    if os_type and 'Ubuntu' in os_type:
+        cmd = 'dpkg -l | grep'.format(name)
+    else:
+        cmd = 'rpm -qa | grep {}'.format(name)
+    try:
+        result = ''.join(remote.execute(cmd)['stdout'])
+        return result
+    except Exception as e:
+        logger.error(e)
+        raise e
