@@ -930,3 +930,30 @@ class FuelWebClient(object):
 
     def get_nailgun_version(self):
         logger.info("ISO version: %s" % self.client.get_api_version())
+
+    @logwrap
+    def get_releases_list_for_os(self, release_name):
+        full_list = self.client.get_releases()
+        release_ids = []
+        for release in full_list:
+            if release_name in release["name"]:
+                release_ids.append(release['id'])
+        return release_ids
+
+    @logwrap
+    def update_cluster(self, cluster_id, data):
+        logger.debug(
+            "Try tu update cluster with data {0}".format(data))
+        self.client.update_cluster(cluster_id, data)
+
+    @logwrap
+    def run_update(self, cluster_id, timeout, interval):
+        logger.info("Run update..")
+        task = self.client.run_update(cluster_id)
+        logger.debug("Invocation of update runs with result {0}".format(task))
+        self.assert_task_success(task, timeout=timeout, interval=interval)
+
+    @logwrap
+    def get_cluster_release_id(self, cluster_id):
+        data = self.client.get_cluster(cluster_id)
+        return data['release_id']
