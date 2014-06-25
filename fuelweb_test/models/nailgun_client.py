@@ -323,3 +323,9 @@ class NailgunClient(object):
     @json_parse
     def get_api_version(self):
         return self.client.get("/api/version")
+
+    @logwrap
+    @json_parse
+    def run_update(self, cluster_id):
+        return self.client.put(
+            "/api/clusters/{0}/update/".format(str(cluster_id)))
