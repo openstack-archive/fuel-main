@@ -13,6 +13,7 @@
 #    under the License.
 import hashlib
 import re
+import traceback
 from fuelweb_test import logger
 from fuelweb_test import logwrap
 from proboscis.asserts import assert_equal
@@ -186,3 +187,43 @@ def check_unallocated_space(disks, contr_img_ceph=False):
             if not bool(sum(sizes) == disk["size"]):
                 return False
     return True
+
+@logwrap
+def upload_tarball(node_ssh, tar_path, tar_target):
+    try:
+        logger.debug("Start to upload tar file")
+        node_ssh.upload(tar_path, tar_target)
+    except Exception:
+        logger.error('Failed to upload file')
+        logger.error(traceback.format_exc())
+
+@logwrap
+def check_tarball_exists(node_ssh, name, path):
+    result = ''.join(node_ssh.execute(
+        'ls -all {0} | grep {1}'.format(path, name))['stdout'])
+    assert_true(name in result, 'Can not find tarball')
+
+@logwrap
+def untar(node_ssh, name, path):
+    result = ''.join(node_ssh.execute(
+        'cd {0} && tar -xpvf {1}'.format(path, name))['stdout'])
+    logger.debug('Result from tar command is {0}'.format(result))
+
+
+@logwrap
+def run_script(node_ssh, script_path, script_name):
+    path = os.path.join(script_path, script_name)
+    c_res = node_ssh.execute('chmod 755 {0}'.format(path))
+    logger.debug("Result of cmod is {0}".format(c_res))
+    chan, stdin, stderr, stdout = node_ssh.execute_async(path)
+    logger.debug('Try to read status code from chain...')
+    assert_equal(chan.recv_exit_status(), 0,
+                 'Upgrade script fails with next message {0}')
+
+@logwrap
+def wait_upgrade_is_done(node_ssh, timeout):
+    wait(
+        lambda: not node_ssh.execute(
+            "grep 'upgrade is done' /var/log/fuel_upgrade.log"
+        )['exit_code'], timeout=timeout)
+
