@@ -45,7 +45,7 @@ get_alldevs() {
 set_interfaces_up_when_booted() {
     devs=$(get_alldevs)
     for name in $devs; do
-        content="DEVICE=$name\nBOOTPROTO=none\nONBOOT=yes"
+        content="DEVICE=$name\nBOOTPROTO=none\nONBOOT=yes\nLINKDELAY=30"
         echo -e "$content" > "./ifcfg-$name"
     done
 }
@@ -78,7 +78,7 @@ case "$1" in
 
     if [ $rc -eq 0 ]; then
         for name in $dev; do
-            content="DEVICE=$name\nBOOTPROTO=dhcp\nONBOOT=yes"
+            content="DEVICE=$name\nBOOTPROTO=dhcp\nONBOOT=yes\nLINKDELAY=30"
             echo -e "$content" > "./ifcfg-$name"
         done
     fi
