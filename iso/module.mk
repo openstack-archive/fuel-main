@@ -51,7 +51,8 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
 $(ISOROOT)/.treeinfo: $(SOURCE_DIR)/iso/.treeinfo ; $(ACTION.COPY)
 $(ISOROOT)/isolinux/isolinux.cfg: $(SOURCE_DIR)/iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
-ifeq ($(MIRANTIS),yes)
+$(ISOROOT)/isolinux/splash.jpg: $(call depv,FEATURE_GROUPS)
+ifeq ($(filter mirantis,$(FEATURE_GROUPS)),mirantis)
 $(ISOROOT)/isolinux/splash.jpg: $(SOURCE_DIR)/iso/isolinux/splash.jpg ; $(ACTION.COPY)
 else
 $(ISOROOT)/isolinux/splash.jpg: $(SOURCE_DIR)/iso/isolinux/splash_community.jpg ; $(ACTION.COPY)
@@ -68,9 +69,11 @@ $(ISOROOT)/bootstrap_admin_node.conf: $(SOURCE_DIR)/iso/bootstrap_admin_node.con
 $(ISOROOT)/send2syslog.py: $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py ; $(ACTION.COPY)
 $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/nailgun.done
 $(ISOROOT)/version.yaml: $(call depv,PRODUCT_VERSION)
+$(ISOROOT)/version.yaml: $(call depv,FEATURE_GROUPS)
 $(ISOROOT)/version.yaml: $(BUILD_DIR)/repos/repos.done
 	echo "VERSION:" > $@
-	echo "  mirantis: \"$(MIRANTIS)\"" >> $@
+	echo "  feature_groups:" >> $@
+	$(foreach group,$(FEATURE_GROUPS),echo "    - $(group)" >> $@;)
 	echo "  production: \"$(PRODUCTION)\"" >> $@
 	echo "  release: \"$(PRODUCT_VERSION)\"" >> $@
 	echo "  api: \"1.0\"" >> $@
