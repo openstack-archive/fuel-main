@@ -30,7 +30,7 @@ from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
 
-@test(groups=["thread_5", "ha"])
+@test(groups=["thread_5", "ha", "neutron_failover"])
 class TestHaFailover(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
