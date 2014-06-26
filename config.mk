@@ -179,6 +179,8 @@ NOFORWARD:=1
 # Path to yaml configuration file to build ISO ks.cfg
 KSYAML?=$(SOURCE_DIR)/iso/ks.yaml
 
+DOCKER_OPTS?=-H=unix://$(BUILD_DIR)/docker/docker.sock
+
 # Docker prebuilt containers. Default is to build containers during ISO build
 DOCKER_PREBUILT?=0
 
