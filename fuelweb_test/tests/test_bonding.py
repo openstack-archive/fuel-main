@@ -61,6 +61,7 @@ class BondingSimple(TestBasic):
                 "net_segment_type": segment_type,
             }
         )
+
         self.fuel_web.update_nodes(
             cluster_id, {
                 'slave-01': ['controller'],
@@ -92,14 +93,8 @@ class BondingSimple(TestBasic):
             ]
         }
 
+        self.fuel_web.update_network_configuration(cluster_id)
         net_params = self.fuel_web.client.get_networks(cluster_id)
-        nets = net_params['networks']
-        vlan_start = 100
-
-        for net in nets:
-            net.update({'vlan_start': vlan_start})
-            vlan_start += 1
-        self.fuel_web.client.update_network(cluster_id, networks=nets)
 
         nailgun_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
         for node in nailgun_nodes:
@@ -190,14 +185,8 @@ class BondingSimple(TestBasic):
             ]
         }
 
+        self.fuel_web.update_network_configuration(cluster_id)
         net_params = self.fuel_web.client.get_networks(cluster_id)
-        nets = net_params['networks']
-        vlan_start = 100
-
-        for net in nets:
-            net.update({'vlan_start': vlan_start})
-            vlan_start += 1
-        self.fuel_web.client.update_network(cluster_id, networks=nets)
 
         nailgun_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
         for node in nailgun_nodes:
@@ -294,15 +283,8 @@ class BondingHA(TestBasic):
             ]
         }
 
+        self.fuel_web.update_network_configuration(cluster_id)
         net_params = self.fuel_web.client.get_networks(cluster_id)
-        nets = net_params['networks']
-
-        vlan_start = 100
-
-        for net in nets:
-            net.update({'vlan_start': vlan_start})
-            vlan_start += 1
-        self.fuel_web.client.update_network(cluster_id, networks=nets)
 
         nailgun_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
         for node in nailgun_nodes:
@@ -395,14 +377,8 @@ class BondingHA(TestBasic):
             ]
         }
 
+        self.fuel_web.update_network_configuration(cluster_id)
         net_params = self.fuel_web.client.get_networks(cluster_id)
-        nets = net_params['networks']
-        vlan_start = 100
-
-        for net in nets:
-            net.update({'vlan_start': vlan_start})
-            vlan_start += 1
-        self.fuel_web.client.update_network(cluster_id, networks=nets)
 
         nailgun_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
         for node in nailgun_nodes:
