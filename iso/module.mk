@@ -100,7 +100,8 @@ $(ISOROOT)/puppet-slave.tgz: \
 
 ifeq ($(PRODUCTION),docker)
 $(ISOROOT)/docker.done: \
-		$(BUILD_DIR)/docker/build.done
+		$(BUILD_DIR)/docker/build.done \
+		$(BUILD_DIR)/docker/daemon-down.done
 	mkdir -p $(ISOROOT)/docker/images
 	mv $(BUILD_DIR)/docker/fuel-images.tar.lrz $(ISOROOT)/docker/images/fuel-images.tar.lrz
 	cp -a $(BUILD_DIR)/docker/sources $(ISOROOT)/docker/sources
