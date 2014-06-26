@@ -5,8 +5,8 @@ include $(SOURCE_DIR)/mirror/docker/base-images.mk
 clean: clean-docker
 
 clean-docker:
-	timeout -k5 4 sudo docker ps && sudo docker rm -f `sudo docker ps -a | awk '/fuel/ {print $$1}'` || true
-	timeout -k5 4 sudo docker images && sudo docker rmi -f `sudo docker images | awk '/fuel/ { print $$3; }'` || true
+	-sudo umount -l `sudo grep "$(BUILD_DIR)/docker" /proc/mounts | awk '{print $$2}' | sort -r` /dev/notfound
+
 
 $(BUILD_DIR)/mirror/docker/build.done: \
 		$(BUILD_DIR)/mirror/docker/base-images.done
