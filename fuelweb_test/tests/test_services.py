@@ -13,6 +13,8 @@
 #    under the License.
 from __future__ import division
 
+import time
+
 from proboscis import asserts
 from proboscis import SkipTest
 from proboscis import test
@@ -216,6 +218,22 @@ class MuranoSimple(TestBasic):
             settings.SERVTEST_MURANO_IMAGE,
             settings.SERVTEST_MURANO_IMAGE_NAME,
             settings.SERVTEST_MURANO_IMAGE_META)
+
+        LOGGER.debug('Boot instance with murano image')
+
+        image_name = settings.SERVTEST_MURANO_IMAGE
+        server = common_func.create_instance(flavor_name='test_murano_flavor',
+                                             ram=2048, vcpus=1, disk=20,
+                                             server_name='murano_instance',
+                                             image_name=image_name)
+
+        start_time = time.time()
+
+        while common_func.get_instance_detail(server).status != 'ACTIVE':
+            if time.time() - start_time > 3600:
+                break
+
+        common_func.delete_instance(server)
 
         LOGGER.debug('Run OSTF platform tests')
 
