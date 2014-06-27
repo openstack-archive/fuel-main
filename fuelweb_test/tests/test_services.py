@@ -13,6 +13,7 @@
 #    under the License.
 from __future__ import division
 
+from devops.helpers.helpers import wait
 from proboscis import asserts
 from proboscis import SkipTest
 from proboscis import test
@@ -217,6 +218,19 @@ class MuranoSimple(TestBasic):
             settings.SERVTEST_MURANO_IMAGE_NAME,
             settings.SERVTEST_MURANO_IMAGE_META)
 
+        LOGGER.debug('Boot instance with murano image')
+
+        image_name = settings.SERVTEST_MURANO_IMAGE
+        server = common_func.create_instance(flavor_name='test_murano_flavor',
+                                             ram=2048, vcpus=1, disk=20,
+                                             server_name='murano_instance',
+                                             image_name=image_name)
+
+        wait(common_func.get_instance_detail(server).status != 'ACTIVE',
+             timeout=3600)
+
+        common_func.delete_instance(server)
+
         LOGGER.debug('Run OSTF platform tests')
 
         test_class_main = ('fuel_health.tests.platform_tests'
@@ -224,14 +238,18 @@ class MuranoSimple(TestBasic):
                            'MuranoDeployLinuxServicesTests')
         tests_names = ['test_deploy_telnet_service',
                        'test_deploy_apache_service']
+
         test_classes = []
+
         for test_name in tests_names:
             test_classes.append('{0}.{1}'.format(test_class_main,
                                                  test_name))
 
-        self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
-            tests_must_be_passed=test_classes, test_sets=['platform_tests'])
+        for test_name in test_classes:
+            self.fuel_web.run_single_ostf_test(
+                cluster_id=cluster_id, test_sets=['platform_tests'],
+                test_name=test_name, timeout=1000)
+
         self.env.make_snapshot("deploy_murano_simple")
 
 
