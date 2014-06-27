@@ -76,7 +76,7 @@ class SetupEnvironment(TestBasic):
                 OPENSTACK_RELEASE_REDHAT,
                 state='available'
             )
-
+        self.fuel_web.get_nailgun_version()
         self.env.make_snapshot("ready", is_make=True)
 
     @test(depends_on=[prepare_release],

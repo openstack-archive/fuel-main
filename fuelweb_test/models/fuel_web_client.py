@@ -927,3 +927,6 @@ class FuelWebClient(object):
                 ' fail {0} retries'.format(len(failed_count)))
         else:
             return failed_count
+
+    def get_nailgun_version(self):
+        logger.info("ISO version: %s" % self.client.get_api_version())
