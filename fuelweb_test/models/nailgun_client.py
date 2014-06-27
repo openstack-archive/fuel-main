@@ -318,3 +318,8 @@ class NailgunClient(object):
     def do_stop_reset_actions(self, cluster_id, action="stop_deployment"):
         return self.client.put(
             "/api/clusters/{0}/{1}/".format(str(cluster_id), action))
+
+    @logwrap
+    @json_parse
+    def get_api_version(self):
+        return self.client.get("/api/version")
