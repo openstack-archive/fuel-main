@@ -1,7 +1,7 @@
 # Generated from astute-0.0.1.gem by gem2rpm -*- rpm-spec -*-
 %define rbname astute
 %define version 0.0.2
-%define release 8
+%define release 9
 %global gemdir %(ruby -rubygems -e 'puts Gem::dir' 2>/dev/null)
 %global geminstdir %{gemdir}/gems/%{gemname}-%{version}
 %define gembuilddir %{buildroot}%{gemdir}
@@ -88,7 +88,6 @@ install -d -m 755 %{buildroot}%{_localstatedir}/log/astute
 %{gemdir}/gems/astute-0.0.2/lib/astute/post_deploy_actions/restart_radosgw.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/post_deploy_actions/update_cluster_hosts_info.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/post_deploy_actions/upload_cirros_image.rb
-%{gemdir}/gems/astute-0.0.2/lib/astute/redhat_checker.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/logparser.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/reporter.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/version.rb
@@ -128,7 +127,6 @@ install -d -m 755 %{buildroot}%{_localstatedir}/log/astute
 %{gemdir}/gems/astute-0.0.2/spec/unit/network_spec.rb
 %{gemdir}/gems/astute-0.0.2/spec/unit/nodes_remover_spec.rb
 %{gemdir}/gems/astute-0.0.2/spec/unit/post_deploy_actions_spec.rb
-%{gemdir}/gems/astute-0.0.2/spec/unit/redhat_checker_spec.rb
 %{gemdir}/gems/astute-0.0.2/spec/unit/restart_radosgw_hook_spec.rb
 %{gemdir}/gems/astute-0.0.2/spec/unit/update_cluster_hosts_info_hook_spec.rb
 %{gemdir}/gems/astute-0.0.2/spec/unit/upload_cirros_image_hook_spec.rb
