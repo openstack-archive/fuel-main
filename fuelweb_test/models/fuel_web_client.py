@@ -20,7 +20,7 @@ from devops.error import DevopsCalledProcessError
 from devops.error import TimeoutError
 from devops.helpers.helpers import _wait
 from devops.helpers.helpers import wait
-from ipaddr import IPNetwork
+from netaddr import IPNetwork
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_true
 
@@ -748,34 +748,52 @@ class FuelWebClient(object):
                              net_name=net['name'])
 
         self.common_net_settings(network_configuration)
-        logger.info('Network settings %s for push', network_configuration)
+        logger.info('Network settings for push: %s', network_configuration)
         return network_configuration
 
     def common_net_settings(self, network_configuration):
         nc = network_configuration["networking_parameters"]
         public = IPNetwork(self.environment.get_network("public"))
-        nc["floating_ranges"] = self.get_range(public, 1)
+
+        float_range = public if not BONDING else list(public.subnet(27))[0]
+        nc["floating_ranges"] = self.get_range(float_range, 1)
 
     def set_network(self, net_config, net_name):
-        if 'floating' == net_name:
-            self.net_settings(net_config, 'public', True)
-        elif net_name in ['management', 'storage', 'public']:
-            if not BONDING:
-                self.net_settings(net_config, net_name)
-            else:
-                self.net_settings(net_config, "public")
+        nets_wo_floating = ['public', 'management', 'storage']
 
-    def net_settings(self, net_config, net_name, floating=False):
-        ip_network = IPNetwork(self.environment.get_network(net_name))
+        if not BONDING:
+            if 'floating' == net_name:
+                self.net_settings(net_config, 'public', floating=True)
+            elif net_name in nets_wo_floating:
+                self.net_settings(net_config, net_name)
+        else:
+            pub_subnets = list(IPNetwork(
+                self.environment.get_network("public")).subnet(27))
+
+            if "floating" == net_name:
+                self.net_settings(net_config, pub_subnets[0], floating=True,
+                                  jbond=True)
+            elif net_name in nets_wo_floating:
+                i = nets_wo_floating.index(net_name)
+                self.net_settings(net_config, pub_subnets[i], jbond=True)
+
+    def net_settings(self, net_config, net_name, floating=False, jbond=False):
+        if jbond:
+            ip_network = net_name
+        else:
+            ip_network = IPNetwork(self.environment.get_network(net_name))
+
         if 'nova_network':
             net_config['ip_ranges'] = self.get_range(ip_network, 1) \
                 if floating else self.get_range(ip_network, -1)
         else:
-            net_config['ip_ranges'] = self.get_range(ip_network)
-
-        net_config['vlan_start'] = None
-        net_config['cidr'] = str(ip_network)
-        net_config['gateway'] = self.environment.router(net_name)
+            net_config['ip_ranges'] = self.get_range(net_name)
+        net_config['cidr'] = str(net_name)
+        if jbond:
+            net_config['gateway'] = self.environment.router('public')
+        else:
+            net_config['vlan_start'] = None
+            net_config['gateway'] = self.environment.router(net_name)
 
     def get_range(self, ip_network, ip_range=0):
         net = list(IPNetwork(ip_network))
