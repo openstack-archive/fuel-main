@@ -39,13 +39,14 @@ BUILD_PACKAGES?=1
 NO_UI_OPTIMIZE:=0
 
 # Repos and versions
+
 FUELLIB_COMMIT?=master
 NAILGUN_COMMIT?=master
 ASTUTE_COMMIT?=master
 OSTF_COMMIT?=master
 
 FUELLIB_REPO?=https://github.com/stackforge/fuel-library.git
-NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
+NAILGUN_REPO?=https://github.com/kozhukalov/fuel-web.git
 ASTUTE_REPO?=https://github.com/stackforge/fuel-astute.git
 OSTF_REPO?=https://github.com/stackforge/fuel-ostf.git
 
@@ -126,15 +127,16 @@ YUM_REPOS?=official fuel subscr_manager
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.
 # Repos must be separated by space.
-# Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm bar,ftp://repo.foo"
-EXTRA_RPM_REPOS?=
+# Example: EXTRA_RPM_REPOS=lolo,http://my.cool.repo/rpm bar,ftp://repo.foo
+EXTRA_RPM_REPOS?=http://mirrors.msk.mirantis.net/centos/$(CENTOS_RELEASE)
 
 # Additional Ubunutu repos.
 # Each repo must consist of an url, dist and section parts.
 # Repos must be separated by bar.
 # Example:
-# EXTRA_DEB_REPOS="http://mrr.lcl raring main|http://mirror.yandex.ru/ubuntu precise main"'
-EXTRA_DEB_REPOS?=
+# EXTRA_DEB_REPOS=http://mrr.lcl raring main|http://mirror.yandex.ru/ubuntu precise main
+# EXTRA_DEB_REPOS?=http://mirror.yandex.ru/ubuntu/ precise main universe multiverse restricted
+EXTRA_DEB_REPOS=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-5.1-stable-16498/ubuntu /
 
 # Comma or space separated list. Available feature groups:
 #   experimental - allow experimental options
@@ -160,4 +162,3 @@ DOCKER_PREBUILT_SOURCE?=http://srv11-msk.msk.mirantis.net/docker-test/fuel-image
 
 # Production variable (prod, dev, docker)
 PRODUCTION?=docker
-
