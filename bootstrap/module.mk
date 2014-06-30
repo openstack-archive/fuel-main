@@ -15,7 +15,7 @@ BOOTSTRAP_RPMS:=\
 	dhclient \
 	dmidecode \
 	iputils \
-        logrotate \
+    logrotate \
 	mcollective \
 	mingetty \
 	net-tools \
@@ -34,7 +34,8 @@ BOOTSTRAP_RPMS:=\
 BOOTSTRAP_RPMS_CUSTOM:=\
 	nailgun-agent \
 	nailgun-mcagents \
-	nailgun-net-check
+	nailgun-net-check \
+	fuel-agent
 
 define yum_local_repo
 [mirror]
