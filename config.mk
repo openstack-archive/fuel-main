@@ -136,7 +136,12 @@ EXTRA_RPM_REPOS?=
 # EXTRA_DEB_REPOS="http://mrr.lcl raring main|http://mirror.yandex.ru/ubuntu precise main"'
 EXTRA_DEB_REPOS?=
 
-MIRANTIS?=no
+# Comma or space separated list. Available feature groups:
+#   experimental - allow experimental options
+#   mirantis - enable Mirantis logos and support page
+FEATURE_GROUPS?=experimental
+comma:=,
+FEATURE_GROUPS:=$(subst $(comma), ,$(FEATURE_GROUPS))
 
 # INTEGRATION TEST CONFIG
 NOFORWARD:=1
