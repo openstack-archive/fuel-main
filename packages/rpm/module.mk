@@ -70,7 +70,7 @@ $(BUILD_DIR)/packages/rpm/$1.done: \
 		$(BUILD_DIR)/repos/repos.done
 	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	sudo sh -c "$$$${SANDBOX_UP}"
-	sudo yum -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) -y --nogpgcheck install ruby rpm-build tar python-setuptools
+	sudo yum -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) -y --nogpgcheck install ruby rpm-build tar python-setuptools python-pbr
 	sudo mkdir -p $$(SANDBOX)/tmp/SOURCES
 	sudo cp -r $(BUILD_DIR)/packages/rpm/sources/$1/* $$(SANDBOX)/tmp/SOURCES
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/$1.spec $$(SANDBOX)/tmp
@@ -86,6 +86,7 @@ endef
 
 $(eval $(call prepare_file_source,fencing-agent,fencing-agent.rb,$(BUILD_DIR)/repos/nailgun/bin/fencing-agent.rb))
 $(eval $(call prepare_file_source,fencing-agent,fencing-agent.cron,$(BUILD_DIR)/repos/nailgun/bin/fencing-agent.cron))
+$(eval $(call prepare_python_source,fuel-agent,fuel-agent-0.1.0.tar.gz,$(BUILD_DIR)/repos/nailgun/fuel_agent))
 $(eval $(call prepare_python_source,fuel-ostf,fuel-ostf-0.1.tar.gz,$(BUILD_DIR)/repos/ostf))
 $(eval $(call prepare_python_source,fuelmenu,fuelmenu-0.1.tar.gz,$(BUILD_DIR)/repos/nailgun/fuelmenu))
 $(eval $(call prepare_file_source,nailgun-agent,agent,$(BUILD_DIR)/repos/nailgun/bin/agent))
@@ -101,6 +102,7 @@ $(eval $(call prepare_file_source,ruby21-rubygem-astute,astute.conf,$(SOURCE_DIR
 $(eval $(call prepare_ruby21_source,ruby21-rubygem-astute,astute-0.0.2.gem,$(BUILD_DIR)/repos/astute))
 
 $(eval $(call build_rpm,fencing-agent))
+$(eval $(call build_rpm,fuel-agent))
 $(eval $(call build_rpm,fuelmenu))
 $(eval $(call build_rpm,nailgun-mcagents))
 $(eval $(call build_rpm,ruby21-nailgun-mcagents))
