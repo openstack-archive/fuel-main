@@ -47,7 +47,8 @@ CENTOS_REPO_ART_NAME?=centos-repo.tar
 UBUNTU_REPO_ART_NAME?=ubuntu-repo.tar
 PUPPET_ART_NAME?=puppet.tgz
 OPENSTACK_YAML_ART_NAME?=openstack.yaml
-
+TARGET_UBUNTU_IMG_ART_NAME?=ubuntu_1204_x86_64.tar
+TARGET_CENTOS_IMG_ART_NAME?=centos_65_x86_64.tar
 # Where we put artifacts
 ISO_PATH:=$(ARTS_DIR)/$(ISO_NAME).iso
 IMG_PATH:=$(ARTS_DIR)/$(ISO_NAME).img
@@ -196,6 +197,7 @@ EXTRA_DEB_REPOS?=
 # Comma or space separated list. Available feature groups:
 #   experimental - allow experimental options
 #   mirantis - enable Mirantis logos and support page
+#   imagebased - add target images into iso and build bootstrap image with fuel_agent
 FEATURE_GROUPS?=experimental
 comma:=,
 FEATURE_GROUPS:=$(subst $(comma), ,$(FEATURE_GROUPS))

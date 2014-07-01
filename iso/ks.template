@@ -398,6 +398,9 @@ chmod 700 /root/.ssh
 cp ${SOURCE}/bootstrap/bootstrap.rsa /root/.ssh
 chmod 600 /root/.ssh/bootstrap.rsa
 
+# Copying target OS images
+test -d ${SOURCE}/targetimages && cp -r ${SOURCE}/targetimages ${repodir}
+
 # Unpacking puppet manifests for master and slave
 cp ${SOURCE}/puppet-slave.tgz ${repodir}/
 tar zxf ${SOURCE}/puppet-slave.tgz -C /etc/puppet/modules
