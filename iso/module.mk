@@ -131,6 +131,26 @@ $(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)): \
 
 $(ISOROOT)/bootstrap/bootstrap.rsa: $(SOURCE_DIR)/bootstrap/ssh/id_rsa ; $(ACTION.COPY)
 
+########################
+# Target images
+########################
+
+$(BUILD_DIR)/iso/isoroot-image.done: $(call depv,FEATURE_GROUPS)
+ifneq $(filter imagebased,$(FEATURE_GROUPS)),)
+$(BUILD_DIR)/iso/isoroot-image.done: $(BUILD_DIR)/image/build.done
+	@mkdir -p $(ISOROOT)/targetimages/centos
+	cp $(BUILD_DIR)/image/centos/centos.img* $(ISOROOT)/targetimages/centos
+	cp $(BUILD_DIR)/image/centos/vmlinuz* $(ISOROOT)/targetimages/centos
+	cp $(BUILD_DIR)/image/centos/initramfs* $(ISOROOT)/targetimages/centos
+	@mkdir -p $(ISOROOT)/targetimages/ubuntu
+	cp $(BUILD_DIR)/image/ubuntu/ubuntu.img* $(ISOROOT)/targetimages/ubuntu
+	cp $(BUILD_DIR)/image/ubuntu/vmlinuz* $(ISOROOT)/targetimages/ubuntu
+	cp $(BUILD_DIR)/image/ubuntu/initrd* $(ISOROOT)/targetimages/ubuntu
+	$(ACTION.TOUCH)
+else
+$(BUILD_DIR)/iso/isoroot-image.done:
+	$(ACTION.TOUCH)
+endif
 
 ########################
 # Iso image root file system.
@@ -143,6 +163,7 @@ $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
 		$(BUILD_DIR)/iso/isoroot-bootstrap.done \
+		$(BUILD_DIR)/iso/isoroot-image.done \
 		$(ISOROOT)/docker.done
 	$(ACTION.TOUCH)
 

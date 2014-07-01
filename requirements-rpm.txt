@@ -41,6 +41,7 @@ ceph-radosgw
 ceph-test
 cirros-testvm
 cirros-testvmware
+cloud-init
 cluster-glue-libs-1.0.11-59.1
 cman
 cobbler
@@ -372,6 +373,7 @@ python-greenlet
 python-greenlet-devel
 python-heatclient
 python-httplib2-0.7.7-1.el6
+python-imgcreate
 python-importlib-1.0.2-1.el6
 python-ipaddr-2.1.9-1.el6
 python-iso8601
