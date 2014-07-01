@@ -475,9 +475,6 @@ echo "server 127.127.1.0"            >> /etc/ntp.conf
 echo "fudge  127.127.1.0 stratum 10" >> /etc/ntp.conf
 echo "tos    orphan 7"               >> /etc/ntp.conf
 
-chkconfig ntpd on
-chkconfig ntpdate on
-
 # Do not show error message on ntpdate failure. Customers should not be confused
 # if admin node does not have access to the internet time servers.
 sed -i /etc/rc.d/init.d/ntpdate -e 's/\([ $RETVAL -eq 0 ] && success || \)failure/\1success/'
