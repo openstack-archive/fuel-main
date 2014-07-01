@@ -195,6 +195,20 @@ class FuelWebClient(object):
             message='There is no {0} role in release id {1}'.format(
                 role_name, release_name))
 
+    def assert_fuel_version(self, fuel_version):
+        logger.info('Assert fuel version is {0}'.format(fuel_version))
+        version = self.client.get_api_version()
+        logger.debug('version get from api is {0}'.format(version['release']))
+        assert_equal(version['release'], fuel_version,
+                     'Release state is not {0}'.format(fuel_version))
+
+    def assert_nailgun_upgrade_migration(self):
+        for release in self.client.get_releases():
+            release['can_update_from_versions']
+            logger.debug('new nailgun db field is {0}'.format(
+                release['can_update_from_versions']))
+        return True
+
     @logwrap
     def assert_task_success(
             self, task, timeout=130 * 60, interval=5, progress=None):
@@ -930,3 +944,38 @@ class FuelWebClient(object):
 
     def get_nailgun_version(self):
         logger.info("ISO version: %s" % self.client.get_api_version())
+
+    @logwrap
+    def assert_nodes_in_ready_state(self, cluster_id):
+        for nailgun_node in self.client.list_cluster_nodes(cluster_id):
+            assert_equal(nailgun_node['status'], 'ready',
+                         'Nailgun node status is not ready but {0}'.format(
+                             nailgun_node['status']))
+
+    @logwrap
+    def manual_rollback(self, remote, rollback_version):
+        remote.execute('rm /etc/supervisord.d/current')
+        remote.execute('ln -s /etc/supervisord.d/{0}/'
+                       ' /etc/supervisord.d/current'.format(rollback_version))
+        remote.execute('rm /etc/fuel/version.yaml')
+        remote.execute('ln -s /etc/fuel/{0}/version.yaml'
+                       ' /etc/fuel/version.yaml'.format(rollback_version))
+        logger.debug('stopping supervizor')
+        try:
+            remote.execute('/etc/init.d/supervisord stop')
+        except Exception as e:
+            logger.debug('exception is {0}'.format(e))
+        logger.debug('stop docker')
+        try:
+            remote.execute('docker stop $(docker ps -q)')
+        except Exception as e:
+            logger.debug('exception is {0}'.format(e))
+        logger.debug('start supervisor')
+        try:
+            remote.execute('/etc/init.d/supervisord start')
+        except Exception as e:
+            logger.debug('exception is {0}'.format(e))
+
+    @logwrap
+    def modify_python_file(self, remote, modification, file):
+        remote.execute('sed -i "{0}" {1}'.format(modification, file))
