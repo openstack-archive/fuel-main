@@ -466,6 +466,7 @@ class SimpleCinder(TestBasic):
         Snapshot: deploy_simple_cinder
 
         """
+        self.check_run("deploy_simple_cinder")
         self.env.revert_snapshot("ready_with_3_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
