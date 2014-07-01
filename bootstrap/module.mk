@@ -126,6 +126,9 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 
 	# Installing custom rpms
 	$(YUM) install $(BOOTSTRAP_RPMS_CUSTOM)
+ifneq ($(filter imagebased,$(FEATURE_GROUPS)),)
+	$(YUM) install fuel-agent
+endif
 
 	# Copying custom files
 	sudo rsync -rlptDK $(SOURCE_DIR)/bootstrap/sync/ $(INITRAMROOT)
