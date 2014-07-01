@@ -13,6 +13,7 @@
 #    under the License.
 import hashlib
 import re
+import traceback
 from fuelweb_test import logger
 from fuelweb_test import logwrap
 from proboscis.asserts import assert_equal
@@ -186,3 +187,92 @@ def check_unallocated_space(disks, contr_img_ceph=False):
             if not bool(sum(sizes) == disk["size"]):
                 return False
     return True
+
+
+@logwrap
+def check_upgraded_containers(remote, version_from, version_to):
+    containers = remote.execute("docker ps | tail -n +2 |"
+                                " awk '{ print $NF;}'")['stdout']
+    symlink = remote.execute("ls -l /etc/supervisord.d/ - current")['stdout']
+    logger.debug('containers are {0}'.format(containers))
+    logger.debug('symlinks are {0}'.format(symlink))
+    components = [co.split('-') for x in containers for co in x.split(',')]
+
+    for i in components:
+        assert_true(version_from != i[2],
+                    'There are {0} containers'.format(version_from))
+    for i in components:
+        assert_true(version_to == i[2],
+                    'There are no {0} containers'.format(version_to))
+    for i in range(0, len(symlink)):
+        if 'current -> /etc/supervisord.d' in symlink[i]:
+            assert_true('current -> /etc/supervisord.d/{0}'.format(version_to)
+                        in symlink[i],
+                        'Symlink is set not to {0}'.format(version_to))
+
+
+@logwrap
+def upload_tarball(node_ssh, tar_path, tar_target):
+    try:
+        logger.debug("Start to upload tar file")
+        node_ssh.upload(tar_path, tar_target)
+    except Exception as e:
+        logger.error('Failed to upload file with error {0}'.format(e))
+        logger.error(traceback.format_exc())
+
+
+@logwrap
+def check_tarball_exists(node_ssh, name, path):
+    result = ''.join(node_ssh.execute(
+        'ls -all {0} | grep {1}'.format(path, name))['stdout'])
+    assert_true(name in result, 'Can not find tarball')
+
+
+@logwrap
+def untar(node_ssh, name, path):
+    result = ''.join(node_ssh.execute(
+        'cd {0} && tar -xpvf {1}'.format(path, name))['stdout'])
+    logger.debug('Result from tar command is {0}'.format(result))
+
+
+@logwrap
+def run_script(node_ssh, script_path, script_name):
+    path = os.path.join(script_path, script_name)
+    c_res = node_ssh.execute('chmod 755 {0}'.format(path))
+    logger.debug("Result of cmod is {0}".format(c_res))
+    chan, stdin, stderr, stdout = node_ssh.execute_async(path)
+    logger.debug('Try to read status code from chain...')
+    logger.debug('Exit status is {0}'.format(chan.recv_exit_status()))
+    #assert_equal(chan.recv_exit_status(), 0,
+                 #'Upgrade script fails with next message {0}'.
+                 #format(chan.recv_exit_status()))
+
+
+@logwrap
+def run_with_rollback(node_ssh, script_path, script_name):
+    path = os.path.join(script_path, script_name)
+    c_res = node_ssh.execute('chmod 755 {0}'.format(path))
+    logger.debug("Result of cmod is {0}".format(c_res))
+    chan, stdin, stderr, stdout = node_ssh.execute_async(path)
+    logger.debug('Try to read status code from chain...')
+
+
+@logwrap
+def wait_upgrade_is_done(node_ssh, timeout):
+    logger.debug('start waiting for upgrade done')
+    logger.info('waiting for upgrade starts')
+    wait(
+        lambda: not node_ssh.execute(
+            "grep 'upgrade is done!' /var/log/fuel_upgrade.log"
+        )['exit_code'], timeout=timeout)
+
+
+@logwrap
+def wait_rollback_is_done(node_ssh, timeout):
+    wait(
+        lambda: not node_ssh.execute(
+            "grep 'rollback is done!' /var/log/fuel_upgrade.log"
+        )['exit_code'], timeout=timeout)
+    logger.debug('rollback exit code is {0}'.format(node_ssh.execute(
+                 "grep 'rollback is done!' /var/log/fuel_upgrade.log"
+                 )['exit_code']))
