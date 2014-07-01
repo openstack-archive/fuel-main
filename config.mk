@@ -40,13 +40,15 @@ ISO_NAME?=fuel-$(PRODUCT_VERSION)
 UPGRADE_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-upgrade
 OPENSTACK_PATCH_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-patch
 VBOX_SCRIPTS_NAME?=vbox-scripts-$(PRODUCT_VERSION)
-BOOTSTARP_ART_NAME?=bootstrap.tar.gz
+BOOTSTRAP_ART_NAME?=bootstrap.tar.gz
 DOCKER_ART_NAME?=fuel-images.tar.lrz
 VERSION_YAML_ART_NAME?=version.yaml
 CENTOS_REPO_ART_NAME?=centos-repo.tar
 UBUNTU_REPO_ART_NAME?=ubuntu-repo.tar
 PUPPET_ART_NAME?=puppet.tgz
 OPENSTACK_YAML_ART_NAME?=openstack.yaml
+TARGET_UBUNTU_IMG_ART_NAME?=ubuntu_target_images.tar
+TARGET_CENTOS_IMG_ART_NAME?=centos_target_images.tar
 
 # Where we put artifacts
 ISO_PATH:=$(ARTS_DIR)/$(ISO_NAME).iso
@@ -63,8 +65,11 @@ CENTOS_MAJOR:=6
 CENTOS_MINOR:=5
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
+CENTOS_IMAGE_RELEASE:=$(CENTOS_MAJOR)$(CENTOS_MINOR)
 UBUNTU_RELEASE:=precise
 UBUNTU_INSTALLER_KERNEL_VERSION:=3.11.0-18
+UBUNTU_ARCH:=amd64
+UBUNTU_IMAGE_RELEASE:=1204
 
 # Rebuld packages locally (do not use upstream versions)
 # This option is depricated, because there are no upstream versions
