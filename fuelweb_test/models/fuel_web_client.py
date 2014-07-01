@@ -195,6 +195,13 @@ class FuelWebClient(object):
             message='There is no {0} role in release id {1}'.format(
                 role_name, release_name))
 
+    def assert_fuel_version(self, fuel_version):
+        logger.info('Assert fuel version is {0}'.format(fuel_version))
+        version = self.client.get_api_version()
+        logger.debug('version get from api is {0}'.format(version['release']))
+        assert_equal(version['release'], fuel_version,
+                     'Release state is not {0}'.format(fuel_version))
+
     @logwrap
     def assert_task_success(
             self, task, timeout=130 * 60, interval=5, progress=None):
@@ -267,7 +274,8 @@ class FuelWebClient(object):
                        settings=None,
                        release_name=help_data.OPENSTACK_RELEASE,
                        mode=DEPLOYMENT_MODE_SIMPLE,
-                       port=514):
+                       port=514,
+                       release_id=None):
         """Creates a cluster
         :param name:
         :param release_name:
@@ -277,7 +285,10 @@ class FuelWebClient(object):
         :return: cluster_id
         """
         logger.info('Create cluster with name %s', name)
-        release_id = self.client.get_release_id(release_name=release_name)
+        if release_id:
+            release_id = release_id
+        else:
+            release_id = self.client.get_release_id(release_name=release_name)
         logger.info('Release_id of %s is %s', release_name, str(release_id))
 
         if settings is None:
@@ -958,3 +969,52 @@ class FuelWebClient(object):
 
     def get_nailgun_version(self):
         logger.info("ISO version: %s" % self.client.get_api_version())
+
+    @logwrap
+    def assert_nodes_in_ready_state(self, cluster_id):
+        for nailgun_node in self.client.list_cluster_nodes(cluster_id):
+            assert_equal(nailgun_node['status'], 'ready',
+                         'Nailgun node status is not ready but {0}'.format(
+                             nailgun_node['status']))
+
+    @logwrap
+    def manual_rollback(self, remote, rollback_version):
+        remote.execute('rm /etc/supervisord.d/current')
+        remote.execute('ln -s /etc/supervisord.d/{0}/'
+                       ' /etc/supervisord.d/current'.format(rollback_version))
+        remote.execute('rm /etc/fuel/version.yaml')
+        remote.execute('ln -s /etc/fuel/{0}/version.yaml'
+                       ' /etc/fuel/version.yaml'.format(rollback_version))
+        remote.execute('rm /var/www/nailgun/bootstrap')
+        remote.execute('ln -s /var/www/nailgun/{}_bootstrap'.
+                       format(rollback_version))
+        logger.debug('stopping supervisor')
+        try:
+            remote.execute('/etc/init.d/supervisord stop')
+        except Exception as e:
+            logger.debug('exception is {0}'.format(e))
+        logger.debug('stop docker')
+        try:
+            remote.execute('docker stop $(docker ps -q)')
+        except Exception as e:
+            logger.debug('exception is {0}'.format(e))
+        logger.debug('start supervisor')
+        time.sleep(60)
+        try:
+            remote.execute('/etc/init.d/supervisord start')
+        except Exception as e:
+            logger.debug('exception is {0}'.format(e))
+        time.sleep(60)
+
+    @logwrap
+    def modify_python_file(self, remote, modification, file):
+        remote.execute('sed -i "{0}" {1}'.format(modification, file))
+
+    @logwrap
+    def get_releases_list_for_os(self, release_name):
+        full_list = self.client.get_releases()
+        release_ids = []
+        for release in full_list:
+            if release_name in release["name"]:
+                release_ids.append(release['id'])
+        return release_ids
