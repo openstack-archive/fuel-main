@@ -82,7 +82,7 @@ class NeutronGre(TestBasic):
             should_fail=1,
             failed_test_name=['Create volume and attach it to instance'])
 
-        self.env.make_snapshot("deploy_neutron_gre")
+        self.env.make_snapshot("deploy_neutron_gre", is_make=True)
 
 
 @test(groups=["thread_1", "neutron"])
@@ -202,7 +202,7 @@ class NeutronGreHa(TestBasic):
             should_fail=1,
             failed_test_name=['Create volume and attach it to instance'])
 
-        self.env.make_snapshot("deploy_neutron_gre_ha")
+        self.env.make_snapshot("deploy_neutron_gre_ha", is_make=True)
 
 
 @test(groups=["thread_3", "neutron", "ha", "neutron_ha", "bvt_1"])

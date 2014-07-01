@@ -486,7 +486,7 @@ class SimpleCinder(TestBasic):
 
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
-        self.env.make_snapshot("deploy_simple_cinder")
+        self.env.make_snapshot("deploy_simple_cinder", is_make=True)
 
 
 @test(groups=["thread_1"])
