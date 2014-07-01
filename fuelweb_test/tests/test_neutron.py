@@ -45,7 +45,7 @@ class NeutronGre(TestBasic):
         Snapshot deploy_neutron_gre
 
         """
-
+        self.check_run("deploy_neutron_gre")
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
