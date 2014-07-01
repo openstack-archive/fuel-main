@@ -240,6 +240,11 @@ vim-enhanced
 virt-what
 wget
 yum
+telnet
+nmap-ncat
+rsync
+strace
+lsof
 
 %include /tmp/post_partition.ks
 
