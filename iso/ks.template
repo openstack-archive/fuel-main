@@ -405,6 +405,9 @@ mkdir -p ${wwwdir}/bootstrap
 cp -r ${SOURCE}/bootstrap/initramfs.img ${wwwdir}/bootstrap
 cp -r ${SOURCE}/bootstrap/linux ${wwwdir}/bootstrap
 
+# Copying target images
+cp -r ${SOURCE}/targetimages ${wwwdir}
+
 mkdir -p /root/.ssh
 chmod 700 /root/.ssh
 cp ${SOURCE}/bootstrap/bootstrap.rsa /root/.ssh
