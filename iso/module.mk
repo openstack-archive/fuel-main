@@ -192,6 +192,20 @@ $(BUILD_DIR)/iso/isoroot-bootstrap.done: \
 $(ISOROOT)/bootstrap/bootstrap.rsa: $(SOURCE_DIR)/bootstrap/ssh/id_rsa ;
 	$(ACTION.COPY)
 
+########################
+# Target images
+########################
+
+$(BUILD_DIR)/iso/isoroot-image.done: $(call depv,FEATURE_GROUPS)
+ifeq ($(filter imagebased,$(FEATURE_GROUPS)),)
+$(BUILD_DIR)/iso/isoroot-image.done: $(BUILD_DIR)/image/build.done
+	tar xf $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME) -C $(ISOROOT)/targetimages
+	tar xf $(BUILD_DIR)/images/$(TARGET_UBUNTU_IMG_ART_NAME) -C $(ISOROOT)/targetimages
+	$(ACTION.TOUCH)
+else
+$(BUILD_DIR)/iso/isoroot-image.done:
+	$(ACTION.TOUCH)
+endif
 
 ########################
 # Iso image root file system.
@@ -201,7 +215,8 @@ $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
 		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
-		$(BUILD_DIR)/iso/isoroot-bootstrap.done
+		$(BUILD_DIR)/iso/isoroot-bootstrap.done \
+		$(BUILD_DIR)/iso/isoroot-image.done
 	$(ACTION.TOUCH)
 
 
