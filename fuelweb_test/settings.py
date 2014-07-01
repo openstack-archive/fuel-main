@@ -220,3 +220,11 @@ MAKE_SNAPSHOT = os.environ.get('MAKE_SNAPSHOT', 'false') == 'true'
 NEUTRON_FAILOVER = os.environ.get('NEUTRON_FAILOVER', 'false') == 'true'
 NEUTRON_SEGMENT_TYPE = os.environ.get('NEUTRON_SEGMENT_TYPE',
                                       NEUTRON_SEGMENT["vlan"])
+
+# TarBall data for updates and upgrades
+
+UPGRADE_TARBALL_PATH = os.environ.get('UPGRADE_TARBALL_PATH')
+
+UPGRADE_FUEL_FROM = os.environ.get('UPGRADE_FUEL_FROM', '5.0')
+UPGRADE_FUEL_TO = os.environ.get('UPGRADE_FUEL_TO', '5.1')
+
