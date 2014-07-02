@@ -226,7 +226,7 @@ class MuranoSimple(TestBasic):
 @test(groups=["services", "services.ceilometer", "services_simple"])
 class CeilometerSimpleMongo(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_ceilometer_simple_with_mongo"])
     @log_snapshot_on_error
     def deploy_ceilometer_simple_with_mongo(self):
@@ -245,7 +245,7 @@ class CeilometerSimpleMongo(TestBasic):
         Snapshot: deploy_ceilometer_simple_with_mongo
 
         """
-        self.env.revert_snapshot("ready_with_5_slaves")
+        self.env.revert_snapshot("ready_with_3_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -257,9 +257,8 @@ class CeilometerSimpleMongo(TestBasic):
             cluster_id,
             {
                 'slave-01': ['controller'],
-                'slave-02': ['compute'],
-                'slave-03': ['cinder'],
-                'slave-04': ['mongo']
+                'slave-02': ['compute', 'cinder'],
+                'slave-03': ['mongo']
             }
         )
         nailgun_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
@@ -292,7 +291,7 @@ class CeilometerSimpleMongo(TestBasic):
             service_name='ceilometer-api')
 
         partitions = checkers.get_mongo_partitions(
-            self.env.get_ssh_to_remote_by_name("slave-04"), "vda5")
+            self.env.get_ssh_to_remote_by_name("slave-03"), "vda5")
         assert_equal(partitions[0].rstrip(), mongo_disk_gb,
                      'Mongo size {0} before deployment is not equal'
                      ' to size after {1}'.format(mongo_disk_gb, partitions))
@@ -304,7 +303,7 @@ class CeilometerSimpleMongo(TestBasic):
 
         self.env.make_snapshot("deploy_ceilometer_simple_with_mongo")
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_ceilometer_simple_multirole"])
     @log_snapshot_on_error
     def deploy_ceilometer_simple_multirole(self):
@@ -322,7 +321,7 @@ class CeilometerSimpleMongo(TestBasic):
         Snapshot: deploy_ceilometer_simple_multirole
 
         """
-        self.env.revert_snapshot("ready_with_5_slaves")
+        self.env.revert_snapshot("ready_with_3_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -335,8 +334,7 @@ class CeilometerSimpleMongo(TestBasic):
             {
                 'slave-01': ['controller'],
                 'slave-02': ['compute'],
-                'slave-03': ['cinder', 'mongo'],
-                'slave-04': ['cinder', 'mongo']
+                'slave-03': ['cinder', 'mongo']
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
