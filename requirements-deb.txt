@@ -544,9 +544,8 @@ multiarch-support
 murano-api
 murano-dashboard
 murano-apps
-mysql-client
-mysql-common
-mysql-server-wsrep
+mysql-client-5.6
+mysql-server-wsrep-5.6
 nailgun-agent
 nailgun-mcagents
 nailgun-net-check
