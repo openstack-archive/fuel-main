@@ -12,7 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import base64
 import json
 import urllib2
 
@@ -21,17 +20,14 @@ from fuelweb_test import logger
 
 class HTTPClient(object):
 
-    base64string = None
-
-    def __init__(self, url, user=None, password=None):
+    def __init__(self, url, token=None):
         logger.info('Initiate HTTPClient with url %s', url)
         self.url = url
-        if user and password:
-            creds = '{0}:{1}'.format(user, password)
-            logger.info('Set credentials to %s', creds)
-            self.base64string = base64.standard_b64encode(creds)
-
+        self.token = token
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)
+
+    def reset_token(self, token):
+        """Should be used in case token is expired."""
 
     def get(self, endpoint):
         req = urllib2.Request(self.url + endpoint)
@@ -59,6 +55,7 @@ class HTTPClient(object):
         return self._open(req)
 
     def _open(self, req):
-        if self.base64string:
-            req.add_header("Authorization", "Basic %s" % self.base64string)
+        if self.token is not None:
+            logger.info('Set X-Auth-Token to %s', self.token)
+            req.add_header("X-Auth-Token", self.token)
         return self.opener.open(req)
