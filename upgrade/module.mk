@@ -1,9 +1,12 @@
 .PHONY: upgrade fuel-upgrade openstack-upgrade
 
+upgrade: UPGRADERS ?= "docker openstack"
 upgrade: $(BUILD_DIR)/upgrade/upgrade.done
 
+fuel-upgrade: UPGRADERS ?= "docker"
 fuel-upgrade: $(BUILD_DIR)/upgrade/fuel.done
 
+openstack-upgrade: UPGRADERS ?= "openstack"
 openstack-upgrade: $(BUILD_DIR)/upgrade/openstack.done
 
 $(BUILD_DIR)/upgrade/upgrade.done: \
@@ -33,7 +36,8 @@ $(BUILD_DIR)/upgrade/common-part.done: \
 	$(BUILD_DIR)/upgrade/venv/bin/pip install $(BUILD_DIR)/repos/nailgun/fuel_upgrade_system/fuel_upgrade
 	tar rf $(BUILD_DIR)/upgrade/common-part.tar -C $(BUILD_DIR)/upgrade/venv/lib/python* --xform s:^:upgrade/: site-packages
 	tar rf $(BUILD_DIR)/upgrade/common-part.tar -C $(BUILD_DIR)/upgrade/venv --xform s:^:upgrade/: bin/fuel-upgrade
-	tar rf $(BUILD_DIR)/upgrade/common-part.tar --mode=755 -C $(SOURCE_DIR)/upgrade upgrade.sh
+	sed 's/{{UPGRADERS}}/${UPGRADERS}/g' $(SOURCE_DIR)/upgrade/upgrade_template.sh > $(BUILD_DIR)/upgrade/upgrade.sh
+	tar rf $(BUILD_DIR)/upgrade/common-part.tar --mode=755 -C $(BUILD_DIR)/upgrade upgrade.sh
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/upgrade/fuel-part.done: \
