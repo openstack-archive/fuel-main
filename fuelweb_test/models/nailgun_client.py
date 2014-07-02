@@ -18,13 +18,42 @@ from fuelweb_test.helpers.decorators import json_parse
 from fuelweb_test.helpers.http import HTTPClient
 from fuelweb_test.settings import OPENSTACK_RELEASE
 
+from keystoneclient.v2_0 import Client as keystoneclient
+from keystoneclient import exceptions
+
+
+DEFAULT_CREDS = {'username': 'admin',
+                 'password': 'admin',
+                 'tenant_name': 'admin'}
+
 
 class NailgunClient(object):
-    def __init__(self, admin_node_ip, user=None, password=None):
+    def __init__(self, admin_node_ip, **kwargs):
         url = "http://{0}:8000".format(admin_node_ip)
         logger.info('Initiate Nailgun client with url %s', url)
-        self.client = HTTPClient(url=url, user=user, password=password)
+        keystone_url = "http://{0}:5000/v2.0".format(admin_node_ip)
+        creds = dict(DEFAULT_CREDS, **kwargs)
+        self.keystone = None
+        self.token = None
+        if self.authenticate(keystone_url, creds):
+            self.token = self.keystone.auth_token
+        self.client = HTTPClient(url=url, token=self.token)
         super(NailgunClient, self).__init__()
+
+    def authenticate(self, url, creds):
+        try:
+            self.keystone = keystoneclient(auth_url=url, **creds)
+            # it depends on keystone version, some versions doing auth
+            # explicitly some dont, but we are making it explicitly always
+            return self.keystone.authenticate()
+        except exceptions.AuthorizationFailure:
+            logger.warning(
+                'Cant establish connection to keystone with url %s', url)
+            return False
+
+    def refresh_token(self):
+        self.keystone.authenticate()
+        self.client.reset_token(self.keystone.auth_token)
 
     @logwrap
     def get_root(self):
