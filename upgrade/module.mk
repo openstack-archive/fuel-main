@@ -1,9 +1,9 @@
 .PHONY: upgrade fuel-upgrade openstack-upgrade
 
-upgrade: UPGRADERS ?= "docker host-system openstack"
+upgrade: UPGRADERS ?= "docker host-system bootstrap openstack"
 upgrade: $(BUILD_DIR)/upgrade/upgrade.done
 
-fuel-upgrade: UPGRADERS ?= "docker host-system"
+fuel-upgrade: UPGRADERS ?= "docker host-system bootstrap"
 fuel-upgrade: $(BUILD_DIR)/upgrade/fuel.done
 
 openstack-upgrade: UPGRADERS ?= "openstack"
@@ -46,6 +46,7 @@ $(BUILD_DIR)/upgrade/fuel-part.done: \
 	rm -f $(BUILD_DIR)/upgrade/fuel-part.tar
 	tar cf $(BUILD_DIR)/upgrade/fuel-part.tar -C $(ISOROOT)/docker/images --xform s:^:upgrade/images/: fuel-images.tar.lrz
 	tar rf $(BUILD_DIR)/upgrade/fuel-part.tar -C $(BUILD_DIR)/iso/isoroot --xform s:^:upgrade/config/: version.yaml
+	tar rf $(BUILD_DIR)/upgrade/fuel-part.tar -C $(BUILD_DIR)/bootstrap --xform s:^:upgrade/bootstrap/: initramfs.img linux
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/upgrade/openstack-part.done: \
