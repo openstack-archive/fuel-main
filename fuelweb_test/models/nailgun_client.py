@@ -12,19 +12,62 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import time
+
 from fuelweb_test import logwrap
 from fuelweb_test import logger
 from fuelweb_test.helpers.decorators import json_parse
 from fuelweb_test.helpers.http import HTTPClient
 from fuelweb_test.settings import OPENSTACK_RELEASE
 
+from keystoneclient.v2_0 import Client as keystoneclient
+from keystoneclient import exceptions
+
+
+DEFAULT_CREDS = {'username': 'admin',
+                 'password': 'admin',
+                 'tenant_name': 'admin'}
+
+TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+
+
+def is_expired(token):
+    return time.gmtime() > time.strptime(token.expires, TIME_FORMAT)
+
 
 class NailgunClient(object):
-    def __init__(self, admin_node_ip, user=None, password=None):
+    def __init__(self, admin_node_ip, **kwargs):
         url = "http://{0}:8000".format(admin_node_ip)
         logger.info('Initiate Nailgun client with url %s', url)
-        self.client = HTTPClient(url=url, user=user, password=password)
+        self._client = HTTPClient(url=url)
+
+        keystone_url = "http://{0}:5000/v2.0".format(admin_node_ip)
+        self.creds = dict(DEFAULT_CREDS, **kwargs)
+        self.keystone = self.authenticate(keystone_url, self.creds)
+        self.refresh_token()
         super(NailgunClient, self).__init__()
+
+    @property
+    def client(self):
+        if is_expired(self.token):
+            self.refresh_token()
+        return self._client
+
+    def authenticate(self, url):
+        try:
+            keystone = keystoneclient(auth_url=url, **self.creds)
+            # it depends on keystone version, some versions doing auth
+            # explicitly some dont, but we are making it explicitly always
+            keystone.authenticate()
+            return keystone
+        except exceptions.AuthorizationFailure:
+            logger.warning(
+                'Cant establish connection to keystone with url %s', url)
+            return None
+
+    def refresh_token(self):
+        self.token = self.keystone.tokens.authenticate(**self.creds)
+        self.client.reset_token(self.token.id)
 
     @logwrap
     def get_root(self):
