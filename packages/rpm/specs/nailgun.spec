@@ -25,6 +25,7 @@ Requires:    python-fysom == 1.0.11
 Requires:    python-iso8601 == 0.1.9
 Requires:    python-jinja2 == 2.7
 Requires:    python-jsonschema == 2.3.0
+Requires:    python-keystoneclient >= 1:0.4.1
 Requires:    python-kombu == 1:3.0.16
 Requires:    python-mako == 0.9.1
 Requires:    python-markupsafe == 0.18
