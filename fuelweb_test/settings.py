@@ -53,7 +53,7 @@ else:
     slave_mem_default = 1536
 HARDWARE["slave_node_memory"] = int(
     os.environ.get("SLAVE_NODE_MEMORY", slave_mem_default))
-NODE_VOLUME_SIZE = os.environ.get('NODE_VOLUME_SIZE', 50)
+NODE_VOLUME_SIZE = int (os.environ.get('NODE_VOLUME_SIZE', 50))
 NODES_COUNT = os.environ.get('NODES_COUNT', 10)
 
 FORWARD_DEFAULT = os.environ.get('FORWARD_DEFAULT', None)
