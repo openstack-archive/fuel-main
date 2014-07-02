@@ -2,9 +2,10 @@
 
 SCRIPT_PATH=$(dirname $(readlink -e $0))
 UPGRADE_PATH=$SCRIPT_PATH/upgrade
+UPGRADERS={{UPGRADERS}}
 
 
-error() {
+function error {
   local message="$1"
   local code="${2:-1}"
 
@@ -29,9 +30,14 @@ function prepare_upgrade_files {
 
 
 function run_upgrade {
-  PYTHONPATH=$UPGRADE_PATH/site-packages python $UPGRADE_PATH/bin/fuel-upgrade --src $UPGRADE_PATH docker || error "Upgrade failed" $?
+  # decompress images iff the docker upgrader is used
+  if [[ $UPGRADERS == *docker* ]]; then
+    prepare_upgrade_files
+  fi
+
+  # run fuel_upgrade script
+  PYTHONPATH="$UPGRADE_PATH/site-packages" python "$UPGRADE_PATH/bin/fuel-upgrade" --src "$UPGRADE_PATH" $UPGRADERS || error "Upgrade failed" $?
 }
 
 
-prepare_upgrade_files
 run_upgrade
