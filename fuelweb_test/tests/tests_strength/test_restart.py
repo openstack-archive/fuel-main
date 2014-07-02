@@ -162,7 +162,7 @@ class CephHARestart(TestBasic):
         self.env.make_snapshot("ceph_ha")
 
 
-@test(groups=["thread_5"])
+@test(groups=["thread_1"])
 class SimpleFlatRestart(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
