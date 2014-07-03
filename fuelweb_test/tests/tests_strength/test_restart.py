@@ -157,7 +157,11 @@ class CephHARestart(TestBasic):
         self.fuel_web.cold_restart_nodes(self.env.nodes().slaves[:4])
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
-        self.fuel_web.run_ostf(cluster_id=cluster_id)
+
+        # Wait until MySQL Galera is UP
+        self.fuel_web.wait_mysql_galera_is_up('slave-01')
+
+        self.fuel_web.run_ostf(cluster_id=cluster_id, should_fail=1)
 
         self.env.make_snapshot("ceph_ha")
 
