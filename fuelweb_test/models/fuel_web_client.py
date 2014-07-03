@@ -906,6 +906,21 @@ class FuelWebClient(object):
             assert_true(node['online'],
                         'Node {0} is online'.format(node['mac']))
 
+    def wait_mysql_galera_is_up(self, node_name):
+        remote = self.environment.get_ssh_to_remote_by_name(node_name)
+        cmd = ("test $(mysql --connect_timeout=5 -sse \"SELECT "
+               "VARIABLE_VALUE FROM information_schema.GLOBAL_STATUS"
+               "WHERE VARIABLE_NAME = 'wsrep_ready';\" 2>/dev/null) == 'ON'")
+        try:
+            wait(lambda:
+                 remote.execute(cmd)['exit_code'] == 0,
+                 timeout=30 * 4)
+            logger.debug("Mysql is UP")
+        except:
+            logger.error("MySQL Galera isn't ready on {host} node!".format(
+                host=node_name))
+            raise Exception
+
     def run_ostf_repeatably(self, cluster_id, test_name=None,
                             test_retries=None, checks=None):
         res = []
