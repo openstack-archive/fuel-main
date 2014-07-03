@@ -15,6 +15,9 @@ ADMIN_NETWORK:
   static_pool_end: 10.20.0.120
   dhcp_pool_start: 10.20.0.130
   dhcp_pool_end: 10.20.0.254
+FUEL_ACCESS:
+  user: admin
+  password: admin
 uid: master
 TEST_DNS: www.google.com
 astute:
@@ -23,6 +26,8 @@ astute:
 cobbler:
   password: cobbler
   user: cobbler
+keystone:
+  admin_token: admin
 mcollective:
   password: mcollective
   user: mcollective
