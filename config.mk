@@ -35,6 +35,28 @@ IMG_PATH:=$(ISO_DIR)/$(ISO_NAME).img
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
 
+# Build OpenStack packages from external sources (do not use prepackaged versions)
+# Enter the comma-separated list of OpenStack packages to build, or '0' otherwise.
+# Example: BUILD_OPENSTACK_PACKAGES=neutron,keystone
+BUILD_OPENSTACK_PACKAGES?=0
+
+# Define a set of defaults for each OpenStack package
+# For each component defined in BUILD_OPENSTACK_PACKAGES variable, this routine will set
+# the following variables (i.e. for 'BUILD_OPENSTACK_PACKAGES=neutron'):
+# NEUTRON_REPO, NEUTRON_COMMIT, NEUTRON_SPEC_REPO, NEUTRON_SPEC_COMMIT,
+# NEUTRON_GERRIT_URL, NEUTRON_GERRIT_COMMIT, NEUTRON_GERRIT_URL,
+# NEUTRON_SPEC_GERRIT_URL, NEUTRON_SPEC_GERRIT_COMMIT
+define set_vars
+    $(call uc,$(1))_REPO?=https://github.com/openstack/$(1).git
+    $(call uc,$(1))_COMMIT?=master
+    $(call uc,$(1))_SPEC_REPO?=https://osci-gerrit.mirantis.com/openstack-ci/openstack/$(1)-build.git
+    $(call uc,$(1))_SPEC_COMMIT?=master
+    $(call uc,$(1))_GERRIT_URL=https://review.openstack.org/openstack/$(1)
+    $(call uc,$(1))_GERRIT_COMMIT?=none
+    $(call uc,$(1))_SPEC_GERRIT_URL?=https://osci-gerrit.mirantis.com/openstack-ci/openstack/$(1)-build.git
+    $(call uc,$(1))_SPEC_GERRIT_COMMIT?=none
+endef
+
 # Do not compress javascript and css files
 NO_UI_OPTIMIZE:=0
 
