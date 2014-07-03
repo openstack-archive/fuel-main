@@ -31,6 +31,7 @@ if you do need to override them.
               Uses ENV_NAME variable is set.
 -j (name)   - Name of this job. Determines ISO name, Task name and used by tests.
               Uses Jenkins' JOB_NAME if not set
+-V (dir)    - Path to python virtual environment
 -i (file)   - Full path to ISO file to build or use for tests.
               Made from iso dir and name if not set.
 -t (name)   - Name of task this script should perform. Should be one of defined ones.
