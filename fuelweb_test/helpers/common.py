@@ -85,15 +85,22 @@ class Common(object):
         LOGGER.debug('Try to create key {0}'.format(key_name))
         self.nova.keypairs.create(key_name)
 
-    def create_instance(self):
+    def create_instance(self, flavor_name='test_flavor', ram=64, vcpus=1,
+                        disk=1, server_name='test_instance', image_name=None):
         LOGGER.debug('Try to create instance')
-        image = [i.id for i in self.nova.images.list()]
+
+        if image_name:
+            image = [i.id for i in self.nova.images.list()
+                     if i.name == image_name]
+        else:
+            image = [i.id for i in self.nova.images.list()]
+
         LOGGER.info('image uuid is {0}'.format(image))
         flavor = self.nova.flavors.create(
-            name='test_flavor', ram=64, vcpus=1, disk=1)
+            name=flavor_name, ram=ram, vcpus=vcpus, disk=disk)
         LOGGER.info('flavor is {0}'.format(flavor.name))
         server = self.nova.servers.create(
-            name='test_instance', image=image[0], flavor=flavor)
+            name=server_name, image=image[0], flavor=flavor)
         LOGGER.info('server is {0}'.format(server.name))
         return server
 
