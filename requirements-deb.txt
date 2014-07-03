@@ -324,6 +324,7 @@ libgtk2.0-0
 libgtk2.0-bin
 libgtk2.0-common
 libguestfs0
+libguestfs-tools
 libhcrypto4-heimdal
 libheimbase1-heimdal
 libheimntlm0-heimdal
