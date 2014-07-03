@@ -280,9 +280,7 @@ class CephRadosGW(TestBasic):
         # Run ostf
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['smoke', 'sanity', 'platform_tests'],
-            should_fail=1,
-            failed_test_name=['Check stack autoscaling'])
+            test_sets=['smoke', 'sanity', 'platform_tests'])
 
         # Check the radosqw daemon is started
         radosgw_started = lambda: len(remote.check_call(
