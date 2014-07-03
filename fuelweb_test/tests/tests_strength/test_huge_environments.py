@@ -75,9 +75,7 @@ class HugeEnvironments(base_test_case.TestBasic):
                                           interval=30)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=1,
-            failed_test_name=['Check stack autoscaling'])
+            cluster_id=cluster_id)
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_release],
           groups=["nine_nodes_separate_roles"])
