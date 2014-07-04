@@ -14,9 +14,11 @@
 
 import re
 
+from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_true
 from proboscis import test
 
+from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -267,3 +269,55 @@ class TestHaFlatScalability(TestBasic):
             test_sets=['ha', 'sanity'])
 
         self.env.make_snapshot("ha_flat_scalability")
+
+
+@test(groups=["thread_4", "ha"])
+class BackupRestoreHa(TestBasic):
+
+    @test(depends_on=[TestHaFlat.deploy_ha_flat],
+          groups=["backup_restore_ha_flat"])
+    @log_snapshot_on_error
+    def backup_restore_ha_flat(self):
+        """Backup/restore master node with cluster in ha mode
+
+        Scenario:
+            1. Revert snapshot "deploy_ha_flat"
+            2. Backup master
+            3. Check backup
+            4  Run OSTF
+            5. Add 1 node with compute role
+            6. Restore master
+            7. Check restore
+            8. Run OSTF
+
+        """
+        self.env.revert_snapshot("deploy_ha_flat")
+
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=16, networks_count=1, timeout=300)
+        self.fuel_web.backup_master(self.env.get_admin_remote())
+        checkers.backup_check(self.env.get_admin_remote())
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id)
+
+        self.env.bootstrap_nodes(self.env.nodes().slaves[5:6])
+        self.fuel_web.update_nodes(
+            cluster_id, {'slave-06': ['compute']}, True, False
+        )
+
+        assert_equal(
+            6, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))
+
+        self.fuel_web.restore_master(self.env.get_admin_remote())
+        checkers.restore_check_sum(self.env.get_admin_remote())
+        self.fuel_web.restore_check_nailgun_api(self.env.get_admin_remote())
+
+        assert_equal(
+            5, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'smoke', 'sanity'])
+
+        self.env.make_snapshot("backup_restore_ha_flat")
