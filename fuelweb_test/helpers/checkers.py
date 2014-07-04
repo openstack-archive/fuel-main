@@ -19,6 +19,8 @@ from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_true
 from devops.helpers.helpers import wait
+#from fuelweb_test.models.nailgun_client import NailgunClient
+
 
 import os
 from time import sleep
@@ -186,3 +188,40 @@ def check_unallocated_space(disks, contr_img_ceph=False):
             if not bool(sum(sizes) == disk["size"]):
                 return False
     return True
+
+
+
+def find_backup(remote):
+    arch_dir = ''.join(
+        remote.execute("ls -1u /var/backup/fuel/ | sed -n 1p")['stdout'])
+    arch_path = ''.join(
+        remote.execute("ls -1u /var/backup/fuel/{0}/*.lrz".
+                       format(arch_dir.strip()))["stdout"])
+    return arch_path
+
+
+@logwrap
+def backup_check(remote):
+    logger.info("Backup check archive status")
+    path = find_backup(remote)
+    assert_true(path, "Can not find backup. Path value {0}".format(path))
+    arch_result = None
+    try:
+        arch_result = ''.join(
+            remote.execute(("if [ -e {0} ]; then echo "
+                            " Archive exists; fi").
+                           format(path.rstrip()))["stdout"])
+    except Exception as e:
+        logger.error('exception is {0}'.format(e))
+    assert_true("Archive exists" in arch_result, "Archive does not exist")
+
+
+def restore_check_sum(remote):
+    logger.info("Restore check md5sum")
+    md5sum_backup = remote.execute("cat /sum")
+    md5sum_restore = remote.execute("md5sum /data | sed -n 1p "
+                                    " | awk '{print $1}'")
+    sum_result = None
+    if md5sum_backup == md5sum_restore:
+        sum_result = ('Sum coincide')
+    assert_true("Sum coincide" in sum_result, "Sum does not coincide")

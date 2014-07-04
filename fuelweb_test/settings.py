@@ -43,14 +43,14 @@ ADMIN_NODE_SETUP_TIMEOUT = os.environ.get("ADMIN_NODE_SETUP_TIMEOUT", 30)
 PUPPET_TIMEOUT = os.environ.get("PUPPET_TIMEOUT", 3000)
 
 HARDWARE = {
-    "admin_node_memory": os.environ.get("ADMIN_NODE_MEMORY", 1536),
+    "admin_node_memory": os.environ.get("ADMIN_NODE_MEMORY", 2048),
     "admin_node_cpu": os.environ.get("ADMIN_NODE_CPU", 2),
-    "slave_node_cpu": os.environ.get("SLAVE_NODE_CPU", 1),
+    "slave_node_cpu": os.environ.get("SLAVE_NODE_CPU", 2),
 }
 if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
-    slave_mem_default = 2048
+    slave_mem_default = 3072
 else:
-    slave_mem_default = 1536
+    slave_mem_default = 3072
 HARDWARE["slave_node_memory"] = int(
     os.environ.get("SLAVE_NODE_MEMORY", slave_mem_default))
 NODE_VOLUME_SIZE = os.environ.get('NODE_VOLUME_SIZE', 50)
