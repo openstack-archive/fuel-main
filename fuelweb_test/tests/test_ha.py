@@ -277,3 +277,43 @@ class TestHaFlatScalability(TestBasic):
                               'Check DNS resolution on compute node'])
 
         self.env.make_snapshot("ha_flat_scalability")
+
+
+@test(groups=["thread_4", "ha"])
+class BackupRestoreHa(TestBasic):
+
+    @test(depends_on=[TestHaVLAN.deploy_ha_vlan],
+          groups=["backup_restore_ha_flat"])
+    @log_snapshot_on_error
+    def backup_restore_ha_flat(self):
+        """Backup/restore master node with cluster in ha mode
+
+        Scenario:
+            1. Revert snapshot "deploy_ha_flat"
+            2. Backup master
+            3. Check backup
+            4  Run OSTF
+            5. Restore master
+            6. Check restore
+            7. Run OSTF
+
+        """
+        self.env.revert_snapshot("deploy_ha_vlan")
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        self.fuel_web.backup_master(self.env.get_admin_remote())
+        self.fuel_web.backup_check(self.env.get_admin_remote())
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=2,
+            failed_test_name=['Create volume and boot instance from it',
+                              'Create volume and attach it to instance']
+        )
+        self.fuel_web.restore_master(self.env.get_admin_remote())
+        self.fuel_web.restore_check_sum(self.env.get_admin_remote())
+        self.fuel_web.restore_check_nailgun_api(self.env.get_admin_remote())
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=2,
+            failed_test_name=['Create volume and boot instance from it',
+                              'Create volume and attach it to instance']
+        )

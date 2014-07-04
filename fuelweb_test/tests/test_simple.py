@@ -812,3 +812,42 @@ class UntaggedNetworksNegative(TestBasic):
         # deploy cluster:
         task = self.fuel_web.deploy_cluster(cluster_id)
         self.fuel_web.assert_task_failed(task)
+
+
+@test(groups=["thread_2"])
+class BackupRestoreSimple(TestBasic):
+    @test(depends_on=[SimpleFlat.deploy_simple_flat],
+          groups=["backup_restore_simple_flat"])
+    @log_snapshot_on_error
+    def backup_restore_simple_flat(self):
+        """Backup/restore master node with cluster in simple mode
+
+        Scenario:
+            1. Revert snapshot "deploy_simple_flat"
+            2. Backup master
+            3. Check backup
+            4. Run OSTF
+            5. Restore master
+            6. Check restore
+            7. Run OSTF
+
+        """
+        self.env.revert_snapshot("deploy_simple_flat")
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        self.fuel_web.backup_master(self.env.get_admin_remote())
+        self.fuel_web.backup_check(self.env.get_admin_remote())
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=2,
+            failed_test_name=['Create volume and boot instance from it',
+                              'Create volume and attach it to instance']
+        )
+        self.fuel_web.restore_master(self.env.get_admin_remote())
+        self.fuel_web.restore_check_sum(self.env.get_admin_remote())
+        self.fuel_web.restore_check_nailgun_api(self.env.get_admin_remote())
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=2,
+            failed_test_name=['Create volume and boot instance from it',
+                              'Create volume and attach it to instance']
+        )

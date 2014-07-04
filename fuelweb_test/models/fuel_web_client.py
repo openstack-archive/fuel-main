@@ -949,3 +949,53 @@ class FuelWebClient(object):
 
     def get_nailgun_version(self):
         logger.info("ISO version: %s" % self.client.get_api_version())
+
+    def backup_master(self, remote):
+        logger.info("Backup master node")
+        try:
+            remote.execute("echo CALC_MY_MD5SUM > /data")
+            remote.execute("md5sum /data | sed -n 1p | awk '{print $1}'>/sum")
+            remote.execute('dockerctl backup')
+        except Exception as e:
+            logger.error("Could not backup master node {e}".format(e=e))
+
+    def backup_check(self, remote):
+        logger.info("Backup check archive status")
+        arch_dir = ''.join(
+            remote.execute("ls -1u /var/backup/fuel/ | sed -n 1p")['stdout'])
+        arch_path = ''.join(
+            remote.execute("ls -1u /var/backup/fuel/{0}/*.lrz".
+                           format(arch_dir.strip()))["stdout"])
+        try:
+            arch_result = ''.join(
+                remote.execute(("if [ -e {0} ]; then echo "
+                                " Archive exists; fi").
+                               format(arch_path.rstrip()))["stdout"])
+        except Exception as e:
+            logger.error('exception is {0}'.format(e))
+        assert_true("Archive exists" in arch_result, "Archive does not exist")
+
+    def restore_master(self, remote):
+        logger.info("Restore master node")
+        arch_dir = remote.execute("ls -1u /var/backup/fuel/ | sed -n 1p")
+        arch_path = remote.execute("/var/backup/fuel/"
+                                   "${0}/*.lrz".format(arch_dir))
+        try:
+            remote.execute('dockerctl restore ${0}'.format(arch_path))
+        except Exception as e:
+            logger.error("Could not restore master node {e}".format(e=e))
+
+    def restore_check_nailgun_api(self, remote):
+        logger.info("Restore check nailgun api")
+        info = self.client.get_api_version()
+        assert_true(any(info), 'api version returned empty data')
+        logger.debug('nailgun works fine')
+
+    def restore_check_sum(self, remote):
+        logger.info("Restore check md5sum")
+        md5sum_backup = remote.execute("cat /sum")
+        md5sum_restore = remote.execute("md5sum /data | sed -n 1p "
+                                        " | awk '{print $1}'")
+        if md5sum_backup == md5sum_restore:
+            sum_result = ('Sum coincide')
+        assert_true("Sum coincide" in sum_result, "Sum does not coincide")
