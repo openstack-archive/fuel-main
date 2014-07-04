@@ -391,6 +391,14 @@ chmod 700 /root/.ssh
 cp ${SOURCE}/bootstrap/bootstrap.rsa /root/.ssh
 chmod 600 /root/.ssh/bootstrap.rsa
 
+# Copying rescue image
+if test -d ${SOURCE}/rescue; then
+    mkdir -p ${repodir}/rescue
+    cp -r ${SOURCE}/rescue/initrd ${repodir}/rescue
+    cp -r ${SOURCE}/rescue/linux ${repodir}/rescue
+fi
+
+
 # Unpacking puppet manifests for master and slave
 cp ${SOURCE}/puppet-slave.tgz ${repodir}/
 tar zxf ${SOURCE}/puppet-slave.tgz -C /etc/puppet/modules
@@ -399,7 +407,7 @@ cp /etc/puppet/modules/osnailyfacter/examples/site.pp /etc/puppet/manifests/site
 cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/manifests/
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 mkdir -p /var/lib/hiera
-touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml 
+touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
 # Deploy docker images and ctl tools if we built ISO with docker containers support
 [ -d "${SOURCE}/docker" ] && cp -r ${SOURCE}/docker ${repodir}/docker
@@ -433,6 +441,12 @@ mkdir -p /etc/nailgun /etc/fuel/${RELEASE}
 cp ${SOURCE}/version.yaml /etc/nailgun/version.yaml
 cp ${SOURCE}/version.yaml /etc/fuel/${RELEASE}/version.yaml
 ln -s /etc/fuel/${RELEASE}/version.yaml /etc/fuel/version.yaml
+
+# Copying astute.yaml file.
+if test -f ${SOURCE}/astute.yaml; then
+    mkdir -p /etc/fuel
+    cp ${SOURCE}/astute.yaml /etc/fuel/astute.yaml
+fi
 
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
@@ -496,4 +510,3 @@ cp -f /etc/skel/.bash* /root/
 [[ $(virt-what) = "virtualbox" ]] && echo "blacklist i2c_piix4" > /etc/modprobe.d/blacklist-i2c-piix4.conf
 
 %end
-
