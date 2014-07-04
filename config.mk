@@ -109,6 +109,7 @@ MIRROR_BASE?=http://fuel-repository.mirantis.com/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_RESCUE?=$(MIRROR_BASE)/rescue
 endif
 ifeq ($(USE_MIRROR),srt)
 YUM_REPOS?=proprietary
@@ -116,6 +117,7 @@ MIRROR_BASE?=http://fuel-mirror.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_RESCUE?=$(MIRROR_BASE)/rescue
 endif
 ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
@@ -123,6 +125,7 @@ MIRROR_BASE?=http://fuel-mirror.msk.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_RESCUE?=$(MIRROR_BASE)/rescue
 endif
 ifeq ($(USE_MIRROR),hrk)
 YUM_REPOS?=proprietary
@@ -130,6 +133,7 @@ MIRROR_BASE?=http://fuel-mirror.kha.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_RESCUE?=$(MIRROR_BASE)/rescue
 endif
 
 MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos/$(CENTOS_RELEASE)
@@ -138,6 +142,7 @@ MIRROR_UBUNTU?=http://mirrors-local-msk.msk.mirantis.net/ubuntu/
 MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://fuel-repository.mirantis.com/fwm/$(PRODUCT_VERSION)/docker
 MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
+MIRROR_RESCUE?=http://fuel-repository.mirantis.com/fwm/$(PRODUCT_VERSION)/rescue
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
 MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-stable/centos/
@@ -190,4 +195,3 @@ DOCKER_PREBUILT_SOURCE?=http://srv11-msk.msk.mirantis.net/docker-test/fuel-image
 
 # Production variable (prod, dev, docker)
 PRODUCTION?=docker
-

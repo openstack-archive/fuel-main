@@ -131,6 +131,21 @@ $(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)): \
 
 $(ISOROOT)/bootstrap/bootstrap.rsa: $(SOURCE_DIR)/bootstrap/ssh/id_rsa ; $(ACTION.COPY)
 
+########################
+# Rescue image.
+########################
+
+RESCUE_FILES:=initrd linux
+
+$(BUILD_DIR)/iso/isoroot-rescue.done: \
+		$(addprefix $(ISOROOT)/rescue/, $(RESCUE_FILES))
+	$(ACTION.TOUCH)
+
+$(addprefix $(ISOROOT)/rescue/, $(RESCUE_FILES)): \
+		$(BUILD_DIR)/rescue/build.done
+	@mkdir -p $(@D)
+	cp $(BUILD_DIR)/rescue/$(@F) $@
+
 
 ########################
 # Iso image root file system.
@@ -143,6 +158,7 @@ $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
 		$(BUILD_DIR)/iso/isoroot-bootstrap.done \
+		$(BUILD_DIR)/iso/isoroot-rescue.done \
 		$(ISOROOT)/docker.done
 	$(ACTION.TOUCH)
 
