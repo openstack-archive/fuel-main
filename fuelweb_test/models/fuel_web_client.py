@@ -45,6 +45,7 @@ from fuelweb_test.settings import OSTF_TEST_RETRIES_COUNT
 from fuelweb_test.settings import TIMEOUT
 from fuelweb_test.settings import VCENTER_USE
 
+
 import fuelweb_test.settings as help_data
 
 
@@ -1146,3 +1147,32 @@ class FuelWebClient(object):
     @logwrap
     def modify_python_file(self, remote, modification, file):
         remote.execute('sed -i "{0}" {1}'.format(modification, file))
+
+    def backup_master(self, remote):
+        logger.info("Backup master node")
+        try:
+            remote.execute("echo CALC_MY_MD5SUM > /etc/fuel/data")
+            remote.execute("iptables-save > /etc/fuel/iptables-backup")
+            remote.execute("md5sum /etc/fuel/data | sed -n 1p "
+                           "| awk '{print $1}'>/etc/fuel/sum")
+            remote.execute('dockerctl backup')
+        except Exception:
+            logger.error(traceback.format_exc())
+            raise
+
+    @logwrap
+    def restore_master(self, remote):
+        logger.info("Restore master node")
+        path = checkers.find_backup(remote)
+        try:
+            remote.execute('dockerctl restore {0}'.format(path))
+        except Exception:
+            logger.error(traceback.format_exc())
+            raise
+
+    @logwrap
+    def restore_check_nailgun_api(self, remote):
+        logger.info("Restore check nailgun api")
+        info = self.client.get_api_version()
+        build_number = info["build_number"]
+        assert_true(build_number, 'api version returned empty data')
