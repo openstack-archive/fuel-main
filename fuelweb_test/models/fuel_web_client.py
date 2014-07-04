@@ -43,6 +43,7 @@ from fuelweb_test.settings import OSTF_TEST_NAME
 from fuelweb_test.settings import OSTF_TEST_RETRIES_COUNT
 from fuelweb_test.settings import TIMEOUT
 
+
 import fuelweb_test.settings as help_data
 
 
@@ -949,3 +950,31 @@ class FuelWebClient(object):
 
     def get_nailgun_version(self):
         logger.info("ISO version: %s" % self.client.get_api_version())
+
+    @logwrap
+    def backup_master(self, remote):
+        logger.info("Backup master node")
+        try:
+            remote.execute("echo CALC_MY_MD5SUM > /data")
+            remote.execute("md5sum /data | sed -n 1p | awk '{print $1}'>/sum")
+            remote.execute('dockerctl backup')
+        except Exception as e:
+            logger.error("Could not backup master node {e}".format(e=e))
+            raise e
+
+    @logwrap
+    def restore_master(self, remote):
+        logger.info("Restore master node")
+        path = checkers.find_backup(remote)
+        try:
+            remote.execute('dockerctl restore ${0}'.format(path))
+        except Exception as e:
+            logger.error("Could not restore master node {e}".format(e=e))
+            raise e
+
+    @logwrap
+    def restore_check_nailgun_api(self, remote):
+        logger.info("Restore check nailgun api")
+        info = self.client.get_api_version()
+        build_number = info["build_number"]
+        assert_true(build_number, 'api version returned empty data')
