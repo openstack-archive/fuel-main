@@ -78,3 +78,25 @@ class TestAdminNode(TestBasic):
             "Found %d astute worker processes: %s" %
             (len(astute_workers), astute_workers))
         assert_equal(True, len(astute_workers) > 1)
+
+@test(groups=["thread_1"])
+class BackupRestoreBase(TestBasic):
+    @test(depends_on=[SetupEnvironment.setup_master],
+          groups=["backup_restore_master_base"])
+    @log_snapshot_on_error
+    def backup_restore_master_base(self):
+        """Deploy cluster backup/restore master node
+
+        Scenario:
+            1. Revert snapshot "empty"
+            2. Backup master
+            3. Check backup
+            4. Restore master
+            5. Check restore
+
+        """
+        self.env.revert_snapshot("empty")
+        self.fuel_web.backup_master(self.env.get_admin_remote())
+        self.fuel_web.backup_check(self.env.get_admin_remote())
+        self.fuel_web.restore_master(self.env.get_admin_remote())
+        self.fuel_web.restore_check_nailgun_api(self.env.get_admin_remote())
