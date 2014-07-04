@@ -19,6 +19,7 @@ from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_true
 from proboscis import test
 
+from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers.eb_tables import Ebtables
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
@@ -812,3 +813,77 @@ class UntaggedNetworksNegative(TestBasic):
         # deploy cluster:
         task = self.fuel_web.deploy_cluster(cluster_id)
         self.fuel_web.assert_task_failed(task)
+
+
+@test(groups=["thread_2"])
+class BackupRestoreSimple(TestBasic):
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["simple_backup_restore"])
+    @log_snapshot_on_error
+    def simple_flat_add_compute(self):
+        """Backup/restore master node with cluster in simple mode
+
+        Scenario:
+            1. Revert snapshot "deploy_simple_flat"
+            2. Backup master
+            3. Check backup
+            4. Run OSTF
+            5. Add 1 node with compute role
+            6. Restore master
+            7. Check restore
+            8. Run OSTF
+
+        """
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'tenant': 'flatAddCompute',
+                'user': 'flatAddCompute',
+                'password': 'flatAddCompute'
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+        self.fuel_web.backup_master(self.env.get_admin_remote())
+        checkers.backup_check(self.env.get_admin_remote())
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=2,
+            failed_test_name=['Create volume and boot instance from it',
+                              'Create volume and attach it to instance']
+        )
+
+        self.fuel_web.update_nodes(
+            cluster_id, {'slave-03': ['compute']}, True, False)
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        assert_equal(
+            3, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))
+
+        self.fuel_web.assert_cluster_ready(
+            "slave-01", smiles_count=8, networks_count=1, timeout=300)
+        self.env.verify_node_service_list("slave-02", 8)
+        self.env.verify_node_service_list("slave-03", 8)
+        self.fuel_web.restore_master(self.env.get_admin_remote())
+        checkers.restore_check_sum(self.env.get_admin_remote())
+        self.fuel_web.restore_check_nailgun_api(self.env.get_admin_remote())
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            should_fail=2,
+            failed_test_name=['Create volume and boot instance from it',
+                              'Create volume and attach it to instance'])
+
+        self.env.make_snapshot("simple_backup_restore")
