@@ -13,15 +13,12 @@ $(BUILD_DIR)/upgrade/upgrade.done: \
 		$(BUILD_DIR)/upgrade/openstack-part.done \
 		$(BUILD_DIR)/upgrade/fuel-part.done \
 		$(BUILD_DIR)/upgrade/common-part.done
-	rm -f $(BUILD_DIR)/upgrade/fuel-$(PRODUCT_VERSION)-upgrade.tar
-	tar Af $(BUILD_DIR)/upgrade/fuel-$(PRODUCT_VERSION)-upgrade.tar \
-		$(BUILD_DIR)/upgrade/fuel-part.tar
-	tar Af $(BUILD_DIR)/upgrade/fuel-$(PRODUCT_VERSION)-upgrade.tar \
-		$(BUILD_DIR)/upgrade/openstack-part.tar
-	tar Af $(BUILD_DIR)/upgrade/fuel-$(PRODUCT_VERSION)-upgrade.tar \
-		$(BUILD_DIR)/upgrade/common-part.tar
+	rm -f $(TARBALL_PATH)
+	tar Af $(TARBALL_PATH) $(BUILD_DIR)/upgrade/fuel-part.tar
+	tar Af $(TARBALL_PATH) $(BUILD_DIR)/upgrade/openstack-part.tar
+	tar Af $(TARBALL_PATH) $(BUILD_DIR)/upgrade/common-part.tar
 	# Looks like gzip is useless here
-	# gzip $(BUILD_DIR)/upgrade/fuel-$(PRODUCT_VERSION)-upgrade.tar
+	# gzip $(TARBALL_PATH)
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/upgrade/common-part.done: \
@@ -61,15 +58,15 @@ $(BUILD_DIR)/upgrade/openstack-part.done: \
 $(BUILD_DIR)/upgrade/fuel.done: \
 		$(BUILD_DIR)/upgrade/common-part.done \
 		$(BUILD_DIR)/upgrade/fuel-part.done
-	rm -f $(BUILD_DIR)/upgrade/master-upgrade-$(PRODUCT_VERSION).tar
-	tar Af $(BUILD_DIR)/upgrade/master-upgrade-$(PRODUCT_VERSION).tar $(BUILD_DIR)/upgrade/fuel-part.tar
-	tar Af $(BUILD_DIR)/upgrade/master-upgrade-$(PRODUCT_VERSION).tar $(BUILD_DIR)/upgrade/common-part.tar
+	rm -f $(FUEL_TARBALL_PATH)
+	tar Af $(FUEL_TARBALL_PATH) $(BUILD_DIR)/upgrade/fuel-part.tar
+	tar Af $(FUEL_TARBALL_PATH) $(BUILD_DIR)/upgrade/common-part.tar
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/upgrade/openstack.done: \
 		$(BUILD_DIR)/upgrade/common-part.done \
 		$(BUILD_DIR)/upgrade/openstack-part.done
-	rm -f $(BUILD_DIR)/upgrade/openstack-upgrade-$(PRODUCT_VERSION).tar
-	tar Af $(BUILD_DIR)/upgrade/openstack-upgrade-$(PRODUCT_VERSION).tar $(BUILD_DIR)/upgrade/openstack-part.tar
-	tar Af $(BUILD_DIR)/upgrade/openstack-upgrade-$(PRODUCT_VERSION).tar $(BUILD_DIR)/upgrade/common-part.tar
+	rm -f $(OS_TARBALL_PATH)
+	tar Af $(OS_TARBALL_PATH) $(BUILD_DIR)/upgrade/openstack-part.tar
+	tar Af $(OS_TARBALL_PATH) $(BUILD_DIR)/upgrade/common-part.tar
 	$(ACTION.TOUCH)
