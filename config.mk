@@ -27,10 +27,18 @@ CENTOS_ARCH:=x86_64
 UBUNTU_RELEASE:=precise
 
 ISO_NAME?=fuelweb-centos-$(CENTOS_RELEASE)-$(CENTOS_ARCH)
+TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-upgrade
+FUEL_TARBALL_NAME?=fuel-master-$(PRODUCT_VERSION)-upgrade
+OS_TARBALL_NAME?=fuel-openstack-$(PRODUCT_VERSION)-upgrade
 ISO_DIR?=$(BUILD_DIR)/iso
 ISO_DIR:=$(abspath $(ISO_DIR))
+TARBALL_DIR?=$(BUILD_DIR)/upgrade
+TARBALL_DIR:=$(abspath $(TARBALL_DIR))
 ISO_PATH:=$(ISO_DIR)/$(ISO_NAME).iso
 IMG_PATH:=$(ISO_DIR)/$(ISO_NAME).img
+TARBALL_PATH:=$(TARBALL_DIR)/$(TARBALL_NAME).tar
+FUEL_TARBALL_PATH:=$(TARBALL_DIR)/$(FUEL_TARBALL_NAME).tar
+OS_TARBALL_PATH:=$(TARBALL_DIR)/$(OS_TARBALL_NAME).tar
 
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
