@@ -32,8 +32,8 @@ function run_upgrade {
   fi
 
   # run fuel_upgrade script
-  PYTHONPATH="$UPGRADE_PATH/site-packages" python "$UPGRADE_PATH/bin/fuel-upgrade" --src "$UPGRADE_PATH" $UPGRADERS || error "Upgrade failed" $?
+  PYTHONPATH="$UPGRADE_PATH/site-packages" python "$UPGRADE_PATH/bin/fuel-upgrade" --src "$UPGRADE_PATH" $UPGRADERS "$@" || error "Upgrade failed" $?
 }
 
 
-run_upgrade
+run_upgrade "$@"
