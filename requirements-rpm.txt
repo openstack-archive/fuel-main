@@ -44,6 +44,7 @@ ceph-test
 cirros-testvm
 cirros-testvmware
 cloud-init
+cloud-utils
 cluster-glue-libs-1.0.11-59.1
 cman
 cobbler
@@ -142,6 +143,7 @@ galera
 gcc
 gcc-c++
 gdisk-0.8.4-1.el6
+genisoimage
 git
 gperftools-libs-2.0-11.el6.3
 gpxe-bootimgs
