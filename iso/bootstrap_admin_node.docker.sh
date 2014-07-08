@@ -76,6 +76,7 @@ cp -a /etc/astute.yaml /etc/fuel/astute.yaml
 # apply puppet
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 puppet apply -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
+puppet apply -d -v /etc/puppet/modules/pam/pam_tally2.pp
 rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
 
 dockerctl check

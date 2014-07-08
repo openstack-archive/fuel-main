@@ -52,4 +52,5 @@ touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 puppet apply  /etc/puppet/modules/nailgun/examples/site.pp
+puppet apply -d -v /etc/puppet/modules/pam/pam_tally2.pp
 echo "Fuel node deployment complete!"
