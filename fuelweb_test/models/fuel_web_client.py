@@ -267,7 +267,7 @@ class FuelWebClient(object):
                        settings=None,
                        release_name=help_data.OPENSTACK_RELEASE,
                        mode=DEPLOYMENT_MODE_SIMPLE,
-                       port=5514):
+                       port=514):
         """Creates a cluster
         :param name:
         :param release_name:
