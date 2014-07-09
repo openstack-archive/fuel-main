@@ -5,12 +5,12 @@ Django14
 docker-io
 GeoIP-1.4.8-1.el6
 MySQL-client-5.5.28-7
-MySQL-client-wsrep-5.6.16_wsrep_25.5.mira1
+MySQL-client-wsrep-5.5.28_wsrep_23.7-12
 MySQL-python
 MySQL-server-5.5.28-7
-MySQL-server-wsrep-5.6.16_wsrep_25.5.mira1
+MySQL-server-wsrep-5.5.28_wsrep_23.7-12
 MySQL-shared-5.5.28-7
-MySQL-shared-wsrep-5.6.16_wsrep_25.5.mira1
+MySQL-shared-wsrep-5.5.28_wsrep_23.7-12
 mongodb
 mongodb-server
 PyYAML-3.10-3.el6
