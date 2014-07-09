@@ -158,8 +158,8 @@ class CephHARestart(TestBasic):
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
-        # Wait until MySQL Galera is UP
-        self.fuel_web.wait_mysql_galera_is_up('slave-01')
+        # Wait until MySQL Galera is UP on primary controller
+        self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
 
         self.fuel_web.run_ostf(cluster_id=cluster_id, should_fail=1)
 
