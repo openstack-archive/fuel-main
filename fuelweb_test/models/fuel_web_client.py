@@ -338,9 +338,9 @@ class FuelWebClient(object):
 
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
-
-        self.client.add_syslog_server(
-            cluster_id, self.environment.get_host_node_ip(), port)
+        #TODO: rw105719    
+        #self.client.add_syslog_server(
+        #    cluster_id, self.environment.get_host_node_ip(), port)
 
         return cluster_id
 
