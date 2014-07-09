@@ -270,6 +270,7 @@ openstack-ceilometer-central
 openstack-ceilometer-collector
 openstack-ceilometer-common
 openstack-ceilometer-compute
+openstack-ceilometer-notification
 openstack-cinder
 openstack-dashboard
 openstack-glance
