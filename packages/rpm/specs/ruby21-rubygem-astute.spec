@@ -102,6 +102,7 @@ install -d -m 755 %{buildroot}%{_localstatedir}/log/astute
 %{gemdir}/gems/astute-0.0.2/lib/astute/mclient.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/network.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/nodes_remover.rb
+%{gemdir}/gems/astute-0.0.2/lib/astute/image_provision.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/ssh.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/ssh_actions/ssh_erase_nodes.rb
 %{gemdir}/gems/astute-0.0.2/lib/astute/ssh_actions/ssh_hard_reboot.rb
