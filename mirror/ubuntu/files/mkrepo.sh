@@ -1,18 +1,9 @@
 #!/bin/bash
 apt-get update
 
-#for pkg in $(cat /requirements-deb.txt | grep -Ev "^#"); do
-#	apt-get -dy install $pkg || exit 1
-#done
-
-
-mkdir -p /repo/download/
-
-cat /requirements-deb.txt | while read pkg; do apt-get --print-uris --yes install $pkg | grep ^\' | cut -d\' -f2 >/downloads_$pkg.list; done
-cat /downloads_*.list | sort | uniq > /repo/download/download_urls.list
-rm /downloads_*.list
-cat /repo/download/download_urls.list | xargs -n1 -P4 wget -P /repo/download/
-mv /var/cache/apt/archives/*deb /repo/download/
+for pkg in $(cat /requirements-deb.txt | grep -Ev "^#"); do
+	apt-get -dy install $pkg || exit 1
+done
 # Make structure and mocks for multiarch
 for dir in binary-i386 binary-amd64; do 
 	mkdir -p /repo/dists/precise/main/$dir /repo/dists/precise/main/debian-installer/$dir
@@ -104,7 +95,7 @@ for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; don
 ##########################################
 # Move all stuff to the our package pool
 ##########################################
-mv /repo/download/*deb /repo/pool/main
+mv /var/cache/apt/archives/*deb /repo/pool/main
 cd /repo/pool/main
 # urlencode again
 for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; done
