@@ -13,6 +13,7 @@
 #    under the License.
 
 import time
+import yaml
 
 from devops.helpers.helpers import _get_file_size
 from devops.helpers.helpers import SSHClient
@@ -429,6 +430,19 @@ class EnvironmentModel(object):
     def run_nailgun_agent(self, remote):
         agent = remote.execute('/opt/nailgun/bin/agent')['exit_code']
         logger.info("Nailgun agent run with exit_code: %s" % agent)
+
+    def get_fuel_settings(self, remote=None):
+        if not remote:
+            remote = self.get_admin_remote()
+        cmd = 'cat {cfg_file}'.format(cfg_file=settings.FUEL_SETTINGS_YAML)
+        result = remote.execute(cmd)
+        if result['exit_code'] == 0:
+            fuel_settings = yaml.load(''.join(result['stdout']))
+        else:
+            raise Exception('Can\'t output {cfg_file} file: {error}'.
+                            format(cfg_file=settings.FUEL_SETTINGS_YAML,
+                                   error=result['stderr']))
+        return fuel_settings
 
 
 class NodeRoles(object):
