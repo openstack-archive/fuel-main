@@ -19,6 +19,7 @@ from proboscis.asserts import assert_equal
 from proboscis import SkipTest
 from proboscis import test
 import xmlrpclib
+import yaml
 
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.settings import OPENSTACK_RELEASE
@@ -52,8 +53,14 @@ class TestAdminNode(TestBasic):
         )
         server = xmlrpclib.Server(
             'http://%s/cobbler_api' % self.env.get_admin_node_ip())
+
+        config = yaml.load(''.join(self.env.get_admin_remote().execute(
+            'cat /etc/fuel/astute.yaml')['stdout']))
+        username = config['cobbler']['user']
+        password = config['cobbler']['password']
+
         # raises an error if something isn't right
-        server.login('cobbler', 'cobbler')
+        server.login(username, password)
 
     @test(depends_on=[SetupEnvironment.setup_master],
           groups=["test_astuted_alive"])
