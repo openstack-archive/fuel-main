@@ -220,7 +220,7 @@ class MuranoSimple(TestBasic):
 
         LOGGER.debug('Boot instance with murano image')
 
-        image_name = settings.SERVTEST_MURANO_IMAGE
+        image_name = settings.SERVTEST_MURANO_IMAGE_NAME
         server = common_func.create_instance(flavor_name='test_murano_flavor',
                                              ram=2048, vcpus=1, disk=20,
                                              server_name='murano_instance',
