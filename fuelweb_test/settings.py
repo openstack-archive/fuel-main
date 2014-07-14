@@ -220,3 +220,6 @@ MAKE_SNAPSHOT = os.environ.get('MAKE_SNAPSHOT', 'false') == 'true'
 NEUTRON_FAILOVER = os.environ.get('NEUTRON_FAILOVER', 'false') == 'true'
 NEUTRON_SEGMENT_TYPE = os.environ.get('NEUTRON_SEGMENT_TYPE',
                                       NEUTRON_SEGMENT["vlan"])
+
+FUEL_SETTINGS_YAML = os.environ.get('FUEL_SETTINGS_YAML',
+                                    '/etc/fuel/astute.yaml')
