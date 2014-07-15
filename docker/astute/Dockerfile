@@ -10,7 +10,7 @@ RUN rm -rf /etc/yum.repos.d/*; echo -e "[nailgun]\nname=Nailgun Local Repo\nbase
 ADD etc /etc
 ADD start.sh /usr/local/bin/start.sh
 
-RUN puppet apply -d -v /etc/puppet/modules/nailgun/examples/astute-only.pp
+RUN puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/astute-only.pp; [ $? -lt 4 ]
 
 RUN chmod +x /usr/local/bin/start.sh;echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/fuelweb/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean all
 
