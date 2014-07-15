@@ -14,18 +14,20 @@ showmenu="no"
 if [ -f /root/.showfuelmenu ]; then
   . /root/.showfuelmenu
 fi
+
+echo -n "Applying default Fuel settings..."
+fuelmenu --save-only --iface=eth0
+echo "Done!"
+
 if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
   fuelmenu
   else
-  #Give user 30 seconds to enter fuelmenu or else continue
+  #Give user 15 seconds to enter fuelmenu or else continue
   echo
   echo -n "Press a key to enter Fuel Setup (or press ESC to skip)... 15"
   countdown 15 & pid=$!
   if ! read -s -n 1 -t 15 key; then
     echo -e "\nSkipping Fuel Setup..."
-    echo -n "Applying default Fuel setings..."
-    fuelmenu --save-only --iface=eth0
-    echo "Done!"
   else
     { kill "$pid"; wait $!; } 2>/dev/null
     case "$key" in
