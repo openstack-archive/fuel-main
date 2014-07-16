@@ -3,7 +3,7 @@ ISOLINUX_FILES:=netboot.tar.gz
 # debian isolinux files
 $(addprefix $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/installer-amd64/current/images/netboot/,$(ISOLINUX_FILES)):
 	@mkdir -p $(@D)
-	wget -O $@ http://mirror.yandex.ru/ubuntu/dists/precise-updates/main/installer-amd64/current/images/saucy-netboot/netboot.tar.gz
+	wget -O $@ $(MIRROR_UBUNTU)/ubuntu/dists/precise-updates/main/installer-amd64/current/images/saucy-netboot/netboot.tar.gz
 	tar -xzf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/installer-amd64/current/images/netboot/$(@F) -C $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/installer-amd64/current/images/netboot/
 
 $(BUILD_DIR)/mirror/ubuntu/boot.done: \
