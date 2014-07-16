@@ -28,10 +28,11 @@ import tftpy
 
 tftpy.setLogLevel(logging.WARNING)
 
+
 class TClient(threading.Thread):
     def __init__(self, hostname, port, remote_filename, local_filename=None):
-        logger.debug("Initializing TClient instance: "
-                     "hostname: '%s' port: %s remote file: '%s' local file: '%s'",
+        logger.debug("Initializing TClient instance: hostname: '%s' port: %s "
+                     "remote file: '%s' local file: '%s'",
                      hostname, port, remote_filename, local_filename)
         super(TClient, self).__init__()
         self.hostname = hostname
@@ -48,7 +49,7 @@ class TClient(threading.Thread):
 
     def stat(self):
         s = self.client.context.metrics
-        return (s.bytes, s.duration, s.kbps)
+        return s.bytes, s.duration, s.kbps
 
 
 def term_handler(signum, sigframe):
@@ -115,4 +116,3 @@ if __name__ == "__main__":
     for i, c in enumerate(clients):
         logger.debug("Statistics tftp client thread: %s", i)
         logger.info("Bytes: %s, Duration: %s, Speed: %s kbps" % c.stat())
-
