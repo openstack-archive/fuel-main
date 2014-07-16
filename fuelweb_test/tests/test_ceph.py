@@ -1,4 +1,4 @@
-    #    Copyright 2014 Mirantis, Inc.
+#    Copyright 2014 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -277,8 +277,8 @@ class CephRadosGW(TestBasic):
             logger.debug('Start to run test {0}'.format(test_path))
             self.fuel_web.run_single_ostf_test(
                 cluster_id, test_sets=['smoke'],
-                test_name=test_path,
-                should_fail=0)
+                test_name=test_path)
+
         try:
             _check()
         except AssertionError:
@@ -365,8 +365,8 @@ class VmBackedWithCephMigrationBasic(TestBasic):
             logger.debug('Start to run test {0}'.format(test_path))
             self.fuel_web.run_single_ostf_test(
                 cluster_id, test_sets=['smoke'],
-                test_name=test_path,
-                should_fail=0)
+                test_name=test_path)
+
         try:
             _check()
         except AssertionError:
