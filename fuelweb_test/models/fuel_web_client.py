@@ -514,24 +514,25 @@ class FuelWebClient(object):
         set_result_list = self._ostf_test_wait(cluster_id, timeout)
         tests_res = []
         for set_result in set_result_list:
-            [tests_res.append({test['name']:test['status']})
+            [tests_res.append({test['name']: test['status']})
              for test in set_result['tests'] if test['status'] != 'disabled']
 
         logger.info('OSTF test statuses are : {0}'.format(tests_res))
         return tests_res
 
     @logwrap
-    def run_single_ostf_test(self, cluster_id,
-                             test_sets=None, test_name=None, should_fail=0,
-                             retries=None, timeout=15 * 60,
-                             failed_test_name=None):
-        self.client.ostf_run_singe_test(cluster_id, test_sets, test_name)
-        if retries:
-            return self.return_ostf_results(cluster_id, timeout=timeout)
-        else:
-            self.assert_ostf_run(cluster_id, should_fail=should_fail,
-                                 timeout=timeout,
-                                 failed_test_name=failed_test_name)
+    def run_single_ostf_test(self, cluster_id, test_sets=None, test_name=None,
+                             verify_result=True, timeout=15 * 60):
+        self.client.ostf_run_single_test(cluster_id, test_sets, test_name)
+
+        results = self.return_ostf_results(cluster_id, timeout=timeout)
+
+        if verify_result:
+            for result in results:
+                assert_true(result[test_name] == 'success',
+                            "OSTF test '{0}' has status {1}".format(
+                                test_name, result[test_name]))
+        return results
 
     @logwrap
     def task_wait(self, task, timeout, interval=5):
@@ -937,7 +938,7 @@ class FuelWebClient(object):
 
     def run_ostf_repeatably(self, cluster_id, test_name=None,
                             test_retries=None, checks=None):
-        res = []
+        results = []
         passed_count = []
         failed_count = []
         test_nama_to_ran = test_name or OSTF_TEST_NAME
@@ -948,13 +949,12 @@ class FuelWebClient(object):
         for i in range(0, retr):
             result = self.run_single_ostf_test(
                 cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
-                test_name=test_path,
-                retries=True)
-            res.append(result)
-            logger.info('res is {0}'.format(res))
+                test_name=test_path, verify_result=False)
+            results.append(result)
+            logger.info('res is {0}'.format(results))
 
-        logger.info('full res is {0}'.format(res))
-        for element in res:
+        logger.info('full res is {0}'.format(results))
+        for element in results:
             [passed_count.append(test)
              for test in element if test.get(test_name) == 'success']
             [failed_count.append(test)
