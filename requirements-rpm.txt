@@ -313,6 +313,7 @@ patch-2.6-6.el6
 pax-3.4-10.1.el6
 pcapy-0.10.8-2.el6
 percona-toolkit
+percona-xtrabackup
 perl-DBD-MySQL-4.022-1.el6
 perl-LockFile-Simple-0.207-2.el6
 perl-devel

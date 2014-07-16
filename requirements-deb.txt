@@ -545,8 +545,7 @@ multiarch-support
 murano-api
 murano-dashboard
 murano-apps
-mysql-client
-mysql-common
+mysql-client-wsrep-5.6
 mysql-server-wsrep-5.6
 nailgun-agent
 nailgun-mcagents
@@ -602,6 +601,7 @@ passwd
 patch
 pciutils
 percona-toolkit
+percona-xtrabackup
 perl
 perl-base
 perl-modules
