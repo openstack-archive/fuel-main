@@ -11,6 +11,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 from __future__ import division
 
 from devops.helpers.helpers import wait
@@ -29,26 +30,26 @@ from fuelweb_test.tests.base_test_case import TestBasic
 
 
 @test(groups=["services", "services.sahara", "services_simple"])
-class SavannaSimple(TestBasic):
-    """Savanna simple test.
+class SaharaSimple(TestBasic):
+    """Sahara simple test.
     Don't recommend to start tests without kvm
     Put Sahara image before start
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_sahara_simple"])
     @log_snapshot_on_error
-    def deploy_savanna_simple(self):
-        """Deploy cluster in simple mode with Savanna
+    def deploy_sahara_simple(self):
+        """Deploy cluster in simple mode with Sahara
 
         Scenario:
             1. Create cluster. Set install Sahara option
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Deploy the cluster
-            5. Verify sahara services
+            5. Verify Sahara services
             6. Run OSTF
-            7. Register sahara image
-            8. Run OSTF platform sahara tests only
+            7. Register Sahara image
+            8. Run OSTF platform Sahara test only
 
         Snapshot: deploy_sahara_simple
 
@@ -67,12 +68,8 @@ class SavannaSimple(TestBasic):
         LOGGER.debug('Create cluster for sahara tests')
         data = {
             'sahara': True,
-            "net_provider": 'neutron',
-            "net_segment_type": 'gre',
-            'tenant': 'saharaSimple',
-            'user': 'saharaSimple',
-            'password': 'saharaSimple'
-
+            'net_provider': 'neutron',
+            'net_segment_type': 'gre',
         }
 
         cluster_id = self.fuel_web.create_cluster(
@@ -89,19 +86,14 @@ class SavannaSimple(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=5, networks_count=1, timeout=300)
+
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='sahara-api')
 
-        controller_ip = self.fuel_web.get_nailgun_node_by_name(
-            'slave-01')['ip']
-        common_func = Common(controller_ip,
-                             data['user'],
-                             data['password'],
+        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
+        common_func = Common(controller['ip'], data['user'], data['password'],
                              data['tenant'])
-
-        failed_test_name = ['Create volume and attach it to instance',
-                            'Create volume and boot instance from it']
 
         test_classes = ['fuel_health.tests.sanity.test_sanity_savanna.'
                         'SanitySavannaTests.test_sanity_savanna']
@@ -119,14 +111,13 @@ class SavannaSimple(TestBasic):
 
         common_func.goodbye_security()
 
-        LOGGER.debug('Run OSTF savanna platform tests')
+        LOGGER.debug('Run OSTF Sahara platform test')
 
         self.fuel_web.run_single_ostf_test(
             cluster_id=cluster_id, test_sets=['platform_tests'],
             test_name=('fuel_health.tests.platform_tests.'
                        'test_platform_savanna.PlatformSavannaTests.'
-                       'test_platform_savanna'), should_fail=2,
-            timeout=60 * 200, failed_test_name=failed_test_name)
+                       'test_platform_savanna'), timeout=60 * 200)
 
         self.env.make_snapshot("deploy_sahara_simple")
 
@@ -149,10 +140,10 @@ class MuranoSimple(TestBasic):
             2. Add 1 node with controller role
             3. Add 1 nodes with compute role
             4. Deploy the cluster
-            5. Verify murano services
+            5. Verify Murano services
             6. Run OSTF
-            7. Register murano image
-            8. Run OSTF platform tests
+            7. Register Murano image
+            8. Run OSTF Murano platform tests
 
         Snapshot: deploy_murano_simple
 
@@ -171,11 +162,8 @@ class MuranoSimple(TestBasic):
 
         data = {
             'murano': True,
-            "net_provider": 'neutron',
-            "net_segment_type": 'gre',
-            'tenant': 'muranoSimple',
-            'user': 'muranoSimple',
-            'password': 'muranoSimple'
+            'net_provider': 'neutron',
+            'net_segment_type': 'gre'
         }
 
         cluster_id = self.fuel_web.create_cluster(
@@ -196,14 +184,11 @@ class MuranoSimple(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='murano-api')
 
-        controller_ip = self.fuel_web.get_nailgun_node_by_name(
-            'slave-01')['ip']
-        common_func = Common(controller_ip,
-                             data['user'],
-                             data['password'],
+        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
+        common_func = Common(controller['ip'], data['user'], data['password'],
                              data['tenant'])
 
-        LOGGER.debug('Run sanity and functional OSTF tests')
+        LOGGER.debug('Run sanity and functional Murano OSTF tests')
         self.fuel_web.run_single_ostf_test(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             test_sets=['sanity'],
@@ -211,14 +196,14 @@ class MuranoSimple(TestBasic):
                        'MuranoSanityTests.test_create_and_delete_service')
         )
 
-        LOGGER.debug('Import image')
+        LOGGER.debug('Import Murano image')
         common_func.image_import(
             settings.SERVTEST_LOCAL_PATH,
             settings.SERVTEST_MURANO_IMAGE,
             settings.SERVTEST_MURANO_IMAGE_NAME,
             settings.SERVTEST_MURANO_IMAGE_META)
 
-        LOGGER.debug('Boot instance with murano image')
+        LOGGER.debug('Boot instance with Murano image')
 
         image_name = settings.SERVTEST_MURANO_IMAGE_NAME
         server = common_func.create_instance(flavor_name='test_murano_flavor',
@@ -227,7 +212,7 @@ class MuranoSimple(TestBasic):
                                              image_name=image_name)
 
         wait(common_func.get_instance_detail(server).status == 'ACTIVE',
-             timeout=3600)
+             timeout=60 * 60)
 
         common_func.delete_instance(server)
 
@@ -248,7 +233,7 @@ class MuranoSimple(TestBasic):
         for test_name in test_classes:
             self.fuel_web.run_single_ostf_test(
                 cluster_id=cluster_id, test_sets=['platform_tests'],
-                test_name=test_name, timeout=1000)
+                test_name=test_name, timeout=60 * 20)
 
         self.env.make_snapshot("deploy_murano_simple")
 
@@ -270,7 +255,7 @@ class CeilometerSimpleMongo(TestBasic):
             5. Add 1 node with mongo role
             6. Deploy the cluster
             7. Verify ceilometer api is running
-            8. Run ostf
+            8. Run OSTF
 
         Snapshot: deploy_ceilometer_simple_with_mongo
 
@@ -349,7 +334,7 @@ class CeilometerSimpleMongo(TestBasic):
             4. Add 2 nodes with cinder and mongo roles
             5. Deploy the cluster
             6. Verify ceilometer api is running
-            7. Run ostf
+            7. Run OSTF
 
         Snapshot: deploy_ceilometer_simple_multirole
 
@@ -376,7 +361,6 @@ class CeilometerSimpleMongo(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='ceilometer-api')
 
-        # run ostf
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity',
                                               'platform_tests'],
@@ -401,7 +385,7 @@ class CeilometerHAMongo(TestBasic):
             4. Add 1 node with mongo role
             5. Deploy the cluster
             6. Verify ceilometer api is running
-            7. Run ostf
+            7. Run OSTF
 
         Snapshot: deploy_ceilometer_ha_with_mongo
 
@@ -463,7 +447,7 @@ class CeilometerHAMongo(TestBasic):
             4. Add 1 nodes with cinder
             5. Deploy the cluster
             6. Verify ceilometer api is running
-            7. Run ostf
+            7. Run OSTF
 
         Snapshot: deploy_ceilometer_ha_multirole
 
@@ -493,12 +477,10 @@ class CeilometerHAMongo(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='ceilometer-api')
 
-        # run ostf
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],
             should_fail=0, timeout=5300)
 
-        # run platform test
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['platform_tests'],
             should_fail=3, timeout=5300)
