@@ -546,7 +546,10 @@ murano-api
 murano-dashboard
 murano-apps
 mysql-client
+mysql-client-wsrep
 mysql-common
+mysql-wsrep-common
+mysql-server
 mysql-server-wsrep-5.6
 nailgun-agent
 nailgun-mcagents
