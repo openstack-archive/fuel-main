@@ -521,17 +521,16 @@ class FuelWebClient(object):
         return tests_res
 
     @logwrap
-    def run_single_ostf_test(self, cluster_id,
-                             test_sets=None, test_name=None, should_fail=0,
-                             retries=None, timeout=15 * 60,
-                             failed_test_name=None):
+    def run_single_ostf_test(self, cluster_id, test_sets=None, test_name=None,
+                             timeout=15 * 60):
         self.client.ostf_run_singe_test(cluster_id, test_sets, test_name)
-        if retries:
-            return self.return_ostf_results(cluster_id, timeout=timeout)
-        else:
-            self.assert_ostf_run(cluster_id, should_fail=should_fail,
-                                 timeout=timeout,
-                                 failed_test_name=failed_test_name)
+
+        test_results = self.return_ostf_results(cluster_id, timeout=timeout)
+
+        for test in test_results:
+            assert_true(test['status'] in ['success', 'disabled'],
+                        "OSTF test '{0}' has status {1}".format(
+                            test['name'], test['status']))
 
     @logwrap
     def task_wait(self, task, timeout, interval=5):
