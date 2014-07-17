@@ -3,6 +3,7 @@
 SCRIPT_PATH=$(dirname $(readlink -e $0))
 UPGRADE_PATH=$SCRIPT_PATH/upgrade
 UPGRADERS={{UPGRADERS}}
+LOCK_FILE=/var/lock/fuel_upgarde.lock
 
 
 function error {
@@ -42,4 +43,6 @@ function run_upgrade {
 }
 
 
-run_upgrade "$@"
+(flock -n 9 || error "Upgrade is already running. Lock file: ${LOCK_FILE}"
+    run_upgrade "$@"
+) 9> $LOCK_FILE
