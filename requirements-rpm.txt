@@ -164,6 +164,7 @@ libcephfs1
 libevent-devel-1.4.13-4.el6
 libfcgi-2.4.0-alt5.2
 libicu-4.2.1-9.1.el6_2
+libmlx4
 libmongodb
 libqb
 librados2
