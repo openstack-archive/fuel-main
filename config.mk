@@ -6,39 +6,56 @@
 # Default value: current directory
 TOP_DIR?=$(PWD)
 TOP_DIR:=$(abspath $(TOP_DIR))
-# Path for build artifacts
+# Working build directory
 BUILD_DIR?=$(TOP_DIR)/build
 BUILD_DIR:=$(abspath $(BUILD_DIR))
+# Path for build artifacts
+ARTS_DIR?=$(BUILD_DIR)/artifacts
+ARTS_DIR:=$(abspath $(ARTS_DIR))
 # Path for cache of downloaded packages
 LOCAL_MIRROR?=$(TOP_DIR)/local_mirror
 LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
+# Path to pre-built artifacts
+DEPS_DIR?=$(TOP_DIR)/deps
+DEPS_DIR:=$(abspath $(DEPS_DIR))
+
+PRODUCT_VERSION:=5.0.1
+# This variable is used mostly for
+# keeping things uniform. Some files
+# contain versions as a part of their paths
+# but building process for current version differs from
+# ones for other versions which are supposed
+# to come from DEPS_DIR "as is"
+CURRENT_VERSION:=$(PRODUCT_VERSION).x
+# This is a space separated
+# list of branches (versions) except current branch
+UPGRADE_VERSIONS?=5.0.x
+
+# Path to pre-built artifacts
+DEPS_DIR_CURRENT?=$(DEPS_DIR)/$(CURRENT_VERSION)
+DEPS_DIR_CURRENT:=$(abspath $(DEPS_DIR_CURRENT))
+
+# Artifacts names
+ISO_NAME?=fuel-$(PRODUCT_VERSION)
+UPGRADE_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-upgrade
+OPENSTACK_PATCH_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-patch
+
+# Where we put artifacts
+ISO_PATH:=$(ARTS_DIR)/$(ISO_NAME).iso
+IMG_PATH:=$(ARTS_DIR)/$(ISO_NAME).img
+UPGRADE_TARBALL_PATH:=$(ARTS_DIR)/$(UPGRADE_TARBALL_NAME).tar
+OPENSTACK_PATCH_TARBALL_PATH:=$(ARTS_DIR)/$(OPENSTACK_PATCH_TARBALL_NAME).tar
 
 MASTER_IP?=10.20.0.2
 MASTER_DNS?=10.20.0.1
 MASTER_NETMASK?=255.255.255.0
 MASTER_GW?=10.20.0.1
 
-PRODUCT_VERSION:=5.0.1
-
 CENTOS_MAJOR:=6
 CENTOS_MINOR:=5
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
 UBUNTU_RELEASE:=precise
-
-ISO_NAME?=fuelweb-centos-$(CENTOS_RELEASE)-$(CENTOS_ARCH)
-TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-upgrade
-FUEL_TARBALL_NAME?=fuel-master-$(PRODUCT_VERSION)-upgrade
-OS_TARBALL_NAME?=fuel-openstack-$(PRODUCT_VERSION)-upgrade
-ISO_DIR?=$(BUILD_DIR)/iso
-ISO_DIR:=$(abspath $(ISO_DIR))
-TARBALL_DIR?=$(BUILD_DIR)/upgrade
-TARBALL_DIR:=$(abspath $(TARBALL_DIR))
-ISO_PATH:=$(ISO_DIR)/$(ISO_NAME).iso
-IMG_PATH:=$(ISO_DIR)/$(ISO_NAME).img
-TARBALL_PATH:=$(TARBALL_DIR)/$(TARBALL_NAME).tar
-FUEL_TARBALL_PATH:=$(TARBALL_DIR)/$(FUEL_TARBALL_NAME).tar
-OS_TARBALL_PATH:=$(TARBALL_DIR)/$(OS_TARBALL_NAME).tar
 
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
@@ -163,4 +180,3 @@ DOCKER_PREBUILT_SOURCE?=http://srv11-msk.msk.mirantis.net/docker-test/fuel-image
 
 # Production variable (prod, dev, docker)
 PRODUCTION?=docker
-
