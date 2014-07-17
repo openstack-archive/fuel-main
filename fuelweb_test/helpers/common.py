@@ -95,12 +95,15 @@ class Common(object):
         else:
             image = [i.id for i in self.nova.images.list()]
 
+        network = self.nova.networks.find(label='net04')
+        nics = [{'net-id': network.id, 'v4-fixed-ip': ''}]
+
         LOGGER.info('image uuid is {0}'.format(image))
         flavor = self.nova.flavors.create(
             name=flavor_name, ram=ram, vcpus=vcpus, disk=disk)
         LOGGER.info('flavor is {0}'.format(flavor.name))
         server = self.nova.servers.create(
-            name=server_name, image=image[0], flavor=flavor)
+            name=server_name, image=image[0], flavor=flavor, nics=nics)
         LOGGER.info('server is {0}'.format(server.name))
         return server
 
