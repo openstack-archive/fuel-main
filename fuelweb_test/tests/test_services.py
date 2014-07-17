@@ -221,15 +221,16 @@ class MuranoSimple(TestBasic):
         LOGGER.debug('Boot instance with murano image')
 
         image_name = settings.SERVTEST_MURANO_IMAGE_NAME
-        server = common_func.create_instance(flavor_name='test_murano_flavor',
-                                             ram=2048, vcpus=1, disk=20,
-                                             server_name='murano_instance',
-                                             image_name=image_name)
+        srv = common_func.create_instance(flavor_name='test_murano_flavor',
+                                          ram=2048, vcpus=1, disk=20,
+                                          server_name='murano_instance',
+                                          image_name=image_name,
+                                          neutron_network=True)
 
-        wait(common_func.get_instance_detail(server).status == 'ACTIVE',
+        wait(lambda: common_func.get_instance_detail(srv).status == 'ACTIVE',
              timeout=3600)
 
-        common_func.delete_instance(server)
+        common_func.delete_instance(srv)
 
         LOGGER.debug('Run OSTF platform tests')
 
