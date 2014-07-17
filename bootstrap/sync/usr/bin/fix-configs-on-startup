@@ -53,6 +53,7 @@ sed -i '46 a logger -t ntpdate-log -- `echo /usr/sbin/ntpdate $OPTIONS $tickers`
 /usr/sbin/ntpdate $OPTIONS -d $tickers &> /dev/null' /etc/init.d/ntpdate
 /etc/init.d/ntpdate start
 /etc/init.d/ntpd start
+/etc/init.d/storrest start
 
 #
 # Update mcollective config

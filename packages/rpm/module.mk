@@ -99,6 +99,8 @@ $(eval $(call prepare_python_source,shotgun,Shotgun-0.1.0.tar.gz,$(BUILD_DIR)/re
 $(eval $(call prepare_file_source,nailgun-redhat-license,get_redhat_licenses,$(SOURCE_DIR)/packages/rpm/nailgun-redhat-license/get_redhat_licenses))
 $(eval $(call prepare_file_source,ruby21-rubygem-astute,astute.conf,$(SOURCE_DIR)/packages/rpm/astute.conf))
 $(eval $(call prepare_ruby21_source,ruby21-rubygem-astute,astute-0.0.2.gem,$(BUILD_DIR)/repos/astute))
+$(eval $(call prepare_file_source,storrest,storrest,$(SOURCE_DIR)/packages/rpm/storrest))
+$(eval $(call prepare_python_source,storrest,storrest-0.0.1.tar.gz,$(BUILD_DIR)/repos/storrest))
 
 $(eval $(call build_rpm,fencing-agent))
 $(eval $(call build_rpm,fuelmenu))
@@ -112,6 +114,7 @@ $(eval $(call build_rpm,nailgun-agent))
 $(eval $(call build_rpm,nailgun-redhat-license))
 $(eval $(call build_rpm,python-fuelclient))
 $(eval $(call build_rpm,ruby21-rubygem-astute))
+$(eval $(call build_rpm,storrest))
 
 $(BUILD_DIR)/packages/rpm/repo.done:
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;

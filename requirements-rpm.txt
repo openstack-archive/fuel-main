@@ -260,6 +260,7 @@ novnc-0.4
 nrpe-2.14-3.el6
 ntp
 numpy-1.4.1-9.el6
+nytrocli
 openssh-clients
 openssh-server
 openssl-devel
@@ -326,6 +327,7 @@ parted
 passwd-0.77-4.el6_2.2
 patch-2.6-6.el6
 pax-3.4-10.1.el6
+pciutils
 pcapy-0.10.8-2.el6
 percona-toolkit
 perl-DBD-MySQL-4.022-1.el6
@@ -452,6 +454,7 @@ python-websockify
 python-werkzeug
 python-wsgilog-0.3-1
 python-wsgiref-0.1.2-6.el6
+python-webpy
 pyxattr-0.5.0-1.el6
 qemu
 qpid-cpp-server-ssl-0.14-22.el6_3
@@ -585,6 +588,7 @@ supervisor
 syslinux-4.02-8.el6
 system-config-firewall-base-1.2.27-5.el6
 sheepdog
+storrest
 tcpdump-4.0.0-3.20090921gitdf3cb4.2.el6
 tftp-server-0.49-7.el6
 time-1.7-37.1.el6

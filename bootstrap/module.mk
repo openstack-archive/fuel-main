@@ -26,8 +26,10 @@ BOOTSTRAP_RPMS:=\
 	tcpdump \
 	vconfig \
 	vim-minimal \
-	wget
-
+	wget \
+	nytrocli \
+	pciutils \
+	storrest
 
 BOOTSTRAP_RPMS_CUSTOM:=\
 	nailgun-agent \

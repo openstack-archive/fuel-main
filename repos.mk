@@ -34,3 +34,4 @@ $(eval $(call build_repo,nailgun,$(NAILGUN_REPO),$(NAILGUN_COMMIT),$(NAILGUN_GER
 $(eval $(call build_repo,astute,$(ASTUTE_REPO),$(ASTUTE_COMMIT),$(ASTUTE_GERRIT_URL),$(ASTUTE_GERRIT_COMMIT)))
 $(eval $(call build_repo,fuellib,$(FUELLIB_REPO),$(FUELLIB_COMMIT),$(FUELLIB_GERRIT_URL),$(FUELLIB_GERRIT_COMMIT)))
 $(eval $(call build_repo,ostf,$(OSTF_REPO),$(OSTF_COMMIT),$(OSTF_GERRIT_URL),$(OSTF_GERRIT_COMMIT)))
+$(eval $(call build_repo,storrest,$(STORREST_REPO),$(STORREST_COMMIT),$(STORREST_GERRIT_URL),$(STORREST_GERRIT_COMMIT)))
