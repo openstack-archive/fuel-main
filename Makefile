@@ -74,3 +74,4 @@ include $(SOURCE_DIR)/bootstrap/module.mk
 include $(SOURCE_DIR)/iso/module.mk
 include $(SOURCE_DIR)/upgrade/module.mk
 include $(SOURCE_DIR)/fuelweb_test/module.mk
+include $(SOURCE_DIR)/puppet/module.mk
