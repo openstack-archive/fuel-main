@@ -21,16 +21,19 @@ $(BUILD_DIR)/upgrade/upgrade.done: \
 	# gzip $(TARBALL_PATH)
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/upgrade/common-part.done: \
-		$(BUILD_DIR)/iso/iso.done
-	rm -f $(BUILD_DIR)/upgrade/common-part.tar
+$(BUILD_DIR)/upgrade/venv.done:
 	mkdir -p $(BUILD_DIR)/upgrade/venv
-	tar cf $(BUILD_DIR)/upgrade/common-part.tar -C $(BUILD_DIR)/repos/fuellib/deployment --xform s:^puppet:upgrade/puppet/modules: puppet
-	tar rf $(BUILD_DIR)/upgrade/common-part.tar -C $(BUILD_DIR)/repos/fuellib/deployment/puppet/osnailyfacter/examples --xform s:^:upgrade/puppet/manifests/: site.pp
-	# Requires virtualenv, pip, python-dev packages
 	virtualenv $(BUILD_DIR)/upgrade/venv
+	# Requires virtualenv, pip, python-dev packages
 	$(BUILD_DIR)/upgrade/venv/bin/pip install -r $(BUILD_DIR)/repos/nailgun/fuel_upgrade_system/fuel_upgrade/requirements.txt
 	$(BUILD_DIR)/upgrade/venv/bin/pip install $(BUILD_DIR)/repos/nailgun/fuel_upgrade_system/fuel_upgrade
+
+$(BUILD_DIR)/upgrade/common-part.done: \
+		$(BUILD_DIR)/iso/iso.done \
+		$(BUILD_DIR)/upgrade/venv.done
+	rm -f $(BUILD_DIR)/upgrade/common-part.tar
+	tar cf $(BUILD_DIR)/upgrade/common-part.tar -C $(BUILD_DIR)/repos/fuellib/deployment --xform s:^puppet:upgrade/puppet/modules: puppet
+	tar rf $(BUILD_DIR)/upgrade/common-part.tar -C $(BUILD_DIR)/repos/fuellib/deployment/puppet/osnailyfacter/examples --xform s:^:upgrade/puppet/manifests/: site.pp
 	tar rf $(BUILD_DIR)/upgrade/common-part.tar -C $(BUILD_DIR)/upgrade/venv/lib/python* --xform s:^:upgrade/: site-packages
 	tar rf $(BUILD_DIR)/upgrade/common-part.tar -C $(BUILD_DIR)/upgrade/venv --xform s:^:upgrade/: bin/fuel-upgrade
 	sed 's/{{UPGRADERS}}/${UPGRADERS}/g' $(SOURCE_DIR)/upgrade/upgrade_template.sh > $(BUILD_DIR)/upgrade/upgrade.sh
