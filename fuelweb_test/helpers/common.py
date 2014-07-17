@@ -80,7 +80,8 @@ class Common(object):
         self.nova.keypairs.create(key_name)
 
     def create_instance(self, flavor_name='test_flavor', ram=64, vcpus=1,
-                        disk=1, server_name='test_instance', image_name=None):
+                        disk=1, server_name='test_instance', image_name=None,
+                        neutron_network=False):
         LOGGER.debug('Try to create instance')
 
         if image_name:
@@ -89,12 +90,17 @@ class Common(object):
         else:
             image = [i.id for i in self.nova.images.list()]
 
+        nics = None
+        if neutron_network:
+            network = self.nova.networks.find(label='net04')
+            nics = [{'net-id': network.id, 'v4-fixed-ip': ''}]
+
         LOGGER.info('image uuid is {0}'.format(image))
         flavor = self.nova.flavors.create(
             name=flavor_name, ram=ram, vcpus=vcpus, disk=disk)
         LOGGER.info('flavor is {0}'.format(flavor.name))
         server = self.nova.servers.create(
-            name=server_name, image=image[0], flavor=flavor)
+            name=server_name, image=image[0], flavor=flavor, nics=nics)
         LOGGER.info('server is {0}'.format(server.name))
         return server
 

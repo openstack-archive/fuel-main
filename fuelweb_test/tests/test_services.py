@@ -212,7 +212,8 @@ class MuranoSimple(TestBasic):
         server = common_func.create_instance(flavor_name='test_murano_flavor',
                                              ram=2048, vcpus=1, disk=20,
                                              server_name='murano_instance',
-                                             image_name=image_name)
+                                             image_name=image_name,
+                                             neutron_network=True)
 
         wait(common_func.get_instance_detail(server).status == 'ACTIVE',
              timeout=3600)
