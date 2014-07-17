@@ -97,6 +97,7 @@ $(ISOROOT)/ubuntu-versions.yaml: \
 $(ISOROOT)/puppet-slave.tgz: \
 		$(BUILD_DIR)/repos/fuellib.done \
 		$(call find-files,$(BUILD_DIR)/repos/fuellib/deployment/puppet)
+	mkdir -p $(ISOROOT)
 	(cd $(BUILD_DIR)/repos/fuellib/deployment/puppet && tar rf $(ISOROOT)/puppet-slave.tar ./*)
 	gzip -c -9 $(ISOROOT)/puppet-slave.tar > $@ && \
 		rm $(ISOROOT)/puppet-slave.tar

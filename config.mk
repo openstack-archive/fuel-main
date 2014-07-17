@@ -39,6 +39,8 @@ IMG_PATH:=$(ISO_DIR)/$(ISO_NAME).img
 TARBALL_PATH:=$(TARBALL_DIR)/$(TARBALL_NAME).tar
 FUEL_TARBALL_PATH:=$(TARBALL_DIR)/$(FUEL_TARBALL_NAME).tar
 OS_TARBALL_PATH:=$(TARBALL_DIR)/$(OS_TARBALL_NAME).tar
+ART_DIR?=$(BUILD_DIR)/artifacts
+ART_DIR:=$(abspath $(ART_DIR))
 
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
