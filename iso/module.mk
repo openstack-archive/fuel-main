@@ -1,11 +1,14 @@
 .PHONY: iso img
+.DELETE_ON_ERROR: $(ISO_PATH) $(IMG_PATH)
+
 all: iso img
 
 ISOROOT:=$(BUILD_DIR)/iso/isoroot
 
-iso: $(BUILD_DIR)/iso/iso.done
-img: $(BUILD_DIR)/iso/img.done
+iso: $(ISO_PATH)
+img: $(IMG_PATH)
 
+ifneq ($(BUILD_ARTIFACTS),0)
 $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/packages/build.done \
@@ -15,7 +18,6 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 	createrepo -g $(ISOROOT)/comps.xml \
 		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
-
 $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/packages/build.done \
@@ -23,6 +25,48 @@ $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 	mkdir -p $(ISOROOT)/ubuntu
 	rsync -rp $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ $(ISOROOT)/ubuntu/
 	$(ACTION.TOUCH)
+$(ISOROOT)/puppet-slave.tgz: \
+		$(BUILD_DIR)/repos/fuellib.done \
+		$(call find-files,$(BUILD_DIR)/repos/fuellib/deployment/puppet)
+	mkdir -p $(ISOROOT)
+	(cd $(BUILD_DIR)/repos/fuellib/deployment/puppet && tar rf $(ISOROOT)/puppet-slave.tar ./*)
+	gzip -c -9 $(ISOROOT)/puppet-slave.tar > $@ && \
+		rm $(ISOROOT)/puppet-slave.tar
+$(ISOROOT)/docker.done: \
+		$(BUILD_DIR)/docker/build.done
+	mkdir -p $(ISOROOT)/docker/images
+	mv $(BUILD_DIR)/docker/fuel-images.tar.lrz $(ISOROOT)/docker/images/fuel-images.tar.lrz
+	cp -a $(BUILD_DIR)/docker/sources $(ISOROOT)/docker/sources
+	$(ACTION.TOUCH)
+$(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)): \
+		$(BUILD_DIR)/bootstrap/build.done
+	@mkdir -p $(@D)
+	cp $(BUILD_DIR)/bootstrap/$(@F) $@
+else
+$(BUILD_DIR)/iso/isoroot-centos.done: \
+		$(BUILD_DIR)/iso/isoroot-dotfiles.done
+	mkdir -p $(ISOROOT)
+	tar xf $(OBJECTS)/master/centos-repo.tar -C $(ISOROOT)
+	createrepo -g $(ISOROOT)/comps.xml \
+		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
+	$(ACTION.TOUCH)
+$(BUILD_DIR)/iso/isoroot-ubuntu.done: \
+		$(BUILD_DIR)/iso/isoroot-dotfiles.done
+	mkdir -p $(ISOROOT)/ubuntu
+	tar xf $(OBJECTS)/master/ubuntu-repo.tar -C $(ISOROOT)/ubuntu
+	$(ACTION.TOUCH)
+$(ISOROOT)/puppet-slave.tgz: $(OBJECTS)/master/manifests.tar.gz
+	$(ACTION.COPY)
+$(ISOROOT)/docker.done:
+	mkdir -p $(ISOROOT)/docker/images
+	cp $(OBJECTS)/master/fuel-images.tar.lrz $(ISOROOT)/docker/images/fuel-images.tar.lrz
+	mkdir -p $(ISOROOT)/docker/sources
+	cp -r $(SOURCE_DIR)/docker/storage-* $(ISOROOT)/docker/sources
+	$(ACTION.TOUCH)
+$(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)):
+	mkdir -p $(@D)
+	tar zxf $(OBJECTS)/master/bootstrap.tar.gz -C $(@D) $(@F)
+endif
 
 
 ########################
@@ -85,33 +129,15 @@ ifdef BUILD_ID
 endif
 	cat $(BUILD_DIR)/repos/version.yaml >> $@
 
-
 $(ISOROOT)/centos-versions.yaml: \
-		$(BUILD_DIR)/packages/build.done
-	rpm -qi -p $(LOCAL_MIRROR)/centos/os/x86_64/Packages/*.rpm | $(SOURCE_DIR)/iso/pkg-versions.awk > $@
-
+		$(BUILD_DIR)/iso/isoroot-centos.done
+	rpm -qi -p $(ISOROOT)/Packages/*.rpm | $(SOURCE_DIR)/iso/pkg-versions.awk > $@
 $(ISOROOT)/ubuntu-versions.yaml: \
 		$(BUILD_DIR)/packages/build.done
-	cat $(LOCAL_MIRROR)/ubuntu/dists/precise/main/binary-amd64/Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $@
-
-$(ISOROOT)/puppet-slave.tgz: \
-		$(BUILD_DIR)/repos/fuellib.done \
-		$(call find-files,$(BUILD_DIR)/repos/fuellib/deployment/puppet)
-	mkdir -p $(ISOROOT)
-	(cd $(BUILD_DIR)/repos/fuellib/deployment/puppet && tar rf $(ISOROOT)/puppet-slave.tar ./*)
-	gzip -c -9 $(ISOROOT)/puppet-slave.tar > $@ && \
-		rm $(ISOROOT)/puppet-slave.tar
+	cat $(ISOROOT)/ubuntu/dists/precise/main/binary-amd64/Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $@
 
 ifeq ($(PRODUCTION),docker)
-$(ISOROOT)/docker.done: \
-		$(BUILD_DIR)/docker/build.done
-	mkdir -p $(ISOROOT)/docker/images
-	mv $(BUILD_DIR)/docker/fuel-images.tar.lrz $(ISOROOT)/docker/images/fuel-images.tar.lrz
-	cp -a $(BUILD_DIR)/docker/sources $(ISOROOT)/docker/sources
-	$(ACTION.TOUCH)
-else
-$(ISOROOT)/docker.done:
-	$(ACTION.TOUCH)
+$(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/docker.done
 endif
 
 ########################
@@ -125,11 +151,6 @@ $(BUILD_DIR)/iso/isoroot-bootstrap.done: \
 		$(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES))
 	$(ACTION.TOUCH)
 
-$(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)): \
-		$(BUILD_DIR)/bootstrap/build.done
-	@mkdir -p $(@D)
-	cp $(BUILD_DIR)/bootstrap/$(@F) $@
-
 $(ISOROOT)/bootstrap/bootstrap.rsa: $(SOURCE_DIR)/bootstrap/ssh/id_rsa ; $(ACTION.COPY)
 
 
@@ -138,13 +159,10 @@ $(ISOROOT)/bootstrap/bootstrap.rsa: $(SOURCE_DIR)/bootstrap/ssh/id_rsa ; $(ACTIO
 ########################
 
 $(BUILD_DIR)/iso/isoroot.done: \
-		$(BUILD_DIR)/mirror/build.done \
-		$(BUILD_DIR)/packages/build.done \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
 		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
-		$(BUILD_DIR)/iso/isoroot-bootstrap.done \
-		$(ISOROOT)/docker.done
+		$(BUILD_DIR)/iso/isoroot-bootstrap.done
 	$(ACTION.TOUCH)
 
 
@@ -152,12 +170,20 @@ $(BUILD_DIR)/iso/isoroot.done: \
 # Building CD and USB stick images
 ########################
 
+ifeq ($(filter mirantis,$(FEATURE_GROUPS)),mirantis)
+ISO_VOLUME_ID:="Mirantis Fuel"
+ISO_VOLUME_PREP:="Mirantis Inc."
+else
+ISO_VOLUME_ID:="OpenStack Fuel"
+ISO_VOLUME_PREP:="Fuel team"
+endif
+
 # keep in mind that mkisofs touches some files inside directory
 # from which it builds iso image
 # that is why we need to make isoroot.done dependent on some files
 # and then copy these files into another directory
-$(BUILD_DIR)/iso/iso.done: $(BUILD_DIR)/iso/isoroot.done
-	rm -f $(ISO_PATH)
+$(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
+	rm -f $@
 	mkdir -p $(BUILD_DIR)/iso/isoroot-mkisofs
 	rsync -a --delete $(ISOROOT)/ $(BUILD_DIR)/iso/isoroot-mkisofs
 	sudo sed -r -i -e "s/ip=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/ip=$(MASTER_IP)/" $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
@@ -165,13 +191,12 @@ $(BUILD_DIR)/iso/iso.done: $(BUILD_DIR)/iso/isoroot.done
 	sudo sed -r -i -e "s/netmask=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/netmask=$(MASTER_NETMASK)/" $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
 	sudo sed -r -i -e "s/gw=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/gw=$(MASTER_GW)/" $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
 	sudo sed -r -i -e "s/will_be_substituted_with_PRODUCT_VERSION/$(PRODUCT_VERSION)/" $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
-	mkisofs -r -V "Mirantis Fuel" -p "Mirantis Inc." \
+	mkisofs -r -V $(ISO_VOLUME_ID) -p $(ISO_VOLUME_PREP) \
 		-J -T -R -b isolinux/isolinux.bin \
 		-no-emul-boot \
 		-boot-load-size 4 -boot-info-table \
-		-x "lost+found" -o $(ISO_PATH) $(BUILD_DIR)/iso/isoroot-mkisofs
-	implantisomd5 $(ISO_PATH)
-	$(ACTION.TOUCH)
+		-x "lost+found" -o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
+	implantisomd5 $@
 
 # IMGSIZE is calculated as a sum of nailgun iso size plus
 # installation images directory size (~165M) and syslinux directory size (~35M)
@@ -179,17 +204,17 @@ $(BUILD_DIR)/iso/iso.done: $(BUILD_DIR)/iso/isoroot.done
 # +300M seems reasonable
 IMGSIZE = $(shell echo "$(shell ls -s $(ISO_PATH) | awk '{print $$1}') * 1.3 / 1024" | bc)
 
-$(BUILD_DIR)/iso/img.done: $(BUILD_DIR)/iso/iso.done
+$(IMG_PATH): $(BUILD_DIR)/iso/iso.done
 	rm -f $(BUILD_DIR)/iso/img_loop_device
 	rm -f $(BUILD_DIR)/iso/img_loop_partition
 	rm -f $(BUILD_DIR)/iso/img_loop_uuid
 	sudo losetup -j $(IMG_PATH) | awk -F: '{print $$1}' | while read loopdevice; do \
-        sudo kpartx -v $$loopdevice | awk '{print "/dev/mapper/" $$1}' | while read looppartition; do \
+          sudo kpartx -v $$loopdevice | awk '{print "/dev/mapper/" $$1}' | while read looppartition; do \
             sudo umount -f $$looppartition; \
-        done; \
-        sudo kpartx -d $$loopdevice; \
-        sudo losetup -d $$loopdevice; \
-    done
+          done; \
+          sudo kpartx -d $$loopdevice; \
+          sudo losetup -d $$loopdevice; \
+	done
 	rm -f $(IMG_PATH)
 	dd if=/dev/zero of=$(IMG_PATH) bs=1M count=$(IMGSIZE)
 	sudo losetup -f > $(BUILD_DIR)/iso/img_loop_device
@@ -222,4 +247,3 @@ $(BUILD_DIR)/iso/img.done: $(BUILD_DIR)/iso/iso.done
 	sudo umount `cat $(BUILD_DIR)/iso/img_loop_partition`
 	sudo kpartx -d `cat $(BUILD_DIR)/iso/img_loop_device`
 	sudo losetup -d `cat $(BUILD_DIR)/iso/img_loop_device`
-	$(ACTION.TOUCH)
