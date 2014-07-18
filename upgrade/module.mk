@@ -48,7 +48,7 @@ $(BUILD_DIR)/upgrade/common-part.tar: \
 	tar rf $@ --mode=755 -C $(BUILD_DIR)/upgrade upgrade.sh
 
 ifneq ($(BUILD_ARTIFACTS),0)
-$(BUILD_DIR)/upgrade/fuel-part.tar: $(BUILD_DIR)/iso/iso.done
+$(BUILD_DIR)/upgrade/fuel-part.tar: $(ISO_PATH)
 endif
 
 $(BUILD_DIR)/upgrade/fuel-part.tar:
