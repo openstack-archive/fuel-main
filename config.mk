@@ -28,8 +28,8 @@ UBUNTU_RELEASE:=precise
 
 ISO_NAME?=fuelweb-centos-$(CENTOS_RELEASE)-$(CENTOS_ARCH)
 TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-upgrade
-FUEL_TARBALL_NAME?=fuel-master-$(PRODUCT_VERSION)-upgrade
-OS_TARBALL_NAME?=fuel-openstack-$(PRODUCT_VERSION)-upgrade
+#FUEL_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-master-upgrade
+OS_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-patch
 ISO_DIR?=$(BUILD_DIR)/iso
 ISO_DIR:=$(abspath $(ISO_DIR))
 TARBALL_DIR?=$(BUILD_DIR)/upgrade
