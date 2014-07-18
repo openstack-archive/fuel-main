@@ -15,6 +15,7 @@
 
 /build
 /local_mirror
+/objects
 /virtualbox/iso/*.iso
 nosetests.xml
 nailgun.log
