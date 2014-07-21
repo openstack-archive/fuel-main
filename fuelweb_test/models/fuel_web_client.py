@@ -1026,3 +1026,21 @@ class FuelWebClient(object):
             if release_name in release["name"]:
                 release_ids.append(release['id'])
         return release_ids
+
+    @logwrap
+    def sync_ceph_time(self, cluster_id):
+        cluster_nodes = self.client.list_cluster_nodes(cluster_id)
+        ceph_nodes_ips = [n['ip'] for n in cluster_nodes if 'ceph-osd' in
+                          n['roles']]
+        self.environment.sync_time_admin_node()
+        if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
+            cmd = 'service ceph-all restart'
+        else:
+            cmd = 'service ceph restart'
+        for node_ip in ceph_nodes_ips:
+            remote = self.environment.get_ssh_to_remote(node_ip)
+            self.environment.sync_node_time(remote)
+            result = remote.execute(cmd)
+            if not result['exit_code'] == 0:
+                raise Exception('Ceph restart failed on {0}: {1}'.
+                                format(node_ip, result['stderr']))
