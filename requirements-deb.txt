@@ -49,6 +49,7 @@ cinder-common
 cinder-scheduler
 cinder-volume
 cirros-testvm
+cirros-testvm-mellanox
 cirros-testvmware
 cloud-init
 cluster-glue
