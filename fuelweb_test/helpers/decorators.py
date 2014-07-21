@@ -16,6 +16,7 @@ import functools
 import json
 import os
 import time
+import traceback
 import urllib2
 
 from devops.helpers.helpers import SSHClient
@@ -53,10 +54,16 @@ def log_snapshot_on_error(func):
             name = 'error_%s' % func.__name__
             description = "Failed in method '%s'." % func.__name__
             if args[0].env is not None:
-                create_diagnostic_snapshot(args[0].env, "fail", func.__name__)
-                args[0].env.make_snapshot(snapshot_name=name[-50:],
-                                          description=description,
-                                          is_make=True)
+                try:
+                    create_diagnostic_snapshot(args[0].env,
+                                               "fail", func.__name__)
+                except Exception:
+                    logger.error(traceback.format_exc())
+                    raise
+                finally:
+                    args[0].env.make_snapshot(snapshot_name=name[-50:],
+                                              description=description,
+                                              is_make=True)
             raise
     return wrapper
 
