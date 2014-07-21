@@ -160,7 +160,7 @@ class CephHA(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
           groups=["ceph_ha"])
-    @log_snapshot_on_error
+    #@log_snapshot_on_error
     def ceph_ha(self):
         """Deploy ceph with cinder in HA mode
 
@@ -178,9 +178,10 @@ class CephHA(TestBasic):
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
-        self.env.revert_snapshot("ready")
+        self.env.revert_snapshot("error_ceph_ha")
         self.env.bootstrap_nodes(self.env.nodes().slaves[:6])
 
+        '''
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=settings.DEPLOYMENT_MODE_HA,
@@ -206,6 +207,10 @@ class CephHA(TestBasic):
         )
         # Depoy cluster
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        '''
+        cluster_id = self.fuel_web.get_last_created_cluster()
+
+        self.fuel_web.sync_ceph_time(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
         # Run ostf
