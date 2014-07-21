@@ -121,6 +121,7 @@ erlang-syntax-tools
 erlang-tools
 erlang-webtool
 erlang-xmerl
+eswitchd
 ethtool
 euca2ools
 facter
@@ -376,6 +377,7 @@ libnewt0.52
 libnfnetlink0
 libnih-dbus1
 libnih1
+libnl1
 libnl-3-200
 libnl-genl-3-200
 libnspr4
@@ -399,6 +401,7 @@ libpcap0.8
 libpci3
 libpciaccess0
 libpcre3
+libpgm-5.1
 libperl5.14
 libpils2
 libpipeline1
@@ -503,6 +506,7 @@ libxrender1
 libxslt1.1
 libyajl1
 libyaml-0-2
+libzmq1
 linux-firmware
 linux-firmware-nonfree
 linux-headers-3.11.0-18
@@ -533,6 +537,7 @@ mcollective-common
 memcached
 memtest86+
 mime-support
+mlnx-ofed-light
 mlocate
 module-init-tools
 mount
@@ -677,6 +682,7 @@ python-decorator
 python-dingus
 python-django
 python-django-horizon
+python-ethtool
 python-eventlet
 python-feedparser
 python-formencode
@@ -708,6 +714,7 @@ python-markupsafe
 python-memcache
 python-migrate
 python-minimal
+python-mlnxvif
 python-mock
 python-muranoclient
 python-mysqldb
@@ -764,6 +771,7 @@ python-webob
 python-werkzeug
 python-xapian
 python-xattr
+python-zmq
 python-yaml
 python-pexpect
 python2.7
