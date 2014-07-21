@@ -206,6 +206,7 @@ class CephHA(TestBasic):
         )
         # Depoy cluster
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.sync_ceph_time(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
         # Run ostf
