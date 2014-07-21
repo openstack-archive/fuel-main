@@ -128,6 +128,7 @@ erlang-typer-R14B-04.8.el6
 erlang-webtool-R14B-04.8.el6
 erlang-wx-R14B-04.8.el6
 erlang-xmerl-R14B-04.8.el6
+eswitchd
 euca2ools
 fcgiwrap-1.0.3-2
 fence-agents
@@ -138,6 +139,7 @@ fuse-libs-2.8.3-4.el6
 galera
 gcc
 gcc-c++
+gcc-gfortran
 gdisk-0.8.4-1.el6
 git
 gperftools-libs-2.0-11.el6.3
@@ -150,6 +152,7 @@ http-parser-2.0-4.20121128gitcd01361.el6
 httpd-2.2.15-15.el6.1
 httpd-tools-2.2.15-15.el6.1
 iproute-2.6.32-130.el6.netns.2.mira1
+json-c
 keepalived-1.2.4-1.el6
 kernel-2.6.32-431.el6.x86_64
 kernel-devel-2.6.32-431.el6.x86_64
@@ -191,6 +194,8 @@ mcollective-common
 mc
 memcached-1.4.4-3.el6
 mlocate-0.22.2-4.el6
+mlnxvif
+mlnx-ofed-light
 mod_fastcgi
 mod_ssl-2.2.15-15.el6.1
 mod_wsgi-3.2-1.el6
@@ -321,6 +326,7 @@ openstack-swift-plugin-swift3
 openstack-swift-proxy
 openstack-utils
 openvswitch
+openpgm
 kmod-openvswitch
 pacemaker
 parted
@@ -453,6 +459,7 @@ python-websockify
 python-werkzeug
 python-wsgilog-0.3-1
 python-wsgiref-0.1.2-6.el6
+python-zmq
 pyxattr-0.5.0-1.el6
 qemu
 qpid-cpp-server-ssl-0.14-22.el6_3
@@ -609,6 +616,8 @@ xfsprogs
 xinetd
 yum-3.2.29-40.el6.centos
 yum-utils-1.1.30-14.el6
+zeromq
+zeromq3
 zlib-devel-1.2.3-29.el6
 python-pypcap
 nailgun
