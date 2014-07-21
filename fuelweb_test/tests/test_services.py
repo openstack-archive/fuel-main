@@ -504,3 +504,126 @@ class CeilometerHAMongo(TestBasic):
             should_fail=3, timeout=5300)
 
         self.env.make_snapshot("deploy_ceilometer_ha_mulirole")
+
+
+@test(groups=["services", "services.heat", "services_simple"])
+class HeatSimple(TestBasic):
+    """Heat Simple test.
+    Don't recommend to start tests without kvm
+    Put Heat image before start
+    """
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["deploy_heat_simple"])
+    @log_snapshot_on_error
+    def deploy_heat_simple(self):
+        """Deploy cluster in simple mode
+
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Add 1 nodes with compute role
+            4. Deploy the cluster
+            5. Verify heat services
+            6. Run OSTF
+            7. Register heat image
+            8. Run OSTF platform tests
+
+        Snapshot: deploy_heat_simple
+
+        """
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        LOGGER.debug('Check MD5 of image')
+        check_image = checkers.check_image(
+            settings.SERVTEST_HEAT_IMAGE,
+            settings.SERVTEST_HEAT_IMAGE_MD5,
+            settings.SERVTEST_LOCAL_PATH)
+        asserts.assert_true(check_image, "Image verification failed")
+
+        data = {
+            'net_provider': 'neutron',
+            'net_segment_type': 'gre',
+            'tenant': 'heatSimple',
+            'user': 'heatSimple',
+            'password': 'heatSimple'
+        }
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            settings=data)
+
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=5, networks_count=1, timeout=300)
+        checkers.verify_service(
+            self.env.get_ssh_to_remote_by_name("slave-01"),
+            service_name='heat-api')
+        checkers.verify_service(
+            self.env.get_ssh_to_remote_by_name("slave-01"),
+            service_name='heat-engine')
+
+        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
+        common_func = Common(controller['ip'],
+                             data['user'],
+                             data['password'],
+                             data['tenant'])
+
+        LOGGER.debug('Run sanity and functional Heat OSTF tests')
+        self.fuel_web.run_single_ostf_test(
+            cluster_id=self.fuel_web.get_last_created_cluster(),
+            test_sets=['sanity'],
+            test_name=('fuel_health.tests.sanity.test_sanity_heat.'
+                       'SanityHeatTests.test_list_stacks')
+        )
+
+        LOGGER.debug('Import Heat image')
+        common_func.image_import(
+            settings.SERVTEST_LOCAL_PATH,
+            settings.SERVTEST_HEAT_IMAGE,
+            settings.SERVTEST_HEAT_IMAGE_NAME,
+            settings.SERVTEST_HEAT_IMAGE_META)
+
+        LOGGER.debug('Boot instance with Heat image')
+
+        image_name = settings.SERVTEST_HEAT_IMAGE_NAME
+        server = common_func.create_instance(flavor_name='test_heat_flavor',
+                                             ram=2048, vcpus=1, disk=20,
+                                             server_name='heat_instance',
+                                             image_name=image_name)
+
+        wait(common_func.get_instance_detail(server).status == 'ACTIVE',
+             timeout=60 * 60)
+
+        common_func.delete_instance(server)
+
+        LOGGER.debug('Run Heat OSTF platform tests')
+
+        test_class_main = ('fuel_health.tests.platform_tests.'
+                           'test_heat.'
+                           'HeatSmokeTests')
+        tests_names = ['test_action',
+                       'test_autoscaling',
+                       'test_rollback']
+
+        test_classes = []
+
+        for test_name in tests_names:
+            test_classes.append('{0}.{1}'.format(test_class_main,
+                                                 test_name))
+
+        for test_name in test_classes:
+            self.fuel_web.run_single_ostf_test(
+                cluster_id=cluster_id, test_sets=['platform_tests'],
+                test_name=test_name, timeout=60 * 60)
+
+        self.env.make_snapshot("deploy_heat_simple")
