@@ -116,11 +116,12 @@ def verify_network_list(networks_count, remote):
 
 
 @logwrap
-def verify_service(remote, service_name):
+def verify_service(remote, service_name, count=1):
     ps_output = remote.execute('ps ax')['stdout']
     api = filter(lambda x: service_name in x, ps_output)
     logger.debug("{} \\n: {}".format(service_name, str(api)))
-    assert_equal(len(api), 1, "{} count not equal to 1".format(service_name))
+    assert_equal(len(api), count,
+                 "{0} count not equal to {1}".format(service_name, count))
 
 
 @logwrap
