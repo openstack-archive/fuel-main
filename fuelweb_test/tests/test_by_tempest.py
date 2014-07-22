@@ -110,6 +110,8 @@ class TestByTempest(base_test_case.TestBasic):
         self.env.revert_snapshot(snapshot)
 
         if not tempest_conf:
+            tempest_conf = tempfile.NamedTemporaryFile().name
+
             # Get nailgun node ip address
             netdump = sp.Popen(["virsh", "net-dumpxml", "%s_admin" % env_name],
                                stdout=sp.PIPE).communicate()[0]
