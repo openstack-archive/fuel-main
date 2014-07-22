@@ -23,6 +23,7 @@ from devops.helpers.helpers import wait
 from netaddr import IPNetwork
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_true
+from random import randrange
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test import logwrap
@@ -990,3 +991,87 @@ class FuelWebClient(object):
             if not result['exit_code'] == 0:
                 raise Exception('Ceph restart failed on {0}: {1}'.
                                 format(node_ip, result['stderr']))
+
+    @logwrap
+    def listen_random_port(self, ip_address, protocol, tmp_file_path):
+        remote = self.environment.get_ssh_to_remote(ip_address)
+        # Install socat
+        if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
+            cmd = '/usr/bin/apt-get install -y {pkg}'.format(pkg='socat')
+        else:
+            cmd = '/usr/bin/yum install -y {pkg}'.format(pkg='socat')
+        result = remote.execute(cmd)
+        if not result['exit_code'] == 0:
+            raise Exception('Could not install package: {0}\n{1}'.
+                            format(result['stdout'], result['stderr']))
+        # Get all used ports
+        cmd = ('netstat -A inet -ln --{proto} | awk \'$4 ~ /^({ip}'
+               '|0\.0\.0\.0):[0-9]+/ {{split($4,port,":"); print '
+               'port[2]}}\'').format(ip=ip_address, proto=protocol)
+        used_ports = remote.execute(cmd)
+
+        # Get list of opened ports
+        cmd = ('iptables -t filter -S INPUT | sed -rn -e \'s/^.*\s\-p\s+'
+               '{proto}\s.*\-\-(dport|ports|dports)\s+([0-9,\,,:]+)\s.*'
+               '-j\s+ACCEPT.*$/\\2/p\' | sed -r \'s/,/\\n/g; s/:/ /g\' |'
+               ' while read ports; do if [[ "$ports" =~ [[:digit:]]'
+               '[[:blank:]][[:digit:]] ]]; then seq $ports; else echo '
+               '"$ports";fi; done').format(proto=protocol)
+
+        allowed_ports = remote.execute(cmd)
+        test_port = randrange(10000)
+        while test_port in used_ports or test_port in allowed_ports:
+            test_port = randrange(10000)
+
+        # Start listening for connections on test_port
+        cmd = ('echo "socat {proto}4-LISTEN:{port},bind={ip} {file} '
+               '&>/dev/null & disown; exit 0" > /var/tmp/pl.sh; '
+               'bash /var/tmp/pl.sh').\
+            format(proto=protocol, ip=ip_address, file=tmp_file_path,
+                   port=test_port)
+        result = remote.execute(cmd)
+        assert_equal(result['exit_code'], 0,
+                     'Listening on {0}:{1}/{2} port failed: {3}'.
+                     format(ip_address, test_port, protocol,
+                            result['stderr']))
+        return test_port
+
+    @logwrap
+    def verify_firewall(self, cluster_id):
+        admin_remote = self.environment.get_admin_remote()
+        # Install NetCat
+        # TODO(apanchenko): replace by admin_install_pkg('nc') when
+        # TODO(apanchenko): code change #108595 is merged
+        cmd = 'yum install -y {package}'.format(package='nc')
+        result = admin_remote.execute(cmd)
+        if not result['exit_code'] == 0:
+            raise Exception('Could not install package, stderr: '.
+                            format(result['stderr']))
+
+        cluster_nodes = self.client.list_cluster_nodes(cluster_id)
+        tmp_file_path = '/var/tmp/iptables_check_file'
+        check_string = 'FirewallHole'
+
+        for node in cluster_nodes:
+            for protocol in ['tcp', 'udp']:
+                port = self.listen_random_port(ip_address=node['ip'],
+                                               protocol=protocol,
+                                               tmp_file_path=tmp_file_path)
+                nc_opts = ''
+                if protocol == 'udp':
+                    nc_opts = '{} -u'.format(nc_opts)
+
+                cmd = 'echo {string} | nc {opts} {ip} {port}'.\
+                    format(opts=nc_opts, string=check_string, ip=node['ip'],
+                           port=port)
+                admin_remote.execute(cmd)
+                remote = self.environment.get_ssh_to_remote(node['ip'])
+                cmd = 'cat {0}; rm -f {0}'.format(tmp_file_path)
+                result = remote.execute(cmd)
+                if ''.join(result['stdout']).strip() == check_string:
+                    raise Exception(('Firewall vulnerability detected. '
+                                    'Unused port {0}/{1} can be accessed'
+                                    ' on {2} (node-{3}) node.').
+                                    format(port, protocol, node['name'],
+                                           node['id']))
+        logger.info('Firewall test passed')
