@@ -38,7 +38,6 @@ class BuildsDocument(object):
 
 
 class BuildSheet:
-    BUILD_COLUMN = 'b{0}'
 
     def __init__(self, table):
         self.table = table
@@ -54,21 +53,16 @@ class BuildSheet:
         else:
             return self.table.fields[1]
 
-    def get_build_column_name(self, build_num):
+    def get_build_column_name(self, iso_number):
         """
         Returns column name of a build.
         If there is no such column it creates another one
 
-        It turns out name of column could not be a number.
-        For ex: if name is '12' r.content returns {'_cokwr': 'PASSED'}
-        So,we have to append a string to a build number and then
-        use the result string as a column name
         """
-        name = self.BUILD_COLUMN.format(build_num)
-        if self.last_build_column != name:
-            logger.debug("Create column {0}".format(name))
+        if self.last_build_column != iso_number:
+            logger.debug("Create column {0}".format(iso_number))
             fields = self.table.fields
-            fields.insert(1, name)
+            fields.insert(1, iso_number)
             self.table.SetFields(fields)
             self.table.LookupFields()
-        return name
+        return iso_number
