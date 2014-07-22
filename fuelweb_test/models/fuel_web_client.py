@@ -29,6 +29,7 @@ from fuelweb_test import logwrap
 from fuelweb_test import logger
 from fuelweb_test.helpers.decorators import update_ostf
 from fuelweb_test.helpers.decorators import upload_manifests
+from fuelweb_test.helpers.security import SecurityTests
 from fuelweb_test.models.nailgun_client import NailgunClient
 from fuelweb_test import ostf_test_mapping as map_ostf
 from fuelweb_test.settings import ATTEMPTS
@@ -52,6 +53,7 @@ class FuelWebClient(object):
         self.admin_node_ip = admin_node_ip
         self.client = NailgunClient(admin_node_ip)
         self._environment = environment
+        self.security = SecurityTests(self.client, self._environment)
         super(FuelWebClient, self).__init__()
 
     @property
