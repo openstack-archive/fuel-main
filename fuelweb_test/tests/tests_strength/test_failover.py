@@ -77,6 +77,11 @@ class TestHaFailover(TestBasic):
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=16, networks_count=1, timeout=300)
         self.fuel_web.verify_network(cluster_id)
+
+        # Bug #1289297. Pause 5 min to make sure that all remain activity
+        # on the admin node has over before creating a snapshot.
+        time.sleep(5 * 60)
+
         self.env.make_snapshot("deploy_ha", is_make=True)
 
     @test(depends_on_groups=['deploy_ha'],
