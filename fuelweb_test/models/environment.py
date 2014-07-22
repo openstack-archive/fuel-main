@@ -444,6 +444,34 @@ class EnvironmentModel(object):
                                    error=result['stderr']))
         return fuel_settings
 
+    def admin_install_pkg(self, pkg_name):
+        """Install a package <pkg_name> on the admin node"""
+        admin_remote = self.get_admin_remote()
+        remote_status = admin_remote.execute("yum list installed"
+                                             " | fgrep '%s'" % pkg_name)
+        if any(pkg_name in pkg for pkg in remote_status['stdout']):
+            logger.info("Package '%s' has already installed." % pkg_name)
+        else:
+            logger.info("Installing package '%s' ..." % pkg_name)
+            remote_status = admin_remote.execute("yum -y install"
+                                                 " %s" % pkg_name)
+            logger.info("Installation of the package '%s' has been"
+                        "completed with exit code %s"
+                        % (pkg_name, remote_status['exit_code']))
+
+    def admin_run_service(self, service_name):
+        """Start a service <service_name> on the admin node"""
+        admin_remote = self.get_admin_remote()
+        admin_remote.execute("service %s start" % service_name)
+        remote_status = admin_remote.execute("service %s"
+                                             " status" % service_name)
+        if any('running...' in status for status in remote_status['stdout']):
+            logger.info("Service '%s' is running..." % service_name)
+        else:
+            logger.info("Service '%s' failed to start with exit code %s :\n%s"
+                        % (service_name,
+                           remote_status['exit_code'],
+                           remote_status['stdout']))
 
 class NodeRoles(object):
     def __init__(self,
