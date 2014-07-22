@@ -38,7 +38,7 @@ BOOTSTRAP_RPMS:=\
 	mcollective \
 	mingetty \
 	net-tools \
-	ntp \
+	ntp-dev \
 	openssh-clients \
 	openssh-server \
 	pciutils \
