@@ -50,8 +50,10 @@ class NeutronGre(TestBasic):
             raise SkipTest()
 
         self.env.revert_snapshot("ready_with_3_slaves")
+        cluster_id = 1
 
         segment_type = 'gre'
+
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_SIMPLE,
@@ -71,13 +73,15 @@ class NeutronGre(TestBasic):
                 'slave-03': ['compute']
             }
         )
+
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
-        # assert_equal(str(cluster['net_segment_type']), segment_type)
+        assert_equal(str(cluster['net_segment_type']), segment_type)
 
         self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.verify_firewall(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
