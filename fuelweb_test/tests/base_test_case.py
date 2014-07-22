@@ -77,6 +77,12 @@ class SetupEnvironment(TestBasic):
                 state='available'
             )
         self.fuel_web.get_nailgun_version()
+
+        # Bug #1289297. Install and run 'atop' on the admin node to check it's
+        # health status .
+        if (self.env.admin_install_pkg("atop") == 0):
+            self.env.admin_run_service("atop")
+
         self.env.make_snapshot("ready", is_make=True)
 
     @test(depends_on=[prepare_release],
