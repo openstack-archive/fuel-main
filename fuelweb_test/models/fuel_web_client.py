@@ -23,6 +23,7 @@ from devops.helpers.helpers import wait
 from netaddr import IPNetwork
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_true
+from random import randrange
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test import logwrap
@@ -972,3 +973,81 @@ class FuelWebClient(object):
 
     def get_nailgun_version(self):
         logger.info("ISO version: %s" % self.client.get_api_version())
+
+    def listen_random_port(self, ip_address, protocol, tmp_file_path):
+        # netcat-openbsd package is preinstalled on Ubuntu
+        if not OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
+            remote = self.environment.get_ssh_to_remote(ip_address)
+            # Install NetCat
+            cmd = 'yum install -y {package}'.format(package='nc')
+            result = remote.execute(cmd)
+            if not result['exit_code'] == 0:
+                raise Exception('Could not install package, stderr: '.
+                                format(result['stderr']))
+        # Get all used ports
+        cmd = ('netstat -A inet -ln --{proto} | awk \'$4 ~ /^({ip}'
+               '|0\.0\.0\.0):[0-9]+/ {split($4,port,":"); print '
+               'port[2]}\'').format(ip=ip_address, proto=protocol)
+        used_ports = remote.execute(cmd)
+
+        # Get list of opened ports
+        cmd = ('iptables -t filter -S INPUT | sed -rn -e \'s/^.*\s\-p\s+'
+               '{proto}\s.*\-\-(dport|ports|dports)\s+([0-9,\,,:]+)\s.*'
+               '-j\s+ACCEPT.*$/\\2/p\' | sed -r \'s/,/\\n/g; s/:/ /g\' |'
+               ' while read ports; do if [[ "$ports" =~ [[:digit:]]'
+               '[[:blank:]][[:digit:]] ]]; then seq $ports; else echo '
+               '"$ports";fi; done').format(proto=protocol)
+
+        allowed_ports = remote.execute(cmd)
+        test_port = randrange(10000)
+        while test_port in used_ports or test_port in allowed_ports:
+            test_port = randrange(10000)
+
+        # Start listening for connections on test_port
+        if protocol == 'udp':
+            cmd = 'nc -4ul {ip} -o {file} &'.format(ip=ip_address,
+                                                  file=tmp_file_path)
+        else:
+            cmd = 'nc -4l {ip} -o {file} &'.format(ip=ip_address,
+                                                  file=tmp_file_path)
+        result = remote.execute(cmd)
+        assert_equal(result['exit_code'], 0, ('Listening on {0}:{1}/{2} port'
+                                              ' failed: {3}').
+                     format(ip_address,test_port,protocol,result['stderr']))
+        return test_port
+
+    @logwrap
+    def verify_firewall(self, cluster_id):
+        admin_remote = self.environment.get_admin_remote()
+        # Install NetCat
+        cmd = 'yum install -y {package}'.format(package='nc')
+        result = admin_remote.execute(cmd)
+        if not result['exit_code'] == 0:
+            raise Exception('Could not install package, stderr: '.
+                            format(result['stderr']))
+
+        cluster_nodes = self.environment.list_cluster_nodes(cluster_id)
+        tmp_file_path = '/var/tmp/iptables_check_file'
+        check_string = 'FirewallHole'
+
+        for node in cluster_nodes:
+            for protocol in ['tcp', 'udp']:
+                port = self.listen_random_port(ip_address=node['ip'],
+                                               protocol=protocol,
+                                               tmp_file_path=tmp_file_path)
+                cmd = 'echo {string} | nc {ip} {port}'.format(
+                    string=check_string, ip=node['ip'], port=port)
+
+                admin_remote.execute(cmd)
+                remote = self.environment.get_ssh_to_remote(node['ip'])
+                cmd = 'cat {0}; rf -f {0}'.format(tmp_file_path)
+                if remote.execute(cmd)['stdout'] == check_string:
+                    raise Exception(('Firewall vulnerability detected. '
+                                    'Unused port {0}/{1} can be accessed'
+                                    'on {3} (node-{4}) node.').
+                                    format(port, protocol, node['name'],
+                                           node['id']))
+        logger.info('Firewall test passed')
+
+
+

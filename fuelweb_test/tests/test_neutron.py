@@ -78,6 +78,7 @@ class NeutronGre(TestBasic):
         # assert_equal(str(cluster['net_segment_type']), segment_type)
 
         self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.verify_firewall(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
