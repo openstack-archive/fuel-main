@@ -246,7 +246,7 @@ lsof
 man
 mlocate
 nmap-ncat
-ntp
+ntp-dev
 openssh-clients
 policycoreutils
 rsync
