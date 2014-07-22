@@ -618,6 +618,7 @@ novnc
 ntfs-3g
 ntfsprogs
 ntp
+ntp-dev
 ntpdate
 openhpid
 openssh-client
