@@ -266,6 +266,7 @@ nodejs-less-1.3.3-3.el6
 novnc-0.4
 nrpe-2.14-3.el6
 ntp
+ntp-dev
 numpy-1.4.1-9.el6
 openssh-clients
 openssh-server
