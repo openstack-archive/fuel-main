@@ -79,3 +79,6 @@ class Build(JSONResource):
             self.url,
             'testReport/')
         ).get_data()
+
+    def get_iso_number(self):
+        return self.get_data()['description']
