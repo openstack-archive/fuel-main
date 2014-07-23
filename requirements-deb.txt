@@ -876,6 +876,7 @@ xkb-data
 xml-core
 xz-lzma
 xz-utils
+percona-xtrabackup
 zerofree
 zfs-fuse
 zlib1g
