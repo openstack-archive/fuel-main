@@ -16,6 +16,7 @@ import os
 
 from proboscis.asserts import assert_equal
 from proboscis import test
+from proboscis import SkipTest
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
@@ -41,6 +42,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
 
         """
 
+        if not self.env.get_virtual_environment().has_snapshot(
+                'deploy_simple_cinder'):
+            raise SkipTest()
         self.env.revert_snapshot("deploy_simple_cinder")
         cluster_id = self.fuel_web.get_last_created_cluster()
         checkers.upload_tarball(self.env.get_admin_remote(),
@@ -87,6 +91,10 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
             7. Run OSTF
 
         """
+        if not self.env.get_virtual_environment().has_snapshot(
+                'deploy_neutron_gre_ha'):
+            raise SkipTest()
+
         self.env.revert_snapshot("deploy_neutron_gre_ha")
         cluster_id = self.fuel_web.get_last_created_cluster()
         available_releases_before = self.fuel_web.get_releases_list_for_os(
@@ -161,6 +169,10 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
             5. Run OSTF
 
         """
+        if not self.env.get_virtual_environment().has_snapshot(
+                'deploy_simple_cinder'):
+            raise SkipTest()
+
         self.env.revert_snapshot("deploy_simple_cinder")
         cluster_id = self.fuel_web.get_last_created_cluster()
         available_releases_before = self.fuel_web.get_releases_list_for_os(
@@ -232,6 +244,10 @@ class RollbackFuelMaster(base_test_data.TestBasic):
             6. Run OSTF
 
         """
+        if not self.env.get_virtual_environment().has_snapshot(
+                'deploy_simple_cinder'):
+            raise SkipTest()
+
         self.env.revert_snapshot("deploy_simple_cinder")
         cluster_id = self.fuel_web.get_last_created_cluster()
         checkers.upload_tarball(self.env.get_admin_remote(),
@@ -278,6 +294,10 @@ class RollbackFuelMaster(base_test_data.TestBasic):
             7. Run OSTF
 
         """
+        if not self.env.get_virtual_environment().has_snapshot(
+                'deploy_neutron_gre'):
+            raise SkipTest()
+
         self.env.revert_snapshot("deploy_neutron_gre")
         cluster_id = self.fuel_web.get_last_created_cluster()
         checkers.upload_tarball(self.env.get_admin_remote(),
