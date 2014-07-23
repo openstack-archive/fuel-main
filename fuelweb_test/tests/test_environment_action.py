@@ -84,8 +84,7 @@ class EnvironmentAction(base_test_case.TestBasic):
             3, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=0)
+            cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_flat_stop_reset_on_deploying")
 
@@ -144,8 +143,7 @@ class EnvironmentAction(base_test_case.TestBasic):
             3, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=0)
+            cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_flat_stop_reset_on_provisioning")
 
@@ -199,10 +197,7 @@ class EnvironmentAction(base_test_case.TestBasic):
         self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_reset_on_ready")
 
@@ -264,9 +259,6 @@ class EnvironmentActionOnHA(base_test_case.TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            test_sets=['ha', 'smoke', 'sanity'])
 
         self.env.make_snapshot("deploy_stop_reset_on_ha")
