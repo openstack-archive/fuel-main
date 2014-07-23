@@ -115,11 +115,7 @@ class SimpleFlat(TestBasic):
         self.env.verify_network_configuration("slave-01")
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance']
-        )
+            cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_simple_flat", is_make=True)
 
@@ -255,10 +251,7 @@ class SimpleFlat(TestBasic):
         self.env.verify_node_service_list("slave-03", 8)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            cluster_id=cluster_id)
 
         self.env.make_snapshot("simple_flat_add_compute")
 
@@ -313,10 +306,7 @@ class SimpleVlan(TestBasic):
         self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_simple_vlan")
 
@@ -463,10 +453,7 @@ class FloatingIPs(TestBasic):
         self.fuel_web.assert_cluster_floating_list('slave-02', expected_ips)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_floating_ips")
 

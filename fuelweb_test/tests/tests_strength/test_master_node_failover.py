@@ -64,9 +64,7 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
         self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
         logger.info('PASS DEPLOYMENT')
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=1,
-            failed_test_name=['Create volume and attach it to instance'])
+            cluster_id=cluster_id)
         logger.info('PASS OSTF')
         logger.info('Get controller ip')
         controller_ip = self.fuel_web.get_nailgun_node_by_name(

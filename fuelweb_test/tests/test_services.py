@@ -100,9 +100,6 @@ class SavannaSimple(TestBasic):
                              data['password'],
                              data['tenant'])
 
-        failed_test_name = ['Create volume and attach it to instance',
-                            'Create volume and boot instance from it']
-
         test_classes = ['fuel_health.tests.sanity.test_sanity_savanna.'
                         'SanitySavannaTests.test_sanity_savanna']
         self.fuel_web.run_ostf(
@@ -125,8 +122,7 @@ class SavannaSimple(TestBasic):
             cluster_id=cluster_id, test_sets=['platform_tests'],
             test_name=('fuel_health.tests.platform_tests.'
                        'test_platform_savanna.PlatformSavannaTests.'
-                       'test_platform_savanna'), should_fail=2,
-            timeout=60 * 200, failed_test_name=failed_test_name)
+                       'test_platform_savanna'), timeout=60 * 200)
 
         self.env.make_snapshot("deploy_sahara_simple")
 
@@ -333,7 +329,7 @@ class CeilometerSimpleMongo(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity',
                                               'platform_tests'],
-            should_fail=1, timeout=5300)
+            timeout=5300)
 
         self.env.make_snapshot("deploy_ceilometer_simple_with_mongo")
 
@@ -381,8 +377,7 @@ class CeilometerSimpleMongo(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity',
                                               'platform_tests'],
-            should_fail=1, timeout=5300,
-            failed_test_name=['Check stack autoscaling'])
+            timeout=5300)
 
         self.env.make_snapshot("deploy_ceilometer_simple_mulirole")
 
@@ -439,15 +434,12 @@ class CeilometerHAMongo(TestBasic):
         # run ostf
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=2, timeout=5300,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            timeout=5300)
 
         # run platfrom tests
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['platform_tests'],
-            should_fail=4, timeout=5300,
-            failed_test_name=['Check stack autoscaling'])
+            timeout=5300)
 
         self.env.make_snapshot("deploy_ceilometer_ha_with_mongo")
 
@@ -497,11 +489,11 @@ class CeilometerHAMongo(TestBasic):
         # run ostf
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],
-            should_fail=0, timeout=5300)
+            timeout=5300)
 
         # run platform test
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['platform_tests'],
-            should_fail=3, timeout=5300)
+            timeout=5300)
 
         self.env.make_snapshot("deploy_ceilometer_ha_mulirole")

@@ -79,10 +79,7 @@ class TestHaVLAN(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            test_sets=['ha', 'smoke', 'sanity'])
 
         self.env.make_snapshot("deploy_ha_vlan")
 
@@ -139,10 +136,7 @@ class TestHaFlat(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            test_sets=['ha', 'smoke', 'sanity'])
 
         self.env.make_snapshot("deploy_ha_flat")
 
@@ -201,9 +195,7 @@ class TestHaFlatAddCompute(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['ha', 'smoke', 'sanity'], should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            test_sets=['ha', 'smoke', 'sanity'])
 
         self.env.make_snapshot("ha_flat_add_compute")
 
@@ -272,8 +264,6 @@ class TestHaFlatScalability(TestBasic):
                           '\s+Started node', ret), 'vip public started')
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['ha', 'sanity'], should_fail=2,
-            failed_test_name=['Check internet connectivity from a compute',
-                              'Check DNS resolution on compute node'])
+            test_sets=['ha', 'sanity'])
 
         self.env.make_snapshot("ha_flat_scalability")

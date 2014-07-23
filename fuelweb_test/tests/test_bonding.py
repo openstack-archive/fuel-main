@@ -111,10 +111,7 @@ class BondingSimple(TestBasic):
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=2,
-            failed_test_name=['Create volume and attach it to instance',
-                              'Create volume and boot instance from it'])
+            cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_bonding_active_backup")
 
@@ -202,10 +199,7 @@ class BondingSimple(TestBasic):
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_bonding_balance_slb")
 
@@ -299,10 +293,7 @@ class BondingHA(TestBasic):
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_bonding_ha_active_backup")
 
@@ -392,9 +383,6 @@ class BondingHA(TestBasic):
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_bonding_ha_balance_slb")

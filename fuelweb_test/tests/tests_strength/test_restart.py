@@ -141,8 +141,7 @@ class CephHARestart(TestBasic):
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=0)
+            cluster_id=cluster_id)
 
         # Destroy compute node
         self.env.nodes().slaves[4].destroy()
@@ -208,7 +207,4 @@ class SimpleFlatRestart(TestBasic):
         self.fuel_web.warm_restart_nodes(self.env.nodes().slaves[:2])
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            cluster_id=cluster_id)

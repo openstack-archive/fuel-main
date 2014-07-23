@@ -117,9 +117,7 @@ class TestHaFailover(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=3,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            should_fail=1)
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_disconnect_controllers"])
@@ -154,10 +152,7 @@ class TestHaFailover(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            test_sets=['ha', 'smoke', 'sanity'])
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_delete_vips"])
@@ -245,13 +240,10 @@ class TestHaFailover(TestBasic):
                 time.sleep(60)
 
                 # Run OSTF tests
-                failed_test_name = ['Create volume and boot instance from it',
-                                    'Create volume and attach it to instance']
                 self.fuel_web.run_ostf(
                     cluster_id=cluster_id,
                     test_sets=['ha', 'smoke', 'sanity'],
-                    should_fail=3,
-                    failed_test_name=failed_test_name)
+                    should_fail=1)
                 # Revert initial state. VIP could be moved to other controller
                 self.env.revert_snapshot("deploy_ha")
         assert_equal(ips_amount, 2,
@@ -291,10 +283,7 @@ class TestHaFailover(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            test_sets=['ha', 'smoke', 'sanity'])
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_haproxy_termination"])
@@ -329,10 +318,7 @@ class TestHaFailover(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=2,
-            failed_test_name=['Create volume and boot instance from it',
-                              'Create volume and attach it to instance'])
+            test_sets=['ha', 'smoke', 'sanity'])
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_pacemaker_configuration"])
