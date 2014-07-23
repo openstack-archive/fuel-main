@@ -22,8 +22,10 @@ import daemon.pidlockfile
 import BaseHTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
+
 class SimpleHTTPDaemon:
-    def __init__(self, address='0.0.0.0', port='9001', pid_file='/var/run/simplehttpd.pid', ttl=600):
+    def __init__(self, address='0.0.0.0', port='9001',
+                 pid_file='/var/run/simplehttpd.pid', ttl=600):
         self.address = address
         self.port = port
         self.pid_file = pid_file
@@ -32,8 +34,8 @@ class SimpleHTTPDaemon:
 
     def run_http_server(self):
         HandlerClass = SimpleHTTPRequestHandler
-        ServerClass  = BaseHTTPServer.HTTPServer
-        Protocol     = "HTTP/1.0"
+        ServerClass = BaseHTTPServer.HTTPServer
+        Protocol = "HTTP/1.0"
         server_address = (self.address, self.port)
         HandlerClass.protocol_version = Protocol
         httpd = ServerClass(server_address, HandlerClass)
@@ -43,10 +45,10 @@ class SimpleHTTPDaemon:
     def start(self):
         self.end = time.time() + self.ttl
         context = daemon.DaemonContext(
-            working_directory = os.getcwd(),
-            umask = 0o002,
-            pidfile = daemon.pidlockfile.PIDLockFile(self.pid_file),
-            )
+            working_directory=os.getcwd(),
+            umask=0o002,
+            pidfile=daemon.pidlockfile.PIDLockFile(self.pid_file)
+        )
         with context:
             self.run_http_server()
 
@@ -64,4 +66,3 @@ if __name__ == "__main__":
 
     server = SimpleHTTPDaemon('0.0.0.0', port, pid, 600)
     server.start()
-

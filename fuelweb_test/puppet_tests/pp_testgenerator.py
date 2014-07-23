@@ -45,7 +45,7 @@ class PuppetTestGenerator:
         self.modules_path = modules_path
         self.tests_directory = tests_directory_path
 
-        self.default_template = 'puppet_module_test.py'
+        self.default_template = 'puppet_module_test.py.tmpl'
         self.test_file_prefix = 'TestPuppetModule'
 
         self.modules = []

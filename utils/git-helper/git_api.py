@@ -15,7 +15,7 @@ class GithubEngine(object):
         self.pool = ConnectionPool(factory=Connection)
         self.token = token
         self.headers = {'Content-Type': 'application/json',
-                'Authorization': 'token %s' % self.token}
+                        'Authorization': 'token %s' % self.token}
 
     # We don't use this method, but it can be useful in some cases
     def create_token(self, user, password):
@@ -23,45 +23,42 @@ class GithubEngine(object):
         auth = BasicAuth(user, password)
         authreqdata = {"scopes": ["repo"], "note": "admin script"}
         resource = Resource('https://api.github.com/authorizations',
-                pool=self.pool, filters=[auth])
+                            pool=self.pool, filters=[auth])
         response = resource.post(headers={"Content-Type": "application/json"},
-                payload=json.dumps(authreqdata))
+                                 payload=json.dumps(authreqdata))
         self.token = json.loads(response.body_string())['token']
 
     def list_repos(self):
         resource = Resource('https://api.github.com/user/repos',
-                pool=self.pool)
+                            pool=self.pool)
         response = resource.get(headers=self.headers)
         return json.loads(response.body_string())
 
     def get_pull_request_by_label(self, user, repo, label):
         resource = Resource("https://api.github.com/repos/%s/%s/pulls" %
-                (user, repo))
+                            (user, repo))
         pulls = json.loads(resource.get(headers=self.headers).body_string())
-        pulls_by_label = filter(lambda p: p['head']['label']==label, pulls)
+        pulls_by_label = filter(lambda p: p['head']['label'] == label, pulls)
 
         return pulls_by_label  # I hope there is no more than one
 
     def update_pull_request(self, user, repo, number, data):
         resource = Resource("https://api.github.com/repos/%s/%s/pulls/%s" %
-                (user, repo, number))
+                            (user, repo, number))
         res = resource.post(headers=self.headers,
-                payload=json.dumps(data))
+                            payload=json.dumps(data))
         return json.loads(res.body_string())
 
     def create_pull_request(self, user, repo, to_user, base_branch,
-                branch, title="", body=""):
+                            branch, title="", body=""):
         if not title:
             title = "Robot pull request. Please review."
         resource = Resource("https://api.github.com/repos/%s/%s/pulls" %
-                (to_user, repo))
-        pulldata = {
-                "title": title, "body": body,
-                "head": "%s:%s" % (user, branch),
-                "base": base_branch
-        }
+                            (to_user, repo))
+        pulldata = {"title": title, "body": body,
+                    "head": "%s:%s" % (user, branch), "base": base_branch}
         response = resource.post(headers=self.headers,
-                payload=json.dumps(pulldata))
+                                 payload=json.dumps(pulldata))
         return json.loads(response.body_string())
 
 
@@ -84,10 +81,10 @@ class GitEngine(object):
         if not cwd:
             cwd = self.local_repo
         print "Executing command %s in cwd=%s" % (command, cwd)
-        proc = subprocess.Popen(command, cwd=cwd, \
-                     stderr=subprocess.PIPE, \
-                     stdout=subprocess.PIPE, \
-                     shell=True)
+        proc = subprocess.Popen(command, cwd=cwd,
+                                stderr=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                shell=True)
         try:
             stdout_value = proc.stdout.read().rstrip()
             stderr_value = proc.stderr.read().rstrip()
@@ -98,7 +95,7 @@ class GitEngine(object):
 
         if status != 0:
             print "ERRROR: Command: '%s' Status: %s err: '%s' out: '%s'" % \
-                    (command, status, stderr_value, stdout_value)
+                  (command, status, stderr_value, stdout_value)
             raise GitEngineError(status, stderr_value)
 
         return stdout_value
@@ -109,15 +106,15 @@ class GitEngine(object):
         if not remote_path:
             remote_path = self.remote_path
         # Check if we can do fast-forward
-        if not self.is_rebased(local_branch, "remotes/%s/%s" % \
-                    (self.refs_name, remote_branch)):
+        if not self.is_rebased(local_branch, "remotes/%s/%s" % (
+                               self.refs_name, remote_branch)):
             print "ERROR: Not able to push. " \
                   "Branch %s was not rebased to %s" % \
                   (local_branch, remote_branch)
             raise
 
-        command = "git push %s %s:%s" % \
-                (remote_path, local_branch, remote_branch)
+        command = "git push %s %s:%s" % (remote_path, local_branch,
+                                         remote_branch)
         try:
             self.__exec(command)
         except GitEngineError as e:

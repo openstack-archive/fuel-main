@@ -21,48 +21,65 @@ import itertools
 logging.basicConfig()
 logger = logging.getLogger()
 
+
 class Vertex(object):
+
     def __init__(self, node, interface):
         self.node = node
         self.interface = interface
+
     def __str__(self):
         return "<Vtx: %s.%s>" % (self.node, self.interface)
+
     def __repr__(self):
         return self.__str__()
+
     def __eq__(self, other):
         return self.node == other.node and self.interface == other.interface
+
     def __ne__(self, other):
         return self.node != other.node or self.interface != other.interface
+
     def __hash__(self):
         return hash(str(self))
 
 
 class Arc(object):
+
     def __init__(self, vertex_a, vertex_b):
         self.arc = (vertex_a, vertex_b)
+
     def __str__(self):
         return "<Arc: %s>" % (self.arc,)
+
     def __repr__(self):
         return self.__str__()
+
     def __getitem__(self, i):
         return self.arc[i]
+
     def __eq__(self, other):
         l = map(lambda x, y: x == y, self.arc, other.arc)
         return bool(filter(lambda x: x, l))
+
     def __ne__(self, other):
         l = map(lambda x, y: x != y, self.arc, other.arc)
         return bool(filter(lambda x: x, l))
+
     def __hash__(self):
         return hash(str(self))
+
     def invert(self):
         return Arc(self.arc[1], self.arc[0])
 
 
 class NetChecker(object):
+
     def __init__(self, nodes, arcs):
         self.nodes = nodes
         self.arcs = arcs
-        logger.debug("Init: got %d nodes and %d arcs", len(nodes), len(self.arcs))
+        logger.debug("Init: got %d nodes and %d arcs", len(nodes),
+                     len(self.arcs))
 
     @staticmethod
     def _invert_arc(arc):
@@ -207,11 +224,12 @@ class NetChecker(object):
         for t in topos:
             logger.debug("_uniq_topos: now testing: %s" % t)
             if not isincluded(t, [i for i in topos if id(i) != id(t)]):
-                copy.append(t) 
+                copy.append(t)
         return copy
 
 
 class ClassbasedNetChecker(NetChecker):
+
     @staticmethod
     def _invert_arc(arc):
         return arc.invert()
@@ -229,9 +247,6 @@ class ClassbasedNetChecker(NetChecker):
         return Vertex(node, interface)
 
 
-
-
-
 def generateFullMesh(nodes, interfaces, Klass, stability=1.0):
     A = []
     vertices = itertools.product(nodes, interfaces, nodes, interfaces)
@@ -244,6 +259,7 @@ def generateFullMesh(nodes, interfaces, Klass, stability=1.0):
             A.append(arc)
     logger.debug("generateArcs: %d arcs generated", len(A))
     return A
+
 
 def generateMesh(nodes1, ifaces1, nodes2, ifaces2, Klass, stability=1.0):
     A = []
@@ -261,7 +277,7 @@ def generateMesh(nodes1, ifaces1, nodes2, ifaces2, Klass, stability=1.0):
 
 def printChoice(choice, step=4):
     def printlist(l, indent=0, step=2):
-        print '%s[' % (' ' * indent)        
+        print '%s[' % (' ' * indent)
         for i in l:
             if type(i) is dict:
                 print '%s-' % (' ' * indent)
@@ -270,7 +286,8 @@ def printChoice(choice, step=4):
                 printlist(i, indent + step, step)
             else:
                 print '%s- %s' % (' ' * indent, str(i))
-        print '%s]' % (' ' * indent)                    
+        print '%s]' % (' ' * indent)
+
     def printdict(d, indent=0, step=2):
         for k, v in d.iteritems():
             if type(v) is dict:
@@ -287,9 +304,6 @@ def printChoice(choice, step=4):
         printlist(choice, step=step)
     else:
         print choice
-
-
-
 
 
 print ""

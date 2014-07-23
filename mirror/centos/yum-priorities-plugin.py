@@ -65,15 +65,17 @@ full_match = False
 requires_api_version = '2.1'
 plugin_type = (TYPE_CORE,)
 
+
 def config_hook(conduit):
     global check_obsoletes
     global only_samearch
     global full_match
 
     # Plugin configuration
-    check_obsoletes = conduit.confBool('main', 'check_obsoletes', default = False)
-    only_samearch = conduit.confBool('main', 'only_samearch', default = False)
-    full_match = conduit.confBool('main', 'full_match', default = False)
+    check_obsoletes = conduit.confBool('main', 'check_obsoletes',
+                                       default=False)
+    only_samearch = conduit.confBool('main', 'only_samearch', default=False)
+    full_match = conduit.confBool('main', 'full_match', default=False)
 
     if full_match:
         check_obsoletes = False
@@ -91,9 +93,11 @@ def config_hook(conduit):
     if parser:
         if hasattr(parser, 'plugin_option_group'):
             parser = parser.plugin_option_group
-        parser.add_option('', '--samearch-priorities', dest='samearch',
-            action='store_true', default = False,
+        parser.add_option(
+            '', '--samearch-priorities', dest='samearch', action='store_true',
+            default=False,
             help="Priority-exclude packages based on name + arch")
+
 
 def _all_repo_priorities_same(allrepos):
     """ Are all repos at the same priority """
@@ -105,6 +109,7 @@ def _all_repo_priorities_same(allrepos):
             return False
     return True
 
+
 def exclude_hook(conduit):
     global only_samearch
     global check_obsoletes
@@ -115,7 +120,7 @@ def exclude_hook(conduit):
     # If they haven't done anything, don't do any work
     if _all_repo_priorities_same(allrepos):
         return
-    
+
     # Check whether the user specified the --samearch option.
     opts, commands = conduit.getCmdLine()
     if opts and opts.samearch:
@@ -132,15 +137,17 @@ def exclude_hook(conduit):
     if only_samearch:
         pkg_priorities = dict()
     if check_obsoletes or not only_samearch:
-        pkg_priorities_archless = dict() 
+        pkg_priorities_archless = dict()
     for repo in allrepos:
         if repo.enabled:
             if only_samearch:
-                repopkgs = _pkglist_to_dict(conduit.getPackages(repo), repo.priority, True)
+                repopkgs = _pkglist_to_dict(conduit.getPackages(repo),
+                                            repo.priority, True)
                 _mergeprioritydicts(pkg_priorities, repopkgs)
 
             if check_obsoletes or not only_samearch:
-                repopkgs_archless = _pkglist_to_dict(conduit.getPackages(repo), repo.priority)
+                repopkgs_archless = _pkglist_to_dict(
+                    conduit.getPackages(repo), repo.priority)
                 _mergeprioritydicts(pkg_priorities_archless, repopkgs_archless)
 
     # Eliminate packages that have a low priority
@@ -155,18 +162,21 @@ def exclude_hook(conduit):
                     pname = po.name
 
                 if only_samearch:
-                    key = "%s.%s" % (pname,po.arch)
-                    if key in pkg_priorities and pkg_priorities[key] < repo.priority:
+                    key = "%s.%s" % (pname, po.arch)
+                    if (key in pkg_priorities and
+                            pkg_priorities[key] < repo.priority):
                         delPackage = True
                 else:
                     key = "%s" % pname
-                    if key in pkg_priorities_archless and pkg_priorities_archless[key] < repo.priority:
+                    if (key in pkg_priorities_archless and
+                            pkg_priorities_archless[key] < repo.priority):
                         delPackage = True
 
                 if delPackage:
                     conduit.delPackage(po)
                     cnt += 1
-                    conduit.info(3," --> %s from %s excluded (priority)" % (po,po.repoid))
+                    conduit.info(3, " --> %s from %s excluded "
+                                    "(priority)" % (po, po.repoid))
 
                 # If this packages obsoletes other packages, check whether
                 # one of the obsoleted packages is not available through
@@ -176,19 +186,25 @@ def exclude_hook(conduit):
                         obsolete_pkgs = obsoletes[po.pkgtup]
                         for obsolete_pkg in obsolete_pkgs:
                             pkg_name = obsolete_pkg[0]
-                            if pkg_name in pkg_priorities_archless and pkg_priorities_archless[pkg_name] < repo.priority:
+                            if (pkg_name in pkg_priorities_archless
+                                and pkg_priorities_archless[pkg_name] <
+                                    repo.priority):
                                 conduit.delPackage(po)
                                 cnt += 1
-                                conduit.info(3," --> %s from %s excluded (priority)" % (po,po.repoid))
+                                conduit.info(
+                                    3, " --> %s from %s excluded "
+                                       "(priority)" % (po, po.repoid))
                                 break
     if cnt:
-        conduit.info(2, '%d packages excluded due to repository priority protections' % cnt)
+        conduit.info(2, '%d packages excluded due to repository '
+                        'priority protections' % cnt)
     if check_obsoletes:
         #  Atm. the update object doesn't get updated when we manually exclude
         # things ... so delete it. This needs to be re-written.
         conduit._base.up = None
 
-def _pkglist_to_dict(pl, priority, addArch = False):
+
+def _pkglist_to_dict(pl, priority, addArch=False):
     global full_match
     out = dict()
     for p in pl:
@@ -197,11 +213,12 @@ def _pkglist_to_dict(pl, priority, addArch = False):
         else:
             pname = p.name
         if addArch:
-            key = "%s.%s" % (pname,p.arch)
+            key = "%s.%s" % (pname, p.arch)
             out[key] = priority
         else:
             out[pname] = priority
     return out
+
 
 def _mergeprioritydicts(dict1, dict2):
     for package in dict2.keys():

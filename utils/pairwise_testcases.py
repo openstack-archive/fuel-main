@@ -45,14 +45,15 @@ def is_valid_combination(values, names):
     dictionary = dict(zip(names, values))
 
     rules = [
-        lambda d: "RedHat" == d["os"] and "ceph" == d["storage volume"]
-        , lambda d: "RedHat" == d["os"] and "ceph" == d["storage images"]
-        , lambda d: "RedHat" == d["os"] and "yes" == d["savanna"]
-        , lambda d: "RedHat" == d["os"] and "yes" == d["murano"]
-        , lambda d: "RedHat" == d["os"] and "neutron GRE" == d["network"]
-        , lambda d: "RedHat" == d["os"] and "neutron VLAN" == d["network"]
-        , lambda d: d["cinder"] > 0 and d["storage volume"] == "default"
-        , lambda d: d["ceph"] > 0 and d["storage volume"] == "default" and d["storage images"] == "default"
+        lambda d: "RedHat" == d["os"] and "ceph" == d["storage volume"],
+        lambda d: "RedHat" == d["os"] and "ceph" == d["storage images"],
+        lambda d: "RedHat" == d["os"] and "yes" == d["savanna"],
+        lambda d: "RedHat" == d["os"] and "yes" == d["murano"],
+        lambda d: "RedHat" == d["os"] and "neutron GRE" == d["network"],
+        lambda d: "RedHat" == d["os"] and "neutron VLAN" == d["network"],
+        lambda d: d["cinder"] > 0 and d["storage volume"] == "default",
+        lambda d: d["ceph"] > 0 and d["storage volume"] == "default"
+        and d["storage images"] == "default"
     ]
 
     for rule in rules:
@@ -66,9 +67,9 @@ def is_valid_combination(values, names):
 
 
 pairwise = all_pairs(
-    [x[1] for x in parameters]
-    , filter_func=lambda values: is_valid_combination(values, [x[0] for x in
-                                                               parameters])
+    [x[1] for x in parameters],
+    filter_func=lambda values: is_valid_combination(values,
+                                                    [x[0] for x in parameters])
 )
 
 for i, v in enumerate(pairwise):
