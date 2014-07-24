@@ -253,6 +253,7 @@ class EnvironmentModel(object):
 
         }
         keys = (
+            "<Wait>\n"
             "<Esc><Enter>\n"
             "<Wait>\n"
             "vmlinuz initrd=initrd.img ks=cdrom:/ks.cfg\n"
@@ -368,8 +369,10 @@ class EnvironmentModel(object):
         admin = self.nodes().admin
         admin.disk_devices.get(device='cdrom').volume.upload(settings.ISO_PATH)
         self.get_virtual_environment().start(self.nodes().admins)
+        logger.info("Waiting for admin node to start up")
+        wait(lambda: admin.driver.node_active(admin), 60)
+        logger.info("Proceed with installation")
         # update network parameters at boot screen
-        time.sleep(float(settings.ADMIN_NODE_SETUP_TIMEOUT))
         admin.send_keys(self.get_keys(admin))
         # wait while installation complete
         admin.await(self.admin_net, timeout=10 * 60)
