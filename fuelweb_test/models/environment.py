@@ -369,8 +369,13 @@ class EnvironmentModel(object):
         admin = self.nodes().admin
         admin.disk_devices.get(device='cdrom').volume.upload(settings.ISO_PATH)
         self.get_virtual_environment().start(self.nodes().admins)
+        logger.info("Waiting for admin node to start up")
+        wait(lambda: admin.driver.node_active(admin), 60)
+        #Now that we are sure the VM is started wait for 10 seconds
+        #for it to boot up of an image
+        time.sleep(10)
+        logger.info("Proceed with installation")
         # update network parameters at boot screen
-        time.sleep(float(settings.ADMIN_NODE_SETUP_TIMEOUT))
         admin.send_keys(self.get_keys(admin))
         # wait while installation complete
         admin.await(self.admin_net, timeout=10 * 60)
