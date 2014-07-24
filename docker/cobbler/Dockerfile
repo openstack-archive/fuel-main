@@ -11,7 +11,7 @@ ADD etc /etc
 ADD start.sh /usr/local/bin/start.sh
 
 #Workaround for dnsmasq startup and create blank SSH key during build
-RUN echo -e "NETWORKING=yes\nHOSTNAME=$HOSTNAME" > /etc/sysconfig/network; mkdir -p /root/.ssh; chmod 700 /root/.ssh; touch /root/.ssh/id_rsa.pub; /etc/init.d/httpd start && puppet apply -v /etc/puppet/modules/nailgun/examples/cobbler-only.pp
+RUN echo -e "NETWORKING=yes\nHOSTNAME=$HOSTNAME" > /etc/sysconfig/network; mkdir -p /root/.ssh; chmod 700 /root/.ssh; touch /root/.ssh/id_rsa.pub; /etc/init.d/httpd start && puppet apply --detailed-exitcodes -dv /etc/puppet/modules/nailgun/examples/cobbler-only.pp; [ $? -lt 4 ]
 
 RUN chmod +x /usr/local/bin/start.sh;echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/fuelweb/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean all
 
