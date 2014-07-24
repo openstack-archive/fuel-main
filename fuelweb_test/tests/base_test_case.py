@@ -15,6 +15,7 @@
 from proboscis import SkipTest
 from proboscis import test
 
+from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.models.environment import EnvironmentModel
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_REDHAT
@@ -87,6 +88,7 @@ class SetupEnvironment(TestBasic):
 
     @test(depends_on=[prepare_release],
           groups=["prepare_slaves_3"])
+    @log_snapshot_on_error
     def prepare_slaves_3(self):
         """Bootstrap 3 slave nodes
 
@@ -104,6 +106,7 @@ class SetupEnvironment(TestBasic):
 
     @test(depends_on=[prepare_release],
           groups=["prepare_slaves_5"])
+    @log_snapshot_on_error
     def prepare_slaves_5(self):
         """Bootstrap 5 slave nodes
 
