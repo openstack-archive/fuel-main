@@ -204,12 +204,10 @@ class FuelWebClient(object):
                      'Release state is not {0}'.format(fuel_version))
 
     @logwrap
-    def assert_nailgun_upgrade_migration(self):
+    def assert_nailgun_upgrade_migration(self,
+                                         key='can_update_from_versions'):
         for release in self.client.get_releases():
-            release['can_update_from_versions']
-            logger.debug('new nailgun db field is {0}'.format(
-                release['can_update_from_versions']))
-        return True
+            assert_true(key in release)
 
     @logwrap
     def assert_task_success(
@@ -294,11 +292,10 @@ class FuelWebClient(object):
         :return: cluster_id
         """
         logger.info('Create cluster with name %s', name)
-        if release_id:
-            release_id = release_id
-        else:
+        if not release_id:
             release_id = self.client.get_release_id(release_name=release_name)
-        logger.info('Release_id of %s is %s', release_name, str(release_id))
+            logger.info('Release_id of %s is %s',
+                        release_name, str(release_id))
 
         if settings is None:
             settings = {}
@@ -1011,6 +1008,33 @@ class FuelWebClient(object):
                 raise Exception('Ceph restart failed on {0}: {1}'.
                                 format(node_ip, result['stderr']))
 
+    @logwrap
+    def get_releases_list_for_os(self, release_name):
+        full_list = self.client.get_releases()
+        release_ids = []
+        for release in full_list:
+            if release_name in release["name"]:
+                release_ids.append(release['id'])
+        return release_ids
+
+    @logwrap
+    def update_cluster(self, cluster_id, data):
+        logger.debug(
+            "Try to update cluster with data {0}".format(data))
+        self.client.update_cluster(cluster_id, data)
+
+    @logwrap
+    def run_update(self, cluster_id, timeout, interval):
+        logger.info("Run update..")
+        task = self.client.run_update(cluster_id)
+        logger.debug("Invocation of update runs with result {0}".format(task))
+        self.assert_task_success(task, timeout=timeout, interval=interval)
+
+    @logwrap
+    def get_cluster_release_id(self, cluster_id):
+        data = self.client.get_cluster(cluster_id)
+        return data['release_id']
+
     def assert_nodes_in_ready_state(self, cluster_id):
         for nailgun_node in self.client.list_cluster_nodes(cluster_id):
             assert_equal(nailgun_node['status'], 'ready',
@@ -1049,12 +1073,3 @@ class FuelWebClient(object):
     @logwrap
     def modify_python_file(self, remote, modification, file):
         remote.execute('sed -i "{0}" {1}'.format(modification, file))
-
-    @logwrap
-    def get_releases_list_for_os(self, release_name):
-        full_list = self.client.get_releases()
-        release_ids = []
-        for release in full_list:
-            if release_name in release["name"]:
-                release_ids.append(release['id'])
-        return release_ids
