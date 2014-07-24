@@ -249,7 +249,7 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
-    def ostf_run_singe_test(self, cluster_id, test_sets_list, test_name):
+    def ostf_run_single_test(self, cluster_id, test_sets_list, test_name):
         # get tests otherwise 500 error will be thrown
         self.get_ostf_tests(cluster_id)
         logger.info('Get tests finish with success')
