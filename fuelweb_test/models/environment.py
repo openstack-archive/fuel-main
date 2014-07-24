@@ -369,8 +369,11 @@ class EnvironmentModel(object):
         admin = self.nodes().admin
         admin.disk_devices.get(device='cdrom').volume.upload(settings.ISO_PATH)
         self.get_virtual_environment().start(self.nodes().admins)
+        time_waited = self.wait_node_active(admin)
+        logger.info('Waited for admin node to start up for %s' % round(time_waited, 2))
+        #Now that we are sure the VM is started wait for a second for it to boot up of an image
+        time.sleep(1)
         # update network parameters at boot screen
-        time.sleep(float(settings.ADMIN_NODE_SETUP_TIMEOUT))
         admin.send_keys(self.get_keys(admin))
         # wait while installation complete
         admin.await(self.admin_net, timeout=10 * 60)
@@ -402,6 +405,10 @@ class EnvironmentModel(object):
             node=self.fuel_web.get_nailgun_node_by_name(node_name),
             remote=self.get_ssh_to_remote_by_name(node_name)
         )
+
+    def wait_node_active(self, node):
+        logger.info("Waiting for admin node to start up")
+        return wait(node.active, timeout=60)
 
     def wait_bootstrap(self):
         logger.info("Waiting while bootstrapping is in progress")
