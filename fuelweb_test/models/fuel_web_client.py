@@ -1073,3 +1073,12 @@ class FuelWebClient(object):
     @logwrap
     def modify_python_file(self, remote, modification, file):
         remote.execute('sed -i "{0}" {1}'.format(modification, file))
+
+    def check_volume_test(self, cluster_id):
+        # Run volume test several times with hope that it pass
+        test_path = map_ostf.OSTF_TEST_MAPPING.get(
+            'Create volume and attach it to instance')
+        logger.debug('Start to run test {0}'.format(test_path))
+        self.run_single_ostf_test(
+            cluster_id, test_sets=['smoke'],
+            test_name=test_path)
