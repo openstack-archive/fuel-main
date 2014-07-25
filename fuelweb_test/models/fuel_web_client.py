@@ -1073,3 +1073,20 @@ class FuelWebClient(object):
     @logwrap
     def modify_python_file(self, remote, modification, file):
         remote.execute('sed -i "{0}" {1}'.format(modification, file))
+
+    @logwrap
+    def run_single_ostf_test_with_retry(self, cluster_id,
+                                        test_sets=None, test_name=None):
+        try:
+            self.run_single_ostf_test(
+                cluster_id, test_sets=test_sets,
+                test_name=test_name)
+        except AssertionError:
+            logger.debug(AssertionError)
+            logger.debug("Test failed from first probe,"
+                         " we sleep 60 second try one more time "
+                         "and if it fails again - test will fails ")
+            time.sleep(60)
+            self.run_single_ostf_test(
+                cluster_id, test_sets=test_sets,
+                test_name=test_name)
