@@ -1044,3 +1044,12 @@ class FuelWebClient(object):
             if not result['exit_code'] == 0:
                 raise Exception('Ceph restart failed on {0}: {1}'.
                                 format(node_ip, result['stderr']))
+
+    def check_volume_test(self, cluster_id):
+        # Run volume test several times with hope that it pass
+        test_path = map_ostf.OSTF_TEST_MAPPING.get(
+            'Create volume and attach it to instance')
+        logger.debug('Start to run test {0}'.format(test_path))
+        self.run_single_ostf_test(
+            cluster_id, test_sets=['smoke'],
+            test_name=test_path)
