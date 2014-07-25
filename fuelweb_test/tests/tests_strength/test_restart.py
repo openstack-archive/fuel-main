@@ -11,9 +11,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import time
 
 from fuelweb_test.helpers.checkers import check_ceph_health
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test import logger
+from fuelweb_test import ostf_test_mapping as map_ostf
 from fuelweb_test import settings
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -75,6 +78,22 @@ class CephRestart(TestBasic):
         self.fuel_web.warm_restart_nodes(self.env.nodes().slaves[:4])
 
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+
+        try:
+            self.fuel_web.run_single_ostf_test(
+                cluster_id, test_sets=['smoke'],
+                test_name=map_ostf.OSTF_TEST_MAPPING.get(
+                    'Create volume and attach it to instance'))
+        except AssertionError:
+            logger.debug(AssertionError)
+            logger.debug("Test failed from first probe,"
+                         " we sleep 60 second try one more time "
+                         "and if it fails again - test will fails ")
+            time.sleep(60)
+            self.fuel_web.run_single_ostf_test(
+                cluster_id, test_sets=['smoke'],
+                test_name=map_ostf.OSTF_TEST_MAPPING.get(
+                    'Create volume and attach it to instance'))
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
 
@@ -161,6 +180,22 @@ class CephHARestart(TestBasic):
         # Wait until MySQL Galera is UP on primary controller
         self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
 
+        try:
+            self.fuel_web.run_single_ostf_test(
+                cluster_id, test_sets=['smoke'],
+                test_name=map_ostf.OSTF_TEST_MAPPING.get(
+                    'Create volume and attach it to instance'))
+        except AssertionError:
+            logger.debug(AssertionError)
+            logger.debug("Test failed from first probe,"
+                         " we sleep 60 second try one more time "
+                         "and if it fails again - test will fails ")
+            time.sleep(60)
+            self.fuel_web.run_single_ostf_test(
+                cluster_id, test_sets=['smoke'],
+                test_name=map_ostf.OSTF_TEST_MAPPING.get(
+                    'Create volume and attach it to instance'))
+
         self.fuel_web.run_ostf(cluster_id=cluster_id, should_fail=1)
 
         self.env.make_snapshot("ceph_ha")
@@ -206,6 +241,22 @@ class SimpleFlatRestart(TestBasic):
 
         # Warm restart
         self.fuel_web.warm_restart_nodes(self.env.nodes().slaves[:2])
+
+        try:
+            self.fuel_web.run_single_ostf_test(
+                cluster_id, test_sets=['smoke'],
+                test_name=map_ostf.OSTF_TEST_MAPPING.get(
+                    'Create volume and attach it to instance'))
+        except AssertionError:
+            logger.debug(AssertionError)
+            logger.debug("Test failed from first probe,"
+                         " we sleep 60 second try one more time "
+                         "and if it fails again - test will fails ")
+            time.sleep(60)
+            self.fuel_web.run_single_ostf_test(
+                cluster_id, test_sets=['smoke'],
+                test_name=map_ostf.OSTF_TEST_MAPPING.get(
+                    'Create volume and attach it to instance'))
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
