@@ -61,7 +61,7 @@ gd_rows = \
         key=options.spreadsheet, wksht_id=gd_sheet_id).entry}
 
 # Get or create build column
-build_column = sheet.get_build_column_name(build.number)
+build_column = sheet.get_build_column_name(build.number, build.get_iso_number())
 
 # Save test report to spreadsheet
 for suite in test_report['suites']:
