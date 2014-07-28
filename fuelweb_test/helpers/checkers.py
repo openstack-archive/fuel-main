@@ -28,7 +28,7 @@ import urllib
 @logwrap
 def check_ceph_health(ssh):
     wait(
-        lambda: 'HEALTH_OK' in ''.join(ssh.execute('ceph -s')['stdout']),
+        lambda: 'HEALTH_OK' in ''.join(ssh.execute('ceph health')['stdout']),
         interval=120,
         timeout=360)
 
@@ -38,7 +38,7 @@ def check_ceph_health(ssh):
     logger.debug("Disks output information: \\n{}".format(disks))
     assert_true('up' in disks, "Some disks are not 'up'")
 
-    result = ''.join(ssh.execute('ceph -s')['stdout'])
+    result = ''.join(ssh.execute('ceph health')['stdout'])
     assert_true('HEALTH_OK' in result,
                 "Ceph status is '{}' != HEALTH_OK".format(result))
 
