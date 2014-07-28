@@ -53,4 +53,10 @@ class Build(JSONResource):
 
     @property
     def test_report(self):
-        return JSONResource(urlparse.urljoin(self.url, 'testReport/')).get_data()
+        return JSONResource(urlparse.urljoin(
+            self.url,
+            'testReport/')
+        ).get_data()
+
+    def get_iso_number(self):
+        return self.get_data()['description']
