@@ -1,7 +1,7 @@
 %define name fuelmenu
 %define version 0.1
 %define unmangled_version 0.1
-%define release 1
+%define release 3
 
 Summary: Console utility for pre-configuration of Fuel server
 Name: %{name}
