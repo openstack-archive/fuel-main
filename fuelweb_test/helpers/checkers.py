@@ -12,10 +12,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import hashlib
+import json
 import re
 import traceback
 from fuelweb_test import logger
 from fuelweb_test import logwrap
+from fuelweb_test.settings import OPENSTACK_RELEASE
+from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_true
@@ -26,21 +29,44 @@ from time import sleep
 
 
 @logwrap
-def check_ceph_health(ssh):
-    wait(
-        lambda: 'HEALTH_OK' in ''.join(ssh.execute('ceph health')['stdout']),
-        interval=120,
-        timeout=360)
+def check_ceph_ready(remote, exit_code=0):
+    if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
+        cmd = 'service ceph-all status'
+    else:
+        cmd = 'service ceph status'
+    if remote.execute(cmd)['exit_code'] == exit_code:
+        return True
+    return False
 
-    # Check Ceph node disk configuration:
-    disks = ''.join(ssh.execute(
-        'ceph osd tree | grep osd')['stdout'])
-    logger.debug("Disks output information: \\n{}".format(disks))
-    assert_true('up' in disks, "Some disks are not 'up'")
 
-    result = ''.join(ssh.execute('ceph health')['stdout'])
-    assert_true('HEALTH_OK' in result,
-                "Ceph status is '{}' != HEALTH_OK".format(result))
+@logwrap
+def get_ceph_health(remote):
+    return ''.join(remote.execute('ceph health')['stdout']).rstrip()
+
+
+@logwrap
+def check_ceph_health(remote, health_status=['HEALTH_OK']):
+    ceph_health = get_ceph_health(remote)
+    if all(x in ceph_health.split() for x in health_status):
+        return True
+    logger.debug('Ceph health {0} doesn\'t equal to {1}'.format(
+        ceph_health, ''.join(health_status)))
+    return False
+
+
+@logwrap
+def check_ceph_disks(remote, nodes_ids):
+    nodes_names = ['node-{0}'.format(node_id) for node_id in nodes_ids]
+    disks_tree = get_osd_tree(remote)
+    logger.debug("Disks output information: \\n{0}".format(disks_tree))
+    disks_ids = []
+    for node in disks_tree['nodes']:
+        if node['type'] == 'host' and node['name'] in nodes_names:
+            disks_ids.extend(node['children'])
+    for node in disks_tree['nodes']:
+        if node['type'] == 'osd' and node['id'] in disks_ids:
+            assert_equal(node['status'], 'up', 'OSD node {0} is down'.
+                         format(node['id']))
 
 
 @logwrap
@@ -267,3 +293,9 @@ def wait_rollback_is_done(node_ssh, timeout):
         lambda: not node_ssh.execute(
             "grep 'UPGRADE FAILED' /var/log/fuel_upgrade.log"
         )['exit_code'], timeout=timeout)
+
+
+@logwrap
+def get_osd_tree(remote):
+    cmd = 'ceph osd tree -f json'
+    return json.loads(''.join(remote.execute(cmd)['stdout']))
