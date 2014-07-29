@@ -1,7 +1,7 @@
 %define name python-fuelclient
 %define unmangled_name fuelclient
 %define version 0.2
-%define release 1
+%define release 2
 
 Summary: Console utility for working with fuel rest api
 Name: %{name}
