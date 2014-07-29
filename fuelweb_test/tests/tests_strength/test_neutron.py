@@ -87,7 +87,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
         # sleep max(op monitor interval)
         time.sleep(60 * 2)
         wait(lambda: not self.fuel_web.get_nailgun_node_by_devops_node(
-            devops_node)['online'])
+            devops_node)['online'], timeout=60 * 10)
 
         remains_online_nodes = \
             [node for node in self.env.nodes().slaves[0:3]
