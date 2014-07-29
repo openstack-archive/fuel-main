@@ -837,14 +837,15 @@ class FuelWebClient(object):
             logger.info('Wait a %s node offline status', node.name)
             wait(
                 lambda: not self.get_nailgun_node_by_devops_node(node)[
-                    'online'])
+                    'online'], timeout=60 * 10)
             logger.info('Start %s node', node.name)
             node.destroy()
             node.create()
 
         for node in devops_nodes:
             wait(
-                lambda: self.get_nailgun_node_by_devops_node(node)['online'])
+                lambda: self.get_nailgun_node_by_devops_node(node)['online'],
+                timeout=60 * 10)
 
     def cold_restart_nodes(self, devops_nodes):
         logger.info('Cold restart nodes %s',
@@ -855,12 +856,13 @@ class FuelWebClient(object):
         for node in devops_nodes:
             logger.info('Wait a %s node offline status', node.name)
             wait(lambda: not self.get_nailgun_node_by_devops_node(
-                 node)['online'])
+                 node)['online'], timeout=60 * 10)
             logger.info('Start %s node', node.name)
             node.create()
         for node in devops_nodes:
             wait(
-                lambda: self.get_nailgun_node_by_devops_node(node)['online'])
+                lambda: self.get_nailgun_node_by_devops_node(node)['online'],
+                timeout=60 * 10)
 
     @logwrap
     def ip_address_show(self, node_name, namespace, interface, pipe_str=''):
