@@ -1,7 +1,7 @@
 %define name shotgun
 %define unmangled_name Shotgun
 %define version 0.1.0
-%define release 1
+%define release 2
 
 Summary: Shotgun package
 Name: %{name}
