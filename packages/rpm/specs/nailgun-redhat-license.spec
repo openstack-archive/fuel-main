@@ -1,7 +1,7 @@
 Name:      nailgun-redhat-license
 Summary:   Getting redhat licenses
 Version:   0.0.1
-Release:   1
+Release:   3
 License:   Apache License 2.0
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-build
 URL:       http://github.com/Mirantis
