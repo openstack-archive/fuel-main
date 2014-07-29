@@ -26,18 +26,13 @@ from time import sleep
 
 
 @logwrap
-def check_ceph_health(ssh):
-    wait(
-        lambda: 'HEALTH_OK' in ''.join(ssh.execute('ceph health')['stdout']),
-        interval=120,
-        timeout=360)
-
+def check_ceph_health(ssh, check_osd_tree=True):
     # Check Ceph node disk configuration:
-    disks = ''.join(ssh.execute(
-        'ceph osd tree | grep osd')['stdout'])
-    logger.debug("Disks output information: \\n{}".format(disks))
-    assert_true('up' in disks, "Some disks are not 'up'")
-
+    if check_osd_tree:
+        disks = ''.join(ssh.execute(
+            'ceph osd tree | grep osd')['stdout'])
+        logger.debug("Disks output information: \\n{}".format(disks))
+        assert_true('up' in disks, "Some disks are not 'up'")
     result = ''.join(ssh.execute('ceph health')['stdout'])
     assert_true('HEALTH_OK' in result,
                 "Ceph status is '{}' != HEALTH_OK".format(result))
