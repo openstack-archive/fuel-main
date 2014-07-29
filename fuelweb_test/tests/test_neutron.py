@@ -75,6 +75,7 @@ class NeutronGre(TestBasic):
         # assert_equal(str(cluster['net_segment_type']), segment_type)
 
         self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.security.verify_firewall(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
@@ -132,8 +133,7 @@ class NeutronVlan(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         # assert_equal(str(cluster['net_segment_type']), segment_type)
 
-        # TODO(Tatyana) uncomment when it will be implemented)
-        # self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
@@ -193,8 +193,7 @@ class NeutronGreHa(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         # assert_equal(str(cluster['net_segment_type']), segment_type)
 
-        # TODO(Tatyana) uncomment when it will be implemented)
-        # self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
@@ -254,8 +253,7 @@ class NeutronVlanHa(TestBasic):
         assert_equal(str(cluster['net_provider']), 'neutron')
         # assert_equal(str(cluster['net_segment_type']), segment_type)
 
-        # TODO(Tatyana) uncomment when it will be implemented)
-        # self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
