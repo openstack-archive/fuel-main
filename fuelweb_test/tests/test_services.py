@@ -245,8 +245,40 @@ class MuranoSimple(TestBasic):
         self.env.make_snapshot("deploy_murano_simple")
 
 
+class CeilometerOSTFTestsRun(TestBasic):
+
+    def run_tests(self, cluster_id):
+        """Method run smoke, sanity and platform Ceilometer tests."""
+
+        LOGGER.debug('Run sanity and smoke tests')
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke', 'sanity'],
+            timeout=60 * 10
+        )
+
+        LOGGER.debug('Run platform OSTF Ceilometer tests')
+
+        test_class_main = ('fuel_health.tests.platform_tests.'
+                           'test_ceilometer.'
+                           'CeilometerApiPlatformTests')
+        tests_names = ['test_check_alarm_state',
+                       'test_create_sample']
+
+        test_classes = []
+
+        for test_name in tests_names:
+            test_classes.append('{0}.{1}'.format(test_class_main,
+                                                 test_name))
+
+        for test_name in test_classes:
+            self.fuel_web.run_single_ostf_test(
+                cluster_id=cluster_id, test_sets=['platform_tests'],
+                test_name=test_name, timeout=60 * 20)
+
+
 @test(groups=["services", "services.ceilometer", "services_simple"])
-class CeilometerSimpleMongo(TestBasic):
+class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_ceilometer_simple_with_mongo"])
@@ -320,12 +352,8 @@ class CeilometerSimpleMongo(TestBasic):
         assert_equal(partitions[0].rstrip(), mongo_disk_gb,
                      'Mongo size {0} before deployment is not equal'
                      ' to size after {1}'.format(mongo_disk_gb, partitions))
-        # run ostf
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity',
-                                              'platform_tests'],
-            timeout=5300)
 
+        self.run_tests(cluster_id)
         self.env.make_snapshot("deploy_ceilometer_simple_with_mongo")
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
@@ -368,16 +396,12 @@ class CeilometerSimpleMongo(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='ceilometer-api')
 
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity',
-                                              'platform_tests'],
-            timeout=5300)
-
+        self.run_tests(cluster_id)
         self.env.make_snapshot("deploy_ceilometer_simple_mulirole")
 
 
 @test(groups=["services", "services.ceilometer", "services_ha"])
-class CeilometerHAMongo(TestBasic):
+class CeilometerHAMongo(CeilometerOSTFTestsRun):
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_ceilometer_ha_with_mongo"])
     @log_snapshot_on_error
@@ -425,16 +449,7 @@ class CeilometerHAMongo(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='ceilometer-api')
 
-        # run ostf
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'],
-            timeout=5300)
-
-        # run platfrom tests
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['platform_tests'],
-            timeout=5300)
-
+        self.run_tests(cluster_id)
         self.env.make_snapshot("deploy_ceilometer_ha_with_mongo")
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
@@ -480,12 +495,5 @@ class CeilometerHAMongo(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='ceilometer-api')
 
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],
-            timeout=5300)
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['platform_tests'],
-            timeout=5300)
-
+        self.run_tests(cluster_id)
         self.env.make_snapshot("deploy_ceilometer_ha_mulirole")
