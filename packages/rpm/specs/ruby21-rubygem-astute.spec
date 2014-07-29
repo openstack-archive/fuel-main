@@ -1,7 +1,7 @@
 # Generated from astute-0.0.1.gem by gem2rpm -*- rpm-spec -*-
 %define rbname astute
 %define version 0.0.2
-%define release 9
+%define release 10
 %global gemdir %(ruby -rubygems -e 'puts Gem::dir' 2>/dev/null)
 %global geminstdir %{gemdir}/gems/%{gemname}-%{version}
 %define gembuilddir %{buildroot}%{gemdir}
