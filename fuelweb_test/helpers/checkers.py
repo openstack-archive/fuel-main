@@ -16,6 +16,7 @@ import re
 import traceback
 from fuelweb_test import logger
 from fuelweb_test import logwrap
+from fuelweb_test.helpers.decorators import json_parse
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_true
@@ -27,21 +28,29 @@ from time import sleep
 
 @logwrap
 def check_ceph_health(ssh):
-    wait(
-        lambda: 'HEALTH_OK' in ''.join(ssh.execute('ceph health')['stdout']),
-        interval=120,
-        timeout=360)
-
-    # Check Ceph node disk configuration:
-    disks = ''.join(ssh.execute(
-        'ceph osd tree | grep osd')['stdout'])
-    logger.debug("Disks output information: \\n{}".format(disks))
-    assert_true('up' in disks, "Some disks are not 'up'")
-
     result = ''.join(ssh.execute('ceph health')['stdout'])
     assert_true('HEALTH_OK' in result,
                 "Ceph status is '{}' != HEALTH_OK".format(result))
 
+@logwrap
+def check_ceph_disks(remote, nodes_ids):
+    @json_parse
+    def _get_osd_tree(remote):
+        return ''.join(remote.execute('ceph osd tree -f json')['stdout'])
+
+    nodes_names = ['node-{0}'.format(id) for id in nodes_ids]
+    disks_tree = _get_osd_tree(remote)
+    logger.debug("Disks output information: \\n{}".format(disks_tree))
+    disks_ids = []
+
+    for node in disks_tree['nodes']:
+        if node['type'] == 'host' and node['name'] in nodes_names:
+            disks_ids.append(node['children'])
+
+    for node in disks_tree['nodes']:
+        if node['type'] == 'osd' and node['id'] in disks_ids:
+            assert_equal(node['status'], 'up', 'OSD node {0} is down'.
+                         format(node['id']))
 
 @logwrap
 def check_image(image, md5, path):

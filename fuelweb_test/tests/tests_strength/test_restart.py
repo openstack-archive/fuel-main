@@ -73,8 +73,7 @@ class CephRestart(TestBasic):
 
         # Warm restart
         self.fuel_web.warm_restart_nodes(self.env.nodes().slaves[:4])
-
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.check_ceph_status(cluster_id)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
 
@@ -128,7 +127,7 @@ class CephHARestart(TestBasic):
         )
         # Depoy cluster
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.check_ceph_status(cluster_id)
 
         # Run ostf
         self.fuel_web.run_ostf(cluster_id=cluster_id)
@@ -139,6 +138,7 @@ class CephHARestart(TestBasic):
         wait(lambda: not self.fuel_web.get_nailgun_node_by_devops_node(
             self.env.nodes().slaves[5])['online'], timeout=30 * 8)
 
+        self.fuel_web.sync_ceph_time(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
@@ -149,12 +149,14 @@ class CephHARestart(TestBasic):
         wait(lambda: not self.fuel_web.get_nailgun_node_by_devops_node(
             self.env.nodes().slaves[4])['online'], timeout=30 * 8)
 
+        self.fuel_web.sync_ceph_time(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.run_ostf(cluster_id=cluster_id, should_fail=1)
 
         # Cold restart
         self.fuel_web.cold_restart_nodes(self.env.nodes().slaves[:4])
 
+        self.fuel_web.sync_ceph_time(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
         # Wait until MySQL Galera is UP on primary controller

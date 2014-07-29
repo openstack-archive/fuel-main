@@ -76,6 +76,7 @@ class CephCompact(TestBasic):
         )
         # Cluster deploy
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.sync_ceph_time(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
         # Run ostf
@@ -134,6 +135,7 @@ class CephCompactWithCinder(TestBasic):
         )
         # Cluster deploy
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.sync_ceph_time(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
         disks = self.fuel_web.client.get_node_disks(
@@ -267,7 +269,7 @@ class CephRadosGW(TestBasic):
         )
         # Deploy cluster
         self.fuel_web.deploy_cluster_wait(cluster_id)
-
+        self.fuel_web.sync_ceph_time(cluster_id)
         remote = self.fuel_web.get_ssh_for_node('slave-01')
         check_ceph_health(remote)
 
@@ -423,6 +425,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
         logger.info("Ping 8.8.8.8 result on vm is: %s" % res)
 
         logger.info("Check Ceph health is ok after migration")
+        self.fuel_web.sync_ceph_time(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
         logger.info("Server is now on host %s" %
@@ -482,6 +485,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
                     "File is abscent in /mnt")
 
         logger.info("Check Ceph health is ok after migration")
+        self.fuel_web.sync_ceph_time(cluster_id)
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
         logger.info("Server is now on host %s" %
@@ -574,6 +578,7 @@ class CheckCephPartitionsAfterReboot(TestBasic):
                 raise Exception()
 
             logger.info("Check Ceph health is ok after reboot")
+            self.fuel_web.sync_ceph_time(cluster_id)
             check_ceph_health(
                 self.env.get_ssh_to_remote_by_name(node))
 
@@ -593,5 +598,6 @@ class CheckCephPartitionsAfterReboot(TestBasic):
                 raise Exception()
 
             logger.info("Check Ceph health is ok after reboot")
+            self.fuel_web.sync_ceph_time(cluster_id)
             check_ceph_health(
                 self.env.get_ssh_to_remote_by_name(node))
