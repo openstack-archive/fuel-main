@@ -2,7 +2,7 @@
 
 SCRIPT_PATH=$(dirname $(readlink -e $0))
 UPGRADE_PATH=$SCRIPT_PATH/upgrade
-UPGRADERS={{UPGRADERS}}
+UPGRADERS=${UPGRADERS:-{{UPGRADERS}}}
 LOCK_FILE=/var/lock/fuel_upgarde.lock
 
 
