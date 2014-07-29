@@ -1004,22 +1004,79 @@ class FuelWebClient(object):
         logger.info("ISO version: %s" % self.client.get_api_version())
 
     @logwrap
-    def sync_ceph_time(self, cluster_id):
-        cluster_nodes = self.client.list_cluster_nodes(cluster_id)
-        ceph_nodes_ips = [n['ip'] for n in cluster_nodes if 'ceph-osd' in
-                          n['roles']]
+    def sync_ceph_time(self, ceph_nodes):
         self.environment.sync_time_admin_node()
         if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
             cmd = 'service ceph-all restart'
         else:
             cmd = 'service ceph restart'
-        for node_ip in ceph_nodes_ips:
-            remote = self.environment.get_ssh_to_remote(node_ip)
+        for node in ceph_nodes:
+            remote = self.environment.get_ssh_to_remote(node['ip'])
             self.environment.sync_node_time(remote)
             result = remote.execute(cmd)
             if not result['exit_code'] == 0:
                 raise Exception('Ceph restart failed on {0}: {1}'.
-                                format(node_ip, result['stderr']))
+                                format(node['name'], result['stderr']))
+
+    @logwrap
+    def check_ceph_status(self, cluster_id, offline_nodes=[],
+                          recovery_timeout=360):
+        cluster_nodes = self.client.list_cluster_nodes(cluster_id)
+        ceph_nodes = [n for n in cluster_nodes if 'ceph-osd' in
+                      n['roles'] and n['id'] not in offline_nodes]
+        clock_skew_status = ['clock', 'skew', 'detected']
+        osd_recovery_status = ['degraded', 'recovery', 'osds', 'are', 'down']
+
+        logger.info('Waiting until Ceph service become up...')
+        for node in ceph_nodes:
+            remote = self.environment.get_ssh_to_remote(node['ip'])
+            try:
+                wait(lambda: checkers.check_ceph_ready(remote) is True,
+                     interval=20, timeout=120)
+            except TimeoutError:
+                logger.error('Ceph service is down on {0}'.format(
+                    node['name']))
+                raise
+
+        logger.info('Ceph service is ready')
+        logger.info('Checking Ceph Health...')
+        for node in ceph_nodes:
+            remote = self.environment.get_ssh_to_remote(node['ip'])
+            health_status = checkers.get_ceph_health(remote)
+            if 'HEALTH_OK' in health_status:
+                continue
+            elif 'HEALTH_WARN' in health_status:
+                if checkers.check_ceph_health(remote, clock_skew_status):
+                    logger.warning('Clock skew detected in Ceph.')
+                    self.sync_ceph_time(ceph_nodes)
+                    try:
+                        wait(lambda: checkers.check_ceph_health(remote),
+                             interval=30, timeout=recovery_timeout)
+                    except TimeoutError:
+                        logger.error('Ceph HEALTH is bad on {0}'.format(
+                            node['name']))
+                        raise
+                elif checkers.check_ceph_health(remote, osd_recovery_status)\
+                        and len(offline_nodes) > 0:
+                    logger.info('Ceph is being recovered after osd node(s)'
+                                ' shutdown.')
+                    try:
+                        wait(lambda: checkers.check_ceph_health(remote),
+                             interval=30, timeout=recovery_timeout)
+                    except TimeoutError:
+                        logger.error('Ceph HEALTH is bad on {0}'.format(
+                            node['name']))
+                        raise
+            else:
+                assert_true(checkers.check_ceph_health(remote),
+                            'Ceph health doesn\'t equal to "OK", please '
+                            'inspect debug logs for details')
+
+        logger.info('Checking Ceph OSD Tree...')
+        for node in ceph_nodes:
+            remote = self.environment.get_ssh_to_remote(node['ip'])
+            checkers.check_ceph_disks(remote, [n['id'] for n in ceph_nodes])
+        logger.info('Ceph cluster status is OK')
 
     @logwrap
     def get_releases_list_for_os(self, release_name):
