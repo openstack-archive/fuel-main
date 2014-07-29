@@ -21,6 +21,7 @@ Requires: python-cliff-tablib
 Requires: python-stevedore
 Requires: python-daemonize
 Requires: python-yaml
+Requires: tcpdump
 
 
 %description
