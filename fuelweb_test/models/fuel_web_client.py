@@ -993,12 +993,8 @@ class FuelWebClient(object):
         logger.info("ISO version: %s" % self.client.get_api_version())
 
     @logwrap
-    def sync_ceph_time(self, cluster_id):
-        cluster_nodes = self.client.list_cluster_nodes(cluster_id)
-        ceph_nodes_ips = [n['ip'] for n in cluster_nodes if 'ceph-osd' in
-                          n['roles']]
-        self.environment.sync_time_admin_node()
-        if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
+    def sync_ceph_time(self, ceph_nodes_ips, release_ubuntu=False):
+        if release_ubuntu:
             cmd = 'service ceph-all restart'
         else:
             cmd = 'service ceph restart'
@@ -1009,6 +1005,40 @@ class FuelWebClient(object):
             if not result['exit_code'] == 0:
                 raise Exception('Ceph restart failed on {0}: {1}'.
                                 format(node_ip, result['stderr']))
+
+    @logwrap
+    def check_ceph_status(self, cluster_id, offline_nodes=[]):
+
+        def _check_ceph_health(_ceph_nodes_ips):
+            try:
+                for _node_ip in _ceph_nodes_ips:
+                    _remote = self.environment.get_ssh_to_remote(_node_ip)
+                    checkers.check_ceph_health(_remote)
+                return True
+            except AssertionError as err:
+                if all(x in err.args
+                       for x in ['HEALTH_WARN', 'clock', 'skew']):
+                    logger.debug('Clock skew detected in Ceph.')
+                    self.environment.sync_time_admin_node()
+                    if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
+                        self.sync_ceph_time(ceph_nodes_ips,
+                                            release_ubuntu=True)
+                    else:
+                        self.sync_ceph_time(ceph_nodes_ips)
+                return False
+
+        cluster_nodes = self.client.list_cluster_nodes(cluster_id)
+        ceph_nodes_ips = [n['ip'] for n in cluster_nodes if 'ceph-osd' in
+                          n['roles'] and n['id'] not in offline_nodes]
+        ceph_nodes_ids = [n['id'] for n in cluster_nodes if 'ceph-osd' in
+                          n['roles'] and n['id'] not in offline_nodes]
+
+        wait(lambda: _check_ceph_health(ceph_nodes_ips),
+                     interval=120, timeout=360)
+        wait(lambda: checkers.check_ceph_disks(
+            self.environment.get_ssh_to_remote(ceph_nodes_ips[0],
+                                               ceph_nodes_ids),
+            interval=120, timeout=360))
 
     @logwrap
     def get_releases_list_for_os(self, release_name):
