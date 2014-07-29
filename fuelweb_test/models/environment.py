@@ -381,6 +381,7 @@ class EnvironmentModel(object):
         wait(lambda: admin.driver.node_active(admin), 60)
         logger.info("Proceed with installation")
         # update network parameters at boot screen
+        time.sleep(float(settings.ADMIN_NODE_SETUP_TIMEOUT))
         admin.send_keys(self.get_keys(admin))
         # wait while installation complete
         admin.await(self.admin_net, timeout=10 * 60)
