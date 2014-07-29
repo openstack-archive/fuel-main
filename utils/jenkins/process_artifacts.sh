@@ -13,12 +13,11 @@ then
 fi
 
 # Defaults
-
-LOCAL_STORAGE="/var/www/fuelweb-iso"
-
-TRACKER_URL='http://seed-qa.msk.mirantis.net:8080/announce'
 HOSTNAME=`hostname -f`
-HTTP_ROOT="http://${HOSTNAME}/fuelweb-iso"
+
+[[ -z "${LOCAL_STORAGE}" ]] && LOCAL_STORAGE="/var/www/fuelweb-iso"
+[[ -z "${TRACKER_URL}" ]] && TRACKER_URL='http://seed-qa.msk.mirantis.net:8080/announce'
+[[ -z "${HTTP_ROOT}" ]] && HTTP_ROOT="http://${HOSTNAME}/fuelweb-iso"
 
 
 # Process artifact
