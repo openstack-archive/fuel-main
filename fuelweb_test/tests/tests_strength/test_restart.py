@@ -12,7 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from fuelweb_test.helpers.checkers import check_ceph_health
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import settings
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
@@ -73,8 +72,7 @@ class CephRestart(TestBasic):
 
         # Warm restart
         self.fuel_web.warm_restart_nodes(self.env.nodes().slaves[:4])
-
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.check_ceph_status(cluster_id)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
 
@@ -128,7 +126,7 @@ class CephHARestart(TestBasic):
         )
         # Depoy cluster
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.check_ceph_status(cluster_id)
 
         # Run ostf
         self.fuel_web.run_ostf(cluster_id=cluster_id)
@@ -138,10 +136,10 @@ class CephHARestart(TestBasic):
 
         wait(lambda: not self.fuel_web.get_nailgun_node_by_devops_node(
             self.env.nodes().slaves[5])['online'], timeout=30 * 8)
-
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id)
+        offline_nodes = [self.fuel_web.get_nailgun_node_by_devops_node(
+            self.env.nodes().slaves[5])['id']]
+        self.fuel_web.check_ceph_status(cluster_id, offline_nodes)
+        self.fuel_web.run_ostf(cluster_id=cluster_id)
 
         # Destroy compute node
         self.env.nodes().slaves[4].destroy()
@@ -149,13 +147,15 @@ class CephHARestart(TestBasic):
         wait(lambda: not self.fuel_web.get_nailgun_node_by_devops_node(
             self.env.nodes().slaves[4])['online'], timeout=30 * 8)
 
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        offline_nodes.append(self.fuel_web.get_nailgun_node_by_devops_node(
+            self.env.nodes().slaves[4])['id'])
+        self.fuel_web.check_ceph_status(cluster_id, offline_nodes)
+
         self.fuel_web.run_ostf(cluster_id=cluster_id, should_fail=1)
 
         # Cold restart
         self.fuel_web.cold_restart_nodes(self.env.nodes().slaves[:4])
-
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.check_ceph_status(cluster_id, offline_nodes)
 
         # Wait until MySQL Galera is UP on primary controller
         self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
