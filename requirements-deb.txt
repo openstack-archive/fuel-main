@@ -563,6 +563,7 @@ ncurses-bin
 net-tools
 netbase
 netcat-openbsd
+netfpga
 neutron-common
 neutron-dhcp-agent
 neutron-l3-agent
