@@ -57,7 +57,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
                        os.path.basename(hlp_data.
                                         UPGRADE_TARBALL_PATH), '/var')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh')
-        checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 1500)
+        checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000)
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_FROM,
                                            hlp_data.UPGRADE_FUEL_TO)
@@ -109,7 +109,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
                        os.path.basename(hlp_data.
                                         UPGRADE_TARBALL_PATH), '/var')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh')
-        checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 1500)
+        checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000)
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_FROM,
                                            hlp_data.UPGRADE_FUEL_TO)
@@ -187,7 +187,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
                        os.path.basename(hlp_data.
                                         UPGRADE_TARBALL_PATH), '/var')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh')
-        checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 1500)
+        checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000)
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_FROM,
                                            hlp_data.UPGRADE_FUEL_TO)
@@ -260,7 +260,7 @@ class RollbackFuelMaster(base_test_data.TestBasic):
                        os.path.basename(hlp_data.
                                         UPGRADE_TARBALL_PATH), '/var')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh')
-        checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 1500)
+        checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000)
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_FROM,
                                            hlp_data.UPGRADE_FUEL_TO)
@@ -318,7 +318,7 @@ class RollbackFuelMaster(base_test_data.TestBasic):
                                          'docker_engine.py')
         checkers.run_with_rollback(self.env.get_admin_remote(),
                                    '/var', 'upgrade.sh')
-        checkers.wait_rollback_is_done(self.env.get_admin_remote(), 1800)
+        checkers.wait_rollback_is_done(self.env.get_admin_remote(), 3000)
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_TO,
                                            hlp_data.UPGRADE_FUEL_FROM)
