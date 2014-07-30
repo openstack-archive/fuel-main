@@ -104,7 +104,8 @@ class TestPatch(TestBasic):
 
         logger.info('Time to run upgrade...')
 
-        checkers.run_script(node_ssh, '/var/tmp', 'upgrade.sh')
+        checkers.run_script(node_ssh, '/var/tmp',
+                            "UPGRADERS='openstack' ./upgrade.sh")
         logger.info('Check if the upgrade complete..')
 
         checkers.wait_upgrade_is_done(node_ssh=node_ssh,
