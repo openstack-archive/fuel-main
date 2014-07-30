@@ -49,14 +49,14 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         self.env.revert_snapshot("deploy_simple_cinder")
         cluster_id = self.fuel_web.get_last_created_cluster()
         checkers.upload_tarball(self.env.get_admin_remote(),
-                                hlp_data.UPGRADE_TARBALL_PATH, '/var')
+                                hlp_data.TARBALL_PATH, '/var')
         checkers.check_tarball_exists(self.env.get_admin_remote(),
                                       os.path.basename(hlp_data.
-                                                       UPGRADE_TARBALL_PATH),
+                                                       TARBALL_PATH),
                                       '/var')
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
-                                        UPGRADE_TARBALL_PATH), '/var')
+                                        TARBALL_PATH), '/var')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh')
         checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY')
@@ -103,14 +103,14 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         available_releases_before = self.fuel_web.get_releases_list_for_os(
             release_name=hlp_data.OPENSTACK_RELEASE)
         checkers.upload_tarball(self.env.get_admin_remote(),
-                                hlp_data.UPGRADE_TARBALL_PATH, '/var')
+                                hlp_data.TARBALL_PATH, '/var')
         checkers.check_tarball_exists(self.env.get_admin_remote(),
                                       os.path.basename(hlp_data.
-                                                       UPGRADE_TARBALL_PATH),
+                                                       TARBALL_PATH),
                                       '/var')
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
-                                        UPGRADE_TARBALL_PATH), '/var')
+                                        TARBALL_PATH), '/var')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh')
         checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY')
@@ -179,14 +179,14 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         available_releases_before = self.fuel_web.get_releases_list_for_os(
             release_name=hlp_data.OPENSTACK_RELEASE)
         checkers.upload_tarball(self.env.get_admin_remote(),
-                                hlp_data.UPGRADE_TARBALL_PATH, '/var')
+                                hlp_data.TARBALL_PATH, '/var')
         checkers.check_tarball_exists(self.env.get_admin_remote(),
                                       os.path.basename(hlp_data.
-                                                       UPGRADE_TARBALL_PATH),
+                                                       TARBALL_PATH),
                                       '/var')
         checkers.untar(self.env.get_admin_remote(),
-                       os.path.basename(hlp_data.
-                                        UPGRADE_TARBALL_PATH), '/var')
+                       os.path.basename(hlp_data.TARBALL_PATH),
+                       '/var')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh')
         checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY')
@@ -254,14 +254,14 @@ class RollbackFuelMaster(base_test_data.TestBasic):
         self.env.revert_snapshot("deploy_simple_cinder")
         cluster_id = self.fuel_web.get_last_created_cluster()
         checkers.upload_tarball(self.env.get_admin_remote(),
-                                hlp_data.UPGRADE_TARBALL_PATH, '/var')
+                                hlp_data.TARBALL_PATH, '/var')
         checkers.check_tarball_exists(self.env.get_admin_remote(),
                                       os.path.basename(hlp_data.
-                                                       UPGRADE_TARBALL_PATH),
+                                                       TARBALL_PATH),
                                       '/var')
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
-                                        UPGRADE_TARBALL_PATH), '/var')
+                                        TARBALL_PATH), '/var')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh')
         checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY')
@@ -306,14 +306,14 @@ class RollbackFuelMaster(base_test_data.TestBasic):
         self.env.revert_snapshot("deploy_neutron_gre")
         cluster_id = self.fuel_web.get_last_created_cluster()
         checkers.upload_tarball(self.env.get_admin_remote(),
-                                hlp_data.UPGRADE_TARBALL_PATH, '/var')
+                                hlp_data.TARBALL_PATH, '/var')
         checkers.check_tarball_exists(self.env.get_admin_remote(),
                                       os.path.basename(hlp_data.
-                                                       UPGRADE_TARBALL_PATH),
+                                                       TARBALL_PATH),
                                       '/var')
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
-                                        UPGRADE_TARBALL_PATH), '/var')
+                                        TARBALL_PATH), '/var')
         self.fuel_web.modify_python_file(self.env.get_admin_remote(),
                                          "80i \ \ \ \ \ \ \ \ raise errors."
                                          "ExecutedErrorNonZeroExitCode('{0}')"

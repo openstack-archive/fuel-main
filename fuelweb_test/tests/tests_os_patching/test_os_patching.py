@@ -63,19 +63,19 @@ class TestPatch(TestBasic):
         logger.info("Start upload upgrade archive")
         node_ssh = self.env.get_ssh_to_remote(self.fuel_web.admin_node_ip)
         checkers.upload_tarball(
-            node_ssh=node_ssh, tar_path=hlp_data.UPDATE_TARBALL_PATH,
+            node_ssh=node_ssh, tar_path=hlp_data.TARBALL_PATH,
             tar_target='/var/tmp')
 
         logger.info("Archive should upload. "
                     "Lets check that it exists on master node ...")
 
         checkers.check_tarball_exists(node_ssh, os.path.basename(
-            hlp_data.UPDATE_TARBALL_PATH), '/var/tmp')
+            hlp_data.TARBALL_PATH), '/var/tmp')
 
         logger.info("Extract archive to the /var/tmp")
 
         checkers.untar(node_ssh, os.path.basename(
-            hlp_data.UPDATE_TARBALL_PATH), '/var/tmp')
+            hlp_data.TARBALL_PATH), '/var/tmp')
 
         logger.info("Get release ids for deployed operation"
                     " system before upgrade..")
@@ -109,7 +109,7 @@ class TestPatch(TestBasic):
 
         checkers.wait_upgrade_is_done(node_ssh=node_ssh,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY',
-                                      timeout=60 * 10)
+                                      timeout=600 * 10)
 
         logger.info('Get release ids list after upgrade')
         available_releases_after = self.fuel_web.get_releases_list_for_os(
