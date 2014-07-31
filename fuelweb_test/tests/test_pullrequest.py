@@ -16,7 +16,7 @@ from proboscis import SkipTest
 from proboscis import test
 
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
-from fuelweb_test.settings import DEPLOYMENT_MODE
+from fuelweb_test.settings import DEPLOYMENT_MODE, NEUTRON_ENABLE
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_REDHAT
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -46,14 +46,18 @@ class TestPullRequest(TestBasic):
 
         self.env.revert_snapshot("ready_with_3_slaves")
 
-        segment_type = 'gre'
+        settings = None
+
+        if NEUTRON_ENABLE:
+            settings = {
+                "net_provider": 'neutron',
+                "net_segment_type": "gre"
+            }
+
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE,
-            settings={
-                "net_provider": 'neutron',
-                "net_segment_type": segment_type
-            }
+            settings=settings
         )
         self.fuel_web.update_nodes(
             cluster_id,

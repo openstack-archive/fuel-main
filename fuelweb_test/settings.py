@@ -217,7 +217,7 @@ ATTEMPTS = int(os.environ.get('ATTEMPTS', 5))
 #Create snapshots as last step in test-case
 MAKE_SNAPSHOT = os.environ.get('MAKE_SNAPSHOT', 'false') == 'true'
 
-NEUTRON_FAILOVER = os.environ.get('NEUTRON_FAILOVER', 'false') == 'true'
+NEUTRON_ENABLE = os.environ.get('NEUTRON_ENABLE', 'false') == 'true'
 NEUTRON_SEGMENT_TYPE = os.environ.get('NEUTRON_SEGMENT_TYPE',
                                       NEUTRON_SEGMENT["vlan"])
 
