@@ -9,7 +9,7 @@ RUN rm -rf /etc/yum.repos.d/*; echo -e "[nailgun]\nname=Nailgun Local Repo\nbase
 ADD etc /etc
 ADD start.sh /usr/local/bin/start.sh
 
-RUN mkdir -p /var/lib/hiera && touch /etc/puppet/hiera.yaml /var/lib/hiera/common.yaml; /usr/bin/puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/mcollective-only.pp; [ $? -lt 4 ]
+RUN mkdir -p /var/lib/hiera && touch /etc/puppet/hiera.yaml /var/lib/hiera/common.yaml; /usr/bin/puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp; [ $? -lt 4 ]
 
 #FIXME(mattymo): Workaround to make diagnostic snapshots work
 RUN yum install -y nailgun Shotgun; mkdir -p /opt/nailgun/bin /var/www/nailgun/dump; ln -s /usr/bin/nailgun_dump /opt/nailgun/bin/nailgun_dump
