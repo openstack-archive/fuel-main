@@ -15,20 +15,42 @@
 import json
 import urllib2
 
+from keystoneclient.v2_0 import Client as keystoneclient
+from keystoneclient import exceptions
 from fuelweb_test import logger
 
 
 class HTTPClient(object):
 
-    def __init__(self, url, token=None):
+    def __init__(self, url, keystone_url, credentials, **kwargs):
         logger.info('Initiate HTTPClient with url %s', url)
         self.url = url
-        self.token = token
+        self.keystone_url = keystone_url
+        self.creds = dict(credentials, **kwargs)
+        self.keystone = None
+        self.authenticate()
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)
 
-    def reset_token(self, token):
-        """Should be used in case token is expired."""
-        self.token = token
+    def authenticate(self):
+        try:
+            logger.info('Initialize keystoneclient with url %s',
+                        self.keystone_url)
+            self.keystone = keystoneclient(
+                auth_url=self.keystone_url, **self.creds)
+            # it depends on keystone version, some versions doing auth
+            # explicitly some dont, but we are making it explicitly always
+            self.keystone.authenticate()
+            logger.debug('Authorization token is successfully updated')
+        except exceptions.AuthorizationFailure:
+            logger.warning(
+                'Cant establish connection to keystone with url %s',
+                self.keystone_url)
+
+    @property
+    def token(self):
+        if self.keystone is not None:
+                return self.keystone.auth_token
+        return None
 
     def get(self, endpoint):
         req = urllib2.Request(self.url + endpoint)
@@ -59,4 +81,14 @@ class HTTPClient(object):
         if self.token is not None:
             logger.debug('Set X-Auth-Token to %s', self.token)
             req.add_header("X-Auth-Token", self.token)
-        return self.opener.open(req)
+        try:
+            response = self.opener.open(req)
+        except urllib2.HTTPError as e:
+            if e.code == 401:
+                logger.warning('Authorization failure: {0}'.format(e.read()))
+                logger.debug('')
+                self.authenticate()
+                response = self.opener.open(req)
+            else:
+                raise
+        return response
