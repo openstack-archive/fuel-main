@@ -171,6 +171,7 @@ hicolor-icon-theme
 hostname
 htop
 ifenslave-2.6
+iftop
 ifupdown
 info
 initramfs-tools
@@ -506,6 +507,9 @@ linux-firmware
 linux-firmware-nonfree
 linux-headers-3.11.0-18
 linux-image-3.11.0-18
+linux-firmware-image-3.12.24-rt38+
+linux-headers-3.12.24-rt38+
+linux-image-3.12.24-rt38+
 linux-libc-dev
 linux-server
 lksctp-tools
@@ -619,6 +623,7 @@ openssl
 openstack-dashboard
 openstack-dashboard-ubuntu-theme
 openvswitch-common
+openvswitch-datapath-dkms
 openvswitch-datapath-lts-saucy-dkms
 openvswitch-switch
 os-prober
@@ -854,6 +859,7 @@ vim
 vim-common
 vim-tiny
 vlan
+vnc4server
 watershed
 websockify
 wget
