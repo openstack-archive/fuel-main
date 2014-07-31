@@ -161,7 +161,14 @@ PATCH_PATH = os.environ.get(
     'PATCH_PATH', '/tmp/fuel-ostf')
 
 KVM_USE = os.environ.get('KVM_USE', 'false') == 'true'
+VCENTER_USE = os.environ.get('VCENTER_USE', 'false') == 'true'
 DEBUG_MODE = os.environ.get('DEBUG_MODE', 'true') == 'true'
+
+# vCenter tests
+VCENTER_IP = os.environ.get('VCENTER_IP')
+VCENTER_USERNAME = os.environ.get('VCENTER_USERNAME')
+VCENTER_PASSWORD = os.environ.get('VCENTER_PASSWORD')
+VCENTER_CLUSTERS = os.environ.get('VCENTER_CLUSTERS')
 
 # Services tests
 SERVTEST_LOCAL_PATH = os.environ.get('SERVTEST_LOCAL_PATH', '/tmp')
