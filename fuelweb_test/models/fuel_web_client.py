@@ -36,6 +36,7 @@ from fuelweb_test.settings import ATTEMPTS
 from fuelweb_test.settings import BONDING
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.settings import KVM_USE
+from fuelweb_test.settings import VCENTER_USE
 from fuelweb_test.settings import NEUTRON
 from fuelweb_test.settings import NEUTRON_SEGMENT
 from fuelweb_test.settings import OPENSTACK_RELEASE
@@ -335,6 +336,8 @@ class FuelWebClient(object):
                     section = 'storage'
                 if option in ('tenant', 'password', 'user'):
                     section = 'access'
+		if option in ('vc_password','cluster','host_ip', 'vc_user', 'use_vcenter'):
+                    section = 'vcenter'
                 if section:
                     attributes['editable'][section][option]['value'] =\
                         settings[option]
@@ -347,6 +350,11 @@ class FuelWebClient(object):
                 logger.info('Set Hypervisor type to KVM')
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "kvm"
+
+	    if VCENTER_USE:
+		logger.info('Set Hypervisor type to vCenter')
+                hpv_data = attributes['editable']['common']['libvirt_type']
+                hpv_data['value'] = "vcenter"
 
             logger.debug("Try to update cluster "
                          "with next attributes {0}".format(attributes))
