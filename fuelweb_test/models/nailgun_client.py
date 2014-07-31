@@ -18,9 +18,6 @@ from fuelweb_test.helpers.decorators import json_parse
 from fuelweb_test.helpers.http import HTTPClient
 from fuelweb_test.settings import OPENSTACK_RELEASE
 
-from keystoneclient.v2_0 import Client as keystoneclient
-from keystoneclient import exceptions
-
 
 DEFAULT_CREDS = {'username': 'admin',
                  'password': 'admin',
@@ -31,40 +28,14 @@ class NailgunClient(object):
     def __init__(self, admin_node_ip, **kwargs):
         url = "http://{0}:8000".format(admin_node_ip)
         logger.info('Initiate Nailgun client with url %s', url)
-        self._client = HTTPClient(url=url)
-
         self.keystone_url = "http://{0}:5000/v2.0".format(admin_node_ip)
-        self.creds = dict(DEFAULT_CREDS, **kwargs)
-        self.keystone = None
+        self._client = HTTPClient(url=url, keystone_url=self.keystone_url,
+                                  credentials=DEFAULT_CREDS, **kwargs)
         super(NailgunClient, self).__init__()
 
     @property
     def client(self):
-        # keystone will try to authenticate on first client access
-        if self.keystone is None:
-            self.authenticate()
-        self.refresh_token()
         return self._client
-
-    def authenticate(self):
-        try:
-            logger.info('Initialize keystoneclient with url %s',
-                        self.keystone_url)
-            self.keystone = keystoneclient(
-                auth_url=self.keystone_url, **self.creds)
-            # it depends on keystone version, some versions doing auth
-            # explicitly some dont, but we are making it explicitly always
-            self.keystone.authenticate()
-            return self.keystone
-        except exceptions.AuthorizationFailure:
-            logger.warning(
-                'Cant establish connection to keystone with url %s',
-                self.keystone_url)
-            self.keystone = None
-
-    def refresh_token(self):
-        if self.keystone is not None:
-            self._client.reset_token(self.keystone.auth_token)
 
     @logwrap
     def get_root(self):
