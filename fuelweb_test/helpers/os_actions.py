@@ -35,6 +35,28 @@ class OpenStackActions(common.Common):
             if image.name.startswith("TestVM"):
                 return image
 
+    def get_hypervisors(self):
+	hypervisors = self.nova.hypervisors.list()
+	if hypervisors:
+            return hypervisors
+	
+    def get_hypervisor_vms_count(self,hypervisor):
+        hypervisor = self.nova.hypervisors.get(hypervisor.id)
+        return getattr(hypervisor, "running_vms")
+
+    def get_hypervisor_hostanme(self,hypervisor):
+        hypervisor = self.nova.hypervisors.get(hypervisor.id)
+        return getattr(hypervisor, "hypervisor_hostname")
+
+    def get_srv_hypervisor_name(self,srv):
+	srv = self.nova.servers.get(srv.id)
+        return getattr(srv, "OS-EXT-SRV-ATTR:hypervisor_hostname")
+
+    def get_servers(self):
+        servers = self.nova.servers.list()
+        if servers:
+            return servers
+
     def create_server_for_migration(self, neutron=False, scenario=''):
         name = "test-serv" + str(random.randint(1, 0x7fffffff))
         security_group = {}
