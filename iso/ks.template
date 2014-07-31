@@ -450,6 +450,14 @@ cat > /root/.showfuelmenu << EOF
 showmenu=$showmenu
 EOF
 
+###Set dev mode which does not run puppet
+[ -z "$devmode" ] && devmode="no"
+cat > /root/.devmode << EOF
+#Set to yes to not apply Puppet
+#Set to no to run Fuel bootstrap normally
+showmenu=$showmenu
+EOF
+
 # Prepare custom /etc/issue logon banner and script for changing IP in it
 cat > /etc/issue << EOF
 #########################################

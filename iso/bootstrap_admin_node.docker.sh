@@ -75,6 +75,15 @@ done
 #TODO(mattymo,LP#1313288) Write astute.yaml to /etc/fuel from fuelmenu
 cp -a /etc/astute.yaml /etc/fuel/astute.yaml
 
+# Skip puppet if test mode enabled
+if [ -f /root/.testmode ]; then
+  . /root/.testmode
+fi
+
+if [[ "$testmode" == "yes" || "$testmode" == "YES" ]]; then
+  exit 0
+fi
+
 # apply puppet
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 puppet apply -d -v /etc/puppet/modules/nailgun/examples/host-only.pp

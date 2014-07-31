@@ -50,6 +50,15 @@ sed -i "s%\(^.*able on:\).*$%\1 http://`ip address show $primary | awk '/inet / 
 [ -d /var/lib/hiera ] || mkdir -p /var/lib/hiera
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
+# Skip puppet if test mode enabled
+if [ -f /root/.testmode ]; then
+  . /root/.testmode
+fi
+
+if [[ "$testmode" == "yes" || "$testmode" == "YES" ]]; then
+  exit 0
+fi
+
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 puppet apply  /etc/puppet/modules/nailgun/examples/site.pp
 echo "Fuel node deployment complete!"
