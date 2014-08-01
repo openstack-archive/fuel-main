@@ -43,6 +43,11 @@ function run_upgrade {
 }
 
 
+if [ "$1" == --version ]; then
+  cat upgrade/config/version.yaml
+  exit
+fi
+
 (flock -n 9 || error "Upgrade is already running. Lock file: ${LOCK_FILE}"
     run_upgrade "$@"
 ) 9> $LOCK_FILE
