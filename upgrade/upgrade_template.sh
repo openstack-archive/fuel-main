@@ -42,4 +42,9 @@ function run_upgrade {
 }
 
 
+if [ "$1" == "--version" ]; then
+  cat $UPGRADE_PATH/config/version.yaml
+  exit
+fi
+
 run_upgrade "$@"
