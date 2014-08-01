@@ -147,6 +147,9 @@ $(foreach version,$(CURRENT_VERSION) $(UPGRADE_VERSIONS),$(eval $(call openstack
 # ===========================
 $(BUILD_DIR)/upgrade/openstack-part.tar: \
 		$(BUILD_DIR)/upgrade/openstack-$(CURRENT_VERSION)-part.tar
+#	Workaround for puppet issue in 5.0 and 5.0.1 releases:
+	tar cf $@ -C $(SOURCE_DIR) upgrade/config/5.0/*
+	tar rf $@ -C $(SOURCE_DIR) upgrade/config/5.0.1/*
 #	Packing current version
 	tar Af $@ $(BUILD_DIR)/upgrade/openstack-$(CURRENT_VERSION)-part.tar
 #	Packing all upgrade versions
