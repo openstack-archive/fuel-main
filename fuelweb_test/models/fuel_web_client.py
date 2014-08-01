@@ -43,6 +43,7 @@ from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from fuelweb_test.settings import OSTF_TEST_NAME
 from fuelweb_test.settings import OSTF_TEST_RETRIES_COUNT
 from fuelweb_test.settings import TIMEOUT
+from fuelweb_test.settings import VCENTER_USE
 
 import fuelweb_test.settings as help_data
 
@@ -335,6 +336,9 @@ class FuelWebClient(object):
                     section = 'storage'
                 if option in ('tenant', 'password', 'user'):
                     section = 'access'
+                if option in ('vc_password', 'cluster', 'host_ip', 'vc_user',
+                              'use_vcenter'):
+                    section = 'vcenter'
                 if section:
                     attributes['editable'][section][option]['value'] =\
                         settings[option]
@@ -347,6 +351,11 @@ class FuelWebClient(object):
                 logger.info('Set Hypervisor type to KVM')
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "kvm"
+
+            if VCENTER_USE:
+                logger.info('Set Hypervisor type to vCenter')
+                hpv_data = attributes['editable']['common']['libvirt_type']
+                hpv_data['value'] = "vcenter"
 
             logger.debug("Try to update cluster "
                          "with next attributes {0}".format(attributes))
