@@ -385,9 +385,13 @@ class EnvironmentModel(object):
     @logwrap
     def sync_node_time(self, remote):
         remote.execute('hwclock -s')
-        ntpd_exit = remote.execute("ntpdate -u $(awk '/^server/{print $2}'"
-                                   " /etc/ntp.conf)")['exit_code']
+
+        ntp_server = self.router()
+        logger.info('NTP server: %s' % ntp_server)
+        ntpd_exit = remote.execute("ntpdate -u %s" % (
+            ntp_server))['exit_code']
         assert_equal(0, ntpd_exit)
+
         remote.execute('hwclock -w')
         remote_date = remote.execute('date')['stdout']
         logger.info("Node time: %s" % remote_date)
