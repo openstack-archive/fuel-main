@@ -356,9 +356,10 @@ class EnvironmentModel(object):
                     self.sync_node_time(
                         self.get_ssh_to_remote_by_name(node.name))
                 except Exception as e:
-                    logger.warn(
+                    logger.error(
                         'Paramiko exception catched while'
                         ' trying to run ntpdate: %s' % e)
+                    raise
 
                 self.run_nailgun_agent(
                     self.get_ssh_to_remote_by_name(node.name))
@@ -384,17 +385,35 @@ class EnvironmentModel(object):
     @retry()
     @logwrap
     def sync_node_time(self, remote):
-        remote.execute('hwclock -s')
-        ntpd_exit = remote.execute("ntpdate -u $(awk '/^server/{print $2}'"
-                                   " /etc/ntp.conf)")['exit_code']
-        assert_equal(0, ntpd_exit)
-        remote.execute('hwclock -w')
+        self.execute_remote_cmd(remote, 'hwclock -s')
+        self.execute_remote_cmd(remote, 'service ntpd stop && ntpd -qg && '
+                                        'service ntpd start')
+        self.execute_remote_cmd(remote, 'hwclock -w')
         remote_date = remote.execute('date')['stdout']
         logger.info("Node time: %s" % remote_date)
 
+    @logwrap
     def sync_time_admin_node(self):
         logger.info("Sync time on revert for admin")
-        self.sync_node_time(self.get_admin_remote())
+        remote = self.get_admin_remote()
+        self.execute_remote_cmd(remote, 'hwclock -s')
+        # Sync time using ntpd
+        try:
+            # If public NTP servers aren't accessible ntpdate will fail and
+            # ntpd daemon shouldn't be restarted to avoid 'Server has gone
+            # too long without sync' error while syncing time from slaves
+            self.execute_remote_cmd(remote, "ntpdate -d $(awk '/^server/{print"
+                                            " $2}' /etc/ntp.conf)")
+        except AssertionError as e:
+            logger.warning('Error occurred while synchronizing time on master'
+                           ': {0}'.format(e))
+        else:
+            self.execute_remote_cmd(remote, 'service ntpd stop && ntpd -qg && '
+                                            'service ntpd start')
+            self.execute_remote_cmd(remote, 'hwclock -w')
+
+        remote_date = remote.execute('date')['stdout']
+        logger.info("Master node time: {0}".format(remote_date))
 
     def verify_node_service_list(self, node_name, smiles_count):
         remote = self.get_ssh_to_remote_by_name(node_name)
@@ -475,6 +494,14 @@ class EnvironmentModel(object):
                         .format(service_name,
                                 remote_status['exit_code'],
                                 remote_status['stdout']))
+
+    @logwrap
+    def execute_remote_cmd(self, remote, cmd, exit_code=0):
+        result = remote.execute(cmd)
+        assert_equal(result['exit_code'], exit_code,
+                     'Failed to execute "{0}" on remote host: {1}'.
+                     format(cmd, result['stderr']))
+        return result['stdout']
 
 
 class NodeRoles(object):
