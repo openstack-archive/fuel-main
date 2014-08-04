@@ -68,12 +68,8 @@ class VcenterDeploy(TestBasic):
         # Fix me. Later need to change sleep with wait function.
         time.sleep(60)
 
-        self.fuel_web.run_single_ostf_test(
-            cluster_id=cluster_id, test_sets=['smoke'],
-            test_name=('fuel_health.tests.smoke.'
-                       'test_nova_create_instance_with_connectivity.'
-                       'TestNovaNetwork.test_004_create_servers')
-        )
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, should_fail=1)
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_1],
           groups=["vcenter_multiple_cluster"])
@@ -175,3 +171,98 @@ class VcenterDeploy(TestBasic):
                                       loss'")
         assert_true(res == "", "Error in Instances network connectivity.\n" +
                     str(res))
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
+          groups=["vcenter_vmdk"])
+    @log_snapshot_on_error
+    def vcenter_vmdk(self):
+        """Deploy cluster with controller node only and test VMDK
+           driver support feature
+
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller and cinder roles
+            3. Deploy the cluster
+            4. Run osft
+        """
+        self.env.revert_snapshot("ready_with_1_slaves")
+
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'use_vcenter': True,
+                'volumes_vmdk': True,
+                'host_ip': settings.VCENTER_IP,
+                'vc_user': settings.VCENTER_USERNAME,
+                'vc_password': settings.VCENTER_PASSWORD,
+                'cluster': settings.VCENTER_CLUSTERS
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Add nodes to roles
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller', 'cinder']}
+        )
+        # Deploy cluster
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        # Wait until nova-compute get information about clusters
+        # Fix me. Later need to change sleep with wait function.
+        time.sleep(60)
+
+        self.fuel_web.run_single_ostf_test(
+            cluster_id=cluster_id, test_sets=['smoke'],
+            test_name=('fuel_health.tests.smoke.'
+                       'test_create_volume.'
+                       'VolumesTest.'
+                       'test_volume_create')
+        )
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["vcenter_ha"])
+    @log_snapshot_on_error
+    def vcenter_ha(self):
+        """Deploy cluster with 3 controller nodes and run osft
+
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with controller role
+            3. Deploy the cluster
+            4. Run osft
+        """
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_HA,
+            settings={
+                'use_vcenter': True,
+                'host_ip': settings.VCENTER_IP,
+                'vc_user': settings.VCENTER_USERNAME,
+                'vc_password': settings.VCENTER_PASSWORD,
+                'cluster': settings.VCENTER_CLUSTERS
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Add nodes to roles
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['controller'],
+             'slave-03': ['controller']}
+        )
+        # Deploy cluster
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        # Wait until nova-compute get information about clusters
+        # Fix me. Later need to change sleep with wait function.
+        time.sleep(60)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, should_fail=1)
