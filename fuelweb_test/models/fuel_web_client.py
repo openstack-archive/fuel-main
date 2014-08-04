@@ -332,7 +332,8 @@ class FuelWebClient(object):
                 if option in ('sahara', 'murano', 'ceilometer'):
                     section = 'additional_components'
                 if option in ('volumes_ceph', 'images_ceph', 'ephemeral_ceph',
-                              'objects_ceph', 'osd_pool_size', 'volumes_lvm'):
+                              'objects_ceph', 'osd_pool_size', 'volumes_lvm',
+                              'volumes_vmdk'):
                     section = 'storage'
                 if option in ('tenant', 'password', 'user'):
                     section = 'access'
@@ -366,9 +367,9 @@ class FuelWebClient(object):
 
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
-        #TODO: rw105719
-        #self.client.add_syslog_server(
-        #    cluster_id, self.environment.get_host_node_ip(), port)
+        # TODO: rw105719
+        # self.client.add_syslog_server(
+        # cluster_id, self.environment.get_host_node_ip(), port)
 
         return cluster_id
 
