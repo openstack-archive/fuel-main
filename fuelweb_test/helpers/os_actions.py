@@ -57,7 +57,7 @@ class OpenStackActions(common.Common):
         if servers:
             return servers
 
-    def create_server_for_migration(self, neutron=False, scenario=''):
+    def create_server_for_migration(self, neutron=False, scenario='',timeout=100):
         name = "test-serv" + str(random.randint(1, 0x7fffffff))
         security_group = {}
         try:
@@ -90,7 +90,7 @@ class OpenStackActions(common.Common):
         try:
             helpers.wait(
                 lambda: self.get_instance_detail(srv).status == "ACTIVE",
-                timeout=100)
+                timeout)
             return self.get_instance_detail(srv.id)
         except TimeoutError:
             logger.debug("Create server for migration failed by timeout")
