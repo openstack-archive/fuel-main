@@ -104,6 +104,23 @@ class SetupEnvironment(TestBasic):
         self.env.make_snapshot("ready_with_1_slaves", is_make=True)
 
     @test(depends_on=[prepare_release],
+          groups=["prepare_slaves_2"])
+    def prepare_slaves_2(self):
+        """Bootstrap 2 slave nodes
+
+        Scenario:
+            1. Revert snapshot "ready"
+            2. Start 2 slave nodes
+
+        Snapshot: ready_with_1_slaves
+
+        """
+        self.check_run("ready_with_2_slaves")
+        self.env.revert_snapshot("ready")
+        self.env.bootstrap_nodes(self.env.nodes().slaves[:2])
+        self.env.make_snapshot("ready_with_2_slaves", is_make=True)
+
+    @test(depends_on=[prepare_release],
           groups=["prepare_slaves_3"])
     @log_snapshot_on_error
     def prepare_slaves_3(self):
