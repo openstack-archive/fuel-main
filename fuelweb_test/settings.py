@@ -223,7 +223,7 @@ NEUTRON_SEGMENT_TYPE = os.environ.get('NEUTRON_SEGMENT_TYPE',
 
 # TarBall data for updates and upgrades
 
-UPGRADE_TARBALL_PATH = os.environ.get('UPGRADE_TARBALL_PATH')
+TARBALL_PATH = os.environ.get('TARBALL_PATH')
 
 UPGRADE_FUEL_FROM = os.environ.get('UPGRADE_FUEL_FROM', '5.0')
 UPGRADE_FUEL_TO = os.environ.get('UPGRADE_FUEL_TO', '5.0.1')
