@@ -1,5 +1,5 @@
 def run_tests():
-    from proboscis import TestProgram
+    from proboscis import TestProgram  # noqa
 
     from tests import test_admin_node  # noqa
     from tests import test_ceph  # noqa
@@ -22,6 +22,7 @@ def run_tests():
 
     # Run Proboscis and exit.
     TestProgram().run_and_exit()
+
 
 if __name__ == '__main__':
     run_tests()
