@@ -20,6 +20,7 @@ from proboscis import test
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers import patch_test_docstring_template as ps
 from fuelweb_test import settings as hlp_data
 from fuelweb_test.tests.base_test_case import TestBasic
 from fuelweb_test import logger
@@ -30,33 +31,17 @@ class TestPatch(TestBasic):
     def __init__(self, snapshot):
         super(TestPatch, self).__init__()
         self.snapshot = snapshot
-        self.deploy_and_patch.__func__.func_name = "{0}_and_patch".format(
-            self.snapshot)
-        self.deploy_and_rollback.__func__.func_name = "{0}_rollback".format(
-            self.snapshot)
 
     @test
     @log_snapshot_on_error
     def deploy_and_patch(self):
-        """Update os on reverted cluster
-
-         Scenario:
-            1. Revert  environment
-            2. Upload tarball
-            3. Check that it uploaded
-            4. Extract data
-            5. Get available releases
-            6. Run update script
-            7. Check that new release appears
-            8. Put new release into cluster
-            9. Run cluster update
-            10. Run OSTF
-            11. Create snapshot
-
-        """
+        logger.info("snapshot name is {0}".format(self.snapshot))
+        #self.deploy_and_patch.__func__.__doc__ = ps.update_templ.format(
+        #    self.snapshot, self.snapshot)
 
         if not self.env.get_virtual_environment().has_snapshot(self.snapshot):
-            raise SkipTest()
+            logger.error('There is no shaphot found {0}'.format(self.snapshot))
+            raise SkipTest('Can not find snapshot {0}'.format(self.snapshot))
 
         self.env.revert_snapshot(self.snapshot)
 
@@ -167,22 +152,13 @@ class TestPatch(TestBasic):
     @test(depends_on=[deploy_and_patch])
     @log_snapshot_on_error
     def deploy_and_rollback(self):
-        """Rollback os on reverted cluster
-
-         Scenario:
-            1. Revert  patched environment
-            2. Get release ids
-            2. Identify release id for rollback
-            3. Run rollback
-            4. Check that rollback was successful
-            5. Run OSTF
-            6. Create snapshot
-
-        """
+        logger.info("snapshot name is {0}".format(self.snapshot))
+        #self.deploy_and_patch.__func__.__doc__ = ps.update_templ.format(
+            #self.snapshot, self.snapshot)
 
         if not self.env.get_virtual_environment().has_snapshot(
                 '{0}_and_patch'.format(self.snapshot)):
-            raise SkipTest()
+            raise SkipTest('Can not find snapshot {0}'.format(self.snapshot))
 
         self.env.revert_snapshot('{0}_and_patch'.format(self.snapshot))
 
