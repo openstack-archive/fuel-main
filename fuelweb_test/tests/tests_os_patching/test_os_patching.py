@@ -110,6 +110,7 @@ class TestPatch(TestBasic):
                                       timeout=600 * 10)
 
         logger.info('Get release ids list after upgrade')
+
         available_releases_after = self.fuel_web.get_releases_list_for_os(
             release_name=hlp_data.OPENSTACK_RELEASE)
 
@@ -122,13 +123,20 @@ class TestPatch(TestBasic):
             " release ids after {1}". format(
                 available_releases_before, available_releases_after))
 
-        logger.debug("what we have here {0}".format(self.__class__))
-
         cluster_id = self.fuel_web.get_last_created_cluster()
         logger.debug("Cluster id is {0}".format(cluster_id))
 
-        added_release = [id for id in available_releases_after
-                         if id not in available_releases_before]
+        release_version = hlp_data.RELEASE_VERSION
+        logger.debug("Release version is {0}".format(release_version))
+        if release_version:
+            added_release = self.fuel_web.get_releases_list_for_os(
+                release_name=hlp_data.OPENSTACK_RELEASE,
+                release_version=release_version)
+            logger.debug("Does we have here release id ? {0}".format(
+                release_version))
+        else:
+            added_release = [id for id in available_releases_after
+                             if id not in available_releases_before]
 
         self.fuel_web.update_cluster(
             cluster_id=cluster_id,
