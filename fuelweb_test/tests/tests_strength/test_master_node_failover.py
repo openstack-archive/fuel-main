@@ -60,8 +60,7 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
 
-        task = self.fuel_web.run_network_verify(cluster_id)
-        self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
+        self.fuel_web.verify_network(cluster_id)
         logger.info('PASS DEPLOYMENT')
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)

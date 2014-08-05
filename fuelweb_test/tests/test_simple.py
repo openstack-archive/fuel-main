@@ -109,8 +109,7 @@ class SimpleFlat(TestBasic):
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
 
-        task = self.fuel_web.run_network_verify(cluster_id)
-        self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
+        self.fuel_web.verify_network(cluster_id)
 
         self.env.verify_network_configuration("slave-01")
 
@@ -188,8 +187,7 @@ class SimpleFlat(TestBasic):
         ebtables.restore_vlans()
         try:
             ebtables.block_first_vlan()
-            task = self.fuel_web.run_network_verify(cluster_id)
-            self.fuel_web.assert_task_failed(task, 60 * 2)
+            self.fuel_web.verify_network(cluster_id)
         finally:
             ebtables.restore_first_vlan()
 
@@ -302,8 +300,7 @@ class SimpleVlan(TestBasic):
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=8, timeout=300)
 
-        task = self.fuel_web.run_network_verify(cluster_id)
-        self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
+        self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
@@ -552,8 +549,7 @@ class NodeMultipleInterfaces(TestBasic):
         for node in ['slave-01', 'slave-02', 'slave-03']:
             self.env.verify_network_configuration(node)
 
-        task = self.fuel_web.run_network_verify(cluster_id)
-        self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
+        self.fuel_web.verify_network(cluster_id)
 
         self.env.make_snapshot("deploy_node_multiple_interfaces")
 
@@ -793,8 +789,7 @@ class UntaggedNetworksNegative(TestBasic):
         self.fuel_web.client.update_network(cluster_id, networks=nets)
 
         # run network check:
-        task = self.fuel_web.run_network_verify(cluster_id)
-        self.fuel_web.assert_task_failed(task, 60 * 5)
+        self.fuel_web.verify_network(cluster_id)
 
         # deploy cluster:
         task = self.fuel_web.deploy_cluster(cluster_id)

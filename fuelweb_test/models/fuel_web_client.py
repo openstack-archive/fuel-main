@@ -727,9 +727,9 @@ class FuelWebClient(object):
         )
 
     @logwrap
-    def verify_network(self, cluster_id):
+    def verify_network(self, cluster_id, timeout=60 * 5):
         task = self.run_network_verify(cluster_id)
-        self.assert_task_success(task, 60 * 5, interval=10)
+        self.assert_task_success(task, timeout, interval=10)
 
     @logwrap
     def update_nodes_interfaces(self, cluster_id):
