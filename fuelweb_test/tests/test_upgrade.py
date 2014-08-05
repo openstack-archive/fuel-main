@@ -320,8 +320,8 @@ class RollbackFuelMaster(base_test_data.TestBasic):
                                          '/var/upgrade/site-packages/'
                                          'fuel_upgrade/engines/'
                                          'docker_engine.py')
-        checkers.run_with_rollback(self.env.get_admin_remote(),
-                                   '/var', 'upgrade.sh')
+        checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
+                            rollback=True)
         checkers.wait_rollback_is_done(self.env.get_admin_remote(), 3000)
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_TO,
