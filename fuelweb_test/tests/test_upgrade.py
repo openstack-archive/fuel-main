@@ -144,8 +144,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-06', smiles_count=6, networks_count=8, timeout=300)
-        task = self.fuel_web.run_network_verify(cluster_id)
-        self.fuel_web.assert_task_success(task, 60 * 2, interval=10)
+        self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
