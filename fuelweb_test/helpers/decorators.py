@@ -53,16 +53,22 @@ def log_snapshot_on_error(func):
         except SkipTest:
             pass
         except Exception:
-            name = 'error_%s' % func.__name__
-            description = "Failed in method '%s'." % func.__name__
+            logger.info("args is {0}".format(args[0].snapshot))
+            if args and args[0].snapshot:
+                name = 'error_%s' % args[0].snapshot
+                description = "Failed in method '%s'." % args[0].snapshot
+            else:
+                name = 'error_%s' % func.__name__
+                description = "Failed in method '%s'." % func.__name__
             if args[0].env is not None:
                 try:
                     create_diagnostic_snapshot(args[0].env,
-                                               "fail", func.__name__)
-                except Exception:
+                                               "fail", name)
+                except:
                     logger.error(traceback.format_exc())
                     raise
                 finally:
+                    logger.debug(args)
                     args[0].env.make_snapshot(snapshot_name=name[-50:],
                                               description=description,
                                               is_make=True)
