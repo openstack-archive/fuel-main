@@ -13,6 +13,7 @@
 #    under the License.
 
 import time
+import re
 import yaml
 
 from devops.helpers.helpers import _get_file_size
@@ -125,7 +126,8 @@ class EnvironmentModel(object):
         wait(lambda: all(self.nailgun_nodes(devops_nodes)), 15, timeout)
 
         for node in self.nailgun_nodes(devops_nodes):
-            self.sync_node_time(self.get_ssh_to_remote(node["ip"]))
+            self.sync_node_time(self.get_ssh_to_remote(node["ip"]),
+                                bootstrap=True)
 
         return self.nailgun_nodes(devops_nodes)
 
@@ -335,6 +337,10 @@ class EnvironmentModel(object):
         return Nodes(self.get_virtual_environment(), self.node_roles)
 
     def revert_snapshot(self, name):
+        if re.compile("ready_with_[0-9]+_slaves").match(name):
+            bootsrap=True
+        else:
+            bootsrap=False
         if self.get_virtual_environment().has_snapshot(name):
             logger.info('We have snapshot with such name %s' % name)
 
@@ -354,7 +360,7 @@ class EnvironmentModel(object):
                 try:
                     logger.info("Sync time on revert for node %s" % node.name)
                     self.sync_node_time(
-                        self.get_ssh_to_remote_by_name(node.name))
+                        self.get_ssh_to_remote_by_name(node.name), bootsrap)
                 except Exception as e:
                     logger.error(
                         'Paramiko exception catched while'
@@ -384,9 +390,10 @@ class EnvironmentModel(object):
 
     @retry()
     @logwrap
-    def sync_node_time(self, remote):
+    def sync_node_time(self, remote, bootstrap=False):
         self.execute_remote_cmd(remote, 'hwclock -s')
-        if settings.OPENSTACK_RELEASE_UBUNTU in settings.OPENSTACK_RELEASE:
+        if settings.OPENSTACK_RELEASE_UBUNTU in settings.OPENSTACK_RELEASE \
+                and not bootstrap:
             self.execute_remote_cmd(remote, 'service ntp stop && ntpd -qg'
                                             ' && service ntp start')
         else:
