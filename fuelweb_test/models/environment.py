@@ -336,7 +336,7 @@ class EnvironmentModel(object):
     def nodes(self):
         return Nodes(self.get_virtual_environment(), self.node_roles)
 
-    def revert_snapshot(self, name):
+    def revert_snapshot(self, name, sync_time=True):
         if re.compile("ready_with_[0-9]+_slaves").match(name):
             bootsrap = True
         else:
@@ -352,23 +352,26 @@ class EnvironmentModel(object):
 
             self.nodes().admin.await(self.admin_net, timeout=10 * 60)
 
-            self.sync_time_admin_node()
+            if sync_time:
+                self.sync_time_admin_node()
 
-            for node in self.nodes().slaves:
-                if not node.driver.node_active(node):
-                    continue
-                try:
-                    logger.info("Sync time on revert for node %s" % node.name)
-                    self.sync_node_time(
-                        self.get_ssh_to_remote_by_name(node.name), bootsrap)
-                except Exception as e:
-                    logger.error(
-                        'Paramiko exception catched while'
-                        ' trying to run ntpd: %s' % e)
-                    raise
+                for node in self.nodes().slaves:
+                    if not node.driver.node_active(node):
+                        continue
+                    try:
+                        logger.info("Sync time on revert for node"
+                                    " %s" % node.name)
+                        self.sync_node_time(
+                            self.get_ssh_to_remote_by_name(node.name),
+                            bootsrap)
+                    except Exception as e:
+                        logger.error(
+                            'Paramiko exception catched while'
+                            ' trying to run ntpd: %s' % e)
+                        raise
 
-                self.run_nailgun_agent(
-                    self.get_ssh_to_remote_by_name(node.name))
+                    self.run_nailgun_agent(
+                        self.get_ssh_to_remote_by_name(node.name))
             return True
         return False
 
