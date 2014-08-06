@@ -32,7 +32,7 @@ class HugeEnvironments(base_test_case.TestBasic):
             1. Create cluster
             2. Add 4 nodes as controllers with ceph OSD roles
             3. Add 5 nodes as compute with ceph OSD and mongo roles
-            4. Turn on Savanna and Ceilometer
+            4. Turn on Sahara and Ceilometer
             5. Deploy the cluster
             6. Check networks and OSTF
 
@@ -90,7 +90,7 @@ class HugeEnvironments(base_test_case.TestBasic):
             3. Add 2 nodes as compute
             4. Add 1 node as cinder and 1 as mongo
             5. Add 2 nodes as ceph
-            6. Turn on Savanna and Ceilometer
+            6. Turn on Sahara and Ceilometer
             7. Deploy the cluster
             8. Check networks and OSTF
 

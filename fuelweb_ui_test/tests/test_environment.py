@@ -63,7 +63,7 @@ class TestEnvironment(BaseTestCase):
                             find_element_by_tag_name('input').is_selected())
         Tabs().settings.click()
         with Settings() as s:
-            self.assertFalse(s.install_savanna.
+            self.assertFalse(s.install_sahara.
                              find_element_by_tag_name('input').is_selected())
             self.assertFalse(s.install_murano.
                              find_element_by_tag_name('input').is_selected())
@@ -227,14 +227,14 @@ class TestEnvironment(BaseTestCase):
                              find_element_by_tag_name('input').is_selected())
 
     def test_services(self):
-        """Create environment with Savanna, Murano, Ceilometer selected
+        """Create environment with Sahara, Murano, Ceilometer selected
 
         Scenario:
-            1. Create environment with Install Savanna,
+            1. Create environment with Install Sahara,
                Murano, Ceilometer selected
             2. Click on created environment
             3. Open settings tab
-            4. Verify that Install Savanna, Murano,
+            4. Verify that Install Sahara, Murano,
                Ceilometer checkboxes are selected
         """
         with Wizard() as w:
@@ -245,7 +245,7 @@ class TestEnvironment(BaseTestCase):
             w.network_neutron_gre.click()
             w.next.click()
             w.next.click()
-            w.install_savanna.click()
+            w.install_sahara.click()
             w.install_murano.click()
             w.install_ceilometer.click()
             w.next.click()
@@ -257,7 +257,7 @@ class TestEnvironment(BaseTestCase):
         Tabs().settings.click()
 
         with Settings() as s:
-            self.assertTrue(s.install_savanna.
+            self.assertTrue(s.install_sahara.
                             find_element_by_tag_name('input').is_selected())
             self.assertTrue(s.install_murano.
                             find_element_by_tag_name('input').is_selected())
