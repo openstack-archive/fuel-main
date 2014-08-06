@@ -41,12 +41,12 @@ $(OPENSTACK_PATCH_TARBALL_PATH): \
 OPENSTACK_YAML_ART_NAME:=openstack.yaml
 openstack-yaml: $(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME)
 
-$(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME): $(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)
+$(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME): $(BUILD_DIR)/upgrade/openstack-patching.yaml
 	$(ACTION.COPY)
 
-$(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME): $(BUILD_DIR)/repos/nailgun.done
+$(BUILD_DIR)/upgrade/openstack-patching.yaml: $(BUILD_DIR)/repos/nailgun.done
 	mkdir -p $(@D)
-	cp $(BUILD_DIR)/repos/nailgun/nailgun/nailgun/fixtures/openstack.yaml $@
+	cp $(BUILD_DIR)/repos/nailgun/nailgun/nailgun/fixtures/openstack-patching.yaml $@
 
 ########################
 # UPGRADE VENV
