@@ -69,7 +69,7 @@ class SetupEnvironment(TestBasic):
 
         """
         self.check_run("ready")
-        self.env.revert_snapshot("empty")
+        self.env.revert_snapshot("empty", sync_time=False)
 
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             self.fuel_web.update_redhat_credentials()
@@ -99,7 +99,7 @@ class SetupEnvironment(TestBasic):
 
         """
         self.check_run("ready_with_1_slaves")
-        self.env.revert_snapshot("ready")
+        self.env.revert_snapshot("ready", sync_time=False)
         self.env.bootstrap_nodes(self.env.nodes().slaves[:1])
         self.env.make_snapshot("ready_with_1_slaves", is_make=True)
 
@@ -117,7 +117,7 @@ class SetupEnvironment(TestBasic):
 
         """
         self.check_run("ready_with_3_slaves")
-        self.env.revert_snapshot("ready")
+        self.env.revert_snapshot("ready", sync_time=False)
         self.env.bootstrap_nodes(self.env.nodes().slaves[:3])
         self.env.make_snapshot("ready_with_3_slaves", is_make=True)
 
@@ -135,6 +135,6 @@ class SetupEnvironment(TestBasic):
 
         """
         self.check_run("ready_with_5_slaves")
-        self.env.revert_snapshot("ready")
+        self.env.revert_snapshot("ready", sync_time=False)
         self.env.bootstrap_nodes(self.env.nodes().slaves[:5])
         self.env.make_snapshot("ready_with_5_slaves", is_make=True)
