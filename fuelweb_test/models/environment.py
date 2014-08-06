@@ -125,7 +125,8 @@ class EnvironmentModel(object):
         wait(lambda: all(self.nailgun_nodes(devops_nodes)), 15, timeout)
 
         for node in self.nailgun_nodes(devops_nodes):
-            self.sync_node_time(self.get_ssh_to_remote(node["ip"]))
+            self.sync_node_time(self.get_ssh_to_remote(node["ip"]),
+                                bootstrap=True)
 
         return self.nailgun_nodes(devops_nodes)
 
@@ -384,9 +385,10 @@ class EnvironmentModel(object):
 
     @retry()
     @logwrap
-    def sync_node_time(self, remote):
+    def sync_node_time(self, remote, bootstrap=False):
         self.execute_remote_cmd(remote, 'hwclock -s')
-        if settings.OPENSTACK_RELEASE_UBUNTU in settings.OPENSTACK_RELEASE:
+        if settings.OPENSTACK_RELEASE_UBUNTU in settings.OPENSTACK_RELEASE \
+                and not bootstrap:
             self.execute_remote_cmd(remote, 'service ntp stop && ntpd -qg'
                                             ' && service ntp start')
         else:
