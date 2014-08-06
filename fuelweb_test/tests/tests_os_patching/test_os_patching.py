@@ -30,11 +30,15 @@ class TestPatch(TestBasic):
     def __init__(self, snapshot):
         super(TestPatch, self).__init__()
         self.snapshot = snapshot
+        self.deploy_and_patch.__func__.func_name = "{0}_and_patch".format(
+            self.snapshot)
+        self.deploy_and_rollback.__func__.func_name = "{0}_rollback".format(
+            self.snapshot)
 
     @test
     @log_snapshot_on_error
     def deploy_and_patch(self):
-        """Update OS on reverted env
+        """Update os on reverted cluster
 
          Scenario:
             1. Revert  environment
@@ -42,7 +46,7 @@ class TestPatch(TestBasic):
             3. Check that it uploaded
             4. Extract data
             5. Get available releases
-            6. Run upgrade script
+            6. Run update script
             7. Check that new release appears
             8. Put new release into cluster
             9. Run cluster update
@@ -50,11 +54,9 @@ class TestPatch(TestBasic):
             11. Create snapshot
 
         """
-        logger.info("snapshot name is {0}".format(self.snapshot))
 
         if not self.env.get_virtual_environment().has_snapshot(self.snapshot):
-            logger.error('There is no shaphot found {0}'.format(self.snapshot))
-            raise SkipTest('Can not find snapshot {0}'.format(self.snapshot))
+            raise SkipTest()
 
         self.env.revert_snapshot(self.snapshot)
 
@@ -165,23 +167,22 @@ class TestPatch(TestBasic):
     @test(depends_on=[deploy_and_patch])
     @log_snapshot_on_error
     def deploy_and_rollback(self):
-        """Rollback/Downgrade os on reverted env
+        """Rollback os on reverted cluster
 
          Scenario:
             1. Revert  patched environment
             2. Get release ids
-            2. Identify release id for rollback/downgrade
-            3. Run rollback/downgrade
-            4. Check that operation was successful
+            2. Identify release id for rollback
+            3. Run rollback
+            4. Check that rollback was successful
             5. Run OSTF
+            6. Create snapshot
 
         """
 
-        logger.info("snapshot name is {0}".format(self.snapshot))
-
         if not self.env.get_virtual_environment().has_snapshot(
                 '{0}_and_patch'.format(self.snapshot)):
-            raise SkipTest('Can not find snapshot {0}'.format(self.snapshot))
+            raise SkipTest()
 
         self.env.revert_snapshot('{0}_and_patch'.format(self.snapshot))
 
@@ -242,7 +243,8 @@ class TestPatch(TestBasic):
 
         self.fuel_web.run_ostf(cluster_id=cluster_id,)
 
-        self.env.make_snapshot('{0}_and_rollback'.format(self.snapshot))
+        self.env.make_snapshot('{0}_and_rollback'.format(self.snapshot),
+                               is_make=True)
 
 
 @factory
