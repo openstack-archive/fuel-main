@@ -380,8 +380,12 @@ class EnvironmentModel(object):
     @logwrap
     def sync_node_time(self, remote):
         self.execute_remote_cmd(remote, 'hwclock -s')
-        self.execute_remote_cmd(remote, 'service ntpd stop && ntpd -qg && '
-                                        'service ntpd start')
+        if settings.OPENSTACK_RELEASE_UBUNTU in settings.OPENSTACK_RELEASE:
+            self.execute_remote_cmd(remote, 'service ntp stop && ntpd -qg'
+                                            ' && service ntp start')
+        else:
+            self.execute_remote_cmd(remote, 'service ntpd stop && ntpd -qg'
+                                            ' && service ntpd start')
         self.execute_remote_cmd(remote, 'hwclock -w')
         remote_date = remote.execute('date')['stdout']
         logger.info("Node time: %s" % remote_date)
