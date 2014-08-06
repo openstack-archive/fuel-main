@@ -53,8 +53,7 @@ def log_snapshot_on_error(func):
         except SkipTest:
             pass
         except Exception:
-            logger.info("args is {0}".format(args[0].snapshot))
-            if args and args[0].snapshot:
+            if args and 'snapshot' in args[0].__dict__:
                 name = 'error_%s' % args[0].snapshot
                 description = "Failed in method '%s'." % args[0].snapshot
             else:
