@@ -53,8 +53,14 @@ def log_snapshot_on_error(func):
         except SkipTest:
             pass
         except Exception:
+            try:
+                args[0].__getattribute__('snapshot')
+                snap = True
+            except:
+                logger.debug('args does not has attr snapshot')
+                snap = False
             logger.info("args is {0}".format(args[0].snapshot))
-            if args and args[0].snapshot:
+            if args and snap:
                 name = 'error_%s' % args[0].snapshot
                 description = "Failed in method '%s'." % args[0].snapshot
             else:
