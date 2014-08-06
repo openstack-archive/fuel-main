@@ -132,6 +132,7 @@ erlang-xmerl-R14B-04.8.el6
 eswitchd
 euca2ools
 fcgiwrap-1.0.3-2
+fdupes
 fence-agents
 fencing-agent
 flex-2.5.35-8.el6
