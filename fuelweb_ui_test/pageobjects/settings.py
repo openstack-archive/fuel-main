@@ -60,7 +60,7 @@ class Settings(PageObject, SettingsFooter):
         return self.parent.find_element_by_name('access.email')
 
     @property
-    def install_savanna(self):
+    def install_sahara(self):
         return self.parent.\
             find_element_by_xpath(self.XPATH_CHECKBOX.format
                                   ('additional_components.sahara'))

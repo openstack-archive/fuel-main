@@ -27,7 +27,7 @@ parameters = [
     ("tagging", ["yes", "no"]),
     ("storage volume", ["default", "ceph"]),
     ("storage images", ["default", "ceph"]),
-    ("savanna", ["yes", "no"]),
+    ("sahara", ["yes", "no"]),
     ("murano", ["yes", "no"]),
     ("ceilometer", ["yes", "no"])
 ]
@@ -47,7 +47,7 @@ def is_valid_combination(values, names):
     rules = [
         lambda d: "RedHat" == d["os"] and "ceph" == d["storage volume"],
         lambda d: "RedHat" == d["os"] and "ceph" == d["storage images"],
-        lambda d: "RedHat" == d["os"] and "yes" == d["savanna"],
+        lambda d: "RedHat" == d["os"] and "yes" == d["sahara"],
         lambda d: "RedHat" == d["os"] and "yes" == d["murano"],
         lambda d: "RedHat" == d["os"] and "neutron GRE" == d["network"],
         lambda d: "RedHat" == d["os"] and "neutron VLAN" == d["network"],

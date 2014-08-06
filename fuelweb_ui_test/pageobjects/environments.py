@@ -142,7 +142,7 @@ class Wizard(Popup, RedhatAccountPopup):
                 self.XPATH_RADIO.format('glance', 'ceph'))
 
     @property
-    def install_savanna(self):
+    def install_sahara(self):
         return self.parent.\
             find_element_by_xpath(
                 self.XPATH_CHECKBOX.format('sahara'))

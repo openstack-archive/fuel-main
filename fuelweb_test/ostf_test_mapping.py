@@ -79,10 +79,10 @@ OSTF_TEST_MAPPING = {
     'Request list of networks': 'fuel_health.tests.sanity.'
                                 'test_sanity_networking.NetworksTest.'
                                 'test_list_networks',
-    'Savanna tests to create/list/delete node'
+    'Sahara tests to create/list/delete node'
     ' group and cluster templates': 'fuel_health.tests.sanity.'
-                                    'test_sanity_savanna.'
-                                    'SanitySavannaTests.test_sanity_savanna',
+                                    'test_sanity_sahara.'
+                                    'SanitySaharaTests.test_sanity_sahara',
     'Create instance flavor': 'fuel_health.tests.smoke.test_create_flavor.'
                               'FlavorsAdminTest.test_create_flavor',
     'Create volume and attach it to instance': 'fuel_health.tests.smoke.'
