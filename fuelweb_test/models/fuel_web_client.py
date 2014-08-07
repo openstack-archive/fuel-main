@@ -1096,12 +1096,18 @@ class FuelWebClient(object):
         logger.info('Ceph cluster status is OK')
 
     @logwrap
-    def get_releases_list_for_os(self, release_name):
+    def get_releases_list_for_os(self, release_name, release_version=None):
         full_list = self.client.get_releases()
         release_ids = []
         for release in full_list:
-            if release_name in release["name"]:
-                release_ids.append(release['id'])
+            if release_version:
+                if release_name in release['name'] \
+                        and release_version == release['version']:
+                    logger.debug('release data is {0}'.format(release))
+                    release_ids.append(release['id'])
+            else:
+                if release_name in release['name']:
+                    release_ids.append(release['id'])
         return release_ids
 
     @logwrap
