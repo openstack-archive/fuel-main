@@ -366,6 +366,7 @@ libltdl7
 liblwres80
 liblzma5
 libmagic1
+libmemcached
 libmount1
 libmpc2
 libmpfr4
@@ -746,6 +747,7 @@ python-pyasn1
 python-pycurl
 python-pyparsing
 python-pypcap
+python-pylibmc
 python-pyudev
 python-requests
 python-routes
