@@ -108,6 +108,7 @@ class CephCompactWithCinder(TestBasic):
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
+        self.check_run('ceph_multinode_with_cinder')
         self.env.revert_snapshot("ready")
         self.env.bootstrap_nodes(self.env.nodes().slaves[:4])
 
@@ -178,6 +179,7 @@ class CephHA(TestBasic):
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
+        self.check_run('ceph_ha')
         self.env.revert_snapshot("ready")
         self.env.bootstrap_nodes(self.env.nodes().slaves[:6])
 
