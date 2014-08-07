@@ -49,6 +49,7 @@ class TestHaFailover(TestBasic):
         Snapshot deploy_ha
 
         """
+        self.check_run("deploy_ha")
         self.env.revert_snapshot("ready_with_5_slaves")
 
         settings = None
