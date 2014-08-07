@@ -432,6 +432,7 @@ python-pbr
 python-pip
 python-prettytable
 python-py-1.4.15-1.el6
+python-pylibmc
 python-pygments-1.1.1-1.el6
 python-pyudev-0.15-1.el6
 python-qpid-qmf-0.14-14.el6_3
