@@ -84,7 +84,7 @@ class CephCompact(TestBasic):
         self.env.make_snapshot("ceph_multinode_compact")
 
 
-@test(groups=["thread_1", "ceph"])
+@test(groups=["thread_3", "ceph"])
 class CephCompactWithCinder(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
@@ -152,7 +152,7 @@ class CephCompactWithCinder(TestBasic):
         # Run ostf
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
-        self.env.make_snapshot("ceph_multinode_with_cinder")
+        self.env.make_snapshot("ceph_multinode_with_cinder", is_make=True)
 
 
 @test(groups=["thread_3", "ceph"])
@@ -212,7 +212,7 @@ class CephHA(TestBasic):
         # Run ostf
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
-        self.env.make_snapshot("ceph_ha")
+        self.env.make_snapshot("ceph_ha", is_make=True)
 
 
 @test(groups=["thread_4", "ceph"])

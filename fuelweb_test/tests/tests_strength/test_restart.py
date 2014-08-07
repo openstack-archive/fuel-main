@@ -27,11 +27,10 @@ from proboscis import SkipTest
 from proboscis import test
 
 
-@test(groups=["thread_5", "ceph"])
+@test(groups=["thread_3", "ceph"])
 class CephRestart(TestBasic):
 
-    @test(depends_on=[SetupEnvironment.prepare_release],
-          groups=["ceph_multinode_restart"])
+    @test(groups=["ceph_multinode_restart"])
     @log_snapshot_on_error
     def ceph_multinode_restart(self):
         """Deploy ceph with cinder in simple mode
@@ -51,28 +50,13 @@ class CephRestart(TestBasic):
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
-        self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:4])
+        if self.env.get_virtual_environment().has_snapshot(
+                'ceph_multinode_with_cinder'):
+            self.env.revert_snapshot("ceph_multinode_with_cinder")
+        else:
+            raise SkipTest()
 
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
-            settings={
-                'volumes_ceph': True,
-                'volumes_lvm': False,
-            }
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller'],
-                'slave-02': ['compute'],
-                'slave-03': ['cinder', 'ceph-osd'],
-                'slave-04': ['cinder', 'ceph-osd']
-            }
-        )
-        # Cluster deploy
-        self.fuel_web.deploy_cluster_wait(cluster_id)
+        cluster_id = self.fuel_web.get_last_created_cluster()
 
         # Warm restart
         self.fuel_web.warm_restart_nodes(self.env.nodes().slaves[:4])
@@ -96,12 +80,7 @@ class CephRestart(TestBasic):
 
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
-
-@test(groups=["thread_5", "ceph"])
-class CephHARestart(TestBasic):
-
-    @test(depends_on=[SetupEnvironment.prepare_release],
-          groups=["ceph_ha_restart"])
+    @test(groups=["ceph_ha_restart"])
     @log_snapshot_on_error
     def ceph_ha_restart(self):
         """Deploy ceph with in HA mode
@@ -122,31 +101,13 @@ class CephHARestart(TestBasic):
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
-        self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:6])
+        if self.env.get_virtual_environment().has_snapshot('ceph_ha'):
+            self.env.revert_snapshot("ceph_ha")
+        else:
+            raise SkipTest()
 
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
-            settings={
-                'volumes_ceph': True,
-                'images_ceph': True,
-                'volumes_lvm': False,
-            }
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller', 'ceph-osd'],
-                'slave-02': ['controller', 'ceph-osd'],
-                'slave-03': ['controller', 'ceph-osd'],
-                'slave-04': ['compute', 'ceph-osd'],
-                'slave-05': ['compute', 'ceph-osd'],
-                'slave-06': ['ceph-osd']
-            }
-        )
-        # Depoy cluster
-        self.fuel_web.deploy_cluster_wait(cluster_id)
+        cluster_id = self.fuel_web.get_last_created_cluster()
+
         check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
 
         # Run ostf
