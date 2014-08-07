@@ -84,7 +84,7 @@ class CephCompact(TestBasic):
         self.env.make_snapshot("ceph_multinode_compact")
 
 
-@test(groups=["thread_1", "ceph"])
+@test(groups=["thread_3", "ceph"])
 class CephCompactWithCinder(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
@@ -108,6 +108,7 @@ class CephCompactWithCinder(TestBasic):
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
+        self.check_run('ceph_multinode_with_cinder')
         self.env.revert_snapshot("ready")
         self.env.bootstrap_nodes(self.env.nodes().slaves[:4])
 
@@ -178,6 +179,7 @@ class CephHA(TestBasic):
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
+        self.check_run('ceph_ha')
         self.env.revert_snapshot("ready")
         self.env.bootstrap_nodes(self.env.nodes().slaves[:6])
 
