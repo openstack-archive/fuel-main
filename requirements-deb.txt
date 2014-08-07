@@ -746,6 +746,7 @@ python-pyasn1
 python-pycurl
 python-pyparsing
 python-pypcap
+python-pylibmc
 python-pyudev
 python-requests
 python-routes
