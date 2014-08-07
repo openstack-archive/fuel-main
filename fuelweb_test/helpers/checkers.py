@@ -287,3 +287,20 @@ def get_package_versions_from_node(remote, name, os_type):
     except Exception:
         logger.error(traceback.format_exc())
         raise
+
+
+@logwrap
+def check_enable_experimental_mode(remote, path):
+        cmd = 'cmod 755 {0}'.format(path)
+        remote.execute(cmd)
+        cmd = "sed '/feature_groups:" \
+              "/a \ \ \ \ - experimental' -i {0}".format(path)
+        result = remote.execute(cmd)
+        assert_equal(0, result['exit_code'], result['stderr'])
+
+
+@logwrap
+def restart_nailgun(remote):
+    cmd = 'dockerctl shell nailgun supervisorctl status'
+    result = remote.execute(cmd)
+    assert_equal(0, result['exit_code'], result['stderr'])
