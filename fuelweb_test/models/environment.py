@@ -356,11 +356,9 @@ class EnvironmentModel(object):
                     self.sync_node_time(
                         self.get_ssh_to_remote_by_name(node.name))
                 except Exception as e:
-                    logger.error(
-                        'Paramiko exception catched while'
-                        ' trying to run ntpd: %s' % e)
-                    raise
-
+                    logger.warning(
+                        'Exception caught while trying to sync time on {0}:'
+                        ' {1}'.format(node.name, e))
                 self.run_nailgun_agent(
                     self.get_ssh_to_remote_by_name(node.name))
             return True
