@@ -356,11 +356,9 @@ class EnvironmentModel(object):
                     self.sync_node_time(
                         self.get_ssh_to_remote_by_name(node.name))
                 except Exception as e:
-                    logger.error(
-                        'Paramiko exception catched while'
-                        ' trying to run ntpd: %s' % e)
-                    raise
-
+                    logger.warning(
+                        'Exception caught while trying to sync time on {0}:'
+                        ' {1}'.format(node.name, e))
                 self.run_nailgun_agent(
                     self.get_ssh_to_remote_by_name(node.name))
             return True
@@ -387,8 +385,9 @@ class EnvironmentModel(object):
     def sync_node_time(self, remote):
         self.execute_remote_cmd(remote, 'hwclock -s')
         self.execute_remote_cmd(remote, 'NTPD=$(find /etc/init.d/ -regex \''
-                                        '/etc/init.d/ntp.?\'); $NTPD stop '
-                                        '&& ntpd -qg && $NTPD start')
+                                        '/etc/init.d/ntp.?\'); $NTPD stop; '
+                                        'killall ntpd; ntpd -qg && '
+                                        '$NTPD start')
         self.execute_remote_cmd(remote, 'hwclock -w')
         remote_date = remote.execute('date')['stdout']
         logger.info("Node time: %s" % remote_date)
