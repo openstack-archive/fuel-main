@@ -20,6 +20,7 @@ from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_not_equal
 from proboscis.asserts import assert_true
 from proboscis import test
+from proboscis import SkipTest
 
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import logger
@@ -49,6 +50,12 @@ class TestHaFailover(TestBasic):
         Snapshot deploy_ha
 
         """
+        try:
+            self.check_run("deploy_ha")
+        except SkipTest:
+            self.env.revert_snapshot("deploy_ha")
+            return
+
         self.env.revert_snapshot("ready_with_5_slaves")
 
         settings = None
