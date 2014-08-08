@@ -366,6 +366,7 @@ libltdl7
 liblwres80
 liblzma5
 libmagic1
+libmemcached10
 libmount1
 libmpc2
 libmpfr4
@@ -744,6 +745,7 @@ python-pkg-resources
 python-prettytable
 python-pyasn1
 python-pycurl
+python-pylibmc
 python-pyparsing
 python-pypcap
 python-pyudev
