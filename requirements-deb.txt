@@ -708,6 +708,7 @@ python-pycurl
 python-pyparsing
 python-pypcap
 python-pyudev
+python-rabbit
 python-requests
 python-routes
 python-saharaclient
