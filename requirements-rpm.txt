@@ -435,6 +435,7 @@ python-py-1.4.15-1.el6
 python-pygments-1.1.1-1.el6
 python-pyudev-0.15-1.el6
 python-qpid-qmf-0.14-14.el6_3
+python-rabbit
 python-requests
 python-rhsm
 python-routes
