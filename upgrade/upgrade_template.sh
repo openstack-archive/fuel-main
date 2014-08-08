@@ -43,11 +43,48 @@ function run_upgrade {
 }
 
 
-if [ "$1" == "--version" ]; then
+function switch_to_version {
+  version=$1
+  version_path=/etc/fuel/$version/version.yaml
+
+  if [ ! -f $version_path ]; then
+    error "Version ${version} not found"
+  fi
+
+  # Replace symlink to current version
+  ln -sf $version_path /etc/fuel/version.yaml
+  # Replace symlink to supervisor scripts
+  ln -nsf /etc/supervisord.d/$version /etc/supervisord.d/current
+  # Stop all supervisor services
+  supervisorctl stop all &
+  # And at the same time stop all docker containers
+  docker stop -t=4 $(docker ps -q)
+  # Restart supervisor
+  service supervisord restart
+  exit
+}
+
+
+function show_version {
   cat $UPGRADE_PATH/config/version.yaml
   exit
-fi
+}
 
-(flock -n 9 || error "Upgrade is already running. Lock file: ${LOCK_FILE}"
-    run_upgrade "$@"
-) 9> $LOCK_FILE
+
+function upgrade {
+  (flock -n 9 || error "Upgrade is already running. Lock file: ${LOCK_FILE}"
+      run_upgrade "$@"
+  ) 9> $LOCK_FILE
+}
+
+
+
+case "$1" in
+  --switch-to-version)
+   case "$2" in
+     "") error '--switch-to-version requires parameter' ;;
+     *) switch_to_version $2 ; exit ;;
+   esac ;;
+  --version) show_version ; exit ;;
+  *) upgrade "$@" ; exit ;;
+esac
