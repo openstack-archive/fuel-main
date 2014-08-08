@@ -275,7 +275,7 @@ class TestEnvWizard(BaseTestCase):
                click next three times
             3. Select Neutron with GRE network
             4. Click next two times
-            5. Select install Savanna, Murano, Ceilometer
+            5. Select install Sahara, Murano, Ceilometer
             6. Click next and previous button
             7. Verify checkboxes are selected
         """
@@ -288,12 +288,12 @@ class TestEnvWizard(BaseTestCase):
             w.network_neutron_gre.click()
             w.next.click()
             w.next.click()
-            w.install_savanna.click()
+            w.install_sahara.click()
             w.install_murano.click()
             w.install_ceilometer.click()
             w.next.click()
             w.prev.click()
-            self.assertTrue(w.install_savanna.
+            self.assertTrue(w.install_sahara.
                             find_element_by_tag_name('input').is_selected())
             self.assertTrue(w.install_murano.
                             find_element_by_tag_name('input').is_selected())
@@ -310,7 +310,7 @@ class TestEnvWizard(BaseTestCase):
             4. Select KVM hypervisor and click next
             5. Select Neutron with GRE and click next
             6. Select Ceph options for Cinder and Glance and click next
-            7. Select install Savanna, Murano and click next
+            7. Select install Sahara, Murano and click next
             8. Click cancel button
             9. Click create environment again and check that
                all default values are selected
@@ -328,7 +328,7 @@ class TestEnvWizard(BaseTestCase):
             w.storage_cinder_ceph.click()
             w.storage_glance_ceph.click()
             w.next.click()
-            w.install_savanna.click()
+            w.install_sahara.click()
             w.install_murano.click()
             w.next.click()
             w.cancel.click()
@@ -355,7 +355,7 @@ class TestEnvWizard(BaseTestCase):
             self.assertTrue(w.storage_glance_default.
                             find_element_by_tag_name('input').is_selected())
             w.next.click()
-            self.assertFalse(w.install_savanna.
+            self.assertFalse(w.install_sahara.
                              find_element_by_tag_name('input').is_selected())
             self.assertFalse(w.install_murano.
                              find_element_by_tag_name('input').is_selected())

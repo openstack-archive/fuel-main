@@ -59,8 +59,8 @@ class SaharaSimple(TestBasic):
 
         LOGGER.debug('Check MD5 of image')
         check_image = checkers.check_image(
-            settings.SERVTEST_SAVANNA_IMAGE,
-            settings.SERVTEST_SAVANNA_IMAGE_MD5,
+            settings.SERVTEST_SAHARA_IMAGE,
+            settings.SERVTEST_SAHARA_IMAGE_MD5,
             settings.SERVTEST_LOCAL_PATH)
         asserts.assert_true(check_image)
 
@@ -98,8 +98,8 @@ class SaharaSimple(TestBasic):
         common_func = Common(controller['ip'], data['user'], data['password'],
                              data['tenant'])
 
-        test_classes = ['fuel_health.tests.sanity.test_sanity_savanna.'
-                        'SanitySavannaTests.test_sanity_savanna']
+        test_classes = ['fuel_health.tests.sanity.test_sanity_sahara.'
+                        'SanitySaharaTests.test_sanity_sahara']
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
             tests_must_be_passed=test_classes
@@ -108,9 +108,9 @@ class SaharaSimple(TestBasic):
         LOGGER.debug('Import image')
         common_func.image_import(
             settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_SAVANNA_IMAGE,
-            settings.SERVTEST_SAVANNA_IMAGE_NAME,
-            settings.SERVTEST_SAVANNA_IMAGE_META)
+            settings.SERVTEST_SAHARA_IMAGE,
+            settings.SERVTEST_SAHARA_IMAGE_NAME,
+            settings.SERVTEST_SAHARA_IMAGE_META)
 
         common_func.goodbye_security()
 
@@ -119,8 +119,8 @@ class SaharaSimple(TestBasic):
         self.fuel_web.run_single_ostf_test(
             cluster_id=cluster_id, test_sets=['platform_tests'],
             test_name=('fuel_health.tests.platform_tests.'
-                       'test_platform_savanna.PlatformSavannaTests.'
-                       'test_platform_savanna'), timeout=60 * 200)
+                       'test_platform_sahara.PlatformSaharaTests.'
+                       'test_platform_sahara'), timeout=60 * 200)
 
         self.env.make_snapshot("deploy_sahara_simple")
 

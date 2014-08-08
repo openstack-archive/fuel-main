@@ -170,17 +170,17 @@ class TestAccess(BaseClass):
 
 class TestAdditionalComponents(BaseClass):
 
-    def test_savanna(self):
-        """Install Savanna component
+    def test_sahara(self):
+        """Install Sahara component
 
         Scenario:
-            1. Click on Install Savanna checkbox
+            1. Click on Install Sahara checkbox
             2. Save settings
-            3. Verify that Install Savanna checkbox is selected
+            3. Verify that Install Sahara checkbox is selected
             4. Click Load defaults
-            5. Verify that Install Savanna checkbox is not selected
+            5. Verify that Install Sahara checkbox is not selected
         """
-        self._test_tumbler_field('install_savanna')
+        self._test_tumbler_field('install_sahara')
 
     def test_murano(self):
         """Install Murano component
