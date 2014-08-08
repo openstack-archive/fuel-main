@@ -187,7 +187,7 @@ class SimpleFlat(TestBasic):
         ebtables.restore_vlans()
         try:
             ebtables.block_first_vlan()
-            self.fuel_web.verify_network(cluster_id)
+            self.fuel_web.verify_network(cluster_id, success=False)
         finally:
             ebtables.restore_first_vlan()
 
@@ -789,7 +789,7 @@ class UntaggedNetworksNegative(TestBasic):
         self.fuel_web.client.update_network(cluster_id, networks=nets)
 
         # run network check:
-        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.verify_network(cluster_id, success=False)
 
         # deploy cluster:
         task = self.fuel_web.deploy_cluster(cluster_id)
