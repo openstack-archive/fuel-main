@@ -53,7 +53,6 @@ class TestHaFailover(TestBasic):
         try:
             self.check_run("deploy_ha")
         except SkipTest:
-            self.env.revert_snapshot("deploy_ha")
             return
 
         self.env.revert_snapshot("ready_with_5_slaves")
