@@ -1,5 +1,6 @@
 require 'puppet/util/package'
 require 'yaml'
+require File.join(File.dirname(__FILE__), 'rpmvercmp.rb')
 
 Puppet::Type.type(:package).provide :yum, :parent => :rpm, :source => :rpm do
   desc "Support via `yum`.
@@ -95,47 +96,6 @@ Puppet::Type.type(:package).provide :yum, :parent => :rpm, :source => :rpm do
     common_keys.inject({}) { |result, p| result.merge({p => a[p]}) }
   end
 
-  # based on algorithm
-  # http://fedoraproject.org/wiki/Archive:Tools/RPM/VersionComparison
-  def rpm_versioncmp(version1, version2)
-    # split both versions to elements
-    separators = /[\.\_\-\=]/
-    elements1 = version1.split separators
-    elements2 = version2.split separators
-
-    # check that the element is not fully integer
-    def not_integer?(s)
-      s.to_i.to_s != s
-    end
-
-    # compare two elements
-    # if first is larger -> 1
-    # if second is larger -> -1
-    # if equal -> 0
-    def compare_elements(a, b)
-      if not_integer?(a) && not_integer?(b)
-        # Both not integers: compare strings"
-        a <=> b
-      else
-        # One of elements is integer. convert to int and compare
-        a.to_i <=> b.to_i
-      end
-    end
-
-    # compare each element from first to same element from second
-    while (elements1.length > 0 && elements2.length > 0)
-      e1 = elements1.shift
-      e2 = elements2.shift
-      rc = compare_elements e1, e2
-      # return result on first non-equal match
-      if rc != 0
-        return rc
-      end
-    end
-    # there is nothing left to compare: return equal
-    0
-  end
-
   def install
     should = @resource.should(:ensure)
     self.debug "Ensuring => #{should}"
@@ -159,7 +119,7 @@ Puppet::Type.type(:package).provide :yum, :parent => :rpm, :source => :rpm do
       # Add the package version
       wanted += "-#{should}"
       is = self.query
-      if is && rpm_versioncmp(should, is[:ensure]) < 0
+      if is && Rpmvercmp.compare_labels(should, is[:ensure]) < 0
         self.debug "Downgrading package #{@resource[:name]} from version #{is[:ensure]} to #{should}"
         operation = :downgrade
       end
