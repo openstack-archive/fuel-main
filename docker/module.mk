@@ -22,6 +22,7 @@ else
 # Lrzip all containers into single archive
 $(BUILD_DIR)/docker/build.done: \
 		$(BUILD_DIR)/docker/busybox.done \
+		$(BUILD_DIR)/docker/fuel-centos.done \
 		$(BUILD_DIR)/docker/sources.done
 	(cd $(BUILD_DIR)/docker/containers && tar cf $(BUILD_DIR)/docker/fuel-images.tar *.tar)
 	lrzip -L2 -U -D -f $(BUILD_DIR)/docker/fuel-images.tar -o $(BUILD_DIR)/docker/$(DOCKER_ART_NAME)
@@ -59,6 +60,19 @@ endef
 
 $(BUILD_DIR)/docker/base-images.done:
 	find $(LOCAL_MIRROR_DOCKER_BASEURL)/ -regex '.*xz' | xargs -n1 sudo docker load -i
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/docker/fuel-centos.done: \
+		$(BUILD_DIR)/docker/base-images.done
+	(cd $(LOCAL_MIRROR_CENTOS) && python $(SOURCE_DIR)/utils/simple_http_daemon.py $(RANDOM_PORT) /tmp/simple_http_daemon_$(RANDOM_PORT).pid)
+	rm -rf $(BUILD_DIR)/docker/fuel-centos-build
+	cp -a $(SOURCE_DIR)/docker/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
+	sed -e "s/_PORT_/$(RANDOM_PORT)/" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
+	sudo docker build -t fuel/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
+	mkdir -p "$(BUILD_DIR)/docker/centos/output"
+	sudo docker run -i -t --privileged -v $(LOCAL_MIRROR_CENTOS)/os/x86_64/:/repo:ro -v $(BUILD_DIR)/docker/centos/output:/export fuel/fuel-centos-build
+	sudo $(SOURCE_DIR)/docker/fuel-centos-build/img2docker.sh $(BUILD_DIR)/docker/centos/output/fuel-centos.img fuel/centos
+	sudo rm -rf $(BUILD_DIR)/docker/centos/output
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/docker/busybox.done: \
