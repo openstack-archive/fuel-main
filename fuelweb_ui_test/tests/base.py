@@ -12,6 +12,9 @@ from settings import FOLDER_SCREEN_CURRENT
 from settings import FOLDER_SCREEN_EXPECTED
 from settings import NAILGUN_FIXTURES
 from settings import URL_HOME
+from settings import Fuel_UI_Login
+from settings import Fuel_UI_Password
+from pageobjects.authorization import Authorization
 
 
 class BaseTestCase(TestCase):
@@ -20,6 +23,16 @@ class BaseTestCase(TestCase):
     def setUpClass(cls):
         browser.start_driver()
         cls.clear_nailgun_database()
+        cls.get_home()
+        cls.aut()
+
+    @classmethod
+    def aut(cls):
+            Authorization().login_inputfield.click()
+            Authorization().login_inputfield.send_keys(Fuel_UI_Login)
+            Authorization().password_inputfield.click()
+            Authorization().password_inputfield.send_keys(Fuel_UI_Password)
+            Authorization().login_button.click()
 
     @classmethod
     def tearDownClass(cls):
