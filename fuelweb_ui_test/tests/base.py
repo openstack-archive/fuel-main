@@ -12,6 +12,9 @@ from settings import FOLDER_SCREEN_CURRENT
 from settings import FOLDER_SCREEN_EXPECTED
 from settings import NAILGUN_FIXTURES
 from settings import URL_HOME
+from settings import Fuel_UI_Login
+from settings import Fuel_UI_Password
+from pageobjects.authorization import Authorization
 
 
 class BaseTestCase(TestCase):
@@ -20,22 +23,29 @@ class BaseTestCase(TestCase):
     def setUpClass(cls):
         browser.start_driver()
         cls.clear_nailgun_database()
+        cls.aut()
+        cls.get_home()
 
     @classmethod
-    def tearDownClass(cls):
-        browser.quit_driver()
-
-    def setUp(self):
-        self.get_home()
+    def aut(cls):
+            Authorization().login_inputfield.click()
+            Authorization().login_inputfield.send_keys(Fuel_UI_Login)
+            Authorization().password_inputfield.click()
+            Authorization().password_inputfield.send_keys(Fuel_UI_Password)
+            Authorization().login_button.click()
+            for i in range(5):
+                try:
+                    browser.driver.get(URL_HOME)
+                    Header().wait_until_exists(Header().logo, 4)
+                    Header().logo.is_displayed()
+                    break
+                except NoSuchElementException:
+                    pass
 
     @staticmethod
     def get_home():
-        for i in range(5):
-            try:
-                browser.driver.get(URL_HOME)
-                Header().logo.is_displayed()
-                browser.driver.execute_script('jQuery.fx.off = true')
-                browser.driver.execute_script('''
+        browser.driver.execute_script('jQuery.fx.off = true')
+        browser.driver.execute_script('''
                     $('head').append(
                         '<style type="text/css">
                             * {
@@ -45,9 +55,10 @@ class BaseTestCase(TestCase):
                             }
                         </style>')
                 '''.replace('\n', ''))
-                break
-            except NoSuchElementException:
-                pass
+
+    @classmethod
+    def tearDownClass(cls):
+        browser.quit_driver()
 
     @staticmethod
     def refresh():

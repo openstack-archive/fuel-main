@@ -18,7 +18,7 @@
 #   - for minimal non-HA installation, specify 2 (1 controller + 1 compute)
 #   - for minimal non-HA with Cinder installation, specify 3 (1 ctrl + 1 compute + 1 cinder)
 #   - for minimal HA installation, specify 4 (3 controllers + 1 compute)
-cluster_size=3
+cluster_size=5
 
 # Get the first available ISO from the directory 'iso'
 iso_path=`ls -1t iso/*.iso 2>/dev/null | head -1`
@@ -84,6 +84,8 @@ vm_slave_cpu_default=1
 vm_slave_cpu[1]=1
 vm_slave_cpu[2]=1
 vm_slave_cpu[3]=1
+vm_slave_cpu[4]=1
+vm_slave_cpu[5]=1
 
 # This section allows you to define RAM size in MB for each slave node.
 # Keep in mind that PXE boot might not work correctly with values lower than 768.
@@ -97,6 +99,8 @@ vm_slave_memory_default=1536
 vm_slave_memory_mb[1]=2048
 vm_slave_memory_mb[2]=1024  # for compute node 1GB is recommended, otherwise VM instances in OpenStack may not boot
 vm_slave_memory_mb[3]=1024  # for dedicated Cinder, 768Mb is OK, but Ceph needs 1Gb minimum
+vm_slave_memory_mb[4]=1024
+vm_slave_memory_mb[5]=1024
 
 # Within demo cluster created by this script, all slaves (controller
 # and compute nodes) will have identical disk configuration. Each 
