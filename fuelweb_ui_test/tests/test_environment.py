@@ -263,3 +263,34 @@ class TestEnvironment(BaseTestCase):
                             find_element_by_tag_name('input').is_selected())
             self.assertTrue(s.install_ceilometer.
                             find_element_by_tag_name('input').is_selected())
+
+    def simle_vcenter_env(self):
+        """Create VCenter environment with simple
+           mode and verify that element will be created
+       author: Tatyana Dubyk /8th of August
+
+       Test scenario:
+       1.Create openstack env with vCenter hypervisor
+       2.Select all settings by default, besides vCenter's settings
+       3.Check that on page present new created env with required name
+       """
+        with Wizard() as w:
+            w.name.send_keys(OPENSTACK_CENTOS)
+            w.next.click()
+            w.mode_multinode.click()
+            w.next.click()
+            w.compute_vcenter.click()
+            w.vcenter_ip_inputfield.send_keys('172.16.0.254')
+            w.vcenter_username_inputfield.click()
+            w.vcenter_username_inputfield.send_keys(
+                'administrator@vsphere.local')
+            w.vcenter_password_inputfield.click()
+            w.vcenter_password_inputfield.send_keys('Qwer!1234')
+            w.vcenter_cluster_inputfield.click()
+            w.vcenter_cluster_inputfield.send_keys('Cluster1,Cluster2')
+            w.next.click()
+            w.next.click()
+            w.next.click()
+            w.next.click()
+            w.create.click()
+            w.wait_until_exists()

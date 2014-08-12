@@ -8,10 +8,12 @@ from selenium.common.exceptions import NoSuchElementException
 import time
 import browser
 from pageobjects.header import Header
+# from selenium.webdriver import ActionChains
 from settings import FOLDER_SCREEN_CURRENT
 from settings import FOLDER_SCREEN_EXPECTED
 from settings import NAILGUN_FIXTURES
 from settings import URL_HOME
+from pageobjects.authorization import Authorization
 
 
 class BaseTestCase(TestCase):
@@ -22,11 +24,22 @@ class BaseTestCase(TestCase):
         cls.clear_nailgun_database()
 
     @classmethod
+    def aut(cls):
+        login = 'admin'
+        password = 'admin'
+        Authorization().login_inputfield.click()
+        Authorization().login_inputfield.send_keys(login)
+        Authorization().password_inputfield.click()
+        Authorization().password_inputfield.send_keys(password)
+        Authorization().login_button.click()
+
+    @classmethod
     def tearDownClass(cls):
         browser.quit_driver()
 
     def setUp(self):
         self.get_home()
+        self.aut()
 
     @staticmethod
     def get_home():
