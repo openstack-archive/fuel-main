@@ -21,7 +21,6 @@ from proboscis import test
 
 from fuelweb_test.helpers import os_actions
 from fuelweb_test.helpers import checkers
-from fuelweb_test.helpers.checkers import check_ceph_health
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import ostf_test_mapping as map_ostf
 from fuelweb_test import settings
@@ -76,7 +75,7 @@ class CephCompact(TestBasic):
         )
         # Cluster deploy
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.check_ceph_status(cluster_id)
 
         # Run ostf
         self.fuel_web.run_ostf(cluster_id=cluster_id)
@@ -136,7 +135,7 @@ class CephCompactWithCinder(TestBasic):
         )
         # Cluster deploy
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.check_ceph_status(cluster_id)
 
         disks = self.fuel_web.client.get_node_disks(
             self.fuel_web.get_nailgun_node_by_name('slave-01')['id'])
@@ -210,8 +209,7 @@ class CephHA(TestBasic):
         )
         # Depoy cluster
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.fuel_web.sync_ceph_time(cluster_id)
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.check_ceph_status(cluster_id)
 
         # Run ostf
         self.fuel_web.run_ostf(cluster_id=cluster_id)
@@ -271,9 +269,7 @@ class CephRadosGW(TestBasic):
         )
         # Deploy cluster
         self.fuel_web.deploy_cluster_wait(cluster_id)
-
-        remote = self.fuel_web.get_ssh_for_node('slave-01')
-        check_ceph_health(remote)
+        self.fuel_web.check_ceph_status(cluster_id)
 
         try:
             self.fuel_web.run_single_ostf_test(
@@ -296,6 +292,7 @@ class CephRadosGW(TestBasic):
             test_sets=['smoke', 'sanity', 'platform_tests'])
 
         # Check the radosqw daemon is started
+        remote = self.fuel_web.get_ssh_for_node('slave-01')
         radosgw_started = lambda: len(remote.check_call(
             'ps aux | grep "/usr/bin/radosgw -n '
             'client.radosgw.gateway"')['stdout']) == 3
@@ -424,7 +421,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
         logger.info("Ping 8.8.8.8 result on vm is: %s" % res)
 
         logger.info("Check Ceph health is ok after migration")
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.check_ceph_status(cluster_id)
 
         logger.info("Server is now on host %s" %
                     os.get_srv_host_name(new_srv))
@@ -483,7 +480,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
                     "File is abscent in /mnt")
 
         logger.info("Check Ceph health is ok after migration")
-        check_ceph_health(self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.check_ceph_status(cluster_id)
 
         logger.info("Server is now on host %s" %
                     os.get_srv_host_name(new_srv))
@@ -575,8 +572,7 @@ class CheckCephPartitionsAfterReboot(TestBasic):
                 raise Exception()
 
             logger.info("Check Ceph health is ok after reboot")
-            check_ceph_health(
-                self.env.get_ssh_to_remote_by_name(node))
+            self.fuel_web.check_ceph_status(cluster_id)
 
             logger.info("Cold-restart nodes")
             self.fuel_web.cold_restart_nodes(
@@ -594,5 +590,4 @@ class CheckCephPartitionsAfterReboot(TestBasic):
                 raise Exception()
 
             logger.info("Check Ceph health is ok after reboot")
-            check_ceph_health(
-                self.env.get_ssh_to_remote_by_name(node))
+            self.fuel_web.check_ceph_status(cluster_id)
