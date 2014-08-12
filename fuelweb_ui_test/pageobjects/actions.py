@@ -83,8 +83,8 @@ class Actions(PageObject):
 
 
 class DeleteEnvironmentPopup(Popup):
-
     @property
     def delete(self):
         return self.parent.\
-            find_element_by_css_selector('button.remove-cluster-btn')
+            find_element_by_css_selector(
+            'button.remove-cluster-btn')
