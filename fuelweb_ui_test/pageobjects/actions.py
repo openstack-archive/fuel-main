@@ -81,10 +81,11 @@ class Actions(PageObject):
         Actions().stop_deploy_popup.click()
         PageObject.long_wait_element(Actions(), 'pending_nodes')
 
-
 class DeleteEnvironmentPopup(Popup):
 
     @property
     def delete(self):
         return self.parent.\
             find_element_by_css_selector('button.remove-cluster-btn')
+
+

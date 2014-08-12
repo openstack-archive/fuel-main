@@ -49,6 +49,29 @@ class RedhatAccountPopup(Popup):
         return self.parent.\
             find_element_by_css_selector('button.btn-os-download')
 
+    # properties for creation of vCenter hypervisor
+    @property
+    def vcenter_ip_inputfield(self):
+        return self.parent.\
+            find_element_by_css_selector('div[data-attribute="host_ip"]>div>input')
+
+
+    @property
+    def vcenter_username_inputfield(self):
+        return self.parent.\
+            find_element_by_css_selector('div[data-attribute="vc_user"]>div>input')
+
+
+    @property
+    def vcenter_password_inputfield(self):
+        return self.parent.\
+            find_element_by_css_selector('div[data-attribute="vc_password"]>div>input')
+
+
+    @property
+    def vcenter_cluster_inputfield(self):
+        return self.parent.\
+            find_element_by_css_selector('div[data-attribute="cluster"]>div>input')
 
 class Wizard(Popup, RedhatAccountPopup):
 
@@ -66,7 +89,8 @@ class Wizard(Popup, RedhatAccountPopup):
 
     @property
     def create(self):
-        return self.parent.find_element_by_css_selector('button.finish-btn')
+        return self.parent. \
+            find_element_by_css_selector('button.finish-btn')
 
     @property
     def cancel(self):
@@ -159,6 +183,11 @@ class Wizard(Popup, RedhatAccountPopup):
             find_element_by_xpath(
                 self.XPATH_CHECKBOX.format('ceilometer'))
 
+    @property
+    def compute_vcenter(self):
+        return self.parent.\
+            find_element_by_css_selector('.custom-tumbler>input[value="vcenter"]')
+
 
 class DeployChangesPopup(Popup):
 
@@ -173,3 +202,22 @@ class DiscardChangesPopup(Popup):
     @property
     def discard(self):
         return self.parent.find_element_by_css_selector('.discard-btn')
+
+class DeployedEnvironmentsList(PageObject):
+
+    @property
+    def deployed_environments_list(self):
+        return self.find_element('#content>div .cluster-list')
+
+    @property
+    def envs_on_page(self):
+        elements = []
+        elements.append(self.parent.
+                        find_elements_by_css_selector('.physical-network-box')('#content>div .cluster-list'))
+        return elements
+
+    @staticmethod
+    def find_required_env(envs_on_page, name):
+        for env in envs_on_page:
+            env.text.contains(name)
+            return env
