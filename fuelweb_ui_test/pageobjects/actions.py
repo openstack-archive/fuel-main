@@ -83,7 +83,6 @@ class Actions(PageObject):
 
 
 class DeleteEnvironmentPopup(Popup):
-
     @property
     def delete(self):
         return self.parent.\

@@ -172,6 +172,15 @@ class Popup(PageObject):
         except NoSuchElementException:
             pass
 
+ #Check that element is displayed
+    @staticmethod
+    def wait_until_element_will_be_displayed(self, element):
+        try:
+            wait = WebDriverWait(browser.driver, 3)
+            element = wait.until(element.is_displayed())
+        except NoSuchElementException:
+            pass
+
     @property
     def close_cross(self):
         return self.parent.find_element_by_css_selector('.close')
