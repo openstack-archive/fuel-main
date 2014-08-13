@@ -28,7 +28,6 @@ class HTTPClient(object):
         self.keystone_url = keystone_url
         self.creds = dict(credentials, **kwargs)
         self.keystone = None
-        self.authenticate()
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)
 
     def authenticate(self):
