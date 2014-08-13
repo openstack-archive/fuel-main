@@ -5,6 +5,10 @@ INITRAMROOT:=$(BUILD_DIR)/bootstrap/initram-root
 BOOTSTRAP_RPMS:=\
 	bash \
 	bfa-firmware \
+	cloud-utils \
+	e2fsprogs \
+	gdisk \
+	genisoimage \
 	ql2100-firmware \
 	ql2200-firmware \
 	ql23xx-firmware \
@@ -28,6 +32,7 @@ BOOTSTRAP_RPMS:=\
 	tcpdump \
 	vconfig \
 	vim-minimal \
+	xfsprogs \
 	wget
 
 
