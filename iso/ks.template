@@ -458,16 +458,50 @@ cat > /etc/issue << EOF
 #########################################
 Server is running on \m platform
 
-Fuel UI is available on: http://:8000
+Fuel UI is available on:
+http://:8000
 
 Default administrator login:    root
 Default administrator password: r00tme
+
+Default Fuel UI login: admin
+Default Fuel UI password: admin
 
 Please change root password on first login.
 
 EOF
 
-echo "sed -i \"s%\(^.*able on:\).*$%\1 http://\`ip address show eth0 | awk '/inet / {print \$2}' | cut -d/ -f1 -\`:8000%\" /etc/issue" >>/etc/rc.local
+
+cat >> '/etc/rc.local' << EOF
+#!/bin/bash
+first=yes
+for ip in \$(ip -o -4 addr | grep "eth." | awk '{print \$4 }' | cut -d/ -f1); do
+if [ "\$first" = "yes" ]; then
+  ipstr="Fuel UI is available on: http://$ip:8000"
+  first=no
+else
+  ipstr=\$(printf "%s\n%51s" "$ipstr" "http://\$ip:8000")
+fi
+done
+tmpissue=\$(mktemp)
+while read line; do
+  if [[ "\$line" =~ "Fuel UI is available on" ]]; then
+    echo -e "\$ipstr" >> \$tmpissue
+  elif [[ "\$line" =~ :8000$ ]]; then
+    :
+  else
+    echo -e "\$line" >> \$tmpissue
+  fi
+done < /etc/issue
+mv "\$tmpissue" /etc/issue
+
+# Read username and password from /etc/fuel/astute.yaml
+username=\$(grep -A2 "FUEL_ACCESS" /etc/fuel/astute.yaml | grep "user:" | awk '{ print \$2 }')
+password=\$(grep -A2 "FUEL_ACCESS" /etc/fuel/astute.yaml | grep "password:" | awk '{ print \$2 }')
+sed -i "s/Fuel UI login:.*/Fuel UI login: \$username/g" /etc/issue
+sed -i "s/Fuel UI password:.*/Fuel UI password: \$password/g" /etc/issue
+EOF
+
 
 # Unmounting source
 umount -f ${SOURCE}

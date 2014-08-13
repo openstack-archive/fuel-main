@@ -42,10 +42,7 @@ fi
 #Reread /etc/sysconfig/network to inform puppet of changes
 . /etc/sysconfig/network
 hostname "$HOSTNAME"
-#Update motd for IP
-primary="$(grep "interface:" /etc/fuel/astute.yaml | cut -d':' -f2 | tr -d ' ')"
-echo "sed -i \"s%\(^.*able on:\).*$%\1 http://\`ip address show $primary | awk '/inet / {print \$2}' | cut -d/ -f1 -\`:8000%\" /etc/issue" >>/etc/rc.local
-sed -i "s%\(^.*able on:\).*$%\1 http://`ip address show $primary | awk '/inet / {print \$2}' | cut -d/ -f1 -`:8000%" /etc/issue
+
 # ruby21-hiera RPM does not include /var/lib/hiera/ directory which may cause errors
 [ -d /var/lib/hiera ] || mkdir -p /var/lib/hiera
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
