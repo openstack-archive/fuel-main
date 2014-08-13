@@ -237,3 +237,6 @@ UPGRADE_FUEL_FROM = os.environ.get('UPGRADE_FUEL_FROM', '5.0')
 UPGRADE_FUEL_TO = os.environ.get('UPGRADE_FUEL_TO', '5.1')
 
 SNAPSHOT = os.environ.get('SNAPSHOT', '')
+
+# Custom mirror with new OSCI packages wich should be tested
+CUSTOM_PKGS_MIRROR = os.environ.get('CUSTOM_PKGS_MIRROR', '')

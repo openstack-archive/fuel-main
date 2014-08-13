@@ -19,6 +19,7 @@ def run_tests():
     from tests import test_bonding  # noqa
     from tests.tests_strength import test_neutron  # noqa
     from tests import test_upgrade  # noqa
+    from tests.tests_pkgs import tests_pkgs  # noqa
 
     # Run Proboscis and exit.
     TestProgram().run_and_exit()
