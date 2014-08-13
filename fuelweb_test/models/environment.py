@@ -343,7 +343,8 @@ class EnvironmentModel(object):
             self.get_virtual_environment().resume()
             logger.info('Starting snapshot resuming ...')
 
-            self.nodes().admin.await(self.admin_net, timeout=10 * 60)
+            self.nodes().admin.await(
+                self.admin_net, timeout=10 * 60, by_port=8000)
 
             self.sync_time_admin_node()
 
