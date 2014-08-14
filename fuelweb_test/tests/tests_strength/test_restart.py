@@ -91,7 +91,7 @@ class CephRestart(TestBasic):
             4. Add 2 nodes with compute and ceph OSD roles
             5. Deploy the cluster
             6. Check ceph status
-            7. Cold retsart
+            7. Cold restart
             8. Check ceph status
 
         Snapshot ceph_ha
