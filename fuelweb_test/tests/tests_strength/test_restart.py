@@ -20,8 +20,6 @@ from fuelweb_test import settings
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
-from fuelweb_test.tests.test_ceph import CephCompactWithCinder
-from fuelweb_test.tests.test_ceph import CephHA
 
 from devops.helpers.helpers import wait
 from proboscis import SkipTest
@@ -31,7 +29,7 @@ from proboscis import test
 @test(groups=["thread_3", "ceph"])
 class CephRestart(TestBasic):
 
-    @test(depends_on=[CephCompactWithCinder.ceph_multinode_with_cinder],
+    @test(depends_on_groups=['ceph_multinode_with_cinder'],
           groups=["ceph_multinode_restart"])
     @log_snapshot_on_error
     def ceph_multinode_restart(self):
@@ -78,7 +76,7 @@ class CephRestart(TestBasic):
 
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
-    @test(depends_on=[CephHA.ceph_ha],
+    @test(depends_on_groups=['ceph_ha'],
           groups=["ceph_ha_restart"])
     @log_snapshot_on_error
     def ceph_ha_restart(self):
