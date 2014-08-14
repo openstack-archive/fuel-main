@@ -86,6 +86,7 @@ apt-get -o Dir::Etc::SourceParts="${wrkdir}/apt.tmp/sources/parts" \
         -o Dir::Etc::SourceList="${wrkdir}/apt.tmp/sources/sources.list" \
         -o Dir::State::Lists="${wrkdir}/apt.tmp/lists" \
         -o Dir::Cache="${wrkdir}/apt.tmp/cache" \
+        -q \
         update
 
 # Download udebs
@@ -93,6 +94,7 @@ apt-get -o Dir::Etc::SourceParts="${wrkdir}/apt.tmp/sources/parts" \
         -o Dir::Etc::SourceList="${wrkdir}/apt.tmp/sources/sources.list" \
         -o Dir::State::Lists="${wrkdir}/apt.tmp/lists" \
         -o Dir::Cache="${wrkdir}/apt.tmp/cache" \
+        -q \
         download $packages
 
 rm -f ${wrkdir}/UPackages.tmp
