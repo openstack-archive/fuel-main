@@ -1,6 +1,5 @@
 .PHONY: all upgrade openstack-patch openstack-yaml
 .DELETE_ON_ERROR: $(UPGRADE_TARBALL_PATH)
-.DELETE_ON_ERROR: $(OPENSTACK_PATCH_TARBALL_PATH)
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/common-part.tar
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/fuel-part.tar
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/openstack-part.tar
@@ -10,9 +9,6 @@ all: upgrade openstack-yaml
 upgrade: UPGRADERS ?= "host-system docker bootstrap openstack"
 upgrade: $(UPGRADE_TARBALL_PATH)
 
-openstack-patch: UPGRADERS ?= "openstack"
-openstack-patch: $(OPENSTACK_PATCH_TARBALL_PATH)
-
 ########################
 # UPGRADE ARTIFACT
 ########################
@@ -21,19 +17,11 @@ $(UPGRADE_TARBALL_PATH): \
 		$(BUILD_DIR)/upgrade/fuel-part.tar \
 		$(BUILD_DIR)/upgrade/common-part.tar
 	mkdir -p $(@D)
-	tar Af $@ $(BUILD_DIR)/upgrade/fuel-part.tar
-	tar Af $@ $(BUILD_DIR)/upgrade/openstack-part.tar
-	tar Af $@ $(BUILD_DIR)/upgrade/common-part.tar
-
-########################
-# OPENSTACK_PATCH ARTIFACT
-########################
-$(OPENSTACK_PATCH_TARBALL_PATH): \
-		$(BUILD_DIR)/upgrade/common-part.tar \
-		$(BUILD_DIR)/upgrade/openstack-part.tar
-	mkdir -p $(@D)
-	tar Af $@ $(BUILD_DIR)/upgrade/openstack-part.tar
-	tar Af $@ $(BUILD_DIR)/upgrade/common-part.tar
+	rm -f $(BUILD_DIR)/upgrade/upgrade.tar
+	tar Af $(BUILD_DIR)/upgrade/upgrade.tar $(BUILD_DIR)/upgrade/fuel-part.tar
+	tar Af $(BUILD_DIR)/upgrade/upgrade.tar $(BUILD_DIR)/upgrade/openstack-part.tar
+	tar Af $(BUILD_DIR)/upgrade/upgrade.tar $(BUILD_DIR)/upgrade/common-part.tar
+	lrzip -L2 -U -D -f $(BUILD_DIR)/upgrade/upgrade.tar -o $@
 
 ########################
 # OPENSTACK_YAML ARTIFACT
