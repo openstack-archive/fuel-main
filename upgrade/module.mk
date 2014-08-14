@@ -1,6 +1,6 @@
 .PHONY: all upgrade openstack-patch openstack-yaml
 .DELETE_ON_ERROR: $(UPGRADE_TARBALL_PATH)
-.DELETE_ON_ERROR: $(OPENSTACK_PATCH_TARBALL_PATH)
+.DELETE_ON_ERROR: $(UPGRADE_TARBALL_PATH).lrz
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/common-part.tar
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/fuel-part.tar
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/openstack-part.tar
@@ -10,8 +10,8 @@ all: upgrade openstack-yaml
 upgrade: UPGRADERS ?= "host-system docker bootstrap openstack"
 upgrade: $(UPGRADE_TARBALL_PATH)
 
-openstack-patch: UPGRADERS ?= "openstack"
-openstack-patch: $(OPENSTACK_PATCH_TARBALL_PATH)
+upgrade-lrzip: UPGRADERS ?= "host-system docker bootstrap openstack"
+upgrade-lrzip: $(UPGRADE_TARBALL_PATH).lrz
 
 ########################
 # UPGRADE ARTIFACT
@@ -26,14 +26,18 @@ $(UPGRADE_TARBALL_PATH): \
 	tar Af $@ $(BUILD_DIR)/upgrade/common-part.tar
 
 ########################
-# OPENSTACK_PATCH ARTIFACT
+# UPGRADE LRZIP ARTIFACT
 ########################
-$(OPENSTACK_PATCH_TARBALL_PATH): \
-		$(BUILD_DIR)/upgrade/common-part.tar \
-		$(BUILD_DIR)/upgrade/openstack-part.tar
+$(UPGRADE_TARBALL_PATH).lrz: \
+		$(BUILD_DIR)/upgrade/openstack-part.tar \
+		$(BUILD_DIR)/upgrade/fuel-lrzip-part.tar \
+		$(BUILD_DIR)/upgrade/common-part.tar
 	mkdir -p $(@D)
-	tar Af $@ $(BUILD_DIR)/upgrade/openstack-part.tar
-	tar Af $@ $(BUILD_DIR)/upgrade/common-part.tar
+	rm -f $(BUILD_DIR)/upgrade/upgrade-lrzip.tar
+	tar Af $(BUILD_DIR)/upgrade/upgrade-lrzip.tar $(BUILD_DIR)/upgrade/fuel-lrzip-part.tar
+	tar Af $(BUILD_DIR)/upgrade/upgrade-lrzip.tar $(BUILD_DIR)/upgrade/openstack-part.tar
+	tar Af $(BUILD_DIR)/upgrade/upgrade-lrzip.tar $(BUILD_DIR)/upgrade/common-part.tar
+	lrzip -L2 -U -D -f $(BUILD_DIR)/upgrade/upgrade-lrzip.tar -o $@
 
 ########################
 # OPENSTACK_YAML ARTIFACT
@@ -84,6 +88,21 @@ $(BUILD_DIR)/upgrade/fuel-part.tar: \
 	mkdir -p $(@D)
 	rm -f $@
 	tar cf $@ -C $(BUILD_DIR)/docker --xform s:^:upgrade/images/: fuel-images.tar.lrz
+	tar rf $@ -C $(BUILD_DIR)/iso/isoroot --xform s:^:upgrade/config/: version.yaml
+	tar rf $@ -C $(BUILD_DIR)/bootstrap --xform s:^:upgrade/bootstrap/: initramfs.img linux
+
+########################
+# FUEL LRZIP PART
+########################
+$(BUILD_DIR)/upgrade/fuel-lrzip-part.tar: \
+		$(BUILD_DIR)/bootstrap/build.done \
+		$(ISOROOT)/version.yaml \
+		$(BUILD_DIR)/docker/fuel-images.tar.lrz
+	mkdir -p $(@D)
+	rm -f $@
+	mkdir -p $(BUILD_DIR)/upgrade/images
+	cd $(BUILD_DIR)/upgrade/images && lrzuntar -f $(BUILD_DIR)/docker/fuel-images.tar.lrz
+	tar cf $@ -C $(BUILD_DIR) upgrade/images
 	tar rf $@ -C $(BUILD_DIR)/iso/isoroot --xform s:^:upgrade/config/: version.yaml
 	tar rf $@ -C $(BUILD_DIR)/bootstrap --xform s:^:upgrade/bootstrap/: initramfs.img linux
 
