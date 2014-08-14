@@ -11,7 +11,7 @@ mkdir -p /repo/download/
 cat /requirements-deb.txt | while read pkg; do apt-get --print-uris --yes install $pkg | grep ^\' | cut -d\' -f2 >/downloads_$pkg.list; done
 cat /downloads_*.list | sort | uniq > /repo/download/download_urls.list
 rm /downloads_*.list
-(cat /repo/download/download_urls.list | xargs -n1 -P4 wget -P /repo/download/) || exit 1
+(cat /repo/download/download_urls.list | xargs -n1 -P4 wget -nv -P /repo/download/) || exit 1
 mv /var/cache/apt/archives/*deb /repo/download/
 # Make structure and mocks for multiarch
 for dir in binary-i386 binary-amd64; do 
@@ -44,21 +44,21 @@ for list in /etc/apt/sources.list.d/*.list; do
      repos=`echo $repo | awk -F '|' '{for(i=4; i<=NF; ++i) {print $i}}'`
      for repo in $repos; do
        echo "deb ${repourl} ${repodist} ${repo}/debian-installer" >> ${wrkdir}/apt.tmp/sources/sources.list
-       packagesfile=`wget -qO - ${repourl}/dists/${repodist}/Release | \
+       packagesfile=`wget -nv -qO - ${repourl}/dists/${repodist}/Release | \
                      egrep '[0-9a-f]{64}' | \
                      grep ${repo}/debian-installer/binary-amd64/Packages.bz2 | \
                      awk '{print $3}'`
        if [ -n "$packagesfile" ]; then
          bz=${repourl}/dists/${repodist}/$packagesfile
-         wget -qO - $bz | bzip2 -cdq | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+         wget -nv -qO - $bz | bzip2 -cdq | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
        else
          bz=${repourl}/dists/${repodist}/${repo}/debian-installer/binary-amd64/Packages
-         wget -qO - $bz | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+         wget -nv -qO - $bz | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
        fi
        # Getting indices
-       wget -O - ${repourl}/indices/override.${repodist}.${repo} >> ${wrkdir}/override.precise.main
-       wget -O - ${repourl}/indices/override.${repodist}.extra.${repo} >> ${wrkdir}/override.precise.extra.main
-       wget -O - ${repourl}/indices/override.${repodist}.${repo}.debian-installer >> ${wrkdir}/override.precise.main.debian-installer
+       wget -nv -O - ${repourl}/indices/override.${repodist}.${repo} >> ${wrkdir}/override.precise.main
+       wget -nv -O - ${repourl}/indices/override.${repodist}.extra.${repo} >> ${wrkdir}/override.precise.extra.main
+       wget -nv -O - ${repourl}/indices/override.${repodist}.${repo}.debian-installer >> ${wrkdir}/override.precise.main.debian-installer
      done
   done
 done
