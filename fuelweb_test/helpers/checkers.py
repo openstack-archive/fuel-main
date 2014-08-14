@@ -30,13 +30,19 @@ from time import sleep
 
 
 @logwrap
-def check_ceph_ready(remote, exit_code=0):
+def check_ceph_ready(remote, exit_code=0, restart_on_failure=False):
     if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
-        cmd = 'service ceph-all status'
+        ceph_service_name = 'ceph-all'
     else:
-        cmd = 'service ceph status'
-    if remote.execute(cmd)['exit_code'] == exit_code:
+        ceph_service_name = 'ceph'
+    status_cmd = 'service {0} status'.format(ceph_service_name)
+    if remote.execute(status_cmd)['exit_code'] == exit_code:
         return True
+    if restart_on_failure:
+        restart_cmd = 'service {0} restart'.format(ceph_service_name)
+        remote.execute(restart_cmd)
+        if remote.execute(status_cmd)['exit_code'] == exit_code:
+            return True
     return False
 
 
