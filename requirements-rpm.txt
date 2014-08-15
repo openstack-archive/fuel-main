@@ -169,6 +169,7 @@ libcephfs1
 libevent-devel-1.4.13-4.el6
 libfcgi-2.4.0-alt5.2
 libicu-4.2.1-9.1.el6_2
+libmemcached
 libmlx4
 libmongodb
 libqb
@@ -432,6 +433,7 @@ python-pbr
 python-pip
 python-prettytable
 python-py-1.4.15-1.el6
+python-pylibmc
 python-pygments-1.1.1-1.el6
 python-pyudev-0.15-1.el6
 python-qpid-qmf-0.14-14.el6_3
