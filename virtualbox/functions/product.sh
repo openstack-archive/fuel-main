@@ -110,7 +110,7 @@ enable_outbound_network_for_product_vm() {
     else
       echo "OK"
     fi
-
+    
     # Enable internet access on inside the VMs
     echo -n "Enabling outbound network/internet access for the product VM... "
 
@@ -134,6 +134,10 @@ enable_outbound_network_for_product_vm() {
         send "sed \"s/GATEWAY=.*/GATEWAY=\"$gateway_ip\"/g\" -i /etc/sysconfig/network\r"
         expect "$prompt"
         send "echo -e \"$nameserver\" > /etc/dnsmasq.upstream\r"
+        expect "$prompt"
+        send "sed \"s/DNS_UPSTREAM:.*/DNS_UPSTREAM: \\\$(grep \'^nameserver\' /etc/dnsmasq.upstream | cut -d \' \' -f2)/g\" -i /etc/fuel/astute.yaml\r"
+        expect "$prompt"
+        send "dockerctl restart cobbler >/dev/null 2>&1\r"
         expect "$prompt"
         send "service network restart >/dev/null 2>&1\r"
         expect "$prompt"
