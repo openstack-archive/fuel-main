@@ -1,5 +1,5 @@
 nose==1.2.1
-git+git://github.com/stackforge/fuel-devops.git@2.4.2
+git+git://github.com/stackforge/fuel-devops.git@2.4.3
 anyjson==0.3.1
 paramiko
 proboscis==1.2.6.0
