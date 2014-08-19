@@ -67,8 +67,8 @@ class NeutronGre(TestBasic):
             cluster_id,
             {
                 'slave-01': ['controller'],
-                'slave-02': ['compute'],
-                'slave-03': ['compute']
+                'slave-02': ['compute', 'cinder'],
+                'slave-03': ['compute', 'cinder']
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
