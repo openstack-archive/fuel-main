@@ -1,0 +1,52 @@
+#!/bin/bash
+# Based on the method described here:
+# http://troubleshootingrange.blogspot.com/2012/09/hosting-simple-apt-repository-on-centos.html
+
+ARCH=amd64
+VERSION=12.04
+REPO_PATH=/var/www/nailgun/ubuntu/fuelweb/x86_64
+REPONAME=precise
+
+BINDIR=${REPO_PATH}/dists/${REPONAME}/main
+
+binoverride=indices/override.${REPONAME}.main
+extraoverride=indices/override.${REPONAME}.extra.main
+
+package_deb=${BINDIR}/binary-amd64/Packages
+
+cd ${REPO_PATH}
+
+# Scan *.deb packages
+dpkg-scanpackages  -m --extra-override ${extraoverride} -a ${ARCH} pool/main ${binoverride}  > $package_deb 2>/dev/null
+
+gzip -9c $package_deb > ${package_deb}.gz
+
+# Generate release file
+cd ${REPO_PATH}/dists/${REPONAME}
+cat > Release <<ENDRELEASE
+Architectures: ${ARCH}
+Codename: ${REPONAME}
+Components: main
+Description: Ubuntu Precise 12.04 LTS
+Label: Ubuntu
+Origin: Ubuntu
+Suite: ${REPONAME}
+Version: ${VERSION}
+ENDRELEASE
+
+# Generate hashes
+c1=(MD5Sum: SHA1: SHA256: SHA512:)
+c2=(md5 sha1 sha256 sha512)
+
+i=0
+while [ $i -lt ${#c1[*]} ]; do
+    echo ${c1[i]} >> Release
+        for hashme in `find main -type f \( -name "Package*" -o -name "Release*" \)`; do
+        chash=`openssl dgst -${c2[$i]} ${hashme}|cut -d" " -f 2`
+        size=`stat -c %s ${hashme}`
+        echo " ${chash} ${size} ${hashme}" >> Release
+    done
+    i=$(( $i + 1));
+done
+
+cd -
