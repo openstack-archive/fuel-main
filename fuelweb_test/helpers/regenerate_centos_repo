@@ -1,0 +1,13 @@
+#!/bin/bash
+# Based on the method described here:
+# http://troubleshootingrange.blogspot.com/2012/09/hosting-simple-apt-repository-on-centos.html
+
+#ARCH=amd64
+#VERSION=12.04
+REPO_PATH=/var/www/nailgun/centos/fuelweb/x86_64
+#REPONAME=precise
+
+COMPSXML=`cat ${REPO_PATH}/repodata/repomd.xml | tr " " "\n" | fgrep -v 'comps.xml.gz' | fgrep -m 1 'comps.xml' | awk -F'"' '{print $2}'`
+
+createrepo -g ${REPO_PATH}/${COMPSXML} -o ${REPO_PATH} ${REPO_PATH} 2>/dev/null
+

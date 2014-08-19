@@ -29,6 +29,7 @@ from fuelweb_test import logwrap
 from fuelweb_test import logger
 from fuelweb_test.helpers.decorators import update_ostf
 from fuelweb_test.helpers.decorators import upload_manifests
+from fuelweb_test.helpers.decorators import custom_repo
 from fuelweb_test.helpers.security import SecurityChecks
 from fuelweb_test.models.nailgun_client import NailgunClient
 from fuelweb_test import ostf_test_mapping as map_ostf
@@ -278,6 +279,7 @@ class FuelWebClient(object):
 
     @logwrap
     @upload_manifests
+    @custom_repo
     @update_ostf
     def create_cluster(self,
                        name,
