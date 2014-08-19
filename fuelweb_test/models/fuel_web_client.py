@@ -1189,3 +1189,33 @@ class FuelWebClient(object):
         info = self.client.get_api_version()
         build_number = info["build_number"]
         assert_true(build_number, 'api version returned empty data')
+
+    @logwrap
+    def check_fixed_network_cidr(self, cluster_id, remote):
+        net_provider = self.client.get_cluster(cluster_id)['net_provider']
+        if net_provider == 'nova_network':
+            nailgun_cidr = self.client.get_networks(cluster_id).\
+                get("networking_parameters").get("fixed_networks_cidr")
+            logger.debug('nailgun cidr is {0}'.format(nailgun_cidr))
+            slave_cidr = ''.join(remote.execute(". openrc; nova network-list"
+                                                " | awk '$4 =="
+                                                " \"novanetwork\"{print $6}'"
+                                                )['stdout'])
+            logger.debug('slave cidr is {0}'.format(
+                slave_cidr.rstrip()))
+            assert_equal(nailgun_cidr, slave_cidr.rstrip(),
+                         'Cidr after deployment is not equal'
+                         ' to cidr by default')
+        elif net_provider == 'neutron':
+            nailgun_cidr = self.client.get_networks(cluster_id).\
+                get("networking_parameters").get("internal_cidr")
+            logger.debug('nailgun cidr is {0}'.format(nailgun_cidr))
+            slave_cidr = ''.join(remote.execute(". openrc; neutron"
+                                                " subnet-list | awk '$4 =="
+                                                " \"net04__subnet\""
+                                                "{print $6}'")['stdout'])
+            logger.debug('slave cidr is {0}'.format(
+                slave_cidr.rstrip()))
+            assert_equal(nailgun_cidr, slave_cidr.rstrip(),
+                         'Cidr after deployment is not equal'
+                         ' to cidr by default')
