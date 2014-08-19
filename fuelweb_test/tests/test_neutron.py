@@ -76,6 +76,9 @@ class NeutronGre(TestBasic):
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
         # assert_equal(str(cluster['net_segment_type']), segment_type)
+        self.fuel_web.check_fixed_network_cidr(
+            cluster_id, self.env.get_ssh_to_remote_by_name('slave-01'),
+            network_type='neutron')
 
         self.fuel_web.verify_network(cluster_id)
         self.fuel_web.security.verify_firewall(cluster_id)
@@ -255,6 +258,9 @@ class NeutronVlanHa(TestBasic):
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
         # assert_equal(str(cluster['net_segment_type']), segment_type)
+        self.fuel_web.check_fixed_network_cidr(
+            cluster_id, self.env.get_ssh_to_remote_by_name('slave-01'),
+            network_type='neutron')
 
         self.fuel_web.verify_network(cluster_id)
 
