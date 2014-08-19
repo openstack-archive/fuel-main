@@ -237,3 +237,9 @@ UPGRADE_FUEL_FROM = os.environ.get('UPGRADE_FUEL_FROM', '5.0')
 UPGRADE_FUEL_TO = os.environ.get('UPGRADE_FUEL_TO', '5.1')
 
 SNAPSHOT = os.environ.get('SNAPSHOT', '')
+
+# URL to custom mirror with new OSCI packages wich should be tested,
+# for example:
+# CentOS: http://osci-obs.vm.mirantis.net:82/centos-fuel-master-20921/centos/
+# Ubuntu: http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-master-20921/ubuntu/
+CUSTOM_PKGS_MIRROR = os.environ.get('CUSTOM_PKGS_MIRROR', '')
