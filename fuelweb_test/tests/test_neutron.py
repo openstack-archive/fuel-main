@@ -71,6 +71,8 @@ class NeutronGre(TestBasic):
                 'slave-03': ['compute', 'cinder']
             }
         )
+        self.fuel_web.update_internal_network(cluster_id, '192.168.196.0/26',
+                                              '192.168.196.1')
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
@@ -250,6 +252,8 @@ class NeutronVlanHa(TestBasic):
                 'slave-05': ['compute']
             }
         )
+        self.fuel_web.update_internal_network(cluster_id, '192.168.196.0/22',
+                                              '192.168.196.1')
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
