@@ -30,22 +30,23 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
     @test(groups=["upgrade_simple"])
     @log_snapshot_on_error
     def upgrade_simple_env(self):
-        """Upgrade simple deployed cluster
+        """Upgrade simple deployed cluster with ceph
 
         Scenario:
-            1. Revert snapshot with simple sinder env
+            1. Revert snapshot with simple ceph env
             2. Run upgrade on master
             3. Check that upgrade was successful
-            4. Add another cinder node
+            4. Add another compute node
             5. Re-deploy cluster
             6. Run OSTF
 
         """
 
         if not self.env.get_virtual_environment().has_snapshot(
-                'deploy_simple_cinder'):
+                'ceph_multinode_compact'):
             raise SkipTest()
-        self.env.revert_snapshot("deploy_simple_cinder")
+
+        self.env.revert_snapshot("ceph_multinode_compact")
         cluster_id = self.fuel_web.get_last_created_cluster()
         checkers.upload_tarball(self.env.get_admin_remote(),
                                 hlp_data.TARBALL_PATH, '/var')
@@ -69,7 +70,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=8, networks_count=1, timeout=300)
+            'slave-01', smiles_count=10, networks_count=1, timeout=300)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
         create_diagnostic_snapshot(self.env, "pass", "upgrade_simple_env")
 
