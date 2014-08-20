@@ -1146,3 +1146,24 @@ class FuelWebClient(object):
     @logwrap
     def modify_python_file(self, remote, modification, file):
         remote.execute('sed -i "{0}" {1}'.format(modification, file))
+
+    @logwrap
+    def update_internal_network(self, cluster_id, cidr, gateway=None):
+        net_provider = self.client.get_cluster(cluster_id)['net_provider']
+        net_config = self.client.get_networks(cluster_id)
+        if net_provider == 'nova_network':
+            net_config["networking_parameters"]['fixed_networks_cidr']\
+                = cidr
+            self.client.update_network(cluster_id=cluster_id,
+                                       networking_parameters=
+                                       net_config["networking_parameters"],
+                                       networks=net_config["networks"])
+        elif net_provider == 'neutron':
+            net_config["networking_parameters"]['internal_cidr']\
+                = cidr
+            net_config["networking_parameters"]['internal_gateway']\
+                = gateway
+            self.client.update_network(cluster_id=cluster_id,
+                                       networking_parameters=
+                                       net_config["networking_parameters"],
+                                       networks=net_config["networks"])

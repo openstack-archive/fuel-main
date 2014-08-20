@@ -105,6 +105,7 @@ class SimpleFlat(TestBasic):
                 'slave-02': ['compute']
             }
         )
+        self.fuel_web.update_internal_network(cluster_id, '10.1.0.0/24')
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
