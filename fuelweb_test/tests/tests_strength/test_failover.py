@@ -21,6 +21,7 @@ from proboscis.asserts import assert_not_equal
 from proboscis.asserts import assert_true
 from proboscis import test
 
+from fuelweb_test.helpers.checkers import check_mysql
 from proboscis import SkipTest
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import logger
@@ -248,14 +249,26 @@ class TestHaFailover(TestBasic):
 
         for devops_node in self.env.nodes().slaves[:3]:
             remote = self.fuel_web.get_ssh_for_node(devops_node.name)
-            remote.check_call('kill -9 $(pidof -x mysqld_safe)')
-            remote.check_call('kill -9 $(pidof mysqld)')
+            logger.info('Terminating MySQL on {0}'.format(devops_node.name))
 
-            mysql_started = lambda: \
-                len(remote.check_call(
-                    'ps aux | grep "/usr/sbin/mysql"')['stdout']) == 3
-            wait(mysql_started, timeout=300)
-            assert_true(mysql_started(), 'MySQL restarted')
+            try:
+                remote.check_call('pkill -9 "mysqld_safe|mysqld"')
+            except:
+                logger.error('MySQL on {0} is down after snapshot revert'.
+                             format(devops_node.name))
+                raise
+
+            check_mysql(remote, devops_node.name)
+
+        cluster_id = self.fuel_web.client.get_cluster_id(
+            self.__class__.__name__)
+
+        self.fuel_web.wait_mysql_galera_is_up(['slave-01', 'slave-02',
+                                               'slave-03'])
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'smoke', 'sanity'])
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_haproxy_termination"])
