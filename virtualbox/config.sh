@@ -39,8 +39,13 @@ idx=0
 for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
 # VirtualBox for Windows has different virtual NICs naming and indexing
   case "$(uname)" in
-    Linux | Darwin)
+    Linux)
       host_nic_name[$idx]=vboxnet$idx
+      os_type="linux"
+    ;;
+    Darwin)
+      host_nic_name[$idx]=vboxnet$idx
+      os_type="darwin"
     ;;
     CYGWIN*)
       if [ $idx -eq 0 ]; then
@@ -48,6 +53,7 @@ for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
       else
         host_nic_name[$idx]='VirtualBox Host-Only Ethernet Adapter #'$((idx+1))
       fi
+      os_type="cygwin"
     ;;
     *)
       echo "$(uname) is not supported operating system."
@@ -85,18 +91,49 @@ vm_slave_cpu[1]=1
 vm_slave_cpu[2]=1
 vm_slave_cpu[3]=1
 
+# Check available commands
+if [ "$os_type" = "linux" ]; then
+  # runing on linux
+  if [ "$(which free)" != "" ]; then
+    # using free
+    total_memory=$(free  | grep Mem | awk '{print $2}')
+  elif [ $(which top) != '' ]; then
+    # using top
+    total_memory=$(top -n 1 | grep "Mem:" | awk '{ print $4 }')
+  else
+    total_memory="-1"
+  fi
+elif [ "$os_type" = "darwin" ]; then
+  # runing on mac os darwin
+  if [ "$(which sysctl)" != "" ]; then
+    # using sysctl
+    total_memory=$(sysctl -n hw.memsize)
+  else
+    total_memory="-1"
+  fi
+elif [ "$os_type" = "cygwin" ]; then
+  # runing on cygwin
+  total_memory="-1"
+fi
+
 # This section allows you to define RAM size in MB for each slave node.
 # Keep in mind that PXE boot might not work correctly with values lower than 768.
 # You can specify memory size for the specific slaves, other will get default vm_slave_memory_default
 # Mirantis OpenStack 3.2 controllers require 1280 MiB of RAM as absolute minimum due to Heat!
-vm_slave_memory_default=1536
-# You may comment out all the following memory parameters to use default value for each node.
-# It is recommended if you going to try HA configurations.
-# for controller node at least 1.5Gb is required if you also run Ceph and Heat on it
-# and for Ubuntu controller we need 2Gb of ram
-vm_slave_memory_mb[1]=2048
-vm_slave_memory_mb[2]=1024  # for compute node 1GB is recommended, otherwise VM instances in OpenStack may not boot
-vm_slave_memory_mb[3]=1024  # for dedicated Cinder, 768Mb is OK, but Ceph needs 1Gb minimum
+
+# If host PC have more then 8G RAM will use 2048Mb RAM for VMs
+if [ $total_memory -gt 7340032 ]; then 
+  vm_slave_memory_default=2048
+else
+  vm_slave_memory_default=1536
+  # You may comment out all the following memory parameters to use default value for each node.
+  # It is recommended if you going to try HA configurations.
+  # for controller node at least 1.5Gb is required if you also run Ceph and Heat on it
+  # and for Ubuntu controller we need 2Gb of ram
+  vm_slave_memory_mb[1]=2048
+  vm_slave_memory_mb[2]=1024  # for compute node 1GB is recommended, otherwise VM instances in OpenStack may not boot
+  vm_slave_memory_mb[3]=1024  # for dedicated Cinder, 768Mb is OK, but Ceph needs 1Gb minimum  
+fi
 
 # Within demo cluster created by this script, all slaves (controller
 # and compute nodes) will have identical disk configuration. Each 
