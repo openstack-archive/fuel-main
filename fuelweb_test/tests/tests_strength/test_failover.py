@@ -15,6 +15,8 @@
 import re
 import time
 
+from devops.error import TimeoutError
+from devops.helpers.helpers import _wait
 from devops.helpers.helpers import wait
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_not_equal
@@ -27,6 +29,8 @@ from fuelweb_test import logger
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
 from fuelweb_test.settings import NEUTRON_ENABLE
+from fuelweb_test.settings import OPENSTACK_RELEASE
+from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
@@ -273,19 +277,45 @@ class TestHaFailover(TestBasic):
         """
         self.env.revert_snapshot("deploy_ha")
 
+        if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
+            mysql_pidfile = '/var/run/mysqld/mysqld.pid'
+        else:
+            mysql_pidfile = '/var/run/mysql/mysqld.pid'
+        check_cmd = '[ -r {0} ] && pkill -0 -F {0}'.format(mysql_pidfile)
+        check_crm_cmd = ('crm resource status clone_p_mysql |'
+                         ' grep -q "is running on: $HOSTNAME"')
+
         for devops_node in self.env.nodes().slaves[:3]:
             remote = self.fuel_web.get_ssh_for_node(devops_node.name)
-            remote.check_call('kill -9 $(pidof -x mysqld_safe)')
-            remote.check_call('kill -9 $(pidof mysqld)')
+            logger.info('Terminating MySQL on {0}'.format(devops_node.name))
 
-            mysql_started = lambda: \
-                len(remote.check_call(
-                    'ps aux | grep "/usr/sbin/mysql"')['stdout']) == 3
-            wait(mysql_started, timeout=300)
-            assert_true(mysql_started(), 'MySQL restarted')
+            try:
+                remote.check_call('pkill -9 "mysqld_safe|mysqld"')
+            except:
+                logger.error('MySQL on {0} is down after snapshot revert'.
+                             format(devops_node.name))
+                raise
+
+            try:
+                wait(lambda: remote.execute(check_cmd)['exit_code'] == 0,
+                     timeout=300)
+                logger.info('MySQL daemon is started on {0}'.format(
+                    devops_node.name))
+            except TimeoutError:
+                logger.error('MySQL daemon is down on {0}'.format(
+                    devops_node.name))
+                raise
+
+            _wait(lambda:
+                  assert_equal(remote.execute(check_crm_cmd)['exit_code'], 0,
+                               'MySQL resource is NOT running on {0}'.format(
+                               devops_node.name)), timeout=60)
 
         cluster_id = self.fuel_web.client.get_cluster_id(
             self.__class__.__name__)
+
+        self.fuel_web.wait_mysql_galera_is_up(['slave-01', 'slave-02',
+                                               'slave-03'])
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
