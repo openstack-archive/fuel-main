@@ -162,7 +162,8 @@ class FuelWebClient(object):
             [test_result.update({test['name']:test['status']})
              for test in set_result['tests']]
 
-            [failed_tests_res.append({test['name']:test['message']})
+            [failed_tests_res.append(
+                {'%s (%s)' % (test['name'], test['status']): test['message']})
              for test in set_result['tests']
              if test['status'] != 'success' and test['status'] != 'disabled']
 
