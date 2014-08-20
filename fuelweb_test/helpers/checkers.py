@@ -15,6 +15,7 @@ import hashlib
 import json
 import re
 import traceback
+
 from fuelweb_test import logger
 from fuelweb_test import logwrap
 from fuelweb_test.settings import OPENSTACK_RELEASE
@@ -22,7 +23,9 @@ from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_true
+from devops.error import TimeoutError
 from devops.helpers.helpers import wait
+from devops.helpers.helpers import _wait
 
 
 import os
@@ -373,3 +376,23 @@ def iptables_check(remote):
                                       " /etc/fuel/iptables-restore")
     assert_equal(iptables_backup, iptables_restore,
                  "list of iptables rules are not equal")
+
+@logwrap
+def check_mysql(remote, node_name):
+    if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
+        mysql_pidfile = '/var/run/mysqld/mysqld.pid'
+    else:
+        mysql_pidfile = '/var/run/mysql/mysqld.pid'
+    check_cmd = '[ -r {0} ] && pkill -0 -F {0}'.format(mysql_pidfile)
+    check_crm_cmd = ('crm resource status clone_p_mysql |'
+                     ' grep -q "is running on: $HOSTNAME"')
+    try:
+        wait(lambda: remote.execute(check_cmd)['exit_code'] == 0,
+             timeout=300)
+        logger.info('MySQL daemon is started on {0}'.format(node_name))
+    except TimeoutError:
+        logger.error('MySQL daemon is down on {0}'.format(node_name))
+        raise
+    _wait(lambda: assert_equal(remote.execute(check_crm_cmd)['exit_code'], 0,
+                               'MySQL resource is NOT running on {0}'.format(
+                                   node_name)), timeout=60)
