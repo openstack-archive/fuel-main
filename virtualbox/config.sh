@@ -14,12 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# The number of nodes for installing OpenStack on
-#   - for minimal non-HA installation, specify 2 (1 controller + 1 compute)
-#   - for minimal non-HA with Cinder installation, specify 3 (1 ctrl + 1 compute + 1 cinder)
-#   - for minimal HA installation, specify 4 (3 controllers + 1 compute)
-cluster_size=5
-
 # Get the first available ISO from the directory 'iso'
 iso_path=`ls -1t iso/*.iso 2>/dev/null | head -1`
 
@@ -39,8 +33,13 @@ idx=0
 for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
 # VirtualBox for Windows has different virtual NICs naming and indexing
   case "$(uname)" in
-    Linux | Darwin)
+    Linux)
       host_nic_name[$idx]=vboxnet$idx
+      os_type="linux"
+    ;;
+    Darwin)
+      host_nic_name[$idx]=vboxnet$idx
+      os_type="darwin"
     ;;
     CYGWIN*)
       if [ $idx -eq 0 ]; then
@@ -48,6 +47,7 @@ for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
       else
         host_nic_name[$idx]='VirtualBox Host-Only Ethernet Adapter #'$((idx+1))
       fi
+      os_type="cygwin"
     ;;
     *)
       echo "$(uname) is not supported operating system."
@@ -77,30 +77,40 @@ vm_master_username=root
 vm_master_password=r00tme
 vm_master_prompt='root@fuel ~]#'
 
-# Slave node settings. This section allows you to define CPU count for each slave node.
-vm_slave_cpu_default=1
-# You can specify CPU count for your nodes as you wish, but keep in mind resources of your machine.
-# If you don't, then will be used default parameter
-vm_slave_cpu[1]=1
-vm_slave_cpu[2]=1
-vm_slave_cpu[3]=1
-vm_slave_cpu[4]=1
-vm_slave_cpu[5]=1
 
-# This section allows you to define RAM size in MB for each slave node.
-# Keep in mind that PXE boot might not work correctly with values lower than 768.
-# You can specify memory size for the specific slaves, other will get default vm_slave_memory_default
-# Mirantis OpenStack 3.2 controllers require 1280 MiB of RAM as absolute minimum due to Heat!
-vm_slave_memory_default=1536
-# You may comment out all the following memory parameters to use default value for each node.
-# It is recommended if you going to try HA configurations.
-# for controller node at least 1.5Gb is required if you also run Ceph and Heat on it
-# and for Ubuntu controller we need 2Gb of ram
-vm_slave_memory_mb[1]=2048
-vm_slave_memory_mb[2]=1024  # for compute node 1GB is recommended, otherwise VM instances in OpenStack may not boot
-vm_slave_memory_mb[3]=1024  # for dedicated Cinder, 768Mb is OK, but Ceph needs 1Gb minimum
-vm_slave_memory_mb[4]=1024
-vm_slave_memory_mb[5]=1024
+# Check available commands and RAM on host PC
+if [ "$os_type" = "linux" ]; then
+  # runing on linux
+  if [ "$(which free)" != "" ]; then
+    # using free
+    total_memory=$(free | grep Mem | awk '{print $2}')
+  elif [ $(which top) != '' ]; then
+    # using top
+    total_memory=$(top -n 1 | grep "Mem:" | awk '{ print $4 }')
+  else
+    total_memory="-1"
+  fi
+elif [ "$os_type" = "darwin" ]; then
+  # runing on mac os darwin
+  if [ "$(which sysctl)" != "" ]; then
+    # using sysctl
+    total_memory=$(sysctl -n hw.memsize)
+  else
+    total_memory="-1"
+  fi
+elif [ "$os_type" = "cygwin" ]; then
+  # runing on cygwin
+  if [ "$(which free)" != "" ]; then
+    # using free
+    total_memory=$(free | grep Mem | awk '{print $2}')
+  elif [ $(which top) != '' ]; then
+    # using top
+    total_memory=$(top -n 1 | grep "Mem:" | awk '{ print $4 }')
+  else
+    total_memory="-1"
+  fi
+fi
+
 
 # Within demo cluster created by this script, all slaves (controller
 # and compute nodes) will have identical disk configuration. Each 
@@ -112,3 +122,88 @@ vm_slave_memory_mb[5]=1024
 vm_slave_first_disk_mb=65535
 vm_slave_second_disk_mb=65535
 vm_slave_third_disk_mb=65535
+
+
+# Apply of different default configurations depending on the available memory
+# 4GB: 1 admin node with 1.5GB, 2 cluster node with 1GB RAM ~ 3GB
+# 6GB: 1 admin node with 1.5GB, 2 cluster node with 1.5GB RAM ~ 4.5GB
+# 8GB: 1 admin node with 1.5GB, 3 cluster node with 1.5GB ~ 5.5GB
+# 12GB: 1 admin node with 1.5GB, 4 cluster node with 2GB ~ 9.5GB
+# 16GB: 1 admin node with 1.5GB, 5 cluster node with 2GB ~ 11.5GB
+total_memory=3145728
+if [ $total_memory -gt 12582912 ]; then
+  # For host with 16GB RAM
+  cluster_size=5
+  vm_slave_memory_default=2048
+elif [ $total_memory -gt 8388608 ]; then
+  # For host with 12GB RAM
+  cluster_size=4
+  vm_slave_memory_default=2048
+elif [ $total_memory -gt 6291456 ]; then
+  # For host with 8GB RAM
+  cluster_size=3
+  vm_slave_memory_default=1536
+elif [ $total_memory -gt 4194304 ]; then
+  # For host with 6GB RAM
+  cluster_size=2
+  vm_slave_memory_default=1536
+elif [ $total_memory -gt 3145728 ]; then
+  # For host with 4GB RAM
+  cluster_size=2
+  vm_slave_memory_default=1024
+else
+  echo "You host PC no have enough memory."
+  exit 1
+fi
+
+#
+# Manual configuration cluster parameters
+#
+
+# The number of nodes for installing OpenStack on
+#   - for minimal non-HA installation, specify 2 (1 controller + 1 compute)
+#   - for minimal non-HA with Cinder installation, specify 3 (1 ctrl + 1 compute + 1 cinder)
+#   - for minimal HA installation, specify 4 (3 controllers + 1 compute)
+# Default recommended configuration
+# cluster_size=2 # - 4GB non-HA, 1 controller, 1 compute
+# cluster_size=2 # - 6GB non-HA, 1 controller, 1 compute
+# cluster_size=3 # - 8GB non-HA, 1 controller, 3 compute/cinder nodes
+# cluster_size=4 # - 12GB HA, 3 controller, 1 compute/cinder nodes
+# cluster_size=5 # - 16Gb HA, 3 controllers, 1 compute, 1 cinder
+
+# Slave node settings. This section allows you to define CPU count for each slave node.
+# vm_slave_cpu_default=1
+# You can specify CPU count for your nodes as you wish, but keep in mind resources of your machine.
+# If you don't, then will be used default parameter
+# vm_slave_cpu[1]=1
+# vm_slave_cpu[2]=1
+# vm_slave_cpu[3]=1
+
+
+# This section allows you to define RAM size in MB for each slave node.
+# Keep in mind that PXE boot might not work correctly with values lower than 768.
+# You can specify memory size for the specific slaves, other will get default vm_slave_memory_default
+# Mirantis OpenStack 3.2 controllers require 1280 MiB of RAM as absolute minimum due to Heat!
+
+# vm_slave_memory_mb[1]=2048
+# vm_slave_memory_mb[2]=1024  # for compute node 1GB is recommended, otherwise VM instances in OpenStack may not boot
+# vm_slave_memory_mb[3]=1024  # for dedicated Cinder, 768Mb is OK, but Ceph needs 1Gb minimum
+
+
+# Count selected RAM configuration
+for machine_number in $(eval echo {1..$cluster_size}); do
+  if [ -n ${vm_slave_memory_mb[$machine_number]} ]; then
+    vm_total_mb=$(( $vm_total_mb + ${vm_slave_memory_mb[$machine_number]} ))
+  else
+    vm_total_mb=$(( $vm_total_mb + $vm_slave_memory_default ))
+  fi
+done
+vm_total_mb=$(( $vm_total_mb + $vm_master_memory_mb ))
+
+# Do not run VMs if host PC not have enough RAM
+can_allocate_mb=$(( ($total_memory - 524288) / 1024 ))
+if [ $vm_total_mb -gt $can_allocate_mb ]; then
+  echo "You host not have anought memory"
+  echo "You can allocate ${can_allocate_mb}MB, but try run VMs with ${vm_total_mb}MB total RAM"
+  exit 1
+fi
