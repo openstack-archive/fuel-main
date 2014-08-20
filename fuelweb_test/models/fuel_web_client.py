@@ -345,7 +345,8 @@ class FuelWebClient(object):
                 if option in ('sahara', 'murano', 'ceilometer'):
                     section = 'additional_components'
                 if option in ('volumes_ceph', 'images_ceph', 'ephemeral_ceph',
-                              'objects_ceph', 'osd_pool_size', 'volumes_lvm'):
+                              'objects_ceph', 'osd_pool_size', 'volumes_lvm',
+                              'volumes_vmdk'):
                     section = 'storage'
                 if option in ('tenant', 'password', 'user'):
                     section = 'access'
