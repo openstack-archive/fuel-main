@@ -1189,3 +1189,24 @@ class FuelWebClient(object):
         info = self.client.get_api_version()
         build_number = info["build_number"]
         assert_true(build_number, 'api version returned empty data')
+
+    @logwrap
+    def update_internal_network(self, cluster_id, cidr, gateway=None):
+        net_provider = self.client.get_cluster(cluster_id)['net_provider']
+        net_config = self.client.get_networks(cluster_id)
+        if net_provider == 'nova_network':
+            net_config["networking_parameters"]['fixed_networks_cidr']\
+                = cidr
+            self.client.update_network(cluster_id=cluster_id,
+                                       networking_parameters=
+                                       net_config["networking_parameters"],
+                                       networks=net_config["networks"])
+        elif net_provider == 'neutron':
+            net_config["networking_parameters"]['internal_cidr']\
+                = cidr
+            net_config["networking_parameters"]['internal_gateway']\
+                = gateway
+            self.client.update_network(cluster_id=cluster_id,
+                                       networking_parameters=
+                                       net_config["networking_parameters"],
+                                       networks=net_config["networks"])
