@@ -12,6 +12,10 @@ from settings import FOLDER_SCREEN_CURRENT
 from settings import FOLDER_SCREEN_EXPECTED
 from settings import NAILGUN_FIXTURES
 from settings import URL_HOME
+from settings import Fuel_UI_Login
+from settings import Fuel_UI_Password
+from pageobjects.authorization import Authorization
+from pageobjects.base import PageObject
 
 
 class BaseTestCase(TestCase):
@@ -20,6 +24,29 @@ class BaseTestCase(TestCase):
     def setUpClass(cls):
         browser.start_driver()
         cls.clear_nailgun_database()
+        cls.get_home()
+        cls.aut()
+
+    @classmethod
+    def aut(cls):
+        Authorization().login_inputfield.click()
+        Authorization().login_inputfield.send_keys(Fuel_UI_Login)
+        Authorization().password_inputfield.click()
+        Authorization().password_inputfield.send_keys(Fuel_UI_Password)
+        Authorization().login_button.click()
+        PageObject.wait_until_exists(Header().logo)
+        Header().logo.is_displayed()
+        browser.driver.execute_script('jQuery.fx.off = true')
+        browser.driver.execute_script('''
+                    $('head').append(
+                        '<style type="text/css">
+                            * {
+                        -webkit-transition-duration: 0.00000001s !important;
+                        -moz-transition: 0.00000001s !important;
+                        transition-duration: 0.00000001s !important;
+                            }
+                        </style>')
+                '''.replace('\n', ''))
 
     @classmethod
     def tearDownClass(cls):
@@ -33,18 +60,6 @@ class BaseTestCase(TestCase):
         for i in range(5):
             try:
                 browser.driver.get(URL_HOME)
-                Header().logo.is_displayed()
-                browser.driver.execute_script('jQuery.fx.off = true')
-                browser.driver.execute_script('''
-                    $('head').append(
-                        '<style type="text/css">
-                            * {
-                        -webkit-transition-duration: 0.00000001s !important;
-                        -moz-transition: 0.00000001s !important;
-                        transition-duration: 0.00000001s !important;
-                            }
-                        </style>')
-                '''.replace('\n', ''))
                 break
             except NoSuchElementException:
                 pass

@@ -13,6 +13,21 @@ class Environments(PageObject):
     def create_cluster_boxes(self):
         return self.parent.find_elements_by_css_selector('a.clusterbox')
 
+    @property
+    def deployed_environments_list(self):
+        return self.find_element('#content>div .cluster-list')
+
+    @staticmethod
+    def find_required_env(self, name):
+        elements = []
+        elements.append(
+            self.parent.
+            find_elements_by_css_selector('#content>div .cluster-list>div>a'))
+        for env in elements:
+            if env.text.contains(name):
+                return True
+            return False
+
 
 class RedhatAccountPopup(Popup):
 
@@ -66,7 +81,8 @@ class Wizard(Popup, RedhatAccountPopup):
 
     @property
     def create(self):
-        return self.parent.find_element_by_css_selector('button.finish-btn')
+        return self.parent. \
+            find_element_by_css_selector('button.finish-btn')
 
     @property
     def cancel(self):
@@ -158,6 +174,43 @@ class Wizard(Popup, RedhatAccountPopup):
         return self.parent.\
             find_element_by_xpath(
                 self.XPATH_CHECKBOX.format('ceilometer'))
+
+    @property
+    def compute_vcenter(self):
+        return self.parent.\
+            find_element_by_css_selector(
+                '.custom-tumbler>input[value="vcenter"]')
+
+# properties for creation of vCenter hypervisor
+    @property
+    def vcenter_ip_inputfield(self):
+        return self.parent.\
+            find_element_by_css_selector(
+                'div[data-attribute="host_ip"]>div>input')
+
+    @property
+    def vcenter_username_inputfield(self):
+        return self.parent.\
+            find_element_by_css_selector(
+                'div[data-attribute="vc_user"]>div>input')
+
+    @property
+    def vcenter_password_inputfield(self):
+        return self.parent.\
+            find_element_by_css_selector(
+                'div[data-attribute="vc_password"]>div>input')
+
+    @property
+    def vcenter_cluster_inputfield(self):
+        return self.parent.\
+            find_element_by_css_selector(
+                'div[data-attribute="cluster"]>div>input')
+
+    @property
+    def vcenter_cluster_created_name(self):
+        return self.parent.\
+            find_element_by_css_selector(
+                '.cluster-name').text.lower().replace(" ", "")
 
 
 class DeployChangesPopup(Popup):
