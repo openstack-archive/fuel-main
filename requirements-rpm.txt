@@ -272,7 +272,6 @@ numpy-1.4.1-9.el6
 openssh-clients
 openssh-server
 openssl-devel
-openssl098e-0.9.8e-17.el6.centos.2
 openstack-ceilometer-api
 openstack-ceilometer-alarm
 openstack-ceilometer-central
