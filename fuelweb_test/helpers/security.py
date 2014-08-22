@@ -84,9 +84,7 @@ class SecurityChecks(object):
         check_string = 'FirewallHole'
 
         for node in cluster_nodes:
-            # TODO(apanchenko): Check for UDP is temporary disabled
-            # TODO: due to https://bugs.launchpad.net/fuel/+bug/1347580
-            protocols_to_check = ['tcp']
+            protocols_to_check = ['tcp', 'udp']
             for protocol in protocols_to_check:
                 port = self._listen_random_port(ip_address=node['ip'],
                                                 protocol=protocol,
