@@ -961,25 +961,27 @@ class FuelWebClient(object):
 
     @logwrap
     def wait_mysql_galera_is_up(self, node_names):
-        for node_name in node_names:
-            remote = self.environment.get_ssh_to_remote_by_name(node_name)
+        def _get_galera_status(_remote):
             cmd = ("mysql --connect_timeout=5 -sse \"SELECT VARIABLE_VALUE "
                    "FROM information_schema.GLOBAL_STATUS WHERE VARIABLE_NAME"
                    " = 'wsrep_ready';\"")
+            result = _remote.execute(cmd)
+            if result['exit_code'] == 0:
+                return ''.join(result['stdout']).strip()
+            else:
+                return ''.join(result['stderr']).strip()
+
+        for node_name in node_names:
+            remote = self.environment.get_ssh_to_remote_by_name(node_name)
             try:
-                wait(lambda:
-                     ''.join(remote.execute(cmd)['stdout']).strip() == 'ON',
+                wait(lambda: _get_galera_status(remote) == 'ON',
                      timeout=30 * 4)
                 logger.info("MySQL Galera is up on {host} node.".format(
                             host=node_name))
             except TimeoutError:
-                logger.error("MySQL Galera isn't ready on {h}: {o} {e}"
-                             .format(h=node_name,
-                                     o=''.join(remote.execute(cmd)['stdout']
-                                               .strip()),
-                                     e=remote.execute(cmd)['stderr']))
-                raise TimeoutError("MySQL Galera is down after cluster"
-                                   " restart")
+                logger.error("MySQL Galera isn't ready on {0}: {1}"
+                             .format(node_name, _get_galera_status(remote)))
+                raise TimeoutError("MySQL Galera is down")
         return True
 
     def run_ostf_repeatably(self, cluster_id, test_name=None,
