@@ -13,6 +13,7 @@
 #    under the License.
 
 import json
+import traceback
 import urllib2
 
 from keystoneclient.v2_0 import Client as keystoneclient
@@ -48,7 +49,12 @@ class HTTPClient(object):
     @property
     def token(self):
         if self.keystone is not None:
-            return self.keystone.auth_token
+            try:
+                return self.keystone.auth_token
+            except exceptions.AuthorizationFailure:
+                logger.warning(
+                    'Cant establish connection to keystone with url %s',
+                    self.keystone_url)
         return None
 
     def get(self, endpoint):
@@ -89,6 +95,10 @@ class HTTPClient(object):
 
     def _get_response(self, req):
         if self.token is not None:
-            logger.debug('Set X-Auth-Token to {0}'.format(self.token))
-            req.add_header("X-Auth-Token", self.token)
+            try:
+                logger.debug('Set X-Auth-Token to {0}'.format(self.token))
+                req.add_header("X-Auth-Token", self.token)
+            except exceptions.AuthorizationFailure:
+                logger.warning('Failed with auth in http _get_response')
+                logger.warning(traceback.format_exc())
         return self.opener.open(req)

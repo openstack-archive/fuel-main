@@ -265,23 +265,24 @@ def untar(node_ssh, name, path):
 
 
 @logwrap
-def run_script(node_ssh, script_path, script_name):
+def run_script(node_ssh, script_path, script_name, rollback=False):
     path = os.path.join(script_path, script_name)
     c_res = node_ssh.execute('chmod 755 {0}'.format(path))
     logger.debug("Result of cmod is {0}".format(c_res))
-    chan, stdin, stderr, stdout = node_ssh.execute_async(path)
-    logger.debug('Try to read status code from chain...')
-    assert_equal(chan.recv_exit_status(), 0,
-                 'Upgrade script fails with next message {0}'.format(
-                     ''.join(stderr)))
-
-
-@logwrap
-def run_with_rollback(node_ssh, script_path, script_name):
-    path = os.path.join(script_path, script_name)
-    c_res = node_ssh.execute('chmod 755 {0}'.format(path))
-    logger.debug("Result of cmod is {0}".format(c_res))
-    node_ssh.execute_async(path)
+    if rollback:
+        chan, stdin, stderr, stdout = node_ssh.execute_async(path)
+        logger.debug('Try to read status code from chain...')
+        assert_equal(chan.recv_exit_status(), 0,
+                     'Upgrade script fails with next message {0}'.format(
+                         ''.join(stderr)))
+    else:
+        path = "{0}/{1} {2}".format(script_path,
+                                    script_name, ' --no-rollback')
+        chan, stdin, stderr, stdout = node_ssh.execute_async(path)
+        logger.debug('Try to read status code from chain...')
+        assert_equal(chan.recv_exit_status(), 0,
+                     'Upgrade script fails with next message {0}'.format(
+                         ''.join(stderr)))
 
 
 @logwrap
