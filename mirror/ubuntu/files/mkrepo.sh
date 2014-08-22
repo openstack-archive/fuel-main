@@ -101,6 +101,20 @@ rm -rf ${wrkdir}/apt.tmp
 # Get rid of urlencoded names
 for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; done
 
+sort_packages_file () {
+	local pkg_file="$1"
+	local pkg_file_gz="${pkg_file}.gz"
+	local pkg_file_bz2="${pkg_file}.bz2"
+	apt-sortpkgs "$pkg_file" > "${pkg_file}.new" || exit 1
+	if [ -e "$pkg_file_gz" ]; then
+		gzip -c "${pkg_file}.new" > "$pkg_file_gz"
+	fi
+	if [ -e "$pkg_file_bz2" ]; then
+		bzip2 -k "${pkg_file}.new" > "$pkg_file_bz2"
+	fi
+	mv "${pkg_file}.new" "${pkg_file}"
+}
+
 ##########################################
 # Move all stuff to the our package pool
 ##########################################
@@ -126,6 +140,11 @@ for i386dir in $(find . -name binary-i386) ; do
 done
 apt-ftparchive -c apt-ftparchive-release.conf generate apt-ftparchive-deb.conf
 apt-ftparchive -c apt-ftparchive-release.conf generate apt-ftparchive-udeb.conf
+# Work around the base system installation failure.
+# XXX: someone should rewrite this script to use debmirror and reprepro
+for pkg_file in `find dists -type f -name Packages`; do
+	sort_packages_file $pkg_file
+done
 apt-ftparchive -c apt-ftparchive-release.conf release dists/precise/ > dists/precise/Release
 # some cleanup...
 rm -rf apt-ftparchive*conf Release-amd64 Release-i386 mkrepo.sh preferences
