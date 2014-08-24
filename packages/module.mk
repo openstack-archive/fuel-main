@@ -1,4 +1,4 @@
-include $(SOURCE_DIR)/packages/rpm/module.mk
+include $(SOURCE_DIR)/packages/rpm/module_mock.mk
 
 .PHONY: packages
 

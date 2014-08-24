@@ -22,7 +22,7 @@ $(BUILD_DIR)/docker/build.done: \
 		$(BUILD_DIR)/docker/busybox.done \
 		$(BUILD_DIR)/docker/sources.done
 	(cd $(BUILD_DIR)/docker/containers && tar cf $(BUILD_DIR)/docker/fuel-images.tar *.tar)
-	lrzip -L2 -U -D -f $(BUILD_DIR)/docker/fuel-images.tar -o $(BUILD_DIR)/docker/$(DOCKER_ART_NAME)
+	lrzip -L2 -D -f $(BUILD_DIR)/docker/fuel-images.tar -o $(BUILD_DIR)/docker/$(DOCKER_ART_NAME)
 	rm -f $(BUILD_DIR)/docker/fuel-images.tar
 	$(ACTION.TOUCH)
 endif
@@ -49,20 +49,20 @@ $(BUILD_DIR)/docker/$1.done: \
 	sed -e 's/production:.*/production: "docker-build"/' -i $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml
 	cp $(SOURCE_DIR)/docker/docker-astute.yaml $(BUILD_DIR)/docker/$1/etc/fuel/astute.yaml
 	rsync -a $(BUILD_DIR)/repos/fuellib/deployment/puppet/* $(BUILD_DIR)/docker/$1/etc/puppet/modules/
-	sudo docker build -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
-	sudo docker save fuel/$1_$(PRODUCT_VERSION) > $(BUILD_DIR)/docker/containers/$1.tar
+	docker build -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
+	docker save fuel/$1_$(PRODUCT_VERSION) > $(BUILD_DIR)/docker/containers/$1.tar
 	kill `cat /tmp/simple_http_daemon_$(RANDOM_PORT).pid`
 	$$(ACTION.TOUCH)
 endef
 
 $(BUILD_DIR)/docker/base-images.done:
-	find $(LOCAL_MIRROR_DOCKER_BASEURL)/ -regex '.*xz' | xargs -n1 sudo docker load -i
+	find $(LOCAL_MIRROR_DOCKER_BASEURL)/ -regex '.*xz' | xargs -n1 docker load -i
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/docker/busybox.done: \
 		$(BUILD_DIR)/docker/base-images.done
 	mkdir -p "$(BUILD_DIR)/docker/containers"
-	sudo docker save busybox > $(BUILD_DIR)/docker/containers/busybox.tar
+	docker save busybox > $(BUILD_DIR)/docker/containers/busybox.tar
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/docker/sources.done: \
