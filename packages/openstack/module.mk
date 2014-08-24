@@ -1,4 +1,4 @@
-include $(SOURCE_DIR)/packages/openstack/rpm/module.mk
+include $(SOURCE_DIR)/packages/openstack/rpm/module_mock.mk
 
 .PHONY: openstack
 

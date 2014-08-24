@@ -63,7 +63,7 @@ include $(SOURCE_DIR)/config.mk
 include $(SOURCE_DIR)/rules.mk
 
 # Sandbox macroses.
-include $(SOURCE_DIR)/sandbox.mk
+#include $(SOURCE_DIR)/sandbox.mk
 
 # Modules
 include $(SOURCE_DIR)/repos.mk
@@ -72,7 +72,7 @@ include $(SOURCE_DIR)/puppet/module.mk
 include $(SOURCE_DIR)/packages/module.mk
 include $(SOURCE_DIR)/packages/openstack/module.mk
 include $(SOURCE_DIR)/docker/module.mk
-include $(SOURCE_DIR)/bootstrap/module.mk
+include $(SOURCE_DIR)/bootstrap/module_mock.mk
 include $(SOURCE_DIR)/iso/module.mk
 include $(SOURCE_DIR)/upgrade/module.mk
 include $(SOURCE_DIR)/virtualbox.mk
