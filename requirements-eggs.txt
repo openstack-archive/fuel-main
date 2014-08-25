@@ -16,7 +16,7 @@ fysom==1.0.11
 iso8601==0.1.9
 jsonschema==2.3.0
 kombu==2.5.14
-netaddr==0.7.10
+netaddr>=0.7.10
 netifaces==0.8
 oslo.config==1.2.1
 pbr==0.5.21

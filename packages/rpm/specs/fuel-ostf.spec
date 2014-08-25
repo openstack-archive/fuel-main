@@ -36,7 +36,7 @@ Requires:    python-nose >= 1.3.0
 Requires:    python-sqlalchemy >= 0.7.8
 Requires:    python-sqlalchemy < 1.0
 Requires:    python-alembic >= 0.5.0
-Requires:    python-gevent == 0.13.8
+Requires:    python-gevent >= 0.13.8
 Requires:    python-pecan >= 0.3.0
 Requires:    python-pecan < 0.6.0
 Requires:    python-psycopg2 >= 2.5.1

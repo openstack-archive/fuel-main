@@ -42,7 +42,7 @@ Requires:    python-wsgilog == 0.3
 Requires:    python-wsgiref == 0.1.2
 Requires:    PyYAML == 3.10
 Requires:    shotgun == 0.1.0
-# Workaroud for babel bug
+# Workaround for babel bug
 Requires:    pytz
 
 %description
