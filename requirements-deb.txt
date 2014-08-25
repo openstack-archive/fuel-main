@@ -169,6 +169,7 @@ hdparm
 heat-api
 heat-api-cfn
 heat-api-cloudwatch
+heat-common
 heat-engine
 hicolor-icon-theme
 hostname
