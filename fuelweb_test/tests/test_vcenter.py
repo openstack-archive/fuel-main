@@ -71,8 +71,8 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
             should_fail=1,
-            failed_test_name=['Launch instance, create snapshot, \
-            launch instance from snapshot'])
+            failed_test_name=['Launch instance, create snapshot,' +
+            ' launch instance from snapshot'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_1],
           groups=["vcenter_multiple_cluster"])
@@ -221,7 +221,10 @@ class VcenterDeploy(TestBasic):
         time.sleep(60)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=['Launch instance, create snapshot,' +
+            ' launch instance from snapshot'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_ha"])
@@ -269,4 +272,7 @@ class VcenterDeploy(TestBasic):
         time.sleep(60)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=['Launch instance, create snapshot,' +
+            ' launch instance from snapshot'])
