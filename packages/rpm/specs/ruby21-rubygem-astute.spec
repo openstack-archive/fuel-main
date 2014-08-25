@@ -19,20 +19,20 @@ Source0: %{rbname}-%{version}.gem
 Source1: astute.conf
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Requires: ruby >= 2.1
-Requires: ruby21-rubygem-activesupport = 3.0.10
-Requires: ruby21-rubygem-mcollective-client = 2.4.1
-Requires: ruby21-rubygem-symboltable = 1.0.2
-Requires: ruby21-rubygem-rest-client = 1.6.7
-Requires: ruby21-rubygem-popen4 = 0.1.2
-Requires: ruby21-rubygem-amqp = 1.4.1
-Requires: ruby21-rubygem-raemon = 0.3.0
-Requires: ruby21-rubygem-net-ssh = 2.8.0
-Requires: ruby21-rubygem-net-ssh-gateway = 1.2.0
-Requires: ruby21-rubygem-net-ssh-multi = 1.2.0
+Requires: ruby21-rubygem-activesupport >= 3.0.10
+Requires: ruby21-rubygem-mcollective-client >= 2.4.1
+Requires: ruby21-rubygem-symboltable >= 1.0.2
+Requires: ruby21-rubygem-rest-client >= 1.6.7
+Requires: ruby21-rubygem-popen4 >= 0.1.2
+Requires: ruby21-rubygem-amqp >= 1.4.1
+Requires: ruby21-rubygem-raemon >= 0.3.0
+Requires: ruby21-rubygem-net-ssh >= 2.8.0
+Requires: ruby21-rubygem-net-ssh-gateway >= 1.2.0
+Requires: ruby21-rubygem-net-ssh-multi >= 1.2.0
 Requires: openssh-clients
 BuildRequires: ruby >= 2.1
 BuildArch: noarch
-Provides: ruby21(Astute) = %{version}
+Provides: ruby21(Astute) >= %{version}
 
 
 %description
