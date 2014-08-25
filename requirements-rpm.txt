@@ -366,6 +366,7 @@ python-amqp
 python-amqplib-1.0.2-1.el6
 python-anyjson-0.3.3-2.el6
 python-argparse-1.2.1-2.el6
+python-babel
 python-blockdiag-1.2.4-1
 python-ceilometer
 python-ceilometerclient
