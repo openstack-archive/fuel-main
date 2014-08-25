@@ -169,6 +169,7 @@ hdparm
 heat-api
 heat-api-cfn
 heat-api-cloudwatch
+heat-common
 heat-engine
 hicolor-icon-theme
 hostname
@@ -758,6 +759,7 @@ python-setuptools
 python-setuptools-git
 python-simplejson
 python-six
+python-snmp2
 python-sqlalchemy
 python-sqlalchemy-ext
 python-stevedore
