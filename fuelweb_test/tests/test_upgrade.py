@@ -238,7 +238,7 @@ class RollbackFuelMaster(base_test_data.TestBasic):
         """Rollback manually simple deployed cluster
 
         Scenario:
-            1. Revert snapshot with simple sinder env
+            1. Revert snapshot with simple ceph env
             2. Run upgrade on master
             3. Check that upgrade was successful
             4. Rollback cluster manually
@@ -247,10 +247,10 @@ class RollbackFuelMaster(base_test_data.TestBasic):
 
         """
         if not self.env.get_virtual_environment().has_snapshot(
-                'deploy_simple_cinder'):
+                'ceph_multinode_compact'):
             raise SkipTest()
 
-        self.env.revert_snapshot("deploy_simple_cinder")
+        self.env.revert_snapshot("ceph_multinode_compact")
         cluster_id = self.fuel_web.get_last_created_cluster()
         checkers.upload_tarball(self.env.get_admin_remote(),
                                 hlp_data.TARBALL_PATH, '/var')
