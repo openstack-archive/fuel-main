@@ -9,7 +9,7 @@ mkdir -p /var/log/rabbitmq
 chown -R rabbitmq:rabbitmq /var/log/rabbitmq
 
 exitcode=0
-puppet apply --detailed-exitcodes -v /etc/puppet/modules/nailgun/examples/keystone-only.pp || exitcode=$?
+puppet apply --detailed-exitcodes -v /etc/puppet/modules/nailgun/examples/rabbitmq-only.pp || exitcode=$?
 if [ $exitcode -ge 4 ]; then
   echo Puppet apply failed with exit code: $exitcode
   exit $exitcode
