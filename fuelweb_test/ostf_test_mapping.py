@@ -60,16 +60,16 @@ OSTF_TEST_MAPPING = {
     'Request user list': 'fuel_health.tests.sanity.test_sanity_identity.'
                          'SanityIdentityTest.test_list_users',
     'Check that required services are running': 'fuel_health.tests.sanity.'
-                                                'test_sanity_infrasructure.'
+                                                'test_sanity_infrastructure.'
                                                 'SanityInfrastructureTest.'
                                                 'test_001_services_state',
     'Check internet connectivity from a compute': 'fuel_health.tests.sanity.'
-                                                  'test_sanity_infrasructure.'
+                                                  'test_sanity_infrastructure.'
                                                   'SanityInfrastructureTest.'
                                                   'test_002_internet_'
                                                   'connectivity_from_compute',
     'Check DNS resolution on compute node': 'fuel_health.tests.sanity.'
-                                            'test_sanity_infrasructure.'
+                                            'test_sanity_infrastructure.'
                                             'SanityInfrastructureTest.'
                                             'test_003_dns_resolution',
     'Create and delete Murano environment': 'fuel_health.tests.sanity.'
