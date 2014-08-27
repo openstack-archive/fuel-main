@@ -17,55 +17,90 @@
 #    This script will install all the required packages necessary for
 #    building a Fuel ISO.
 
-# We need to not try to install rubygems on trusty, because it doesn't exists
+# - We need not try to install rubygems on trusty, because it doesn't exists
+# - We also should use multistrap version 2.1.6 from precise
+
 DISTRO=$(lsb_release -c -s)
-if [ $DISTRO == 'trusty' ]; then
-    GEMPKG="ruby ruby-dev"
+if [[ $DISTRO = 'trusty' ]]; then
+  GEMPKG="ruby ruby-dev"
+
+  # we need multistrap version 2.1.6, let's install it from precise
+  echo "deb http://cz.archive.ubuntu.com/ubuntu/ precise universe" | sudo tee /etc/apt/sources.list.d/precise.list
+  # be sure, that we will not update multistrap in future and will have
+  # correct version for nodejs
+  sudo tee /etc/apt/preferences.d/fuel-pin-300 <<EOF
+Package: *
+Pin: release v=12.04,o=Ubuntu,a=precise
+Pin-Priority: 300
+
+Package: *multistrap*
+Pin: version 2.1.6*
+Pin-Priority: 600
+
+Package: *nodejs*
+Pin: release o=LP-PPA-chris-lea-node.js
+Pin-Priority: 600
+EOF
+
 else
-    GEMPKG="ruby ruby-dev rubygems"
+  GEMPKG="ruby ruby-dev rubygems"
 fi
 
 # Check if docker is installed
 if hash docker 2>/dev/null; then
-	echo "Docker binary found, checking if service is running..."
-	ps cax | grep docker > /dev/null
-	if [ $? -eq 0 ]; then
-		echo "Docker is running."
-	else
-		echo "Process is not running, starting it..."
-		sudo service docker start
-	fi
+  echo "Docker binary found, checking if service is running..."
+  ps cax | grep docker > /dev/null
+  if [ $? -eq 0 ]; then
+    echo "Docker is running."
+  else
+    echo "Process is not running, starting it..."
+    sudo service docker start
+  fi
 else
-# Install docker repository
-# Check that HTTPS transport is available to APT
-if [ ! -e /usr/lib/apt/methods/https ]; then
-	sudo apt-get update
-	sudo apt-get -y install -y apt-transport-https
+  # Install docker repository
+  # Check that HTTPS transport is available to APT
+  if [ ! -e /usr/lib/apt/methods/https ]; then
+    sudo apt-get update
+    sudo apt-get -y install -y apt-transport-https
+  fi
+  # Add the repository to APT sources
+  echo deb http://mirror.yandex.ru/mirrors/docker/ docker main | sudo tee /etc/apt/sources.list.d/docker.list
+  # Import the repository key
+  sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+  # Install docker
+  sudo apt-get update
+  sudo apt-get -y install lxc-docker
 fi
-# Add the repository to APT sources
-echo deb http://mirror.yandex.ru/mirrors/docker/ docker main | sudo tee /etc/apt/sources.list.d/docker.list
-# Import the repository key
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
-# Install docker
-sudo apt-get update
-sudo apt-get -y install lxc-docker
+
+# we need to make work add-apt-repository command
+sudo apt-get -y install software-properties-common python-software-properties
+
+if hash nodejs 2> /dev/null; then
+  echo "Nodejs found, checking if it has proper version"
+  # Install correct nodejs from chris-lea
+  if ! dpkg-query -W -f='${Version}\n' nodejs | grep -q "1chl1"; then
+    # we don't have nodejs from chris-lea, need remove previous version
+    sudo apt-get -y remove nodejs nodejs-legacy npm
+    # install chris-lea repo, the package itself will be installed later
+    sudo add-apt-repository -y ppa:chris-lea/node.js
+  fi
+else
+  # just add repository, package nodejs will be installed below
+  sudo add-apt-repository -y ppa:chris-lea/node.js
 fi
 
 # Install software
 sudo apt-get update
-sudo apt-get -y remove nodejs nodejs-legacy npm
-sudo apt-get -y install software-properties-common python-software-properties
-sudo add-apt-repository -y ppa:chris-lea/node.js
-sudo apt-get update
 sudo apt-get -y install build-essential make git $GEMPKG debootstrap createrepo \
-	python-setuptools yum yum-utils libmysqlclient-dev isomd5sum \
-	python-nose libvirt-bin python-ipaddr python-paramiko python-yaml \
-	python-pip kpartx extlinux unzip genisoimage nodejs multistrap \
-	lrzip python-daemon
+  python-setuptools yum yum-utils libmysqlclient-dev isomd5sum \
+  python-nose libvirt-bin python-ipaddr python-paramiko python-yaml \
+  python-pip kpartx extlinux unzip genisoimage nodejs multistrap \
+  lrzip python-daemon python-dev
 sudo gem install bundler -v 1.2.1
 sudo gem install builder
 sudo pip install xmlbuilder jinja2
 sudo npm install -g grunt-cli
+sudo chown -R `whoami`.`id -gn` `npm config get cache`
 
 # Add account to sudoers
 if sudo grep "`whoami` ALL=(ALL) NOPASSWD: ALL" /etc/sudoers; then
@@ -74,9 +109,5 @@ else
 	echo "Required /etc/sudoers record not found, adding it..."
 	echo "`whoami` ALL=(ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers
 fi
-
-# Fix tmp folder ownership
-mkdir -p ~/tmp
-sudo chown $USER:$USER ~/tmp
 
 echo "Dependency check complete, please proceed with 'make iso' command"
