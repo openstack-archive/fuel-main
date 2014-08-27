@@ -6,4 +6,5 @@ rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
 puppet apply -v /etc/puppet/modules/nailgun/examples/ostf-only.pp
+pgrep supervisord >/dev/null && /usr/bin/supervisorctl shutdown
 /usr/bin/supervisord -n

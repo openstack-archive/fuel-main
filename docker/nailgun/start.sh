@@ -10,4 +10,5 @@ ln -sf /etc/fuel/version.yaml /etc/nailgun/version.yaml
 #Run puppet to apply custom config
 puppet apply -v /etc/puppet/modules/nailgun/examples/nailgun-only.pp
 
+pgrep supervisord >/dev/null && /usr/bin/supervisorctl shutdown
 /usr/bin/supervisord -n
