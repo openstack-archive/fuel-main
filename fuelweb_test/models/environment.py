@@ -344,8 +344,19 @@ class EnvironmentModel(object):
             self.get_virtual_environment().resume()
             logger.info('Starting snapshot resuming ...')
 
-            self.nodes().admin.await(
-                self.admin_net, timeout=10 * 60, by_port=8000)
+            admin = self.nodes().admin
+            try:
+                admin.await(
+                    self.admin_net, timeout=10 * 60, by_port=8000)
+            except Exception as e:
+                logger.warning("From first time admin isn't reverted: "
+                               "{0}".format(e))
+                admin.destroy()
+                logger.info('Admin node was destroyed. Wait 10 sec.')
+                time.sleep(10)
+                self.get_virtual_environment().start(self.nodes().admins)
+                self.nodes().admin.await(
+                    self.admin_net, timeout=10 * 60, by_port=8000)
 
             self.sync_time_admin_node()
 
@@ -527,3 +538,10 @@ class Nodes(object):
 
     def __iter__(self):
         return self.all.__iter__()
+
+
+if __name__ == "__main__":
+    env = EnvironmentModel()
+    #env.setup_environment()
+    #env.make_snapshot("test-test", is_make=True)
+    env.revert_snapshot("test-test")
