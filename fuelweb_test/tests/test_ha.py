@@ -202,7 +202,7 @@ class TestHaFlatAddCompute(TestBasic):
         self.env.make_snapshot("ha_flat_add_compute")
 
 
-@test(groups=["known_issues", "ha"])
+@test(groups=["thread_4", "ha"])
 class TestHaFlatScalability(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
