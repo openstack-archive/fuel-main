@@ -17,66 +17,109 @@
 #    This script will install all the required packages necessary for
 #    building a Fuel ISO.
 
-# We need to not try to install rubygems on trusty, because it doesn't exists
+# - We need not try to install rubygems on trusty, because it doesn't exists
+# - We also should use multistrap version 2.1.6 from devops mirror
+
 DISTRO=$(lsb_release -c -s)
-if [ $DISTRO == 'trusty' ]; then
+
+case "${DISTRO}" in
+
+  trusty)
     GEMPKG="ruby ruby-dev"
-else
+    # we need multistrap version 2.1.6, let's install it from devops mirror
+    wget -qO - http://mirror.fuel-infra.org/devops/ubuntu/Release.key | sudo apt-key add -
+    echo "deb http://mirror.fuel-infra.org/devops/ubuntu/ ./" | sudo tee /etc/apt/sources.list.d/fuel-devops.list
+    # be sure, that we will not update multistrap in future
+    sudo tee /etc/apt/preferences.d/fuel-pin-300 <<EOF
+Package: *multistrap*
+Pin: version 2.1.6*
+Pin-Priority: 1000
+
+EOF
+    sudo apt-get update && sudo apt-get -y install nodejs nodejs-legacy npm
+    ;;
+
+  precise)
     GEMPKG="ruby ruby-dev rubygems"
-fi
+    # be sure, we will use nodejs from chris-lea
+    sudo tee /etc/apt/preferences.d/fuel-pin-300 <<EOF
+Package: *nodejs*
+Pin: release o=LP-PPA-chris-lea-node.js
+Pin-Priority: 1000
+EOF
+
+    # we need to use add-apt-repository command
+    sudo apt-get -y install software-properties-common python-software-properties
+
+    if hash nodejs 2> /dev/null; then
+      echo "Nodejs found, checking if it has proper version"
+      # Install correct nodejs from chris-lea
+      if ! dpkg-query -W -f='${Version}\n' nodejs | grep -q "1chl1"; then
+        # we don't have nodejs from chris-lea, need remove previous version
+        sudo apt-get -y remove nodejs npm
+        # install chris-lea repo, the package itself will be installed later
+        sudo add-apt-repository -y ppa:chris-lea/node.js
+      fi
+    else
+      # just add repository, package nodejs will be installed from
+      sudo add-apt-repository -y ppa:chris-lea/node.js
+    fi
+      sudo apt-get update && sudo apt-get -y install nodejs
+      ;;
+
+  *)
+    echo "We currently doesn't support building on your distribution ${DISTRO}"
+    exit 1;
+esac
 
 # Check if docker is installed
 if hash docker 2>/dev/null; then
-	echo "Docker binary found, checking if service is running..."
-	ps cax | grep docker > /dev/null
-	if [ $? -eq 0 ]; then
-		echo "Docker is running."
-	else
-		echo "Process is not running, starting it..."
-		sudo service docker start
-	fi
+  echo "Docker binary found, checking if service is running..."
+  ps cax | grep docker > /dev/null
+  if [ $? -eq 0 ]; then
+    echo "Docker is running."
+  else
+    echo "Process is not running, starting it..."
+    sudo service docker start
+  fi
 else
-# Install docker repository
-# Check that HTTPS transport is available to APT
-if [ ! -e /usr/lib/apt/methods/https ]; then
-	sudo apt-get update
-	sudo apt-get -y install -y apt-transport-https
-fi
-# Add the repository to APT sources
-echo deb http://mirror.yandex.ru/mirrors/docker/ docker main | sudo tee /etc/apt/sources.list.d/docker.list
-# Import the repository key
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
-# Install docker
-sudo apt-get update
-sudo apt-get -y install lxc-docker
+  # Install docker repository
+  # Check that HTTPS transport is available to APT
+  if [ ! -e /usr/lib/apt/methods/https ]; then
+    sudo apt-get update
+    sudo apt-get -y install -y apt-transport-https
+  fi
+  # Add the repository to APT sources
+  echo deb http://mirror.yandex.ru/mirrors/docker/ docker main | sudo tee /etc/apt/sources.list.d/docker.list
+  # Import the repository key
+  sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+  # Install docker
+  sudo apt-get update
+  sudo apt-get -y install lxc-docker
 fi
 
 # Install software
 sudo apt-get update
-sudo apt-get -y remove nodejs nodejs-legacy npm
-sudo apt-get -y install software-properties-common python-software-properties
-sudo add-apt-repository -y ppa:chris-lea/node.js
-sudo apt-get update
 sudo apt-get -y install build-essential make git $GEMPKG debootstrap createrepo \
-	python-setuptools yum yum-utils libmysqlclient-dev isomd5sum \
-	python-nose libvirt-bin python-ipaddr python-paramiko python-yaml \
-	python-pip kpartx extlinux unzip genisoimage nodejs multistrap \
-	lrzip python-daemon
+  python-setuptools yum yum-utils libmysqlclient-dev isomd5sum bc \
+  python-nose libvirt-bin python-ipaddr python-paramiko python-yaml \
+  python-pip kpartx extlinux unzip genisoimage multistrap \
+  lrzip python-daemon python-dev
 sudo gem install bundler -v 1.2.1
 sudo gem install builder
 sudo pip install xmlbuilder jinja2 pbr
 sudo npm install -g grunt-cli
+sudo chown -R `whoami`.`id -gn` `npm config get cache`
 
 # Add account to sudoers
 if sudo grep "`whoami` ALL=(ALL) NOPASSWD: ALL" /etc/sudoers; then
-	echo "Required /etc/sudoers record found"
+  echo "Required /etc/sudoers record found"
 else
-	echo "Required /etc/sudoers record not found, adding it..."
-	echo "`whoami` ALL=(ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers
+  echo "Required /etc/sudoers record not found, adding it..."
+  echo "`whoami` ALL=(ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers
 fi
 
 # Fix tmp folder ownership
-mkdir -p ~/tmp
-sudo chown $USER:$USER ~/tmp
+[ -d ~/tmp ] && sudo chown -R `whoami`.`id -gn` ~/tmp || mkdir ~/tmp
 
-echo "Dependency check complete, please proceed with 'make iso' command"
+echo "Dependency check completed, please proceed with 'make iso' command"
