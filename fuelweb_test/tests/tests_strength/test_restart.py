@@ -145,7 +145,7 @@ class CephRestart(TestBasic):
             logger.debug("Test failed from first probe,"
                          " we sleep 60 second try one more time "
                          "and if it fails again - test will fails ")
-            time.sleep(60)
+            time.sleep(180)
             self.fuel_web.run_single_ostf_test(
                 cluster_id, test_sets=['smoke'],
                 test_name=map_ostf.OSTF_TEST_MAPPING.get(
