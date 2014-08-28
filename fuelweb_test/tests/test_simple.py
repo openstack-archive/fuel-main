@@ -800,7 +800,7 @@ class UntaggedNetworksNegative(TestBasic):
 @test(groups=["thread_2"])
 class BackupRestoreSimple(TestBasic):
     @test(depends_on=[SimpleFlat.deploy_simple_flat],
-          groups=["simple_backup_restore"])
+          groups=["known_issues", "simple_backup_restore"])
     @log_snapshot_on_error
     def simple_backup_restore(self):
         """Backup/restore master node with cluster in simple mode

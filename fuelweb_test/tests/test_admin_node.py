@@ -86,7 +86,7 @@ class TestAdminNode(TestBasic):
         assert_equal(True, len(astute_workers) > 1)
 
     @test(depends_on=[SetupEnvironment.setup_master],
-          groups=["backup_restore_master_base"])
+          groups=["known_issues", "backup_restore_master_base"])
     @log_snapshot_on_error
     def backup_restore_master_base(self):
         """Backup/restore master node

@@ -275,7 +275,7 @@ class TestHaFlatScalability(TestBasic):
 class BackupRestoreHa(TestBasic):
 
     @test(depends_on=[TestHaFlat.deploy_ha_flat],
-          groups=["backup_restore_ha_flat"])
+          groups=["known_issues", "backup_restore_ha_flat"])
     @log_snapshot_on_error
     def backup_restore_ha_flat(self):
         """Backup/restore master node with cluster in ha mode
