@@ -338,12 +338,12 @@ def wait_rollback_is_done(node_ssh, timeout):
 @logwrap
 def get_package_versions_from_node(remote, name, os_type):
     if os_type and 'Ubuntu' in os_type:
-        cmd = 'dpkg -l | grep {0}'.format(name)
+        cmd = "dpkg-query -W -f='${Version}' %s" % name
     else:
-        cmd = 'rpm -qa | grep {0}'.format(name)
+        cmd = "rpm -q {0}".format(name)
     try:
         result = ''.join(remote.execute(cmd)['stdout'])
-        return result
+        return result.strip()
     except Exception:
         logger.error(traceback.format_exc())
         raise
