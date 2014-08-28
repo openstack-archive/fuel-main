@@ -731,6 +731,7 @@ class HeatHA(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_HA,
             settings=data)
 
         self.fuel_web.update_nodes(
