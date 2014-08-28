@@ -797,7 +797,7 @@ class UntaggedNetworksNegative(TestBasic):
         self.fuel_web.assert_task_failed(task)
 
 
-@test(groups=["thread_2"])
+@test(groups=["known_issues"])
 class BackupRestoreSimple(TestBasic):
     @test(depends_on=[SimpleFlat.deploy_simple_flat],
           groups=["simple_backup_restore"])

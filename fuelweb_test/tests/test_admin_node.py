@@ -85,6 +85,8 @@ class TestAdminNode(TestBasic):
             (len(astute_workers), astute_workers))
         assert_equal(True, len(astute_workers) > 1)
 
+@test(groups=["known_issues"])
+class TestAdminNodeBackupRestore(TestBasic):
     @test(depends_on=[SetupEnvironment.setup_master],
           groups=["backup_restore_master_base"])
     @log_snapshot_on_error
