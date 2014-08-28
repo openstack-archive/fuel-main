@@ -260,7 +260,7 @@ def check_tarball_exists(node_ssh, name, path):
 @logwrap
 def untar(node_ssh, name, path):
     result = ''.join(node_ssh.execute(
-        'cd {0} && tar -xpvf {1}'.format(path, name))['stdout'])
+        'cd {0} && tar -xpf {1}'.format(path, name))['stdout'])
     logger.debug('Result from tar command is {0}'.format(result))
 
 

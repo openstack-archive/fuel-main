@@ -20,6 +20,7 @@ from proboscis import test
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers import utils
 from fuelweb_test import settings as hlp_data
 from fuelweb_test.tests.base_test_case import TestBasic
 from fuelweb_test import logger
@@ -46,8 +47,11 @@ class TestPatch(TestBasic):
             7. Check that new release appears
             8. Put new release into cluster
             9. Run cluster update
-            10. Run OSTF
-            11. Create snapshot
+            10. Get cluster net configuration
+            11. Check is services are restarted
+            12. Check is packages are updated
+            13. Run OSTF
+            14. Create snapshot
 
         """
         logger.info("snapshot name is {0}".format(self.snapshot))
@@ -56,22 +60,27 @@ class TestPatch(TestBasic):
             logger.error('There is no shaphot found {0}'.format(self.snapshot))
             raise SkipTest('Can not find snapshot {0}'.format(self.snapshot))
 
+        #  1. Revert  environment
+
         self.env.revert_snapshot(self.snapshot)
 
         logger.info("Start upload upgrade archive")
         node_ssh = self.env.get_ssh_to_remote(self.fuel_web.admin_node_ip)
+
+        # 2. Upload tarball
         checkers.upload_tarball(
             node_ssh=node_ssh, tar_path=hlp_data.TARBALL_PATH,
             tar_target='/var/tmp')
 
         logger.info("Archive should upload. "
                     "Lets check that it exists on master node ...")
-
+        #  3. Check that it uploaded
         checkers.check_tarball_exists(node_ssh, os.path.basename(
             hlp_data.TARBALL_PATH), '/var/tmp')
 
         logger.info("Extract archive to the /var/tmp")
 
+        # 4. Extract data
         checkers.untar(node_ssh, os.path.basename(
             hlp_data.TARBALL_PATH), '/var/tmp')
 
@@ -94,6 +103,7 @@ class TestPatch(TestBasic):
                 remote=remote, name="nova", os_type=hlp_data.OPENSTACK_RELEASE)
             p_version_before[node["devops_name"]] = res
 
+        # 5. Get available releases
         available_releases_before = self.fuel_web.get_releases_list_for_os(
             release_name=hlp_data.OPENSTACK_RELEASE)
 
@@ -101,6 +111,8 @@ class TestPatch(TestBasic):
             available_releases_before))
 
         logger.info('Time to run upgrade...')
+
+        # 6. Run upgrade script
 
         checkers.run_script(node_ssh, '/var/tmp', 'upgrade.sh')
         logger.info('Check if the upgrade complete..')
@@ -116,18 +128,34 @@ class TestPatch(TestBasic):
 
         logger.info('release ids list after upgrade is {0}'.format(
             available_releases_after))
-
+        # 7. Check that new release appears
         assert_true(
             len(available_releases_after) > len(available_releases_before),
             "There is no new release, release ids before {0},"
             " release ids after {1}". format(
                 available_releases_before, available_releases_after))
 
+        if 'Ubuntu' in hlp_data.OPENSTACK_RELEASE:
+            res = utils.get_yaml_to_json(
+                node_ssh,
+                '/etc/puppet/{0}/manifests/ubuntu-versions.yaml'.format(
+                    hlp_data.RELEASE_VERSION))
+            logger.debug(res)
+        else:
+            res = utils.get_yaml_to_json(
+                node_ssh,
+                '/etc/puppet/{0}/manifests/centos-versions.yaml'.format(
+                    hlp_data.RELEASE_VERSION))
+            logger.debug(res)
+
+        logger.debug('what do we have in res {0}'.format(res))
+
         cluster_id = self.fuel_web.get_last_created_cluster()
         logger.debug("Cluster id is {0}".format(cluster_id))
 
         release_version = hlp_data.RELEASE_VERSION
         logger.debug("Release version is {0}".format(release_version))
+        # 8. Put new release into cluster
         if release_version:
             added_release = self.fuel_web.get_releases_list_for_os(
                 release_name=hlp_data.OPENSTACK_RELEASE,
@@ -138,6 +166,7 @@ class TestPatch(TestBasic):
             added_release = [id for id in available_releases_after
                              if id not in available_releases_before]
 
+        # 9. Run cluster update
         self.fuel_web.update_cluster(
             cluster_id=cluster_id,
             data={
@@ -151,22 +180,37 @@ class TestPatch(TestBasic):
         self.fuel_web.run_update(
             cluster_id=cluster_id, timeout=15 * 60, interval=20)
 
-        # Check packages after
+        # 10. Get cluster net configuration
+
+        cluster_net = self.fuel_web.client.get_cluster(
+            cluster_id)['net_provider']
+
+        logger.debug('cluster net is {0}'.format(cluster_net))
+
+        # 11. Check is services are restarted
+        for node in nailgun_nodes:
+            remote = self.fuel_web.get_ssh_for_node(node["devops_name"])
+            utils.check_if_service_restarted(remote, ['nova', 'keystone'])
+
+        # 12. Check is packages are updated
 
         p_version_after = {}
         for node in nailgun_nodes:
             remote = self.fuel_web.get_ssh_for_node(node["devops_name"])
             res = checkers.get_package_versions_from_node(
-                remote=remote, name="nova", os_type=hlp_data.OPENSTACK_RELEASE)
+                remote=remote, name="openstack",
+                os_type=hlp_data.OPENSTACK_RELEASE)
             p_version_after[node["devops_name"]] = res
 
         logger.info("packages after {0}".format(p_version_after))
         logger.info("packages before {0}".format(p_version_before))
 
-        # TODO tleontovich: Add assert for packages, when test repo will avail
+        assert_true(p_version_before != p_version_after)
 
+        # 13. Run OSTF
         self.fuel_web.run_ostf(cluster_id=cluster_id,)
 
+        # 14. Create snapshot
         self.env.make_snapshot('{0}_and_patch'.format(self.snapshot),
                                is_make=True)
 
