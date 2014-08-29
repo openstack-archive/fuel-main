@@ -29,7 +29,7 @@ from fuelweb_test.tests.base_test_case import TestBasic
 class TestHaVLAN(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["deploy_ha_vlan"])
+          groups=["deploy_ha_vlan", "ha_nova_vlan"])
     @log_snapshot_on_error
     def deploy_ha_vlan(self):
         """Deploy cluster in HA mode with VLAN Manager
@@ -90,7 +90,7 @@ class TestHaVLAN(TestBasic):
 class TestHaFlat(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["deploy_ha_flat"])
+          groups=["deploy_ha_flat", "ha_nova_flat"])
     @log_snapshot_on_error
     def deploy_ha_flat(self):
         """Deploy cluster in HA mode with flat nova-network
@@ -206,7 +206,7 @@ class TestHaFlatAddCompute(TestBasic):
 class TestHaFlatScalability(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["ha_flat_scalability"])
+          groups=["ha_flat_scalability", "ha_nova_flat_scalability"])
     @log_snapshot_on_error
     def ha_flat_scalability(self):
         """Check HA mode on scalability

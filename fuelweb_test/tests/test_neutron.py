@@ -29,7 +29,7 @@ from fuelweb_test.tests.base_test_case import TestBasic
 class NeutronGre(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_neutron_gre"])
+          groups=["deploy_neutron_gre", "simple_neutron_gre"])
     @log_snapshot_on_error
     def deploy_neutron_gre(self):
         """Deploy cluster in simple mode with Neutron GRE
@@ -94,7 +94,7 @@ class NeutronGre(TestBasic):
 class NeutronVlan(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_neutron_vlan"])
+          groups=["deploy_neutron_vlan", "simple_neutron_vlan"])
     @log_snapshot_on_error
     def deploy_neutron_vlan(self):
         """Deploy cluster in simple mode with Neutron VLAN
@@ -153,7 +153,7 @@ class NeutronVlan(TestBasic):
 class NeutronGreHa(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["deploy_neutron_gre_ha"])
+          groups=["deploy_neutron_gre_ha", "ha_neutron_gre"])
     @log_snapshot_on_error
     def deploy_neutron_gre_ha(self):
         """Deploy cluster in HA mode with Neutron GRE
@@ -214,7 +214,7 @@ class NeutronGreHa(TestBasic):
 class NeutronVlanHa(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["deploy_neutron_vlan_ha"])
+          groups=["deploy_neutron_vlan_ha", "ha_neutron_vlan"])
     @log_snapshot_on_error
     def deploy_neutron_vlan_ha(self):
         """Deploy cluster in HA mode with Neutron VLAN

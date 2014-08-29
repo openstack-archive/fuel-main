@@ -33,7 +33,7 @@ from fuelweb_test.tests.base_test_case import TestBasic
 class CephCompact(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["ceph_multinode_compact"])
+          groups=["ceph_multinode_compact", "simple_nova_ceph"])
     @log_snapshot_on_error
     def ceph_multinode_compact(self):
         """Deploy ceph in simple mode
@@ -160,7 +160,7 @@ class CephCompactWithCinder(TestBasic):
 class CephHA(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
-          groups=["ceph_ha"])
+          groups=["ceph_ha", "ha_nova_ceph"])
     @log_snapshot_on_error
     def ceph_ha(self):
         """Deploy ceph with cinder in HA mode

@@ -69,7 +69,7 @@ class OneNodeDeploy(TestBasic):
 @test(groups=["thread_2"])
 class SimpleFlat(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["smoke", "deploy_simple_flat"])
+          groups=["smoke", "deploy_simple_flat", "simple_nova_flat"])
     @log_snapshot_on_error
     def deploy_simple_flat(self):
         """Deploy cluster in simple mode with flat nova-network
@@ -261,7 +261,7 @@ class SimpleFlat(TestBasic):
 @test(groups=["thread_2"])
 class SimpleVlan(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_simple_vlan"])
+          groups=["deploy_simple_vlan", "simple_nova_vlan"])
     @log_snapshot_on_error
     def deploy_simple_vlan(self):
         """Deploy cluster in simple mode with nova-network VLAN Manager
@@ -462,7 +462,7 @@ class FloatingIPs(TestBasic):
 @test(groups=["simple_cinder"])
 class SimpleCinder(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_simple_cinder"])
+          groups=["deploy_simple_cinder", "simple_nova_cinder"])
     @log_snapshot_on_error
     def deploy_simple_cinder(self):
         """Deploy cluster in simple mode with cinder
