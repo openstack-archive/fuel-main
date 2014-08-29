@@ -76,13 +76,13 @@ NO_UI_OPTIMIZE:=0
 # NEUTRON_GERRIT_URL, NEUTRON_GERRIT_COMMIT, NEUTRON_GERRIT_URL,
 # NEUTRON_SPEC_GERRIT_URL, NEUTRON_SPEC_GERRIT_COMMIT
 define set_vars
-    $(call uc,$(1))_REPO?=https://github.com/openstack/$(1).git
+    $(call uc,$(1))_REPO?=https://review.openstack.org/openstack/$(1).git
     $(call uc,$(1))_COMMIT?=master
-    $(call uc,$(1))_SPEC_REPO?=https://osci-gerrit.mirantis.com/openstack-ci/openstack/$(1)-build.git
+    $(call uc,$(1))_SPEC_REPO?=https://review.fuel-infra.org/openstack-build/$(1)-build.git
     $(call uc,$(1))_SPEC_COMMIT?=master
-    $(call uc,$(1))_GERRIT_URL=https://review.openstack.org/openstack/$(1)
+    $(call uc,$(1))_GERRIT_URL?=https://review.openstack.org/openstack/$(1).git
     $(call uc,$(1))_GERRIT_COMMIT?=none
-    $(call uc,$(1))_SPEC_GERRIT_URL?=https://osci-gerrit.mirantis.com/openstack-ci/openstack/$(1)-build.git
+    $(call uc,$(1))_SPEC_GERRIT_URL?=https://review.fuel-infra.org/openstack-build/$(1)-build.git
     $(call uc,$(1))_SPEC_GERRIT_COMMIT?=none
 endef
 
