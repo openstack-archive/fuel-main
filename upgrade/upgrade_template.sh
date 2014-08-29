@@ -23,9 +23,9 @@ function prepare_upgrade_files {
   if [ -r $DOCKER_IMAGES_ARCHIVE_PATH ]; then
     pushd $DOCKER_IMAGES_DIR_PATH >> /dev/null
 
-    local err_msg="Failed to uncompress docker "\
-      "images ${DOCKER_IMAGES_ARCHIVE_PATH}, check "\
-      "if you have enough free space"
+    local err_msg="Failed to uncompress docker "
+    err_msg+="images ${DOCKER_IMAGES_ARCHIVE_PATH}, "
+    err_msg+="if you have enough free space"
 
     lrzuntar -f $DOCKER_IMAGES_ARCHIVE_PATH || error "$err_msg"
 
