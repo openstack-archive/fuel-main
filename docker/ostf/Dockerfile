@@ -10,6 +10,10 @@ RUN rm -rf /etc/yum.repos.d/*;echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseu
 ADD etc /etc
 ADD start.sh /usr/local/bin/start.sh
 
+#FIXME(mattymo): missing dependencies in saharaclient
+#https://bugs.launchpad.net/fuel/+bug/1363088
+#and keystoneclient https://bugs.launchpad.net/fuel/+bug/1363085
+RUN yum install -y python-oslo-i18n python-pbr python-lxml python-oslo-serialization python-oslo-utils
 RUN puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/ostf-only.pp; [ $? -lt 4 ]
 
 

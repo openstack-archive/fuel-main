@@ -264,7 +264,11 @@ vim-enhanced
 virt-what
 wget
 yum
-
+#FIXME(mattymo): Workaround for keystoneclient
+python-oslo-utils
+python-pbr
+python-lxml
+python-oslo-i18n
 %include /tmp/post_partition.ks
 
 # POSTINSTALL SECTION
