@@ -20,6 +20,10 @@ DEPS_DIR?=$(TOP_DIR)/deps
 DEPS_DIR:=$(abspath $(DEPS_DIR))
 
 PRODUCT_VERSION:=6.0
+# String from FUEL_BUILD_TAG will be added to version.yaml. It have been
+# created in order to describe build environment in free form
+PRODUCT_BUILD_TAG?=''
+
 # This variable is used mostly for
 # keeping things uniform. Some files
 # contain versions as a part of their paths
