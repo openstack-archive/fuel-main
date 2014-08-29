@@ -480,7 +480,7 @@ if [ "\$first" = "yes" ]; then
   ipstr="Fuel UI is available on: http://\$ip:8000"
   first=no
 else
-  ipstr=\$(printf "%s\n%51s" "\$ipstr" "http://\$ip:8000")
+  ipstr=\$(printf "%s\n%25s%s" "\$ipstr" " " "http://\$ip:8000")
 fi
 done
 tmpissue=\$(mktemp)
