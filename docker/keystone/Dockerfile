@@ -10,6 +10,10 @@ RUN yum clean all
 
 ADD etc /etc
 
+#FIXME(mattymo): Add missing dependencies. See
+#https://bugs.launchpad.net/fuel/+bug/1363085
+#and https://bugs.launchpad.net/fuel/+bug/1363110
+RUN yum install -y python-oslo-utils python-pbr python-lxml
 RUN puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/keystone-only.pp; [ $? -lt 4 ]
 
 ADD start.sh /usr/local/bin/start.sh
