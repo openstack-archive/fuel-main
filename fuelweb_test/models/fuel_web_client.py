@@ -1227,3 +1227,19 @@ class FuelWebClient(object):
             assert_equal(nailgun_cidr, slave_cidr.rstrip(),
                          'Cidr after deployment is not equal'
                          ' to cidr by default')
+
+    def update_internal_network(self, cluster_id, cidr, gateway=None):
+        net_provider = self.client.get_cluster(cluster_id)['net_provider']
+        net_config = self.client.get_networks(cluster_id)
+        data = (cluster_id, net_config["networking_parameters"],
+                net_config["networks"])
+        if net_provider == 'nova_network':
+            net_config["networking_parameters"]['fixed_networks_cidr']\
+                = cidr
+            self.client.update_network(*data)
+        elif net_provider == 'neutron':
+            net_config["networking_parameters"]['internal_cidr']\
+                = cidr
+            net_config["networking_parameters"]['internal_gateway']\
+                = gateway
+            self.client.update_network(*data)
