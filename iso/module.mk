@@ -18,19 +18,25 @@ $(ARTS_DIR)/$(VERSION_YAML_ART_NAME): $(ISOROOT)/$(VERSION_YAML_ART_NAME)
 	$(ACTION.COPY)
 
 $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,PRODUCT_VERSION)
+$(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,PRODUCT_BUILD_TAG)
 $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,FEATURE_GROUPS)
 $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(BUILD_DIR)/repos/repos.done
+	mkdir -p $(@D)
 	echo "VERSION:" > $@
 	echo "  feature_groups:" >> $@
 	$(foreach group,$(FEATURE_GROUPS),echo "    - $(group)" >> $@;)
 	echo "  production: \"$(PRODUCTION)\"" >> $@
 	echo "  release: \"$(PRODUCT_VERSION)\"" >> $@
 	echo "  api: \"1.0\"" >> $@
+ifeq ($(PRODUCT_BUILD_TAG),'')
 ifdef BUILD_NUMBER
 	echo "  build_number: \"$(BUILD_NUMBER)\"" >> $@
 endif
 ifdef BUILD_ID
 	echo "  build_id: \"$(BUILD_ID)\"" >> $@
+endif
+else
+	echo "  build_tag: \"$(PRODUCT_BUILD_TAG)\"" >> $@
 endif
 	cat $(BUILD_DIR)/repos/version.yaml >> $@
 
