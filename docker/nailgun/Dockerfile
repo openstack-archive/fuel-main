@@ -12,6 +12,9 @@ RUN rm -rf /etc/yum.repos.d/*;echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseu
 ADD etc /etc
 ADD start.sh /usr/local/bin/start.sh
 
+#FIXME(mattymo): waiting for https://bugs.launchpad.net/fuel/+bug/1363085
+RUN yum install -y python-pbr python-lxml
+
 RUN puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/nailgun-only.pp; [ $? -lt 4 ]
 RUN mkdir -p /var/log/remote /var/www/nailgun
 
