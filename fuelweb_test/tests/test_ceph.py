@@ -301,7 +301,7 @@ class CephRadosGW(TestBasic):
         self.env.make_snapshot("ceph_rados_gw")
 
 
-@test(groups=["known_issues", "ceph_migration"])
+@test(groups=["thread_1", "ceph_migration"])
 class VmBackedWithCephMigrationBasic(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
