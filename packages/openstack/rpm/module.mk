@@ -55,7 +55,7 @@ $(BUILD_DIR)/openstack/rpm/$1.done: \
 	sudo cp $(BUILD_DIR)/openstack/rpm/sources/$1/*.tar.gz $$(SANDBOX)/tmp/SOURCES/
 	sudo cp -r $(BUILD_DIR)/repos/$1-build/rpm/SOURCES/* $$(SANDBOX)/tmp/SOURCES
 	sed "s/Version:.*/Version:\t`cat $(BUILD_DIR)/openstack/rpm/$1-version-tag`/" $(BUILD_DIR)/repos/$1-build/rpm/SPECS/openstack-$1.spec > $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec
-	sed -i "s/Source0:.*/Source0:\t$1-`cat $(BUILD_DIR)/openstack/rpm/$1-version-tag`\.tar\.gz/" $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec
+	sed -i '' "s/Source0:.*/Source0:\t$1-`cat $(BUILD_DIR)/openstack/rpm/$1-version-tag`\.tar\.gz/" $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec
 	sudo cp $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec $$(SANDBOX)/tmp/
 	sudo chroot $$(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -bs /tmp/openstack-$1.spec
 	sudo sh -c "$$$${INSTALL_CENTOS_REPO}"
