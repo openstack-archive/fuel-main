@@ -7,3 +7,7 @@ $(BUILD_DIR)/mirror/centos/build.done: \
 		$(BUILD_DIR)/mirror/centos/repo.done \
 		$(BUILD_DIR)/mirror/centos/boot.done
 	$(ACTION.TOUCH)
+
+mirror-centos: $(BUILD_DIR)/mirror/centos/build.done
+
+.PHONY: mirror-centos
