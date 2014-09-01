@@ -58,6 +58,7 @@ else
 $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/packages/build.done \
+		$(BUILD_DIR)/openstack/build.done \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)
 	rsync -rp $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(ISOROOT)

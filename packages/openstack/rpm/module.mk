@@ -13,6 +13,13 @@ baseurl=http://fuel-repository.mirantis.com/repos/centos-fuel-master/centos/
 gpgcheck=0
 enabled=0
 priority=1
+
+[openstack-local]
+name=OpenStack-local
+baseurl=file://$(SANDBOX)/tmp/RPMS/noarch/
+gpgcheck=0
+enabled=0
+priority=1
 endef
 
 define INSTALL_CENTOS_REPO
@@ -54,7 +61,7 @@ $(BUILD_DIR)/openstack/rpm/$1.done: \
 	sudo mkdir -p $$(SANDBOX)/tmp/SPECS $$(SANDBOX)/tmp/SOURCES $$(SANDBOX)/tmp/BUILD $$(SANDBOX)/tmp/BUILDROOT $$(SANDBOX)/tmp/RPMS $$(SANDBOX)/tmp/SRPMS
 	sudo cp $(BUILD_DIR)/openstack/rpm/sources/$1/*.tar.gz $$(SANDBOX)/tmp/SOURCES/
 	sudo cp -r $(BUILD_DIR)/repos/$1-build/rpm/SOURCES/* $$(SANDBOX)/tmp/SOURCES
-	sed "s/Version:.*/Version:\t`cat $(BUILD_DIR)/openstack/rpm/$1-version-tag`/" $(BUILD_DIR)/repos/$1-build/rpm/SPECS/openstack-$1.spec > $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec
+	sed "s/Version:.*/Version:\t`cat $(BUILD_DIR)/openstack/rpm/$1-version-tag`/" $(BUILD_DIR)/repos/$1-build/rpm/SPECS/*.spec > $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec
 	sed -i "s/Source0:.*/Source0:\t$1-`cat $(BUILD_DIR)/openstack/rpm/$1-version-tag`\.tar\.gz/" $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec
 	sudo cp $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec $$(SANDBOX)/tmp/
 	sudo chroot $$(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -bs /tmp/openstack-$1.spec
@@ -63,6 +70,8 @@ $(BUILD_DIR)/openstack/rpm/$1.done: \
 	sudo rm -rf $$(SANDBOX)/tmp/RPMS
 	sudo chroot $$(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/openstack-$1.spec
 	cp $$(SANDBOX)/tmp/RPMS/*/*$1*.rpm $(BUILD_DIR)/openstack/rpm/RPMS/x86_64
+	sudo createrepo $$(SANDBOX)/tmp/RPMS/noarch/
+	sudo yumdownloader --resolve -c $$(SANDBOX)/etc/yum.conf --enablerepo=centos --enablerepo=centos-master --enablerepo=openstack-local --destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages openstack-$1* | grep -v '^looking for' | tee $(BUILD_DIR)/openstack/yumdownloader.log
 	sudo sh -c "$$$${SANDBOX_DOWN}"
 	$$(ACTION.TOUCH)
 
