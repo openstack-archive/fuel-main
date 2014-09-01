@@ -579,7 +579,7 @@ class HeatSimple(TestBasic):
         test_class_main = ('fuel_health.tests.platform_tests.'
                            'test_heat.'
                            'HeatSmokeTests')
-        tests_names = ['test_action',
+        tests_names = ['test_actions',
                        'test_autoscaling',
                        'test_rollback']
 
@@ -668,7 +668,7 @@ class HeatSimple(TestBasic):
         test_class_main = ('fuel_health.tests.platform_tests.'
                            'test_heat.'
                            'HeatSmokeTests')
-        tests_names = ['test_action',
+        tests_names = ['test_actions',
                        'test_autoscaling',
                        'test_rollback']
 
@@ -745,7 +745,7 @@ class HeatHA(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=5, networks_count=1, timeout=300)
+            'slave-01', smiles_count=13, networks_count=1, timeout=300)
 
         for slave in ["slave-01", "slave-02", "slave-03"]:
             checkers.verify_service(
@@ -770,7 +770,7 @@ class HeatHA(TestBasic):
         test_class_main = ('fuel_health.tests.platform_tests.'
                            'test_heat.'
                            'HeatSmokeTests')
-        tests_names = ['test_action',
+        tests_names = ['test_actions',
                        'test_autoscaling',
                        'test_rollback']
 
