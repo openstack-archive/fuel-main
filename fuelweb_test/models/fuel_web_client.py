@@ -1144,8 +1144,8 @@ class FuelWebClient(object):
         remote.execute('ln -s /etc/fuel/{0}/version.yaml'
                        '/etc/fuel/version.yaml'.format(rollback_version))
         remote.execute('rm /var/www/nailgun/bootstrap')
-        remote.execute('ln -s /var/www/nailgun/{}_bootstrap'.
-                       format(rollback_version))
+        remote.execute('ln -s /var/www/nailgun/{}_bootstrap '
+                       '/var/www/nailgun/bootstrap'.format(rollback_version))
         logger.debug('stopping supervisor')
         try:
             remote.execute('/etc/init.d/supervisord stop')
