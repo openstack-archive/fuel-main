@@ -102,6 +102,9 @@ class CephRestart(TestBasic):
 
         cluster_id = self.fuel_web.get_last_created_cluster()
 
+         # Wait until MySQL Galera is UP on some controller
+        self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
+
         self.fuel_web.check_ceph_status(cluster_id)
 
         # Run ostf
@@ -133,7 +136,7 @@ class CephRestart(TestBasic):
         self.fuel_web.cold_restart_nodes(self.env.nodes().slaves[:4])
         self.fuel_web.check_ceph_status(cluster_id, offline_nodes)
 
-        # Wait until MySQL Galera is UP on primary controller
+        # Wait until MySQL Galera is UP on some controller
         self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
 
         try:
