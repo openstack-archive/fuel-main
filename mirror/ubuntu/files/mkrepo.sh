@@ -8,7 +8,8 @@ apt-get update
 
 mkdir -p /repo/download/
 
-cat /requirements-deb.txt | while read pkg; do apt-get --print-uris --yes install $pkg | grep ^\' | cut -d\' -f2 >/downloads_$pkg.list; done
+cat /requirements-deb.txt | while read pkg; do apt-get --print-uris --yes install $pkg | grep ^\' | cut -d\' -f2 >/downloads_$pkg.list; apt-get install -y $pkg;done
+
 cat /downloads_*.list | sort | uniq > /repo/download/download_urls.list
 rm /downloads_*.list
 (cat /repo/download/download_urls.list | xargs -n1 -P4 wget -P /repo/download/) || exit 1
