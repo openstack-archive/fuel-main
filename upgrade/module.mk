@@ -7,10 +7,10 @@
 
 all: upgrade openstack-yaml
 
-upgrade: UPGRADERS ?= "host-system docker bootstrap openstack"
+upgrade: UPGRADERS ?= "host-system bootstrap docker openstack"
 upgrade: $(UPGRADE_TARBALL_PATH)
 
-upgrade-lrzip: UPGRADERS ?= "host-system docker bootstrap openstack"
+upgrade-lrzip: UPGRADERS ?= "host-system bootstrap docker openstack"
 upgrade-lrzip: $(UPGRADE_TARBALL_PATH).lrz
 
 ########################
