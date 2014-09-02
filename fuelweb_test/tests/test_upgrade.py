@@ -23,11 +23,13 @@ from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers.decorators import create_diagnostic_snapshot
 from fuelweb_test import settings as hlp_data
 from fuelweb_test.tests import base_test_case as base_test_data
+from fuelweb_test.tests.base_test_case import SetupEnvironment
 
 
 @test(groups=["upgrade"])
 class UpgradeFuelMaster(base_test_data.TestBasic):
-    @test(groups=["upgrade_simple"])
+    @test(depends_on=[SetupEnvironment.setup_master],
+          groups=["upgrade_simple"])
     @log_snapshot_on_error
     def upgrade_simple_env(self):
         """Upgrade simple deployed cluster with ceph
@@ -79,7 +81,8 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
 
         self.env.make_snapshot("upgrade_simple")
 
-    @test(groups=["upgrade_ha"])
+    @test(depends_on=[SetupEnvironment.setup_master],
+          groups=["upgrade_ha"])
     @log_snapshot_on_error
     def upgrade_ha_env(self):
         """Upgrade ha deployed cluster
@@ -156,7 +159,8 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
             cluster_id=cluster_id)
         self.env.make_snapshot("upgrade_ha")
 
-    @test(groups=["deploy_ha_after_upgrade"])
+    @test(depends_on=[SetupEnvironment.setup_master],
+          groups=["deploy_ha_after_upgrade"])
     @log_snapshot_on_error
     def deploy_ha_after_upgrade(self):
         """Upgrade and deploy new ha cluster
@@ -232,7 +236,8 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
 
 @test(groups=["rollback"])
 class RollbackFuelMaster(base_test_data.TestBasic):
-    @test(groups=["rollback_manual"])
+    @test(depends_on=[SetupEnvironment.setup_master],
+          groups=["rollback_manual"])
     @log_snapshot_on_error
     def rollback_simple_env(self):
         """Rollback manually simple deployed cluster
@@ -283,7 +288,8 @@ class RollbackFuelMaster(base_test_data.TestBasic):
 
         self.env.make_snapshot("rollback_manual")
 
-    @test(groups=["rollback_automatic"])
+    @test(depends_on=[SetupEnvironment.setup_master],
+          groups=["rollback_automatic"])
     @log_snapshot_on_error
     def rollback_automatically_simple_env(self):
         """Rollback automatically simple deployed cluster
