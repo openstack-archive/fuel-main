@@ -22,10 +22,12 @@ from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import settings as hlp_data
 from fuelweb_test.tests.base_test_case import TestBasic
+from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test import logger
 
 
-@test(groups=["os_patching"])
+@test(depends_on=[SetupEnvironment.setup_master],
+      groups=["os_patching"])
 class TestPatch(TestBasic):
     def __init__(self, snapshot):
         super(TestPatch, self).__init__()
