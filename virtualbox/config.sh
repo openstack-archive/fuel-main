@@ -14,11 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# The number of nodes for installing OpenStack on
-#   - for minimal non-HA installation, specify 2 (1 controller + 1 compute)
-#   - for minimal non-HA with Cinder installation, specify 3 (1 ctrl + 1 compute + 1 cinder)
-#   - for minimal HA installation, specify 4 (3 controllers + 1 compute)
-cluster_size=5
+source functions/memory.sh
 
 # Get the first available ISO from the directory 'iso'
 iso_path=`ls -1t iso/*.iso 2>/dev/null | head -1`
@@ -39,8 +35,13 @@ idx=0
 for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
 # VirtualBox for Windows has different virtual NICs naming and indexing
   case "$(uname)" in
-    Linux | Darwin)
+    Linux)
       host_nic_name[$idx]=vboxnet$idx
+      os_type="linux"
+    ;;
+    Darwin)
+      host_nic_name[$idx]=vboxnet$idx
+      os_type="darwin"
     ;;
     CYGWIN*)
       if [ $idx -eq 0 ]; then
@@ -48,6 +49,7 @@ for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
       else
         host_nic_name[$idx]='VirtualBox Host-Only Ethernet Adapter #'$((idx+1))
       fi
+      os_type="cygwin"
     ;;
     *)
       echo "$(uname) is not supported operating system."
@@ -58,6 +60,7 @@ for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
   host_nic_mask[$idx]=255.255.255.0
   idx=$((idx+1))
 done
+
 
 # Master node settings
 vm_master_cpu_cores=1
@@ -77,30 +80,93 @@ vm_master_username=root
 vm_master_password=r00tme
 vm_master_prompt='root@fuel ~]#'
 
+# The number of nodes for installing OpenStack on
+#   - for minimal non-HA installation, specify 2 (1 controller + 1 compute)
+#   - for minimal non-HA with Cinder installation, specify 3 (1 ctrl + 1 compute + 1 cinder)
+#   - for minimal HA installation, specify 4 (3 controllers + 1 compute)
+if [ "$CONFIG_FOR" = "16GB" ]; then
+  cluster_size=5
+elif [ "$CONFIG_FOR" = "8GB" ]; then
+  cluster_size=3
+elif [ "$CONFIG_FOR" = "4GB" ]; then
+  cluster_size=2
+else
+  # Section for custom configuration
+  cluster_size=3
+fi
+
 # Slave node settings. This section allows you to define CPU count for each slave node.
-vm_slave_cpu_default=1
+
 # You can specify CPU count for your nodes as you wish, but keep in mind resources of your machine.
 # If you don't, then will be used default parameter
-vm_slave_cpu[1]=1
-vm_slave_cpu[2]=1
-vm_slave_cpu[3]=1
-vm_slave_cpu[4]=1
-vm_slave_cpu[5]=1
+if [ "$CONFIG_FOR" = "16GB" ]; then
+  vm_slave_cpu_default=1
+
+  vm_slave_cpu[1]=1
+  vm_slave_cpu[2]=1
+  vm_slave_cpu[3]=1
+  vm_slave_cpu[4]=1
+  vm_slave_cpu[5]=1
+elif [ "$CONFIG_FOR" = "8GB" ]; then
+  vm_slave_cpu_default=1
+
+  vm_slave_cpu[1]=1
+  vm_slave_cpu[2]=1
+  vm_slave_cpu[3]=1
+elif [ "$CONFIG_FOR" = "4GB" ]; then
+  vm_slave_cpu_default=1
+
+  vm_slave_cpu[1]=1
+  vm_slave_cpu[2]=1
+else
+  # Section for custom configuration
+  vm_slave_cpu_default=1
+
+  vm_slave_cpu[1]=1
+  vm_slave_cpu[2]=1
+  vm_slave_cpu[3]=1
+fi
 
 # This section allows you to define RAM size in MB for each slave node.
 # Keep in mind that PXE boot might not work correctly with values lower than 768.
 # You can specify memory size for the specific slaves, other will get default vm_slave_memory_default
 # Mirantis OpenStack 3.2 controllers require 1280 MiB of RAM as absolute minimum due to Heat!
-vm_slave_memory_default=1536
+
 # You may comment out all the following memory parameters to use default value for each node.
 # It is recommended if you going to try HA configurations.
 # for controller node at least 1.5Gb is required if you also run Ceph and Heat on it
 # and for Ubuntu controller we need 2Gb of ram
-vm_slave_memory_mb[1]=2048
-vm_slave_memory_mb[2]=1024  # for compute node 1GB is recommended, otherwise VM instances in OpenStack may not boot
-vm_slave_memory_mb[3]=1024  # for dedicated Cinder, 768Mb is OK, but Ceph needs 1Gb minimum
-vm_slave_memory_mb[4]=1024
-vm_slave_memory_mb[5]=1024
+
+# For compute node 1GB is recommended, otherwise VM instances in OpenStack may not boot
+# For dedicated Cinder, 768Mb is OK, but Ceph needs 1Gb minimum
+
+if [ "$CONFIG_FOR" = "16GB" ]; then
+  vm_slave_memory_default=1536
+
+  vm_slave_memory_mb[1]=2048
+  vm_slave_memory_mb[2]=2048
+  vm_slave_memory_mb[3]=2048
+  vm_slave_memory_mb[4]=2048
+  vm_slave_memory_mb[5]=2048
+elif [ "$CONFIG_FOR" = "8GB" ]; then
+  vm_slave_memory_default=1024
+
+  vm_slave_memory_mb[1]=1536
+  vm_slave_memory_mb[2]=1536
+  vm_slave_memory_mb[3]=1536
+elif [ "$CONFIG_FOR" = "4GB" ]; then
+  vm_slave_memory_default=1024
+
+  vm_slave_memory_mb[1]=1024
+  vm_slave_memory_mb[2]=1024
+else
+  # Section for custom configuration
+  vm_slave_memory_default=1024
+
+  vm_slave_memory_mb[1]=2048
+  vm_slave_memory_mb[2]=1024
+  vm_slave_memory_mb[3]=1024
+fi
 
 # Within demo cluster created by this script, all slaves (controller
 # and compute nodes) will have identical disk configuration. Each 
@@ -112,3 +178,23 @@ vm_slave_memory_mb[5]=1024
 vm_slave_first_disk_mb=65535
 vm_slave_second_disk_mb=65535
 vm_slave_third_disk_mb=65535
+
+total_memory=$(get_available_memory $os_type)
+
+# Count selected RAM configuration
+for machine_number in $(eval echo {1..$cluster_size}); do
+  if [ -n "${vm_slave_memory_mb[$machine_number]}" ]; then
+    vm_total_mb=$(( $vm_total_mb + ${vm_slave_memory_mb[$machine_number]} ))
+  else
+    vm_total_mb=$(( $vm_total_mb + $vm_slave_memory_default ))
+  fi
+done
+vm_total_mb=$(( $vm_total_mb + $vm_master_memory_mb ))
+
+# Do not run VMs if host PC not have enough RAM
+can_allocate_mb=$(( ($total_memory - 524288) / 1024 ))
+if [ $vm_total_mb -gt $can_allocate_mb ]; then
+  echo "Your host has not enough memory."
+  echo "You can allocate no more than ${can_allocate_mb}MB, but trying to run VMs with ${vm_total_mb}MB"
+  exit 1
+fi
