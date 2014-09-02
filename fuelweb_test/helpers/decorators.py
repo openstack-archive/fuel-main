@@ -51,7 +51,7 @@ def log_snapshot_on_error(func):
         try:
             return func(*args, **kwagrs)
         except SkipTest:
-            pass
+            raise SkipTest()
         except Exception:
             if args and 'snapshot' in args[0].__dict__:
                 name = 'error_%s' % args[0].snapshot
