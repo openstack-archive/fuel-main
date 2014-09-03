@@ -13,6 +13,7 @@
 #    under the License.
 import hashlib
 import json
+import os
 import re
 import traceback
 
@@ -259,8 +260,10 @@ def check_tarball_exists(node_ssh, name, path):
 
 @logwrap
 def untar(node_ssh, name, path):
+    filename, ext = os.path.splitext(name)
+    cmd = "tar -xpvf" if ext.endswith("tar") else "lrzuntar"
     result = ''.join(node_ssh.execute(
-        'cd {0} && tar -xpvf {1}'.format(path, name))['stdout'])
+        'cd {0} && {2} {1}'.format(path, name, cmd))['stdout'])
     logger.debug('Result from tar command is {0}'.format(result))
 
 
