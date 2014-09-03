@@ -59,6 +59,8 @@ CENTOS_ARCH:=x86_64
 UBUNTU_RELEASE:=precise
 
 # Rebuld packages locally (do not use upstream versions)
+# This option is depricated, because there are no upstream versions
+# of nailgun packages any more
 BUILD_PACKAGES?=1
 
 # Build OpenStack packages from external sources (do not use prepackaged versions)
