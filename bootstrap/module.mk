@@ -130,7 +130,7 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 	$(YUM) install $(BOOTSTRAP_RPMS_CUSTOM)
 
 	# Copying custom files
-	sudo rsync -aK $(SOURCE_DIR)/bootstrap/sync/ $(INITRAMROOT)
+	sudo rsync -rlptDK $(SOURCE_DIR)/bootstrap/sync/ $(INITRAMROOT)
 	sudo cp -r $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py $(INITRAMROOT)/usr/bin
 
 	# Enabling pre-init boot interface discovery
