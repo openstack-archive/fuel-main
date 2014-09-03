@@ -122,6 +122,9 @@ class TestHaFailover(TestBasic):
         cluster_id = self.fuel_web.client.get_cluster_id(
             self.__class__.__name__)
 
+        # Wait until MySQL Galera is UP on some controller 	103
+        self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
+
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             test_sets=['ha', 'smoke', 'sanity'],
@@ -157,6 +160,9 @@ class TestHaFailover(TestBasic):
 
         cluster_id = self.fuel_web.client.get_cluster_id(
             self.__class__.__name__)
+
+        # Wait until MySQL Galera is UP on some controller 	103
+        self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
