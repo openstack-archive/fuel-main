@@ -901,7 +901,12 @@ class FuelWebClient(object):
                 lambda: self.get_nailgun_node_by_devops_node(node)['online'],
                 timeout=60 * 10)
             remote = self.environment.get_ssh_to_remote_by_name(node.name)
-            self.environment.sync_node_time(remote)
+            try:
+                self.environment.sync_node_time(remote)
+            except Exception as e:
+                logger.warning(
+                    'Exception caught while trying to sync time on {0}:'
+                    ' {1}'.format(node.name, e))
 
     @logwrap
     def ip_address_show(self, node_name, namespace, interface, pipe_str=''):
