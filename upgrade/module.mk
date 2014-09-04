@@ -42,7 +42,6 @@ $(UPGRADE_TARBALL_PATH).lrz: \
 ########################
 # OPENSTACK_YAML ARTIFACT
 ########################
-OPENSTACK_YAML_ART_NAME:=openstack.yaml
 openstack-yaml: $(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME)
 
 $(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME): $(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)
@@ -130,9 +129,11 @@ $(BUILD_DIR)/upgrade/openstack-$1-part.tar: CENTOS_BASE=$$(BASE)/upgrade/repos/$
 $(BUILD_DIR)/upgrade/openstack-$1-part.tar: UBUNTU_BASE=$$(BASE)/upgrade/repos/$$(OPENSTACK_VERSION)/ubuntu/x86_64
 $(BUILD_DIR)/upgrade/openstack-$1-part.tar: PUPPET_BASE=$$(BASE)/upgrade/puppet/$$(OPENSTACK_VERSION)
 $(BUILD_DIR)/upgrade/openstack-$1-part.tar: RELEASES_BASE=$$(BASE)/upgrade/releases
+$(BUILD_DIR)/upgrade/openstack-$1-part.tar: RELEASE_VERSIONS_BASE=$$(BASE)/upgrade/release_versions
 $(BUILD_DIR)/upgrade/openstack-$1-part.tar: \
 		$(BUILD_DIR)/upgrade/openstack_version_$1 \
 		$$(ARTS_DIR_$1)/$(OPENSTACK_YAML_ART_NAME) \
+		$$(ARTS_DIR_$1)/$(VERSION_YAML_ART_NAME) \
 		$$(ARTS_DIR_$1)/$(CENTOS_REPO_ART_NAME) \
 		$$(ARTS_DIR_$1)/$(UBUNTU_REPO_ART_NAME) \
 		$$(ARTS_DIR_$1)/$(PUPPET_ART_NAME)
@@ -155,6 +156,9 @@ $(BUILD_DIR)/upgrade/openstack-$1-part.tar: \
 #	OPENSTACK-YAML
 	mkdir -p $$(RELEASES_BASE)
 	cp $$(ARTS_DIR_$1)/$(OPENSTACK_YAML_ART_NAME) $$(RELEASES_BASE)/$$(OPENSTACK_VERSION).yaml
+#	VERSION-YAML
+	mkdir -p $$(RELEASE_VERSIONS_BASE)
+	cp $$(ARTS_DIR_$1)/$(VERSION_YAML_ART_NAME) $$(RELEASE_VERSIONS_BASE)/$$(OPENSTACK_VERSION).yaml
 #	ARCHIVING
 	tar cf $$@ -C $$(BASE) .
 endef

@@ -1,7 +1,5 @@
 .PHONY: bootstrap clean clean-bootstrap
 
-BOOTSTARP_ART_NAME:=bootstrap.tar.gz
-
 bootstrap: $(ARTS_DIR)/$(BOOTSTRAP_ART_NAME)
 
 $(ARTS_DIR)/$(BOOTSTRAP_ART_NAME): \

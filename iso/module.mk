@@ -11,7 +11,6 @@ img: $(IMG_PATH)
 ########################
 # VERSION-YAML ARTIFACT
 ########################
-VERSION_YAML_ART_NAME:=version.yaml
 version-yaml: $(ARTS_DIR)/$(VERSION_YAML_ART_NAME)
 
 $(ARTS_DIR)/$(VERSION_YAML_ART_NAME): $(ISOROOT)/$(VERSION_YAML_ART_NAME)
@@ -37,7 +36,6 @@ endif
 ########################
 # CENTOS ARTIFACT
 ########################
-CENTOS_REPO_ART_NAME:=centos-repo.tar
 centos-repo: $(ARTS_DIR)/$(CENTOS_REPO_ART_NAME)
 
 $(ARTS_DIR)/$(CENTOS_REPO_ART_NAME): $(BUILD_DIR)/iso/isoroot-centos.done
@@ -72,7 +70,6 @@ endif
 ########################
 # UBUNTU ARTIFACT
 ########################
-UBUNTU_REPO_ART_NAME:=ubuntu-repo.tar
 ubuntu-repo: $(ARTS_DIR)/$(UBUNTU_REPO_ART_NAME)
 
 $(ARTS_DIR)/$(UBUNTU_REPO_ART_NAME): $(BUILD_DIR)/iso/isoroot-ubuntu.done
