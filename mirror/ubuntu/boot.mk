@@ -4,7 +4,7 @@ ISOLINUX_FILES:=netboot.tar.gz
 $(addprefix $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/installer-amd64/current/images/netboot/,$(ISOLINUX_FILES)):
 	@mkdir -p $(@D)
 ifeq ($(USE_MIRROR),none)
-	wget -O $@ $(MIRROR_UBUNTU)/ubuntu/dists/precise-updates/main/installer-amd64/current/images/saucy-netboot/netboot.tar.gz
+	wget -O $@ $(MIRROR_UBUNTU)/ubuntu/dists/precise-updates/main/installer-amd64/current/images/trusty-netboot/netboot.tar.gz
 else
 	wget -O $@ $(MIRROR_UBUNTU)/installer-amd64/current/images/netboot/netboot.tar.gz
 endif

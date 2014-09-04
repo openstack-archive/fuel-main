@@ -139,6 +139,7 @@ fuse
 fuse-utils
 fence-agents
 fencing-agent
+hpvsa
 g++
 g++-4.6
 galera
@@ -510,8 +511,8 @@ libyaml-0-2
 libzmq1
 linux-firmware
 linux-firmware-nonfree
-linux-headers-3.11.0-18
-linux-image-3.11.0-18
+linux-headers-3.13.0-32
+linux-image-3.13.0-32
 linux-libc-dev
 linux-server
 lksctp-tools
