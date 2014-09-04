@@ -55,6 +55,11 @@ class HTTPClient(object):
                 logger.warning(
                     'Cant establish connection to keystone with url %s',
                     self.keystone_url)
+            except exceptions.Unauthorized:
+                logger.warning("Keystone returned unauthorized error, trying "
+                               "to pass authentication.")
+                self.authenticate()
+                return self.keystone.auth_token
         return None
 
     def get(self, endpoint):
