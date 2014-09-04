@@ -90,11 +90,19 @@ class Common(object):
                         neutron_network=False):
         LOGGER.debug('Try to create instance')
 
-        if image_name:
-            image = [i.id for i in self.nova.images.list()
-                     if i.name == image_name]
+        start_time = time.time()
+        while time.time() - start_time < 100:
+            try:
+                if image_name:
+                    image = [i.id for i in self.nova.images.list()
+                             if i.name == image_name]
+                else:
+                    image = [i.id for i in self.nova.images.list()]
+                break
+            except:
+                pass
         else:
-            image = [i.id for i in self.nova.images.list()]
+            raise Exception('Can not get image')
 
         kwargs = {}
         if neutron_network:
