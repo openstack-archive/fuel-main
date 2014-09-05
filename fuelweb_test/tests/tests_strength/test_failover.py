@@ -364,7 +364,7 @@ class TestHaFailover(TestBasic):
                     'node {0}'.format(fqdn) in config,
                     'node {0} exists'.format(fqdn))
             assert_not_equal(
-                re.search('primitive (openstack-)?heat-engine', config), None,
+                re.search('primitive p_(openstack-)?heat-engine', config), None,
                 'heat engine')
             assert_true('primitive p_haproxy' in config, 'haproxy')
             assert_true('primitive p_mysql' in config, 'mysql')
