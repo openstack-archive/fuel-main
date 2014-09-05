@@ -102,9 +102,18 @@ endif
 # we need to repack puppet artifact because artifact
 # has puppet directory packed into it but we need to have an
 # archive of puppet modules packed into it
-$(ISOROOT)/puppet-slave.tgz: $(BUILD_DIR)/puppet/$(PUPPET_ART_NAME)
+$(ISOROOT)/puppet-slave.tgz: $(BUILD_DIR)/puppet/$(PUPPET_ART_NAME) $(ISOROOT)/tasks.tgz $(ISOROOT)/roles.tgz
 	tar zxf $(BUILD_DIR)/puppet/$(PUPPET_ART_NAME) -C $(BUILD_DIR)/iso
 	tar zcf $(ISOROOT)/puppet-slave.tgz -C $(BUILD_DIR)/iso/puppet .
+
+########################
+# TASKS
+########################
+$(ISOROOT)/tasks.tgz:
+	tar --xform 's|deployment/tasks||g' -czpf $(ISOROOT)/tasks.tgz $(BUILD_DIR)/repos/fuellib/deployment/tasks/*
+
+$(ISOROOT)/roles.tgz:
+	tar --xform 's|deployment/roles||g' -czpf $(ISOROOT)/roles.tgz $(BUILD_DIR)/repos/fuellib/deployment/roles/*
 
 ########################
 # DOCKER

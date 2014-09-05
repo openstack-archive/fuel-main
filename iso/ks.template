@@ -442,6 +442,16 @@ cp ${SOURCE}/version.yaml /etc/fuel/${RELEASE}/version.yaml
 ln -s /etc/fuel/${RELEASE}/version.yaml /etc/fuel/version.yaml
 cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_version`.yaml
 
+# Extract tasks and roles
+if [ -f "${SOURCE}/tasks.tgz" ]; then
+  mkdir -p /etc/puppet/tasks
+  tar zxf "${SOURCE}/tasks.tgz" -C /etc/puppet/tasks
+fi
+if [ -f "${SOURCE}/roles.tgz" ]; then
+  mkdir -p "/etc/fuel/roles/${RELEASE}"
+  tar zxf "${SOURCE}/roles.tgz" -C "/etc/fuel/roles/${RELEASE}"
+fi
+
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
 
