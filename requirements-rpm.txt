@@ -635,6 +635,7 @@ fuelmenu
 nailgun-agent
 nailgun-mcagents
 nailgun-net-check
+python-tasklib
 python-fuelclient
 zabbix
 zabbix-agent
