@@ -40,6 +40,13 @@ ISO_NAME?=fuel-$(PRODUCT_VERSION)
 UPGRADE_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-upgrade
 OPENSTACK_PATCH_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-patch
 VBOX_SCRIPTS_NAME?=vbox-scripts-$(PRODUCT_VERSION)
+BOOTSTARP_ART_NAME?=bootstrap.tar.gz
+DOCKER_ART_NAME?=fuel-images.tar.lrz
+VERSION_YAML_ART_NAME?=version.yaml
+CENTOS_REPO_ART_NAME?=centos-repo.tar
+UBUNTU_REPO_ART_NAME?=ubuntu-repo.tar
+PUPPET_ART_NAME?=puppet.tgz
+OPENSTACK_YAML_ART_NAME?=openstack.yaml
 
 # Where we put artifacts
 ISO_PATH:=$(ARTS_DIR)/$(ISO_NAME).iso

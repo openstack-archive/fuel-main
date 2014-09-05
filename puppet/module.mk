@@ -5,7 +5,6 @@ all: puppet
 ########################
 # PUPPET ARTIFACT
 ########################
-PUPPET_ART_NAME:=puppet.tgz
 puppet: $(ARTS_DIR)/$(PUPPET_ART_NAME)
 
 $(ARTS_DIR)/$(PUPPET_ART_NAME): $(BUILD_DIR)/puppet/$(PUPPET_ART_NAME)
