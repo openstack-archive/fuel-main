@@ -406,7 +406,7 @@ cp /etc/puppet/modules/osnailyfacter/examples/site.pp /etc/puppet/manifests/site
 cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/manifests/
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 mkdir -p /var/lib/hiera
-touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml 
+touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
 # Deploy docker images and ctl tools if we built ISO with docker containers support
 [ -d "${SOURCE}/docker" ] && cp -r ${SOURCE}/docker ${repodir}/docker
@@ -436,10 +436,11 @@ echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
 
 # Copying version.yaml file. It contains COMMIT_SHA of last commit.
 RELEASE=$(awk '/release/{gsub(/"/, "");print $2}' ${SOURCE}/version.yaml)
-mkdir -p /etc/nailgun /etc/fuel/${RELEASE}
+mkdir -p /etc/nailgun /etc/fuel/${RELEASE} /etc/fuel/release_versions
 cp ${SOURCE}/version.yaml /etc/nailgun/version.yaml
 cp ${SOURCE}/version.yaml /etc/fuel/${RELEASE}/version.yaml
 ln -s /etc/fuel/${RELEASE}/version.yaml /etc/fuel/version.yaml
+cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_version`.yaml
 
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
@@ -531,4 +532,3 @@ cp -f /etc/skel/.bash* /root/
 [[ $(virt-what) = "virtualbox" ]] && echo "blacklist i2c_piix4" > /etc/modprobe.d/blacklist-i2c-piix4.conf
 
 %end
-

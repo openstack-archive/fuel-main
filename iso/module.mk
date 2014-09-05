@@ -125,6 +125,9 @@ $(BUILD_DIR)/iso/isoroot-dotfiles.done: \
 		$(ISOROOT)/.treeinfo
 	$(ACTION.TOUCH)
 
+$(ISOROOT)/openstack_version: $(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME)
+	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $@
+
 $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done \
 		$(ISOROOT)/isolinux/isolinux.cfg \
@@ -134,6 +137,7 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/bootstrap_admin_node.conf \
 		$(ISOROOT)/send2syslog.py \
 		$(ISOROOT)/version.yaml \
+		$(ISOROOT)/openstack_version \
 		$(ISOROOT)/centos-versions.yaml \
 		$(ISOROOT)/ubuntu-versions.yaml \
 		$(ISOROOT)/puppet-slave.tgz
