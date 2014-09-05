@@ -765,6 +765,7 @@ python-stompy
 python-suds
 python-swift
 python-swiftclient
+python-tasklib
 python-tempita
 python-tz
 python-urllib3
