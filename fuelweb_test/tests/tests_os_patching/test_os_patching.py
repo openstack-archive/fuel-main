@@ -149,7 +149,7 @@ class TestPatch(TestBasic):
                     ' It is time to update cluster ...')
 
         self.fuel_web.run_update(
-            cluster_id=cluster_id, timeout=15 * 60, interval=20)
+            cluster_id=cluster_id, timeout=30 * 60, interval=20)
 
         # Check packages after
 
