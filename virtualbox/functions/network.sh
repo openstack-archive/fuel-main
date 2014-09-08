@@ -150,3 +150,115 @@ delete_all_hostonly_interfaces() {
   done
 }
 
+# Requires sudo privileges for both Linux and Darwin
+setup_host_masquerading_settings() {
+  echo "Setting masquerading configuration"
+  case "$(uname)" in
+    Linux)
+      if [ ! -x /sbin/iptables ] ; then
+        echo -n "iptables is not available in the system path"
+        exit 1
+      else
+        result=$(expect <<ENDOFEXPECT
+          spawn sudo su -
+          expect "*assword*"
+          send -- "$SUDO_PASSWORD\r"
+          expect "*\#*"
+          send -- "sysctl -qw net.ipv4.conf.all.forwarding=1\r"
+          expect "*\#*"
+          send -- "iptables -t nat -A POSTROUTING \
+            -o $(ip r | grep default | cut -f5 -d ' ') \
+            -s 172.16.1.0/24 \
+            ! -d 172.16.1.0/24 \
+            -j MASQUERADE\r"
+          expect "*\#*"
+ENDOFEXPECT
+        )
+        echo "OK"
+      fi
+    ;;
+    Darwin)
+      # Default routed interface
+      IF=$(route get default | grep interface | cut -d: -f2 | tr -d ' ')
+      # Take the configuration of which interfaces to NAT
+      VBOXNET=""
+      for interface in 0 $(seq "${#nat_vboxnet[@]}")
+      do
+        if [[ ${nat_vboxnet[$interface]} = true ]];
+        then
+          VBOXNET=$VBOXNET"\npass in on vboxnet"$interface
+        fi
+      done
+      # Write pf.conf
+      CONF=$(cat <<EOS
+###FUEL
+\nscrub-anchor "com.apple/*"
+\nnat-anchor "com.apple/*"
+\nrdr-anchor "com.apple/*"
+\ndummynet-anchor "com.apple/*"
+\nnat on $IF inet from ! ($IF) to any -> ($IF)
+\nanchor "com.apple/*"
+\nload anchor "com.apple" from "/etc/pf.anchors/com.apple"
+$VBOXNET
+\n###/FUEL
+EOS
+      )
+      # Backup the system file and setup nat and PF
+      echo -e $CONF > .pftmp
+      result=$(expect <<ENDOFEXPECT
+        spawn sudo su
+        expect "*assword*"
+        send -- "$SUDO_PASSWORD\r"
+        expect "*\#*"
+        send -- "sysctl -w net.inet.ip.forwarding=1\r"
+        expect "*\#*"
+        send -- "cp /etc/pf.conf /etc/pf.conf.bak\r"
+        expect "*\#*"
+        send -- "cat .pftmp > /etc/pf.conf\r"
+        expect "*\#*"
+        send -- "pfctl -ef /etc/pf.conf\r"
+        expect "*\#*"
+ENDOFEXPECT
+        )
+      rm -f .pftmp
+      sudo -k
+      echo "OK"
+    ;;
+    CYGWIN*)
+      # Cygwin
+    ;;
+    *)
+      echo "$(uname) is not a supported operating system."
+      exit 1
+    ;;
+  esac
+  rm -f .sudo_pwd
+}
+
+# Clean the masquerading settings
+clean_host_masquerading_settings() {
+  echo "Cleaning masquerading configuration"
+  case "$(uname)" in
+    Linux)
+    ;;
+    Darwin)
+      # Restores the system's PF
+      if [ -z /etc/pf.conf.bak ]; then
+        result=$(expect <<ENDOFEXPECT
+          spawn sudo su -
+          expect "*assword*"
+          send -- "$SUDO_PASSWORD\r"
+          expect "*\#*"
+          send -- "cp -f /etc/pf.conf.bak /etc/pf.conf\r"
+          expect "*\#*"
+          send -- "pfctl -ef /etc/pf.conf\r"
+          expect "*\#*"
+ENDOFEXPECT
+          )
+      fi
+    ;;
+    CYGWIN*)
+    ;;
+  esac
+  echo "OK"
+}
