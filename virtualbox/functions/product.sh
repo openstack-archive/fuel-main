@@ -183,3 +183,27 @@ print_no_internet_connectivity_banner() {
 
 }
 
+# Check if root login via sudo su works, and save the password. Needed to
+# setup accordingly some network configurations, like firewall and NAT
+get_sudo_password() {
+  read -s -p "Enter your sudo password (it won't be prompted): " PASSWORD
+  echo -e "\n"
+  result=$(expect << ENDOFEXPECT
+    spawn sudo su -
+    expect "*assword*"
+    send -- "$PASSWORD\r"
+    expect "*\#*"
+    send -- "whoami\r"
+    expect "*\#*"
+ENDOFEXPECT
+  )
+
+  for line in $result; do
+    if [[ $line == *root* ]]; then
+      echo "Sudo password ok"
+      GLOBALPASS=$PASSWORD
+      return
+    fi
+  done
+  echo "Your sudo password is not correct. Please retry"
+}

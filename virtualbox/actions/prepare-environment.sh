@@ -91,5 +91,35 @@ case "$(uname)" in
 esac
 echo "OK"
 
+# Check if root login via sudo su works, and save the password. Needed to
+# setup accordingly some network configurations, like firewall and NAT
+get_sudo_password() {
+  echo -e "To configure NAT and Firewall, the script requires the sudo password"
+  read -s -p "Enter your sudo password (it won't be prompted): " PASSWORD
+  result=$(expect <<ENDOFEXPECT
+    spawn sudo su -
+    expect "*assword*"
+    send -- "$PASSWORD\r"
+    expect "*\#*"
+    send -- "whoami\r"
+    expect "*\#*"
+ENDOFEXPECT
+  )
+
+  for line in $result; do
+    if [[ $line == *root* ]]; then
+      echo "OK"
+      echo $PASSWORD > .sudo_pwd
+      sudo -k
+      return 
+    fi
+  done
+
+  echo "Your sudo password is not correct. Please retry"
+  exit 1
+}
+
+get_sudo_password
+
 # Report success
 echo "Setup is done."
