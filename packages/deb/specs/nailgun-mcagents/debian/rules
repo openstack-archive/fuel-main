@@ -11,7 +11,7 @@ clean:
 build-arch:
 	dh_testdir
 	mkdir -p debian/nailgun-mcagents/usr/share/mcollective/plugins/mcollective/agent/
-	tar -xzf nailgun-mcagents.tar.gz -C debian/nailgun-mcagents/usr/share/mcollective/plugins/mcollective/agent/
+	tar -xzf mcagents.tar.gz -C debian/nailgun-mcagents/usr/share/mcollective/plugins/mcollective/agent/
 
 build: build-arch build-indep
 
