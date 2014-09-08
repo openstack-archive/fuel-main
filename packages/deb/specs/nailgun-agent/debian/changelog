@@ -1,3 +1,9 @@
+nailgun-agent (3.9.2-ubuntu6) precise; urgency=low
+
+  * Update code from upstream
+
+ -- OSCI Jenkins <dburmistrov@mirantis.com>  Wed, 03 Sep 2014 15:16:22 +0400
+
 nailgun-agent (3.9.2-1ubuntu10) precise; urgency=low
 
   * Add new version code 

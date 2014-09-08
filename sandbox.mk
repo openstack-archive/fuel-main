@@ -50,3 +50,29 @@ sync
 umount $(SANDBOX)/proc
 umount $(SANDBOX)/dev
 endef
+
+$(BUILD_DIR)/packages/sandbox-deb.done: $(BUILD_DIR)/mirror/ubuntu/build.done
+	mkdir -p $(BUILD_DIR)/packages/deb/SANDBOX
+	mkdir -p $(BUILD_DIR)/packages/deb/SANDBOX/proc
+	sudo cp $(SOURCE_DIR)/packages/multistrap.conf $(BUILD_DIR)/packages/deb/SANDBOX/
+	sed -i -e "s/@@UBUNTU_RELEASE@@/$(UBUNTU_RELEASE)/g" $(BUILD_DIR)/packages/deb/SANDBOX/multistrap.conf
+	mount | grep -q $(BUILD_DIR)/packages/deb/SANDBOX/proc || sudo mount -t proc none $(BUILD_DIR)/packages/deb/SANDBOX/proc
+	sudo multistrap -a amd64 -f $(BUILD_DIR)/packages/deb/SANDBOX/multistrap.conf -d $(BUILD_DIR)/packages/deb/SANDBOX/
+	sudo chroot $(BUILD_DIR)/packages/deb/SANDBOX /bin/bash -c "locale-gen en_US.UTF-8 ; dpkg-reconfigure locales"
+	sudo chroot $(BUILD_DIR)/packages/deb/SANDBOX /bin/bash -c "dpkg --configure -a || exit 0"
+	sudo chroot $(BUILD_DIR)/packages/deb/SANDBOX /bin/bash -c "rm -rf /var/run/*"
+	sudo chroot $(BUILD_DIR)/packages/deb/SANDBOX /bin/bash -c "dpkg --configure -a || exit 0"
+	echo 'APT::Get::AllowUnauthenticated 1;' | sudo tee $(BUILD_DIR)/packages/deb/SANDBOX/etc/apt/apt.conf.d/02mirantis-unauthenticated
+	[ -n "$(EXTRA_DEB_REPOS)" ] && echo "$(EXTRA_DEB_REPOS)" | tr '|' '\n' | while read repo; do echo deb $$repo; done  | sudo tee $(BUILD_DIR)/packages/deb/SANDBOX/etc/apt/sources.list.d/extra.list || exit 0
+	sudo cp /etc/resolv.conf $(BUILD_DIR)/packages/deb/SANDBOX/etc/resolv.conf
+	sudo umount $(BUILD_DIR)/packages/deb/SANDBOX/proc
+	$(ACTION.TOUCH)
+
+define SANDBOX_UBUNTU_UP
+mount | grep -q $(BUILD_DIR)/packages/deb/SANDBOX/proc || sudo mount -t proc none $(BUILD_DIR)/packages/deb/SANDBOX/proc
+endef
+
+define SANDBOX_UBUNTU_DOWN
+sync
+sudo umount $(BUILD_DIR)/packages/deb/SANDBOX/proc
+endef
