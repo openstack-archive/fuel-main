@@ -37,6 +37,7 @@ Requires:    python-ply >= 3.4
 Requires:    python-psycopg2 == 2.5.1
 Requires:    python-simplejson == 3.3.0
 Requires:    python-sqlalchemy >= 0.7.9
+Requires:    python-six >= 1.5.2
 Requires:    python-webpy == 0.37
 Requires:    python-wsgilog == 0.3
 Requires:    python-wsgiref == 0.1.2
