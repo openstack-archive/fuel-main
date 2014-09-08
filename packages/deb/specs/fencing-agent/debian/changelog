@@ -1,3 +1,9 @@
+fencing-agent (0.1.0-ubuntu1) precise; urgency=low
+
+  * Update code from upstream
+
+ -- OSCI Jenkins <dburmistrov@mirantis.com>  Wed, 03 Sep 2014 15:17:07 +0400
+
 fencing-agent (0.1.0-1ubuntu0) precise; urgency=low
 
   * Add fencing agent script as a separated task 
