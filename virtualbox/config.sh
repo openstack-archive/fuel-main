@@ -61,6 +61,10 @@ for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
   idx=$((idx+1))
 done
 
+# Darwin: NAT network settings
+nat_vboxnet[0]=true
+nat_vboxnet[1]=true
+nat_vboxnet[2]=true
 
 # Master node settings
 vm_master_cpu_cores=1
