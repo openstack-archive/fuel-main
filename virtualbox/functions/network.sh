@@ -150,3 +150,87 @@ delete_all_hostonly_interfaces() {
   done
 }
 
+# Requires root privileges for both Linux and Darwin
+setup_host_masquerading_settings() {
+  echo "Setting masquerading configuration"
+  case "$(uname)" in
+    Linux)
+      if [ ! -x /sbin/iptables ] ; then
+        echo -n "iptables is not available in the system path"
+        exit 1
+      else
+        sysctl -qw net.ipv4.conf.all.forwarding=1
+        # The interface to default gateway
+        interface=`ip r | grep default | cut -f5 -d " "`
+        iptables -t nat -A POSTROUTING -o $interface -j MASQUERADE
+      fi
+    ;;
+    Darwin)
+      # Darwin
+      # Directives in PF must be in precise order: 
+      # options, normalization, queueing, translation, filtering
+      IF=$(route get default | grep interface | cut -d: -f2 | tr -d ' ')
+      CONF=$(cat <<EOS
+###FUEL
+scrub-anchor "com.apple/*"
+nat-anchor "com.apple/*"
+rdr-anchor "com.apple/*"
+dummynet-anchor "com.apple/*"
+nat on $IF inet from ! ($IF) to any -> ($IF)
+anchor "com.apple/*"
+load anchor "com.apple" from "/etc/pf.anchors/com.apple"
+pass in on vboxnet0
+pass in on vboxnet1
+pass in on vboxnet2
+pass in on vboxnet3
+pass in on vboxnet4
+pass in on vboxnet5
+pass in on vboxnet6
+pass in on vboxnet7
+pass in on vboxnet8
+pass in on vboxnet9
+pass in on vboxnet10
+pass in on vboxnet11
+pass in on vboxnet12
+pass in on vboxnet13
+pass in on vboxnet14
+pass in on vboxnet15
+###/FUEL
+EOS
+      )
+      # Backup the system file
+      cp /etc/pf.conf /etc/pf.conf.bak
+      echo "${CONF}" > /etc/pf.conf
+      sysctl -w net.inet.ip.forwarding=1
+      pfctl -ef /etc/pf.conf
+    ;;
+    CYGWIN*)
+      # Cygwin
+    ;;
+    *)
+      echo "$(uname) is not supported operating system."
+      exit 1
+    ;;
+  esac
+  echo "OK"
+}
+
+# Clean the masquerading settings
+clean_host_masquerading_settings() {
+  echo "Cleaning masquerading configuration"
+  case "$(uname)" in
+    Linux)
+    ;;
+    Darwin)
+      # Restores the system PF
+      # sudo sed -i '/^###FUEL/,/^###\/FUEL/d' /etc/pfctl.conf
+      if [ -z /etc/pf.conf.bak ]; then
+      	cp -f /etc/pf.conf.bak /etc/pf.conf
+      fi
+      pfctl -ef /etc/pf.conf
+    ;;
+    CYGWIN*)
+    ;;
+  esac
+  echo "OK"
+}
