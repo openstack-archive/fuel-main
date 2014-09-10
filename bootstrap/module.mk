@@ -137,7 +137,7 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 	sudo chroot $(INITRAMROOT) chkconfig setup-bootdev on
 
 	# Setting root password into r00tme
-	sudo sed -i '' -e '/^root/c\root:$$6$$oC7haQNQ$$LtVf6AI.QKn9Jb89r83PtQN9fBqpHT9bAFLzy.YVxTLiFgsoqlPY3awKvbuSgtxYHx4RUcpUqMotp.WZ0Hwoj.:15441:0:99999:7:::' $(INITRAMROOT)/etc/shadow
+	sudo sed -i -e '/^root/c\root:$$6$$oC7haQNQ$$LtVf6AI.QKn9Jb89r83PtQN9fBqpHT9bAFLzy.YVxTLiFgsoqlPY3awKvbuSgtxYHx4RUcpUqMotp.WZ0Hwoj.:15441:0:99999:7:::' $(INITRAMROOT)/etc/shadow
 
 	# Copying rsa key.
 	sudo mkdir -p $(INITRAMROOT)/root/.ssh
