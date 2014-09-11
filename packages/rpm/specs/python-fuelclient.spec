@@ -16,6 +16,7 @@ BuildArch: noarch
 BuildRequires:  python-setuptools
 Requires: PyYAML
 Requires: python-keystoneclient >= 1:0.4.1
+Requires: python-cliff
 
 %description
 Summary: Console utility for working with fuel rest api
