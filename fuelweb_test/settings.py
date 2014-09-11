@@ -170,6 +170,17 @@ VCENTER_USERNAME = os.environ.get('VCENTER_USERNAME')
 VCENTER_PASSWORD = os.environ.get('VCENTER_PASSWORD')
 VCENTER_CLUSTERS = os.environ.get('VCENTER_CLUSTERS')
 
+# NSX tests
+NSX_TRANSPORT_ZONE = os.environ.get('NSX_TRANSPORT_ZONE')
+L3_SERVICE_UUID = os.environ.get('L3_SERVICE_UUID')
+NSX_CONTROLLER_ENDPOINT = os.environ.get('NSX_CONTROLLER_ENDPOINT')
+URL_TO_NSX_BITS = os.environ.get('URL_TO_NSX_BITS')
+NSX_CONNECTOR_TYPE = os.environ.get('NSX_CONNECTOR_TYPE')
+NSX_USERNAME = os.environ.get('NSX_USERNAME')
+NSX_PASSWORD = os.environ.get('NSX_PASSWORD')
+NSX_PLUGIN = os.environ.get("NSX_PLUGIN", 'true') == 'true'
+
+
 # Services tests
 SERVTEST_LOCAL_PATH = os.environ.get('SERVTEST_LOCAL_PATH', '/tmp')
 SERVTEST_USERNAME = os.environ.get('SERVTEST_USERNAME', 'admin')
@@ -220,7 +231,7 @@ DEPLOYMENT_NAME = os.environ.get('DEPLOYMENT_NAME')
 TIMEOUT = int(os.environ.get('TIMEOUT', 10))
 ATTEMPTS = int(os.environ.get('ATTEMPTS', 5))
 
-#Create snapshots as last step in test-case
+# Create snapshots as last step in test-case
 MAKE_SNAPSHOT = os.environ.get('MAKE_SNAPSHOT', 'false') == 'true'
 
 NEUTRON_ENABLE = os.environ.get('NEUTRON_ENABLE', 'false') == 'true'
