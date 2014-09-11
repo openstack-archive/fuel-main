@@ -13,6 +13,7 @@
 #    under the License.
 
 import time
+import traceback
 
 from proboscis.asserts import assert_true
 from proboscis import test
@@ -276,3 +277,335 @@ class VcenterDeploy(TestBasic):
             should_fail=1,
             failed_test_name=[('Launch instance, create snapshot,'
                                ' launch instance from snapshot')])
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["vcenter_simple_add_node"])
+    @log_snapshot_on_error
+    def vcenter_simple_add_node(self):
+        """
+        Scenario:
+            1. Create cluster
+            2. Add 2 nodes with roles:
+               1 controller
+               1 cinder
+            3. Deploy the cluster
+            4. Check network connectivity and run osft
+            5. Add 1 node with controller role
+            6. Re-deploy cluster.
+            7. Check network connectivity and run osft
+        """
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'use_vcenter': True,
+                'volumes_vmdk': True,
+                'volumes_lvm': False,
+                'host_ip': settings.VCENTER_IP,
+                'vc_user': settings.VCENTER_USERNAME,
+                'vc_password': settings.VCENTER_PASSWORD,
+                'cluster': settings.VCENTER_CLUSTERS,
+                'tenant': 'vcenter',
+                'user': 'vcenter',
+                'password': 'vcenter'
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Add nodes to roles
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['cinder']}
+        )
+        # Deploy cluster
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-03': ['controller']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+        self.fuel_web.verify_network(cluster_id)
+        self.env.make_snapshot("vcenter_simple_add_node")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["vcenter_ha_cold_reset_node"])
+    @log_snapshot_on_error
+    def vcenter_ha_cold_reset_node(self):
+        """
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with roles:
+               2 controller
+               1 controller + 1 cinder
+            3. Reset node and then start deployment of cluster
+            4. Check network connectivity and run osft
+        """
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_HA,
+            settings={
+                'use_vcenter': True,
+                'volumes_vmdk': True,
+                'volumes_lvm': False,
+                'host_ip': settings.VCENTER_IP,
+                'vc_user': settings.VCENTER_USERNAME,
+                'vc_password': settings.VCENTER_PASSWORD,
+                'cluster': settings.VCENTER_CLUSTERS,
+                'tenant': 'vcenter',
+                'user': 'vcenter',
+                'password': 'vcenter'
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Add nodes to roles
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['controller'],
+             'slave-03': ['controller', 'cinder']
+             }
+        )
+        # Deploy cluster
+        self.fuel_web.cold_restart_nodes(self.env.nodes().slaves[1])
+        time.sleep(3)
+        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:3])
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+        self.fuel_web.verify_network(cluster_id)
+        self.env.make_snapshot("vcenter_ha_cold_reset_node")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["vcenter_ha_stop_deploy"])
+    @log_snapshot_on_error
+    def vcenter_ha_stop_deploy(self):
+        """
+        Scenario:
+            1. Create cluster
+            2. Add 4 nodes with roles:
+               3 controller
+               1 cinder
+            3. Start deployment of cluster
+               then stop deployment
+               wait when it will be finished
+               and then re-deploy it again
+            4. Check network connectivity and run osft
+        """
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_HA,
+            settings={
+                'use_vcenter': True,
+                'volumes_vmdk': True,
+                'volumes_lvm': False,
+                'host_ip': settings.VCENTER_IP,
+                'vc_user': settings.VCENTER_USERNAME,
+                'vc_password': settings.VCENTER_PASSWORD,
+                'cluster': settings.VCENTER_CLUSTERS,
+                'tenant': 'vcenter',
+                'user': 'vcenter',
+                'password': 'vcenter'
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Add nodes to roles
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['controller'],
+             'slave-03': ['controller'],
+             'slave-04': ['cinder']
+             }
+        )
+        # Deploy cluster
+        self.fuel_web.provisioning_cluster_wait(
+            cluster_id=cluster_id, progress=20)
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        try:
+            self.fuel_web.stop_deployment_wait(cluster_id)
+        except Exception:
+            logger.debug(traceback.format_exc())
+        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:4])
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+        self.fuel_web.verify_network(cluster_id)
+        self.env.make_snapshot("vcenter_ha_stop_deploy")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["vcenter_ha_normal_deploy"])
+    @log_snapshot_on_error
+    def vcenter_ha_normal_deploy(self):
+        """
+        Scenario:
+            1. Create cluster
+            2. Add 4 nodes with roles:
+               3 controller
+               1 cinder
+            3. Deploy cluster
+            4. Check network connectivity and run osft
+        """
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_HA,
+            settings={
+                'use_vcenter': True,
+                'volumes_vmdk': True,
+                'volumes_lvm': False,
+                'host_ip': settings.VCENTER_IP,
+                'vc_user': settings.VCENTER_USERNAME,
+                'vc_password': settings.VCENTER_PASSWORD,
+                'cluster': settings.VCENTER_CLUSTERS,
+                'tenant': 'vcenter',
+                'user': 'vcenter',
+                'password': 'vcenter'
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Add nodes to roles
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['controller'],
+             'slave-03': ['controller'],
+             'slave-04': ['cinder']
+             }
+        )
+        # Deploy cluster
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.client.get_cluster(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+        self.env.make_snapshot("vcenter_ha_normal_deploy")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["vcenter_simple_normal_deploy"])
+    @log_snapshot_on_error
+    def vcenter_simple_normal_deploy(self):
+        """
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with roles:
+               2 controller
+               1 cinder
+            3. Deploy cluster
+            4. Check network connectivity and run osft
+        """
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'use_vcenter': True,
+                'volumes_vmdk': True,
+                'volumes_lvm': False,
+                'host_ip': settings.VCENTER_IP,
+                'vc_user': settings.VCENTER_USERNAME,
+                'vc_password': settings.VCENTER_PASSWORD,
+                'cluster': settings.VCENTER_CLUSTERS,
+                'tenant': 'vcenter',
+                'user': 'vcenter',
+                'password': 'vcenter'
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Add nodes to roles
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['controller'],
+             'slave-03': ['cinder']
+             }
+        )
+        # Deploy cluster
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.client.get_cluster(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+        self.env.make_snapshot("vcenter_simple_normal_deploy")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["vcenter_simple_stop_deploy"])
+    @log_snapshot_on_error
+    def vcenter_simple_stop_deploy(self):
+        """
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with roles:
+               1 controller + 1 cinder
+               1 cinder
+            3. stop deployment of OP
+            4. wait until nodes will be 'online' again
+            5. then re-deploy cluster again
+            4. Check network connectivity and run osft
+        """
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'use_vcenter': True,
+                'volumes_vmdk': True,
+                'volumes_lvm': False,
+                'host_ip': settings.VCENTER_IP,
+                'vc_user': settings.VCENTER_USERNAME,
+                'vc_password': settings.VCENTER_PASSWORD,
+                'cluster': settings.VCENTER_CLUSTERS,
+                'tenant': 'vcenter',
+                'user': 'vcenter',
+                'password': 'vcenter'
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Add nodes to roles
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller', 'cinder'],
+             'slave-02': ['cinder']
+             }
+        )
+        # Deploy cluster
+        self.fuel_web.provisioning_cluster_wait(
+            cluster_id=cluster_id, progress=20)
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        try:
+            self.fuel_web.stop_deployment_wait(cluster_id)
+        except Exception:
+            logger.debug(traceback.format_exc())
+        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:2])
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+        self.env.make_snapshot("vcenter_simple_stop_deploy")

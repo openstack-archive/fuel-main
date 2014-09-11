@@ -10,6 +10,7 @@ def run_tests():
     from tests import test_services  # noqa
     from tests import test_simple  # noqa
     from tests import test_vcenter  # noqa
+    from tests import test_nsx  # noqa
     from tests.tests_os_patching import test_os_patching  # noqa
     from tests.tests_strength import test_failover  # noqa
     from tests.tests_strength import test_master_node_failover  # noqa
