@@ -12,11 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import time
 import traceback
 
-
-from devops.helpers.helpers import wait
 from proboscis.asserts import assert_true
 from proboscis import test
 
@@ -27,172 +24,23 @@ from fuelweb_test import settings
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
+@test(groups=["vcenter_glance"])
+class VcenterGlanceDeploy(TestBasic):
 
-@test(groups=["vcenter"])
-class VcenterDeploy(TestBasic):
-
-    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
-          groups=["smoke", "vcenter_one_node_simple"])
-    @log_snapshot_on_error
-    def vcenter_one_node_simple(self):
-
-        """Deploy cluster with controller node only
-
-        Scenario:
-            1. Create cluster
-            2. Add 1 node with controller role
-            3. Deploy the cluster
-            4. Validate cluster was set up correctly, there are no dead
-            5. Create instance and delete instance.
-
-        """
-        self.env.revert_snapshot("ready_with_1_slaves")
-        ext_node_names = ['esxi1', 'esxi2', 'vcenter', 'trusty']
-        self.fuel_web.workstation_revert_snapshot(ext_node_names)
-
-        # Configure cluster
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
-            settings={
-                'use_vcenter': True,
-                'host_ip': settings.VCENTER_IP,
-                'vc_user': settings.VCENTER_USERNAME,
-                'vc_password': settings.VCENTER_PASSWORD,
-                'cluster': settings.VCENTER_CLUSTERS
-            }
-        )
-        logger.info("cluster is {}".format(cluster_id))
-
-        # Add nodes to roles
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {'slave-01': ['controller']}
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-
-        # Wait until nova-compute get information about clusters
-        # Fix me. Later need to change sleep with wait function.
-        time.sleep(60)
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
-            should_fail=1,
-            failed_test_name=[('Launch instance, create snapshot,'
-                               ' launch instance from snapshot')])
-
-    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
-          groups=["vcenter_multiple_cluster"])
-    @log_snapshot_on_error
-    def vcenter_multiple_cluster(self):
-
-        """Deploy cluster with controller node only and test Vcenter
-           multiple clusters support feature
-
-        Scenario:
-            1. Create cluster
-            2. Add 1 node with controller role
-            3. Deploy the cluster
-            4. Check that available at least two hypervisor
-            5. Create 4 instances
-            6. Check connectivity between 2 instances in different hypervisor
-        """
-        self.env.revert_snapshot("ready_with_1_slaves")
-        ext_node_names = ['esxi1', 'esxi2', 'vcenter', 'trusty']
-        self.fuel_web.workstation_revert_snapshot(ext_node_names)
-
-        # Configure cluster
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
-            settings={
-                'use_vcenter': True,
-                'host_ip': settings.VCENTER_IP,
-                'vc_user': settings.VCENTER_USERNAME,
-                'vc_password': settings.VCENTER_PASSWORD,
-                'cluster': settings.VCENTER_CLUSTERS
-            }
-        )
-        logger.info("cluster is {0}".format(cluster_id))
-
-        # Add nodes to roles
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {'slave-01': ['controller']}
-        )
-        # Deploy cluster
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-
-        # Wait until nova-compute get information about clusters
-        # Fix me. Later need to change sleep with wait function.
-        time.sleep(60)
-
-        ctrl_ip = self.fuel_web.get_nailgun_node_by_name('slave-01')['ip']
-        logger.info("Controller ip is {}".format(ctrl_ip))
-        os = os_actions.OpenStackActions(ctrl_ip)
-        hypervisors = os.get_hypervisors()
-
-        # Check hypervisor quantity and create instances
-        assert_true(len(hypervisors) > 1, 'Not enoght vCenter clusters.')
-        if len(hypervisors) > 1:
-            logger.info("Create Instances and assign floating ips:")
-            for i in range(1, 6):
-                srv = os.create_server_for_migration(timeout=300)
-                logger.info(os.get_instance_detail(srv).to_dict()['name'])
-                os.assign_floating_ip(srv)
-
-        # Check that there are instanses on each hypervisor
-        # Fix me. Later need to change sleep with wait function.
-        time.sleep(30)
-        hypervisors = os.get_hypervisors()
-        for hypervisor in hypervisors:
-            assert_true(os.get_hypervisor_vms_count(hypervisor) != 0,
-                        "No active VMs on " +
-                        os.get_hypervisor_hostanme(hypervisor))
-            logger.info("{} active VMs  on Hypervisor {}".format(
-                        os.get_hypervisor_vms_count(hypervisor),
-                        os.get_hypervisor_hostanme(hypervisor)))
-
-        # Get instances ips from different hypervisors
-        servers_for_check = {}
-        ips_for_check = []
-        servers = os.get_servers()
-        for server in servers:
-            if os.get_srv_hypervisor_name(server) not in servers_for_check:
-                servers_for_check[os.get_srv_hypervisor_name(server)] = {}
-                server_detail = os.get_instance_detail(server).to_dict()
-                for net_prefs in server_detail['addresses']['novanetwork']:
-                    if net_prefs['OS-EXT-IPS:type'] == 'floating' and \
-                       net_prefs['addr'] not in ips_for_check and \
-                       len(ips_for_check) == 0:
-                        ips_for_check.append(net_prefs['addr'])
-                    if net_prefs['OS-EXT-IPS:type'] == 'fixed' and \
-                       len(ips_for_check) == 1:
-                        ips_for_check.append(net_prefs['addr'])
-
-        # Wait until vm is booted
-        ssh = self.env.get_ssh_to_remote_by_name("slave-01")
-        wait(
-            lambda: not ssh.execute('curl -s -m1 http://' + ips_for_check[0] +
-                                    ':22 |grep -iq "[a-z]"')['exit_code'],
-            interval=10, timeout=100)
-        # Check server's connectivity
-        res = int(os.execute_through_host(ssh, ips_for_check[0],
-                                          "ping -q -c3 " + ips_for_check[1] +
-                                          " 2>/dev/null >/dev/null;"
-                                          " echo -n $?"))
-        assert_true(res == 0, "Error in Instances network connectivity.")
+    # Section with vCenter's tests
+    #  with VMDK (set vCenter+glance)
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["vcenter_ha"])
+          groups=["vcenter_vmdk_simple"])
     @log_snapshot_on_error
-    def vcenter_ha(self):
+    def vcenter_vmdk_simple(self):
 
-        """Deploy cluster with 3 controller nodes and run osft
+        """Deploy cluster with controller node only and test VMDK
+           driver support feature
 
         Scenario:
             1. Create cluster
-            2. Add 3 nodes with controller role
+            2. Add 2 nodes with controller and cinder roles
             3. Deploy the cluster
             4. Run osft
         """
@@ -203,16 +51,23 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'use_vcenter': True,
+                'volumes_lvm': False,
+                'volumes_vmdk': True,
+                'images_vcenter': settings.IMAGES_VCENTER,
                 'host_ip': settings.VCENTER_IP,
                 'vc_user': settings.VCENTER_USERNAME,
                 'vc_password': settings.VCENTER_PASSWORD,
                 'cluster': settings.VCENTER_CLUSTERS,
                 'tenant': 'vcenter',
                 'user': 'vcenter',
-                'password': 'vcenter'
+                'password': 'vcenter',
+                'vc_datacenter': settings.VC_DATACENTER,
+                'vc_datastore': settings.VC_DATASTORE,
+                'vc_image_dir': settings.VC_IMAGE_DIR,
+                'vc_host': settings.VC_HOST
             }
         )
         logger.info("cluster is {0}".format(cluster_id))
@@ -221,26 +76,24 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.update_nodes(
             cluster_id,
             {'slave-01': ['controller'],
-             'slave-02': ['controller'],
-             'slave-03': ['controller']}
+             'slave-02': ['cinder']}
         )
         # Deploy cluster
         self.fuel_web.deploy_cluster_wait(cluster_id)
-
-        # Wait until nova-compute get information about clusters
-        # Fix me. Later need to change sleep with wait function.
-        time.sleep(60)
-
+        self.fuel_web.verify_network(cluster_id)
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'],
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
             should_fail=1,
             failed_test_name=[('Launch instance, create snapshot,'
                                ' launch instance from snapshot')])
+        self.env.make_snapshot("vcenter_vmdk_simple")
+
+
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["vcenter_simple_add_node"])
+          groups=["vcenter_vmdk_simple_add_node"])
     @log_snapshot_on_error
-    def vcenter_simple_add_node(self):
+    def vcenter_vmdk_simple_add_node(self):
         """
         Scenario:
             1. Create cluster
@@ -263,14 +116,20 @@ class VcenterDeploy(TestBasic):
             mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'use_vcenter': True,
-                'volumes_lvm': True,
+                'volumes_lvm': False,
+                'volumes_vmdk': True,
+                'images_vcenter': settings.IMAGES_VCENTER,
                 'host_ip': settings.VCENTER_IP,
                 'vc_user': settings.VCENTER_USERNAME,
                 'vc_password': settings.VCENTER_PASSWORD,
                 'cluster': settings.VCENTER_CLUSTERS,
                 'tenant': 'vcenter',
                 'user': 'vcenter',
-                'password': 'vcenter'
+                'password': 'vcenter',
+                'vc_datacenter': settings.VC_DATACENTER,
+                'vc_datastore': settings.VC_DATASTORE,
+                'vc_image_dir': settings.VC_IMAGE_DIR,
+                'vc_host': settings.VC_HOST
             }
         )
         logger.info("cluster is {0}".format(cluster_id))
@@ -283,9 +142,9 @@ class VcenterDeploy(TestBasic):
         )
         # Deploy cluster
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        # self.fuel_web.verify_network(cluster_id)
-        # self.fuel_web.run_ostf(
-        #    cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
         self.fuel_web.update_nodes(
             cluster_id,
             {
@@ -296,12 +155,12 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.verify_network(cluster_id)
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
-        self.env.make_snapshot("vcenter_simple_add_node")
+        self.env.make_snapshot("vcenter_vmdk_simple_add_node")
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["vcenter_ha_reset_node_during_deployment"])
+          groups=["vcenter_vmdk_ha_reset_node_during_deployment"])
     @log_snapshot_on_error
-    def vcenter_ha_reset_node_during_deployment(self):
+    def vcenter_vmdk_ha_reset_node_during_deployment(self):
 
         """
         Scenario:
@@ -322,14 +181,20 @@ class VcenterDeploy(TestBasic):
             mode=settings.DEPLOYMENT_MODE_HA,
             settings={
                 'use_vcenter': True,
-                'volumes_lvm': True,
+                'volumes_lvm': False,
+                'volumes_vmdk': True,
+                'images_vcenter': settings.IMAGES_VCENTER,
                 'host_ip': settings.VCENTER_IP,
                 'vc_user': settings.VCENTER_USERNAME,
                 'vc_password': settings.VCENTER_PASSWORD,
                 'cluster': settings.VCENTER_CLUSTERS,
                 'tenant': 'vcenter',
                 'user': 'vcenter',
-                'password': 'vcenter'
+                'password': 'vcenter',
+                'vc_datacenter': settings.VC_DATACENTER,
+                'vc_datastore': settings.VC_DATASTORE,
+                'vc_image_dir': settings.VC_IMAGE_DIR,
+                'vc_host': settings.VC_HOST
             }
         )
         logger.info("cluster is {0}".format(cluster_id))
@@ -344,16 +209,16 @@ class VcenterDeploy(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait_progress(cluster_id, progress=30)
         self.fuel_web.warm_restart_nodes(self.env.nodes().slaves[1])
-        self.fuel_web.deploy_cluster(cluster_id)
+        self.fuel_web.deploy_cluster_wait_progress(cluster_id, progress=100)
         self.fuel_web.verify_network(cluster_id)
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
-        self.env.make_snapshot("vcenter_ha_reset_node_during_deployment")
+        self.env.make_snapshot("vcenter_vmdk_ha_reset_node_during_deployment")
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["vcenter_ha_stop_deployment"])
+          groups=["vcenter_vmdk_ha_stop_deployment"])
     @log_snapshot_on_error
-    def vcenter_ha_stop_deployment(self):
+    def vcenter_vmdk_ha_stop_deployment(self):
         """
         Scenario:
             1. Create cluster
@@ -376,14 +241,20 @@ class VcenterDeploy(TestBasic):
             mode=settings.DEPLOYMENT_MODE_HA,
             settings={
                 'use_vcenter': True,
-                'volumes_lvm': True,
+                'volumes_lvm': False,
+                'volumes_vmdk': True,
+                'images_vcenter': settings.IMAGES_VCENTER,
                 'host_ip': settings.VCENTER_IP,
                 'vc_user': settings.VCENTER_USERNAME,
                 'vc_password': settings.VCENTER_PASSWORD,
                 'cluster': settings.VCENTER_CLUSTERS,
                 'tenant': 'vcenter',
                 'user': 'vcenter',
-                'password': 'vcenter'
+                'password': 'vcenter',
+                'vc_datacenter': settings.VC_DATACENTER,
+                'vc_datastore': settings.VC_DATASTORE,
+                'vc_image_dir': settings.VC_IMAGE_DIR,
+                'vc_host': settings.VC_HOST
             }
         )
         logger.info("cluster is {0}".format(cluster_id))
@@ -400,20 +271,21 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.provisioning_cluster_wait(cluster_id)
         self.fuel_web.deploy_task_wait(cluster_id=cluster_id, progress=40)
         try:
-            self.fuel_web.stop_deployment_wait(cluster_id)
+                self.fuel_web.stop_deployment_wait(cluster_id)
         except Exception:
                     logger.debug(traceback.format_exc())
         self.fuel_web.wait_nodes_get_online_state(
             self.env.nodes().slaves[:4])
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
-        self.env.make_snapshot("vcenter_ha_stop_deployment")
+        self.env.make_snapshot("vcenter_vmdk_ha_stop_deployment")
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["vcenter_ha_deployment_with_cinder"])
+          groups=["vcenter_vmdk_ha_deployment_with_cinder"])
     @log_snapshot_on_error
-    def vcenter_ha_deployment_with_cinder(self):
+    def vcenter_vmdk_ha_deployment_with_cinder(self):
         """
         Scenario:
             1. Create cluster
@@ -433,14 +305,20 @@ class VcenterDeploy(TestBasic):
             mode=settings.DEPLOYMENT_MODE_HA,
             settings={
                 'use_vcenter': True,
-                'volumes_lvm': True,
+                'volumes_lvm': False,
+                'volumes_vmdk': True,
+                'images_vcenter': settings.IMAGES_VCENTER,
                 'host_ip': settings.VCENTER_IP,
                 'vc_user': settings.VCENTER_USERNAME,
                 'vc_password': settings.VCENTER_PASSWORD,
                 'cluster': settings.VCENTER_CLUSTERS,
                 'tenant': 'vcenter',
                 'user': 'vcenter',
-                'password': 'vcenter'
+                'password': 'vcenter',
+                'vc_datacenter': settings.VC_DATACENTER,
+                'vc_datastore': settings.VC_DATASTORE,
+                'vc_image_dir': settings.VC_IMAGE_DIR,
+                'vc_host': settings.VC_HOST
             }
         )
         logger.info("cluster is {0}".format(cluster_id))
@@ -460,12 +338,12 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.verify_network(cluster_id)
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
-        self.env.make_snapshot("vcenter_ha_deployment_with_cinder")
+        self.env.make_snapshot("vcenter_vmdk_ha_deployment_with_cinder")
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["vcenter_simple_stop_deployment"])
+          groups=["vcenter_vmdk_simple_stop_deployment"])
     @log_snapshot_on_error
-    def vcenter_simple_stop_deployment(self):
+    def vcenter_vmdk_simple_stop_deployment(self):
         """
         Scenario:
             1. Create cluster
@@ -487,14 +365,20 @@ class VcenterDeploy(TestBasic):
             mode=settings.DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'use_vcenter': True,
-                'volumes_lvm': True,
+                'volumes_lvm': False,
+                'volumes_vmdk': True,
+                'images_vcenter': settings.IMAGES_VCENTER,
                 'host_ip': settings.VCENTER_IP,
                 'vc_user': settings.VCENTER_USERNAME,
                 'vc_password': settings.VCENTER_PASSWORD,
                 'cluster': settings.VCENTER_CLUSTERS,
                 'tenant': 'vcenter',
                 'user': 'vcenter',
-                'password': 'vcenter'
+                'password': 'vcenter',
+                'vc_datacenter': settings.VC_DATACENTER,
+                'vc_datastore': settings.VC_DATASTORE,
+                'vc_image_dir': settings.VC_IMAGE_DIR,
+                'vc_host': settings.VC_HOST
             }
         )
         logger.info("cluster is {0}".format(cluster_id))
@@ -514,6 +398,7 @@ class VcenterDeploy(TestBasic):
                     logger.debug(traceback.format_exc())
         self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:2])
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
-        self.env.make_snapshot("vcenter_simple_stop_deployment")
+        self.env.make_snapshot("vcenter_vmdk_simple_stop_deployment")
