@@ -40,13 +40,13 @@ def debug(logger):
     def wrapper(func):
         @functools.wraps(func)
         def wrapped(*args, **kwargs):
-            logger.debug(
+            logger.info(
                 "Calling: {} with args: {} {}".format(
                     func.__name__, args, kwargs
                 )
             )
             result = func(*args, **kwargs)
-            logger.debug(
+            logger.info(
                 "Done: {} with result: {}".format(func.__name__, result))
             return result
         return wrapped
