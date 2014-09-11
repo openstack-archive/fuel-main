@@ -51,7 +51,7 @@ class VcenterDeploy(TestBasic):
                 'use_vcenter': True,
                 'host_ip': settings.VCENTER_IP,
                 'vc_user': settings.VCENTER_USERNAME,
-                'vc_password': settings.VCENTER_PASSWORD,
+                'vc_ password': settings.VCENTER_PASSWORD,
                 'cluster': settings.VCENTER_CLUSTERS
             }
         )

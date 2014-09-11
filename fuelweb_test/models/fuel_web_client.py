@@ -382,25 +382,30 @@ class FuelWebClient(object):
 
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
-        #TODO: rw105719
-        #self.client.add_syslog_server(
+        # TODO: rw105719
+        # self.client.add_syslog_server(
         #    cluster_id, self.environment.get_host_node_ip(), port)
 
         return cluster_id
 
     def deploy_cluster_wait(self, cluster_id, is_feature=False,
                             timeout=50 * 60, interval=30):
-        if not is_feature:
-            logger.info('Deploy cluster %s', cluster_id)
-            task = self.deploy_cluster(cluster_id)
-            self.assert_task_success(task, interval=interval)
-        else:
-            logger.info('Provision nodes of a cluster %s', cluster_id)
-            task = self.client.provision_nodes(cluster_id)
-            self.assert_task_success(task, timeout=timeout, interval=interval)
-            logger.info('Deploy nodes of a cluster %s', cluster_id)
-            task = self.client.deploy_nodes(cluster_id)
-            self.assert_task_success(task, timeout=timeout, interval=interval)
+        try:
+            if not is_feature:
+                logger.info('Deploy cluster %s', cluster_id)
+                task = self.deploy_cluster(cluster_id)
+                self.assert_task_success(task, interval=interval)
+            else:
+                logger.info('Provision nodes of a cluster %s', cluster_id)
+                task = self.client.provision_nodes(cluster_id)
+                self.assert_task_success(task, timeout=timeout,
+                                         interval=interval)
+                logger.info('Deploy nodes of a cluster %s', cluster_id)
+                task = self.client.deploy_nodes(cluster_id)
+                self.assert_task_success(task, timeout=timeout,
+                                         interval=interval)
+        except Exception:
+                self.stop_deployment_wait(cluster_id)
 
     def deploy_cluster_wait_progress(self, cluster_id, progress):
         task = self.deploy_cluster(cluster_id)
@@ -620,7 +625,6 @@ class FuelWebClient(object):
         for node_name in nodes_dict:
             devops_node = self.environment.get_virtual_environment().\
                 node_by_name(node_name)
-
             wait(lambda:
                  self.get_nailgun_node_by_devops_node(devops_node)['online'],
                  timeout=60 * 2)
