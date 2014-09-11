@@ -18,6 +18,8 @@ from fuelweb_test.helpers.decorators import json_parse
 from fuelweb_test.helpers.http import HTTPClient
 from fuelweb_test.settings import KEYSTONE_CREDS
 from fuelweb_test.settings import OPENSTACK_RELEASE
+from fuelweb_test.settings import MANAGEMENT_CIDR
+from fuelweb_test.settings import NSX_CONNECTOR_TYPE
 
 
 class NailgunClient(object):
@@ -59,7 +61,8 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def verify_networks(self, cluster_id):
-        net_provider = self.get_cluster(cluster_id)['net_provider']
+        cluster = self.get_cluster(cluster_id)
+        net_provider = cluster['net_provider']
         return self.client.put(
             "/api/clusters/{}/network_configuration/{}/verify/".format(
                 cluster_id, net_provider
@@ -84,9 +87,7 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def get_cluster(self, cluster_id):
-        return self.client.get(
-            "/api/clusters/{}".format(cluster_id)
-        )
+        return self.client.get("/api/clusters/{}".format(cluster_id))
 
     @logwrap
     @json_parse
@@ -250,6 +251,25 @@ class NailgunClient(object):
             ),
             nc
         )
+
+    @logwrap
+    @json_parse
+    def update_management_network_settings(self, cluster_id):
+            net_config = self.get_networks(cluster_id)
+            logger.info('INFO: net_config: %s' % net_config)
+            if net_config["networks"][1]["name"] == "management":
+                net_config["networks"][1]["cidr"] = MANAGEMENT_CIDR
+            if NSX_CONNECTOR_TYPE == 'bridge':
+                net_config["networks"][1]["vlan_start"] = 101
+            else:
+                net_config["networks"][1]["vlan_start"] = 'null'
+            net_provider = self.get_cluster(cluster_id)['net_provider']
+            logger.info('INFO: net_provider: %s' % net_provider)
+            return self.client.put(
+                "/api/clusters/{}/network_configuration/{}"
+                .format(cluster_id, net_provider),
+                data=net_config
+            )
 
     @logwrap
     def get_cluster_id(self, name):

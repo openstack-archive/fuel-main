@@ -44,8 +44,8 @@ from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from fuelweb_test.settings import OSTF_TEST_NAME
 from fuelweb_test.settings import OSTF_TEST_RETRIES_COUNT
 from fuelweb_test.settings import TIMEOUT
-from fuelweb_test.settings import VCENTER_USE
-
+from fuelweb_test.settings import W_HOST_USER
+from fuelweb_test.settings import W_HOST_PASSWORD
 
 import fuelweb_test.settings as help_data
 
@@ -329,7 +329,13 @@ class FuelWebClient(object):
                     {
                         'net_provider': settings["net_provider"],
                         'net_segment_type': settings[
-                            "net_segment_type"]
+                            "net_segment_type"],
+                    }
+                )
+            if "net_l23_provider" in settings:
+                data.update(
+                    {
+                        'net_l23_provider': settings["net_l23_provider"],
                     }
                 )
 
@@ -346,10 +352,14 @@ class FuelWebClient(object):
                     section = 'additional_components'
                 if option in ('volumes_ceph', 'images_ceph', 'ephemeral_ceph',
                               'objects_ceph', 'osd_pool_size', 'volumes_lvm',
-                              'volumes_vmdk'):
+                              'volumes_vmdk', 'images_vcenter'):
                     section = 'storage'
                 if option in ('tenant', 'password', 'user'):
                     section = 'access'
+                if option in ('nsx_username', 'nsx_password', 'connector_type',
+                              'packages_url', 'nsx_controllers',
+                              'l3_gw_service_uuid', 'transport_zone_uuid'):
+                    section = 'nsx_plugin'
                 if option in ('vc_password', 'cluster', 'host_ip', 'vc_user',
                               'use_vcenter'):
                     section = 'vcenter'
@@ -371,22 +381,40 @@ class FuelWebClient(object):
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "kvm"
 
-            if VCENTER_USE:
-                logger.info('Set Hypervisor type to vCenter')
+            if help_data.NSX_PLUGIN:
+                hpv_data = attributes['editable']['nsx_plugin']['metadata']
+                hpv_data['enabled'] = True
+
+            logger.info('Set Hypervisor type to vCenter')
+            if help_data.VCENTER_USE:
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "vcenter"
+            if settings['volumes_vmdk']:
+                datacenter = attributes['editable']['storage']['vc_datacenter']
+                datacenter['value'] = help_data.VC_DATACENTER
+                datastore = attributes['editable']['storage']['vc_datastore']
+                datastore['value'] = help_data.VC_DATASTORE
+                imagedir = attributes['editable']['storage']['vc_image_dir']
+                imagedir['value'] = help_data.VC_IMAGE_DIR
+                host = attributes['editable']['storage']['vc_host']
+                host['value'] = help_data.VC_HOST
+                vc_user = attributes['editable']['storage']['vc_user']
+                vc_user['value'] = help_data.VC_USER
+                vc_password = attributes['editable']['storage']['vc_password']
+                vc_password['value'] = help_data.VC_PASSWORD
+                clusters = attributes['editable']['vcenter']['cluster']
+                clusters['value'] = help_data.VCENTER_CLUSTERS
 
-            logger.debug("Try to update cluster "
-                         "with next attributes {0}".format(attributes))
+            logger.info("Try to update cluster "
+                        "with next attributes {0}".format(attributes))
             self.client.update_cluster_attributes(cluster_id, attributes)
-            logger.debug("Attributes of cluster were updated,"
-                         " going to update networks ...")
+            logger.info("Attributes of cluster were updated "
+                        "going to update networks ...")
             self.update_network_configuration(cluster_id)
-
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
-        #TODO: rw105719
-        #self.client.add_syslog_server(
+        # TODO: rw105719
+        # self.client.add_syslog_server(
         #    cluster_id, self.environment.get_host_node_ip(), port)
 
         return cluster_id
@@ -534,7 +562,6 @@ class FuelWebClient(object):
 
     @logwrap
     def run_network_verify(self, cluster_id):
-        logger.info('Run network verification at cluster %s', cluster_id)
         return self.client.verify_networks(cluster_id)
 
     @logwrap
@@ -624,7 +651,6 @@ class FuelWebClient(object):
         for node_name in nodes_dict:
             devops_node = self.environment.get_virtual_environment().\
                 node_by_name(node_name)
-
             wait(lambda:
                  self.get_nailgun_node_by_devops_node(devops_node)['online'],
                  timeout=60 * 2)
@@ -782,9 +808,7 @@ class FuelWebClient(object):
 
     @logwrap
     def update_network_configuration(self, cluster_id):
-        logger.info('Update network settings of cluster %s', cluster_id)
         net_config = self.client.get_networks(cluster_id)
-
         new_settings = self.update_net_settings(net_config)
         self.client.update_network(
             cluster_id=cluster_id,
@@ -961,12 +985,12 @@ class FuelWebClient(object):
         self.assert_task_success(task, timeout=50 * 60, interval=30)
 
     @logwrap
-    def wait_nodes_get_online_state(self, nodes):
+    def wait_nodes_get_online_state(self, nodes, timeout=60 * 4):
         for node in nodes:
             logger.info('Wait for %s node online status', node.name)
             wait(lambda:
                  self.get_nailgun_node_by_devops_node(node)['online'],
-                 timeout=60 * 4)
+                 timeout=timeout)
             node = self.get_nailgun_node_by_devops_node(node)
             assert_true(node['online'],
                         'Node {0} is online'.format(node['mac']))
