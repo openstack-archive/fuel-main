@@ -44,8 +44,6 @@ from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from fuelweb_test.settings import OSTF_TEST_NAME
 from fuelweb_test.settings import OSTF_TEST_RETRIES_COUNT
 from fuelweb_test.settings import TIMEOUT
-from fuelweb_test.settings import VCENTER_USE
-
 
 import fuelweb_test.settings as help_data
 
@@ -328,8 +326,7 @@ class FuelWebClient(object):
                 data.update(
                     {
                         'net_provider': settings["net_provider"],
-                        'net_segment_type': settings[
-                            "net_segment_type"]
+                        'net_segment_type': settings["net_segment_type"],
                     }
                 )
 
@@ -346,7 +343,7 @@ class FuelWebClient(object):
                     section = 'additional_components'
                 if option in ('volumes_ceph', 'images_ceph', 'ephemeral_ceph',
                               'objects_ceph', 'osd_pool_size', 'volumes_lvm',
-                              'volumes_vmdk'):
+                              'images_vcenter'):
                     section = 'storage'
                 if option in ('tenant', 'password', 'user'):
                     section = 'access'
@@ -371,18 +368,18 @@ class FuelWebClient(object):
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "kvm"
 
-            if VCENTER_USE:
-                logger.info('Set Hypervisor type to vCenter')
+            logger.info('Set Hypervisor type to vCenter')
+            if help_data.VCENTER_USE:
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "vcenter"
 
-            logger.debug("Try to update cluster "
-                         "with next attributes {0}".format(attributes))
+            logger.info("Try to update cluster "
+                        "with next attributes {0}".format(attributes))
             self.client.update_cluster_attributes(cluster_id, attributes)
-            logger.debug("Attributes of cluster were updated,"
-                         " going to update networks ...")
-            self.update_network_configuration(cluster_id)
+            logger.debug("Attributes of cluster were updated "
+                        "going to update networks ...")
 
+            self.update_network_configuration(cluster_id)
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
         #TODO: rw105719
@@ -522,6 +519,7 @@ class FuelWebClient(object):
 
     @logwrap
     def get_ssh_for_role(self, nodes_dict, role):
+        logger.info('Run network verification at cluster %s', cluster_id)
         node_name = sorted(filter(lambda name: role in nodes_dict[name],
                            nodes_dict.keys()))[0]
         return self.get_ssh_for_node(node_name)
@@ -534,7 +532,6 @@ class FuelWebClient(object):
 
     @logwrap
     def run_network_verify(self, cluster_id):
-        logger.info('Run network verification at cluster %s', cluster_id)
         return self.client.verify_networks(cluster_id)
 
     @logwrap
