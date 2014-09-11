@@ -170,6 +170,15 @@ VCENTER_USERNAME = os.environ.get('VCENTER_USERNAME')
 VCENTER_PASSWORD = os.environ.get('VCENTER_PASSWORD')
 VCENTER_CLUSTERS = os.environ.get('VCENTER_CLUSTERS')
 
+# VMDK storage settings
+VC_HOST = os.environ.get('VC_HOST')
+VC_USER = os.environ.get('VC_USER')
+VC_PASSWORD = os.environ.get('VC_PASSWORD')
+VC_DATACENTER = os.environ.get('VC_DATACENTER')
+VC_DATASTORE = os.environ.get('VC_DATASTORE')
+VC_IMAGE_DIR = os.environ.get('VC_IMAGE_DIR')
+IMAGES_VCENTER = os.environ.get('IMAGES_VCENTER')
+
 # Services tests
 SERVTEST_LOCAL_PATH = os.environ.get('SERVTEST_LOCAL_PATH', '/tmp')
 SERVTEST_USERNAME = os.environ.get('SERVTEST_USERNAME', 'admin')
