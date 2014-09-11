@@ -382,8 +382,8 @@ class FuelWebClient(object):
 
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
-        #TODO: rw105719
-        #self.client.add_syslog_server(
+        # TODO: rw105719
+        # self.client.add_syslog_server(
         #    cluster_id, self.environment.get_host_node_ip(), port)
 
         return cluster_id
@@ -620,7 +620,6 @@ class FuelWebClient(object):
         for node_name in nodes_dict:
             devops_node = self.environment.get_virtual_environment().\
                 node_by_name(node_name)
-
             wait(lambda:
                  self.get_nailgun_node_by_devops_node(devops_node)['online'],
                  timeout=60 * 2)

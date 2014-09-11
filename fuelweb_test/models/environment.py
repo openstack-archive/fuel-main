@@ -120,8 +120,8 @@ class EnvironmentModel(object):
 
         for node in devops_nodes:
             node.start()
-            #TODO(aglarendil): LP#1317213 temporary sleep
-            #remove after better fix is applied
+            # TODO(aglarendil): LP#1317213 temporary sleep
+            # remove after better fix is applied
             time.sleep(2)
         wait(lambda: all(self.nailgun_nodes(devops_nodes)), 15, timeout)
 
