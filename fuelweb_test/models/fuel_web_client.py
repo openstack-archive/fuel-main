@@ -46,8 +46,6 @@ from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from fuelweb_test.settings import OSTF_TEST_NAME
 from fuelweb_test.settings import OSTF_TEST_RETRIES_COUNT
 from fuelweb_test.settings import TIMEOUT
-from fuelweb_test.settings import VCENTER_USE
-
 
 import fuelweb_test.settings as help_data
 
@@ -330,8 +328,7 @@ class FuelWebClient(object):
                 data.update(
                     {
                         'net_provider': settings["net_provider"],
-                        'net_segment_type': settings[
-                            "net_segment_type"]
+                        'net_segment_type': settings["net_segment_type"],
                     }
                 )
 
@@ -348,7 +345,7 @@ class FuelWebClient(object):
                     section = 'additional_components'
                 if option in ('volumes_ceph', 'images_ceph', 'ephemeral_ceph',
                               'objects_ceph', 'osd_pool_size', 'volumes_lvm',
-                              'volumes_vmdk'):
+                              'volumes_vmdk', 'images_vcenter'):
                     section = 'storage'
                 if option in ('tenant', 'password', 'user'):
                     section = 'access'
@@ -373,14 +370,36 @@ class FuelWebClient(object):
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "kvm"
 
-            if VCENTER_USE:
-                logger.info('Set Hypervisor type to vCenter')
+            logger.info('Set Hypervisor type to vCenter')
+            if help_data.VCENTER_USE:
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "vcenter"
 
-            logger.debug("Try to update cluster "
-                         "with next attributes {0}".format(attributes))
+                datacenter = attributes['editable']['storage']['vc_datacenter']
+                datacenter['value'] = help_data.VC_DATACENTER
+
+                datastore = attributes['editable']['storage']['vc_datastore']
+                datastore['value'] = help_data.VC_DATASTORE
+
+                imagedir = attributes['editable']['storage']['vc_image_dir']
+                imagedir['value'] = help_data.VC_IMAGE_DIR
+
+                host = attributes['editable']['storage']['vc_host']
+                host['value'] = help_data.VC_HOST
+
+                vc_user = attributes['editable']['storage']['vc_user']
+                vc_user['value'] = help_data.VC_USER
+
+                vc_password = attributes['editable']['storage']['vc_password']
+                vc_password['value'] = help_data.VC_PASSWORD
+
+                vc_clusters = attributes['editable']['vcenter']['cluster']
+                vc_clusters['value'] = help_data.VCENTER_CLUSTERS
+
+            logger.info("Try to update cluster "
+                        "with next attributes {0}".format(attributes))
             self.client.update_cluster_attributes(cluster_id, attributes)
+
             logger.debug("Attributes of cluster were updated,"
                          " going to update networks ...")
             if MULTIPLE_NETWORKS:
