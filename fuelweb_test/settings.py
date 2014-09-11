@@ -162,13 +162,45 @@ PATCH_PATH = os.environ.get(
 
 KVM_USE = os.environ.get('KVM_USE', 'false') == 'true'
 VCENTER_USE = os.environ.get('VCENTER_USE', 'false') == 'true'
-DEBUG_MODE = os.environ.get('DEBUG_MODE', 'true') == 'true'
+DEBUG_MODE = True
 
 # vCenter tests
 VCENTER_IP = os.environ.get('VCENTER_IP')
+# here must be: VCENTER_IP=172.16.0.254
 VCENTER_USERNAME = os.environ.get('VCENTER_USERNAME')
+# here must be: VCENTER_USERNAME=administrator@vsphere.local
 VCENTER_PASSWORD = os.environ.get('VCENTER_PASSWORD')
+# here must be: VCENTER_PASSWORD="Qwer!1234"
 VCENTER_CLUSTERS = os.environ.get('VCENTER_CLUSTERS')
+# here must be: VCENTER_CLUSTERS="Cluster1,Cluster2"
+
+# VMDK storage settings
+VC_DATACENTER = 'Datacenter'
+VC_DATASTORE = 'nfs'
+VC_IMAGE_DIR = '/openstack_glance'
+VC_HOST = '172.16.0.254'
+VC_PASSWORD = "Qwer!1234"
+IMAGES_VCENTER = True
+VC_USER = "administrator@vsphere.local"
+
+# NSX tests
+NSX_PLUGIN = os.environ.get('NSX_PLUGIN', 'false') == 'true'
+NSX_USERNAME = os.environ.get('NSX_USERNAME')
+# here must be: NSX_USERNAME="admin"
+NSX_PASSWORD = os.environ.get('NSX_PASSWORD')
+# here must be: NSX_PASSWORD="admin"
+NSX_TRANSPORT_ZONE = os.environ.get('NSX_TRANSPORT_ZONE')
+# here must be: NSX_TRANSPORT_ZONE="0f12c1f7-5605-46b6-aa3f-4bf50bde47e5"
+L3_SERVICE_UUID = os.environ.get('L3_SERVICE_UUID')
+# here must be: L3_SERVICE_UUID="aa153851-bd8e-4852-9772-d98a431849e0"
+NSX_CONTROLLER_ENDPOINT = os.environ.get('NSX_CONTROLLER_ENDPOINT')
+# here must be: NSX_CONTROLLER_ENDPOINT="172.16.1.253"
+URL_TO_NSX_BITS = os.environ.get('URL_TO_NSX_BITS')
+# here must be: URL_TO_NSX_BITS="http://172.18.170.84"
+NSX_CONNECTOR_TYPE = os.environ.get('NSX_CONNECTOR_TYPE')
+# here must be: NSX_CONNECTOR_TYPE="stt" or 'gre'
+# or 'ipsec_gre' or 'ipsec_stt' or 'bridge'
+MANAGEMENT_CIDR = "172.16.1.0/24"
 
 # Services tests
 SERVTEST_LOCAL_PATH = os.environ.get('SERVTEST_LOCAL_PATH', '/tmp')
@@ -220,7 +252,7 @@ DEPLOYMENT_NAME = os.environ.get('DEPLOYMENT_NAME')
 TIMEOUT = int(os.environ.get('TIMEOUT', 10))
 ATTEMPTS = int(os.environ.get('ATTEMPTS', 5))
 
-#Create snapshots as last step in test-case
+# Create snapshots as last step in test-case
 MAKE_SNAPSHOT = os.environ.get('MAKE_SNAPSHOT', 'false') == 'true'
 
 NEUTRON_ENABLE = os.environ.get('NEUTRON_ENABLE', 'false') == 'true'
