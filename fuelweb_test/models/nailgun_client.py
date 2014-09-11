@@ -18,7 +18,7 @@ from fuelweb_test.helpers.decorators import json_parse
 from fuelweb_test.helpers.http import HTTPClient
 from fuelweb_test.settings import KEYSTONE_CREDS
 from fuelweb_test.settings import OPENSTACK_RELEASE
-
+from fuelweb_test.settings import MANAGEMENT_CIDR
 
 class NailgunClient(object):
     def __init__(self, admin_node_ip, **kwargs):
@@ -49,7 +49,11 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def get_networks(self, cluster_id):
+        logger.info('We in get networks!')
+        cl = self.get_cluster(cluster_id)
+        logger.info('Cluster is: ' % cl)
         net_provider = self.get_cluster(cluster_id)['net_provider']
+        logger.info('Net provider is %s' % net_provider)
         return self.client.get(
             "/api/clusters/{}/network_configuration/{}".format(
                 cluster_id, net_provider
@@ -59,7 +63,11 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def verify_networks(self, cluster_id):
-        net_provider = self.get_cluster(cluster_id)['net_provider']
+        logger.info('Before debug network!!! %s')
+        cluster = self.get_cluster(cluster_id)
+        logger.info('!!!The cluster id is %s', cluster)
+        net_provider = cluster['net_provider']
+        logger.info('!!!The net_provider_cluster id is %s', net_provider)
         return self.client.put(
             "/api/clusters/{}/network_configuration/{}/verify/".format(
                 cluster_id, net_provider
@@ -84,9 +92,8 @@ class NailgunClient(object):
     @logwrap
     @json_parse
     def get_cluster(self, cluster_id):
-        return self.client.get(
-            "/api/clusters/{}".format(cluster_id)
-        )
+        return self.client.get("/api/clusters/{}".format(cluster_id))
+
 
     @logwrap
     @json_parse
@@ -250,6 +257,21 @@ class NailgunClient(object):
             ),
             nc
         )
+
+    @logwrap
+    @json_parse
+    def update_management_network_settings(self, cluster_id):
+            net_config = self.get_networks(cluster_id)
+            logger.info('INFO: net_config: %s' % net_config)
+            if net_config["networks"][1]["name"] == "management":
+                net_config["networks"][1]["cidr"] = MANAGEMENT_CIDR
+            net_provider = self.get_cluster(cluster_id)['net_provider']
+            logger.info('INFO: net_provider: %s' % net_provider)
+            return self.client.put(
+                "/api/clusters/{}/network_configuration/{}".format(
+                cluster_id, net_provider
+                ), data=net_config
+            )
 
     @logwrap
     def get_cluster_id(self, name):

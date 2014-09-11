@@ -70,7 +70,10 @@ class HTTPClient(object):
         if not data:
             data = {}
         logger.info('self url is %s' % self.url)
+        logger.info('endpoint is %s' % endpoint)
+        logger.info('data is %s' % data)
         req = urllib2.Request(self.url + endpoint, data=json.dumps(data))
+        logger.info('req is achived %s' % req)
         req.add_header('Content-Type', content_type)
         return self._open(req)
 
@@ -96,6 +99,7 @@ class HTTPClient(object):
                 self.authenticate()
                 return self._get_response(req)
             else:
+                logger.warning('!!!!!!!!!!!!!!!!!! Exc code %s' % e.code)
                 raise
 
     def _get_response(self, req):
