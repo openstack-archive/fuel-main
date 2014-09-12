@@ -16,6 +16,7 @@ import time
 import yaml
 
 from devops.helpers.helpers import _get_file_size
+from devops.helpers.helpers import _wait
 from devops.helpers.helpers import SSHClient
 from devops.helpers.helpers import wait
 from devops.manager import Manager
@@ -359,6 +360,7 @@ class EnvironmentModel(object):
                 logger.info('Admin node started second time.')
                 self.nodes().admin.await(
                     self.admin_net, timeout=10 * 60, by_port=8000)
+                _wait(self._fuel_web.get_nailgun_version(), timeout=120)
 
             self.sync_time_admin_node()
 
