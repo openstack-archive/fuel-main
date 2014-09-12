@@ -21,6 +21,7 @@ import traceback
 import urllib2
 
 from devops.helpers import helpers
+from fuelweb_test.helpers.regenerate_repo import CustomRepo
 from proboscis import SkipTest
 
 from fuelweb_test import logger
@@ -192,3 +193,25 @@ def retry(count=3, delay=30):
                     time.sleep(delay)
         return wrapper
     return wrapped
+
+
+def custom_repo(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        custom_pkgs = CustomRepo(args[0].environment)
+        try:
+            if settings.CUSTOM_PKGS_MIRROR:
+                custom_pkgs.prepare_repository()
+
+        except Exception:
+            logger.error("Unable to get custom packages from {0}\n{1}"
+                         .format(settings.CUSTOM_PKGS_MIRROR,
+                                 traceback.format_exc()))
+            raise
+
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            custom_pkgs.check_puppet_logs()
+            raise
+    return wrapper
