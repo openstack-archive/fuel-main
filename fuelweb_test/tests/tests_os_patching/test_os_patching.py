@@ -148,8 +148,8 @@ class TestPatch(TestBasic):
         logger.info('Huh all preparation for update are done.'
                     ' It is time to update cluster ...')
 
-        self.fuel_web.run_update(
-            cluster_id=cluster_id, timeout=30 * 60, interval=20)
+        self.fuel_web.run_update(cluster_id=cluster_id,
+                                 timeout=hlp_data.UPDATE_TIMEOUT, interval=20)
 
         # Check packages after
 
@@ -231,8 +231,8 @@ class TestPatch(TestBasic):
                 'release_id': self.fuel_web.get_cluster_release_id(
                     cluster_id)})
 
-        self.fuel_web.run_update(
-            cluster_id=cluster_id, timeout=15 * 60, interval=20)
+        self.fuel_web.run_update(cluster_id=cluster_id,
+                                 timeout=hlp_data.UPDATE_TIMEOUT, interval=20)
 
         # Check packages after
 
