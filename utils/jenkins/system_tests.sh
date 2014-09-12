@@ -17,6 +17,11 @@ CDWORKSPACE_ERR=110
 ISODOWNLOAD_ERR=111 
 INVALIDTASK_ERR=112
 
+# Defaults
+
+export REBOOT_TIMEOUT=${REBOOT_TIMEOUT:-5000}
+
+
 ShowHelp() {
 cat << EOF
 System Tests Script
