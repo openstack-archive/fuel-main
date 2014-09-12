@@ -239,3 +239,5 @@ UPGRADE_FUEL_TO = os.environ.get('UPGRADE_FUEL_TO', '5.1')
 SNAPSHOT = os.environ.get('SNAPSHOT', '')
 # For 5.1 we have 2 releases in tarball and should specify what we need
 RELEASE_VERSION = os.environ.get('RELEASE_VERSION', '')
+
+UPDATE_TIMEOUT = os.environ.get('UPDATE_TIMEOUT', 3600)
