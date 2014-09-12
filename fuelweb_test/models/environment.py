@@ -511,6 +511,30 @@ class EnvironmentModel(object):
                                 remote_status['exit_code'],
                                 remote_status['stdout']))
 
+    # Modifies a resolv.conf on the Fuel master node and returns
+    # its original content.
+    # * adds 'nameservers' at start of resolv.conf if merge=True
+    # * replaces resolv.conf with 'nameservers' if merge=False
+    def modify_resolv_conf(self, nameservers=[], merge=True):
+        remote = self.get_admin_remote()
+        resolv_conf = remote.execute('cat /etc/resolv.conf')
+        assert_equal(0, resolv_conf['exit_code'], 'Executing "{0}" on the '
+                     'admin node has failed with: {1}'.format(
+                     'cat /etc/resolv.conf', resolv_conf['stderr']))
+        if merge:
+            nameservers.extend(resolv_conf['stdout'])
+
+        resolv_keys = ['search', 'domain', 'nameserver']
+        resolv_new = "".join('{0}\n'.format(ns) for ns in nameservers
+                             if any(x in ns for x in resolv_keys))
+        logger.debug('echo "{0}" > /etc/resolv.conf'.format(resolv_new))
+        echo_cmd = 'echo "{0}" > /etc/resolv.conf'.format(resolv_new)
+        echo_result = remote.execute(echo_cmd)
+        assert_equal(0, echo_result['exit_code'], 'Executing "{0}" on the '
+                     'admin node has failed with: {1}'.format(
+                     echo_cmd, echo_result['stderr']))
+        return resolv_conf['stdout']
+
     @logwrap
     def execute_remote_cmd(self, remote, cmd, exit_code=0):
         result = remote.execute(cmd)
