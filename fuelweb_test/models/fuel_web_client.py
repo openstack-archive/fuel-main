@@ -1106,8 +1106,9 @@ class FuelWebClient(object):
     @logwrap
     def get_releases_list_for_os(self, release_name, release_version=None):
         full_list = self.client.get_releases()
+        sorted_list = sorted(full_list, key=lambda x: x['version'])
         release_ids = []
-        for release in full_list:
+        for release in sorted_list:
             if release_version:
                 if release_name in release['name'] \
                         and release_version == release['version']:

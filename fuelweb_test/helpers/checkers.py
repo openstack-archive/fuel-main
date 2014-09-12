@@ -266,7 +266,7 @@ def check_tarball_exists(node_ssh, name, path):
 @logwrap
 def untar(node_ssh, name, path):
     filename, ext = os.path.splitext(name)
-    cmd = "tar -xpvf" if ext.endswith("tar") else "lrzuntar"
+    cmd = "tar -xpf" if ext.endswith("tar") else "lrzuntar"
     result = ''.join(node_ssh.execute(
         'cd {0} && {2} {1}'.format(path, name, cmd))['stdout'])
     logger.debug('Result from tar command is {0}'.format(result))
@@ -317,9 +317,11 @@ def wait_rollback_is_done(node_ssh, timeout):
 @logwrap
 def get_package_versions_from_node(remote, name, os_type):
     if os_type and 'Ubuntu' in os_type:
-        cmd = 'dpkg -l | grep {0}'.format(name)
+        cmd = 'dpkg -l'
     else:
-        cmd = 'rpm -qa | grep {0}'.format(name)
+        cmd = 'rpm -qa'
+    if name:
+        cmd = '{0} | grep "{1}"'.format(cmd, name)
     try:
         result = ''.join(remote.execute(cmd)['stdout'])
         return result
