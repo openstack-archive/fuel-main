@@ -186,3 +186,28 @@ def retry(count=3, delay=30):
                     sleep(delay)
         return wrapper
     return wrapped
+
+
+def custom_repo(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        from fuelweb_test.helpers.regenerate_repo import CustomRepo
+
+        custom_pkgs = CustomRepo()
+        try:
+            if settings.CUSTOM_PKGS_MIRROR:
+                custom_pkgs.prepare_repository()
+
+        except Exception:
+            logger.error("Unable to get custom packets from {0}\n{1}"
+                         .format(settings.CUSTOM_PKGS_MIRROR,
+                                 traceback.format_exc()))
+            raise
+
+        try:
+            result = func(*args, **kwargs)
+            return result
+        except Exception:
+            custom_pkgs.check_puppet_logs()
+            raise
+    return wrapper
