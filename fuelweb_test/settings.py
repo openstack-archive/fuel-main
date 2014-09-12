@@ -240,4 +240,10 @@ SNAPSHOT = os.environ.get('SNAPSHOT', '')
 # For 5.1 we have 2 releases in tarball and should specify what we need
 RELEASE_VERSION = os.environ.get('RELEASE_VERSION', '')
 
+# URL to custom mirror with new OSCI packages wich should be tested,
+# for example:
+# CentOS: http://osci-obs.vm.mirantis.net:82/centos-fuel-master-20921/centos/
+# Ubuntu: http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-master-20921/ubuntu/
+CUSTOM_PKGS_MIRROR = os.environ.get('CUSTOM_PKGS_MIRROR', '')
+
 UPDATE_TIMEOUT = os.environ.get('UPDATE_TIMEOUT', 3600)
