@@ -130,7 +130,7 @@ class SimpleFlat(TestBasic):
 
          Scenario:
             1. Revert "simple flat" environment
-            2. Remove controller nodes
+            2. Remove compute nodes
             3. Deploy changes
             4. Verify node returns to unallocated pull
 
@@ -139,7 +139,7 @@ class SimpleFlat(TestBasic):
 
         cluster_id = self.fuel_web.get_last_created_cluster()
         nailgun_nodes = self.fuel_web.update_nodes(
-            cluster_id, {'slave-01': ['controller']}, False, True)
+            cluster_id, {'slave-02': ['compute']}, False, True)
         task = self.fuel_web.deploy_cluster(cluster_id)
         self.fuel_web.assert_task_success(task)
         nodes = filter(lambda x: x["pending_deletion"] is True, nailgun_nodes)
