@@ -17,8 +17,10 @@ $(BUILD_DIR)/repos/$1.done:
 	# Clone repo and checkout required commit
 	mkdir -p $(BUILD_DIR)/repos
 	rm -rf $(BUILD_DIR)/repos/$1
-	# Clone with depth=1 if no gerrit commits given, otherwise clone everything
-	test "$5" = "none" && git clone --depth 1 --branch $3 $2 $(BUILD_DIR)/repos/$1 || git clone --branch $3 $2 $(BUILD_DIR)/repos/$1
+
+	#Clone everything and checkout to branch (or hash)
+	git clone $2 $(BUILD_DIR)/repos/$1 && (cd $(BUILD_DIR)/repos/$1 && git checkout -q $3)
+
 	# Pull gerrit commits if given
 	$(foreach var,$5,
 		test "$(var)" = "none" || ( cd $(BUILD_DIR)/repos/$1 && git fetch $4 $(var) && git cherry-pick FETCH_HEAD ) ;
