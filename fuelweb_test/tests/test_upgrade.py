@@ -321,7 +321,7 @@ class RollbackFuelMaster(base_test_data.TestBasic):
                                          'fuel_upgrade/engines/'
                                          'docker_engine.py')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
-                            rollback=True)
+                            rollback=True, exit_code=255)
         checkers.wait_rollback_is_done(self.env.get_admin_remote(), 3000)
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_TO,
@@ -330,9 +330,7 @@ class RollbackFuelMaster(base_test_data.TestBasic):
         self.fuel_web.assert_nodes_in_ready_state(cluster_id)
         self.fuel_web.assert_fuel_version(hlp_data.UPGRADE_FUEL_FROM)
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            should_fail=1,
-            failed_test_name=['Create volume and attach it to instance'])
+            cluster_id=cluster_id)
         self.env.bootstrap_nodes(self.env.nodes().slaves[3:4])
         self.fuel_web.update_nodes(
             cluster_id, {'slave-04': ['cinder']},
