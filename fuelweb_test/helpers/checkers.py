@@ -273,14 +273,15 @@ def untar(node_ssh, name, path):
 
 
 @logwrap
-def run_script(node_ssh, script_path, script_name, rollback=False):
+def run_script(node_ssh, script_path, script_name, rollback=False,
+               exit_code=0):
     path = os.path.join(script_path, script_name)
     c_res = node_ssh.execute('chmod 755 {0}'.format(path))
     logger.debug("Result of cmod is {0}".format(c_res))
     if rollback:
         chan, stdin, stderr, stdout = node_ssh.execute_async(path)
         logger.debug('Try to read status code from chain...')
-        assert_equal(chan.recv_exit_status(), 0,
+        assert_equal(chan.recv_exit_status(), exit_code,
                      'Upgrade script fails with next message {0}'.format(
                          ''.join(stderr)))
     else:
@@ -288,7 +289,7 @@ def run_script(node_ssh, script_path, script_name, rollback=False):
                                     script_name, ' --no-rollback')
         chan, stdin, stderr, stdout = node_ssh.execute_async(path)
         logger.debug('Try to read status code from chain...')
-        assert_equal(chan.recv_exit_status(), 0,
+        assert_equal(chan.recv_exit_status(), exit_code,
                      'Upgrade script fails with next message {0}'.format(
                          ''.join(stderr)))
 
