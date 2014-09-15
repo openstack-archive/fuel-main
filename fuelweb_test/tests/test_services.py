@@ -31,15 +31,15 @@ from fuelweb_test.tests.base_test_case import TestBasic
 
 @test(groups=["services", "services.sahara", "services_simple"])
 class SaharaSimple(TestBasic):
-    """Sahara simple test.
+    """Sahara simple tests.
     Don't recommend to start tests without kvm
     Put Sahara image before start
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_sahara_simple"])
+          groups=["deploy_sahara_simple_gre"])
     @log_snapshot_on_error
-    def deploy_sahara_simple(self):
-        """Deploy cluster in simple mode with Sahara
+    def deploy_sahara_simple_gre(self):
+        """Deploy cluster in simple mode with Sahara and Neutron GRE
 
         Scenario:
             1. Create cluster. Set install Sahara option
@@ -51,7 +51,7 @@ class SaharaSimple(TestBasic):
             7. Register Sahara image
             8. Run OSTF platform Sahara test only
 
-        Snapshot: deploy_sahara_simple
+        Snapshot: deploy_sahara_simple_gre
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -122,7 +122,107 @@ class SaharaSimple(TestBasic):
                        'test_platform_sahara.PlatformSaharaTests.'
                        'test_platform_sahara'), timeout=60 * 200)
 
-        self.env.make_snapshot("deploy_sahara_simple")
+        self.env.make_snapshot("deploy_sahara_simple_gre")
+
+
+@test(groups=["services", "services.sahara", "services_ha"])
+class SaharaHA(TestBasic):
+    """Sahara HA tests.
+    Don't recommend to start tests without kvm
+    Put Sahara image before start
+    """
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_sahara_ha_gre"])
+    @log_snapshot_on_error
+    def deploy_sahara_ha_gre(self):
+        """Deploy cluster in HA mode with Sahara and Neutron GRE
+
+        Scenario:
+            1. Create cluster. Set install Sahara option
+            2. Add 3 node with controller role
+            3. Add 1 node with compute role
+            4. Deploy the cluster
+            5. Verify Sahara services
+            6. Run OSTF
+            7. Register Sahara image
+            8. Run OSTF platform Sahara test only
+
+        Snapshot: deploy_sahara_ha_gre
+
+        """
+        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
+            raise SkipTest()
+
+        LOGGER.debug('Check MD5 of image')
+        check_image = checkers.check_image(
+            settings.SERVTEST_SAVANNA_IMAGE,
+            settings.SERVTEST_SAVANNA_IMAGE_MD5,
+            settings.SERVTEST_LOCAL_PATH)
+        asserts.assert_true(check_image)
+
+        self.env.revert_snapshot("ready_with_5_slaves")
+        LOGGER.debug('Create cluster for sahara tests')
+        data = {
+            'sahara': True,
+            'net_provider': 'neutron',
+            'net_segment_type': 'gre',
+            'tenant': 'saharaHA',
+            'user': 'saharaHA',
+            'password': 'saharaHA'
+        }
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_HA,
+            settings=data
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['controller'],
+                'slave-03': ['controller'],
+                'slave-04': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=13, networks_count=1, timeout=300)
+
+        for slave in ["slave-01", "slave-02", "slave-03"]:
+            checkers.verify_service(
+                self.env.get_ssh_to_remote_by_name(slave),
+                service_name='sahara-api')
+
+        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
+        common_func = Common(controller['ip'], data['user'], data['password'],
+                             data['tenant'])
+
+        test_classes = ['fuel_health.tests.sanity.test_sanity_savanna.'
+                        'SanitySavannaTests.test_sanity_savanna']
+        self.fuel_web.run_ostf(
+            cluster_id=self.fuel_web.get_last_created_cluster(),
+            tests_must_be_passed=test_classes
+        )
+
+        LOGGER.debug('Import image')
+        common_func.image_import(
+            settings.SERVTEST_LOCAL_PATH,
+            settings.SERVTEST_SAVANNA_IMAGE,
+            settings.SERVTEST_SAVANNA_IMAGE_NAME,
+            settings.SERVTEST_SAVANNA_IMAGE_META)
+
+        common_func.goodbye_security()
+
+        LOGGER.debug('Run OSTF Sahara platform test')
+
+        self.fuel_web.run_single_ostf_test(
+            cluster_id=cluster_id, test_sets=['platform_tests'],
+            test_name=('fuel_health.tests.platform_tests.'
+                       'test_platform_savanna.PlatformSavannaTests.'
+                       'test_platform_savanna'), timeout=60 * 200)
+
+        self.env.make_snapshot("deploy_sahara_ha_gre")
 
 
 @test(groups=["services", "services.murano", "services_simple"])
