@@ -1250,3 +1250,6 @@ class FuelWebClient(object):
             net_config["networking_parameters"]['internal_gateway']\
                 = gateway
             self.client.update_network(*data)
+
+    def get_public_vip(self, cluster_id):
+        return self.client.get_networks(cluster_id)['public_vip']
