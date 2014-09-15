@@ -509,7 +509,7 @@ class HeatSimple(TestBasic):
           groups=["deploy_heat_simple_neutron"])
     @log_snapshot_on_error
     def deploy_heat_simple_neutron(self):
-        """Deploy cluster in simple mode with Neutron GRE
+        """Deploy Heat cluster in simple mode with Neutron GRE
 
         Scenario:
             1. Create cluster
@@ -600,7 +600,7 @@ class HeatSimple(TestBasic):
           groups=["deploy_heat_simple_nova"])
     @log_snapshot_on_error
     def deploy_heat_simple_nova(self):
-        """Deploy cluster in simple mode with Nova Network
+        """Deploy Heat cluster in simple mode with Nova Network
 
         Scenario:
             1. Create cluster
@@ -696,7 +696,7 @@ class HeatHA(TestBasic):
           groups=["deploy_heat_ha"])
     @log_snapshot_on_error
     def deploy_heat_ha(self):
-        """Deploy cluster in HA mode
+        """Deploy Heat cluster in HA mode
 
         Scenario:
             1. Create cluster
@@ -752,8 +752,9 @@ class HeatHA(TestBasic):
                 self.env.get_ssh_to_remote_by_name(slave),
                 service_name='heat-api', count=3)
 
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
-        common_func = Common(controller['ip'],
+        cluster_vip = self.fuel_web.get_public_vip(cluster_id)
+
+        common_func = Common(cluster_vip,
                              data['user'],
                              data['password'],
                              data['tenant'])
