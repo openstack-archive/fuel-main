@@ -17,8 +17,14 @@ $(BUILD_DIR)/repos/$1.done:
 	# Clone repo and checkout required commit
 	mkdir -p $(BUILD_DIR)/repos
 	rm -rf $(BUILD_DIR)/repos/$1
+
+ifneq ($(findstring |,$3),)
+	# Clone everything from branch and checkout to commit
+	git clone --branch $(word 1, $(subst |, ,$3)) $2 $(BUILD_DIR)/repos/$1 && ( cd $(BUILD_DIR)/repos/$1 && git checkout -q $(word 2, $(subst |, ,$3)) )
+else
 	# Clone with depth=1 if no gerrit commits given, otherwise clone everything
 	test "$5" = "none" && git clone --depth 1 --branch $3 $2 $(BUILD_DIR)/repos/$1 || git clone --branch $3 $2 $(BUILD_DIR)/repos/$1
+endif
 	# Pull gerrit commits if given
 	$(foreach var,$5,
 		test "$(var)" = "none" || ( cd $(BUILD_DIR)/repos/$1 && git fetch $4 $(var) && git cherry-pick FETCH_HEAD ) ;
