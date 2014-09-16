@@ -194,8 +194,8 @@ class SaharaHA(TestBasic):
                 self.env.get_ssh_to_remote_by_name(slave),
                 service_name='sahara-api')
 
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
-        common_func = Common(controller['ip'], data['user'], data['password'],
+        cluster_vip = self.fuel_web.get_public_vip(cluster_id)
+        common_func = Common(cluster_vip, data['user'], data['password'],
                              data['tenant'])
 
         test_classes = ['fuel_health.tests.sanity.test_sanity_savanna.'
@@ -411,8 +411,8 @@ class MuranoHA(TestBasic):
                 self.env.get_ssh_to_remote_by_name(slave),
                 service_name='murano-api')
 
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
-        common_func = Common(controller['ip'], data['user'], data['password'],
+        cluster_vip = self.fuel_web.get_public_vip(cluster_id)
+        common_func = Common(cluster_vip, data['user'], data['password'],
                              data['tenant'])
 
         LOGGER.debug('Run sanity and functional Murano OSTF tests')
