@@ -29,7 +29,7 @@ Requires:    python-keystoneclient >= 1:0.4.1
 Requires:    python-kombu == 1:3.0.16
 Requires:    python-mako == 0.9.1
 Requires:    python-markupsafe == 0.18
-Requires:    python-netaddr == 0.7.10
+Requires:    python-netaddr >= 0.7.10
 Requires:    python-netifaces == 0.8
 Requires:    python-oslo-config == 1:1.2.1
 Requires:    python-paste == 1.7.5.1
