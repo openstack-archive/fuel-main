@@ -72,7 +72,8 @@ UBUNTU_MAJOR:=12
 UBUNTU_MINOR:=04
 UBUNTU_RELEASE_NUMBER:=$(UBUNTU_MAJOR).$(UBUNTU_MINOR)
 UBUNTU_ARCH:=amd64
-UBUNTU_IMAGE_RELEASE:=1204
+UBUNTU_IMAGE_RELEASE:=$(UBUNTU_MAJOR)$(UBUNTU_MINOR)
+SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
 # Rebuld packages locally (do not use upstream versions)
 # This option is depricated, because there are no upstream versions
