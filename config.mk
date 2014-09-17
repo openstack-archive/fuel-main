@@ -70,6 +70,7 @@ UBUNTU_RELEASE:=precise
 UBUNTU_INSTALLER_KERNEL_VERSION:=3.11.0-18
 UBUNTU_ARCH:=amd64
 UBUNTU_IMAGE_RELEASE:=1204
+SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
 # Rebuld packages locally (do not use upstream versions)
 # This option is depricated, because there are no upstream versions
