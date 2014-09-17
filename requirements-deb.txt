@@ -536,6 +536,7 @@ mc
 mcelog
 mcollective
 mcollective-common
+mdadm
 memcached
 memtest86+
 mime-support
