@@ -993,7 +993,6 @@ class HeatHA(TestBasic):
                            'test_heat.'
                            'HeatSmokeTests')
         tests_names = ['test_actions',
-                       'test_autoscaling',
                        'test_rollback']
 
         test_classes = []
