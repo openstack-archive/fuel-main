@@ -43,6 +43,7 @@ cirros-testvm
 cirros-testvm-mellanox
 cirros-testvmware
 cloud-init
+cloud-utils
 cluster-glue-libs-1.0.11-59.1
 cman
 cobbler
