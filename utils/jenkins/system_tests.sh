@@ -391,7 +391,9 @@ RunTest() {
       if [ "${DRY_RUN}" = "yes" ]; then
         echo dos.py erase "${ENV_NAME}"
       else
-        dos.py erase "${ENV_NAME}"
+        if [ $(dos.py list | grep "^${ENV_NAME}\$") ]; then
+          dos.py erase "${ENV_NAME}"
+        fi
       fi
     fi
 
