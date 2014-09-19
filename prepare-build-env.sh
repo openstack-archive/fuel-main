@@ -64,7 +64,7 @@ sudo apt-get -y install build-essential make git $GEMPKG debootstrap createrepo 
 	lrzip python-daemon
 sudo gem install bundler -v 1.2.1
 sudo gem install builder
-sudo pip install xmlbuilder jinja2
+sudo pip install xmlbuilder jinja2 pbr
 sudo npm install -g grunt-cli
 
 # Add account to sudoers
