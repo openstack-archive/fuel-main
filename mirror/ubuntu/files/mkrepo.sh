@@ -11,7 +11,7 @@ mkdir -p /repo/download/
 cat /requirements-deb.txt | while read pkg; do apt-get --print-uris --yes install $pkg | grep ^\' | cut -d\' -f2 >/downloads_$pkg.list; done
 cat /downloads_*.list | sort | uniq > /repo/download/download_urls.list
 rm /downloads_*.list
-(cat /repo/download/download_urls.list | xargs -n1 -P4 wget -nv -P /repo/download/) || exit 1
+(cat /repo/download/download_urls.list | xargs -n1 -P4 wget -P /repo/download/) || exit 1
 mv /var/cache/apt/archives/*deb /repo/download/
 # Make structure and mocks for multiarch
 for dir in binary-i386 binary-amd64; do 
@@ -44,21 +44,21 @@ for list in /etc/apt/sources.list.d/*.list; do
      repos=`echo $repo | awk -F '|' '{for(i=4; i<=NF; ++i) {print $i}}'`
      for repo in $repos; do
        echo "deb ${repourl} ${repodist} ${repo}/debian-installer" >> ${wrkdir}/apt.tmp/sources/sources.list
-       packagesfile=`wget -nv -qO - ${repourl}/dists/${repodist}/Release | \
+       packagesfile=`wget -qO - ${repourl}/dists/${repodist}/Release | \
                      egrep '[0-9a-f]{64}' | \
                      grep ${repo}/debian-installer/binary-amd64/Packages.bz2 | \
                      awk '{print $3}'`
        if [ -n "$packagesfile" ]; then
          bz=${repourl}/dists/${repodist}/$packagesfile
-         wget -nv -qO - $bz | bzip2 -cdq | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+         wget -qO - $bz | bzip2 -cdq | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
        else
          bz=${repourl}/dists/${repodist}/${repo}/debian-installer/binary-amd64/Packages
-         wget -nv -qO - $bz | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+         wget -qO - $bz | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
        fi
        # Getting indices
-       wget -nv -O - ${repourl}/indices/override.${repodist}.${repo} >> ${wrkdir}/override.precise.main
-       wget -nv -O - ${repourl}/indices/override.${repodist}.extra.${repo} >> ${wrkdir}/override.precise.extra.main
-       wget -nv -O - ${repourl}/indices/override.${repodist}.${repo}.debian-installer >> ${wrkdir}/override.precise.main.debian-installer
+       wget -O - ${repourl}/indices/override.${repodist}.${repo} >> ${wrkdir}/override.precise.main
+       wget -O - ${repourl}/indices/override.${repodist}.extra.${repo} >> ${wrkdir}/override.precise.extra.main
+       wget -O - ${repourl}/indices/override.${repodist}.${repo}.debian-installer >> ${wrkdir}/override.precise.main.debian-installer
      done
   done
 done
@@ -101,20 +101,6 @@ rm -rf ${wrkdir}/apt.tmp
 # Get rid of urlencoded names
 for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; done
 
-sort_packages_file () {
-	local pkg_file="$1"
-	local pkg_file_gz="${pkg_file}.gz"
-	local pkg_file_bz2="${pkg_file}.bz2"
-	apt-sortpkgs "$pkg_file" > "${pkg_file}.new" || exit 1
-	if [ -e "$pkg_file_gz" ]; then
-		gzip -c "${pkg_file}.new" > "$pkg_file_gz"
-	fi
-	if [ -e "$pkg_file_bz2" ]; then
-		bzip2 -k "${pkg_file}.new" > "$pkg_file_bz2"
-	fi
-	mv "${pkg_file}.new" "${pkg_file}"
-}
-
 ##########################################
 # Move all stuff to the our package pool
 ##########################################
@@ -140,11 +126,6 @@ for i386dir in $(find . -name binary-i386) ; do
 done
 apt-ftparchive -c apt-ftparchive-release.conf generate apt-ftparchive-deb.conf
 apt-ftparchive -c apt-ftparchive-release.conf generate apt-ftparchive-udeb.conf
-# Work around the base system installation failure.
-# XXX: someone should rewrite this script to use debmirror and reprepro
-for pkg_file in `find dists -type f -name Packages`; do
-	sort_packages_file $pkg_file
-done
 apt-ftparchive -c apt-ftparchive-release.conf release dists/precise/ > dists/precise/Release
 # some cleanup...
 rm -rf apt-ftparchive*conf Release-amd64 Release-i386 mkrepo.sh preferences

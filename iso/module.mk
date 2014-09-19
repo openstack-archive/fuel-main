@@ -91,7 +91,7 @@ $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)/ubuntu
 	rsync -rp $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ $(ISOROOT)/ubuntu/
-	cat $(ISOROOT)/ubuntu/dists/$(UBUNTU_RELEASE)/main/binary-amd64/Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $(ISOROOT)/ubuntu/ubuntu-versions.yaml
+	cat $(ISOROOT)/ubuntu/dists/precise/main/binary-amd64/Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $(ISOROOT)/ubuntu/ubuntu-versions.yaml
 	$(ACTION.TOUCH)
 endif
 

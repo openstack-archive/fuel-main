@@ -39,13 +39,6 @@ help:
 	@echo
 	@echo 'Custom location:'
 	@echo 'make iso YUM_REPOS=proprietary MIRROR_CENTOS=http://<your_mirror>/centos'
-	@echo
-	@echo 'Extra RPM repos:'
-	@echo 'make iso EXTRA_RPM_REPOS="<repo1_name>,http://<repo1> <repo2_name>,ftp://<repo2>"'
-	@echo
-	@echo 'Extra DEB repos:'
-	@echo 'make iso EXTRA_DEB_REPOS="http://<repo1>/ubuntu /|ftp://<repo2> precise main"'
-	@echo
 
 # Path to the sources.
 # Default value: directory with Makefile

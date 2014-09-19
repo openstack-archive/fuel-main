@@ -31,15 +31,15 @@ from fuelweb_test.tests.base_test_case import TestBasic
 
 @test(groups=["services", "services.sahara", "services_simple"])
 class SaharaSimple(TestBasic):
-    """Sahara simple tests.
+    """Sahara simple test.
     Don't recommend to start tests without kvm
     Put Sahara image before start
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_sahara_simple_gre"])
+          groups=["deploy_sahara_simple"])
     @log_snapshot_on_error
-    def deploy_sahara_simple_gre(self):
-        """Deploy cluster in simple mode with Sahara and Neutron GRE
+    def deploy_sahara_simple(self):
+        """Deploy cluster in simple mode with Sahara
 
         Scenario:
             1. Create cluster. Set install Sahara option
@@ -51,7 +51,7 @@ class SaharaSimple(TestBasic):
             7. Register Sahara image
             8. Run OSTF platform Sahara test only
 
-        Snapshot: deploy_sahara_simple_gre
+        Snapshot: deploy_sahara_simple
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -122,121 +122,21 @@ class SaharaSimple(TestBasic):
                        'test_platform_sahara.PlatformSaharaTests.'
                        'test_platform_sahara'), timeout=60 * 200)
 
-        self.env.make_snapshot("deploy_sahara_simple_gre")
-
-
-@test(groups=["services", "services.sahara", "services_ha"])
-class SaharaHA(TestBasic):
-    """Sahara HA tests.
-    Don't recommend to start tests without kvm
-    Put Sahara image before start
-    """
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["deploy_sahara_ha_gre"])
-    @log_snapshot_on_error
-    def deploy_sahara_ha_gre(self):
-        """Deploy cluster in HA mode with Sahara and Neutron GRE
-
-        Scenario:
-            1. Create cluster. Set install Sahara option
-            2. Add 3 node with controller role
-            3. Add 1 node with compute role
-            4. Deploy the cluster
-            5. Verify Sahara services
-            6. Run OSTF
-            7. Register Sahara image
-            8. Run OSTF platform Sahara test only
-
-        Snapshot: deploy_sahara_ha_gre
-
-        """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
-        LOGGER.debug('Check MD5 of image')
-        check_image = checkers.check_image(
-            settings.SERVTEST_SAVANNA_IMAGE,
-            settings.SERVTEST_SAVANNA_IMAGE_MD5,
-            settings.SERVTEST_LOCAL_PATH)
-        asserts.assert_true(check_image)
-
-        self.env.revert_snapshot("ready_with_5_slaves")
-        LOGGER.debug('Create cluster for sahara tests')
-        data = {
-            'sahara': True,
-            'net_provider': 'neutron',
-            'net_segment_type': 'gre',
-            'tenant': 'saharaHA',
-            'user': 'saharaHA',
-            'password': 'saharaHA'
-        }
-
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
-            settings=data
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller'],
-                'slave-02': ['controller'],
-                'slave-03': ['controller'],
-                'slave-04': ['compute']
-            }
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=13, networks_count=1, timeout=300)
-
-        for slave in ["slave-01", "slave-02", "slave-03"]:
-            checkers.verify_service(
-                self.env.get_ssh_to_remote_by_name(slave),
-                service_name='sahara-api')
-
-        cluster_vip = self.fuel_web.get_public_vip(cluster_id)
-        common_func = Common(cluster_vip, data['user'], data['password'],
-                             data['tenant'])
-
-        test_classes = ['fuel_health.tests.sanity.test_sanity_savanna.'
-                        'SanitySavannaTests.test_sanity_savanna']
-        self.fuel_web.run_ostf(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
-            tests_must_be_passed=test_classes
-        )
-
-        LOGGER.debug('Import image')
-        common_func.image_import(
-            settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_SAVANNA_IMAGE,
-            settings.SERVTEST_SAVANNA_IMAGE_NAME,
-            settings.SERVTEST_SAVANNA_IMAGE_META)
-
-        common_func.goodbye_security()
-
-        LOGGER.debug('Run OSTF Sahara platform test')
-
-        self.fuel_web.run_single_ostf_test(
-            cluster_id=cluster_id, test_sets=['platform_tests'],
-            test_name=('fuel_health.tests.platform_tests.'
-                       'test_platform_savanna.PlatformSavannaTests.'
-                       'test_platform_savanna'), timeout=60 * 200)
-
-        self.env.make_snapshot("deploy_sahara_ha_gre")
+        self.env.make_snapshot("deploy_sahara_simple")
 
 
 @test(groups=["services", "services.murano", "services_simple"])
 class MuranoSimple(TestBasic):
-    """Murano Simple tests.
+    """Murano Simple test.
     Don't recommend to start tests without kvm
     Put Murano image before start
     Murano OSTF platform tests  without Internet connection will be failed
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_murano_simple_gre"])
+          groups=["deploy_murano_simple"])
     @log_snapshot_on_error
-    def deploy_murano_simple_gre(self):
-        """Deploy cluster in simple mode with Murano and Neutron GRE
+    def deploy_murano_simple(self):
+        """Deploy cluster in simple mode with Murano
 
         Scenario:
             1. Create cluster. Set install Murano option
@@ -248,7 +148,7 @@ class MuranoSimple(TestBasic):
             7. Register Murano image
             8. Run OSTF Murano platform tests
 
-        Snapshot: deploy_murano_simple_gre
+        Snapshot: deploy_murano_simple
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -342,128 +242,7 @@ class MuranoSimple(TestBasic):
                 cluster_id=cluster_id, test_sets=['platform_tests'],
                 test_name=test_name, timeout=60 * 36)
 
-        self.env.make_snapshot("deploy_murano_simple_gre")
-
-
-@test(groups=["services", "services.murano", "services_ha"])
-class MuranoHA(TestBasic):
-    """Murano HA tests.
-    Don't recommend to start tests without kvm
-    Put Murano image before start
-    Murano OSTF platform tests  without Internet connection will be failed
-    """
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["deploy_murano_ha_with_gre"])
-    @log_snapshot_on_error
-    def deploy_murano_ha_with_gre(self):
-        """Deploy cluster in ha mode with Murano and Neutron GRE
-
-        Scenario:
-            1. Create cluster. Set install Murano option
-            2. Add 3 node with controller role
-            3. Add 1 nodes with compute role
-            4. Deploy the cluster
-            5. Verify Murano services
-            6. Run OSTF
-            7. Register Murano image
-            8. Run OSTF Murano platform tests
-
-        Snapshot: deploy_murano_ha_with_gre
-
-        """
-        self.env.revert_snapshot("ready_with_5_slaves")
-
-        LOGGER.debug('Check MD5 of image')
-        check_image = checkers.check_image(
-            settings.SERVTEST_MURANO_IMAGE,
-            settings.SERVTEST_MURANO_IMAGE_MD5,
-            settings.SERVTEST_LOCAL_PATH)
-        asserts.assert_true(check_image, "Image verification failed")
-
-        data = {
-            'murano': True,
-            'net_provider': 'neutron',
-            'net_segment_type': 'gre',
-            'tenant': 'muranoHA',
-            'user': 'muranoHA',
-            'password': 'muranoHA'
-        }
-
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
-            settings=data)
-
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller'],
-                'slave-02': ['controller'],
-                'slave-03': ['controller'],
-                'slave-04': ['compute']
-            }
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=13, networks_count=1, timeout=300)
-        for slave in ["slave-01", "slave-02", "slave-03"]:
-            checkers.verify_service(
-                self.env.get_ssh_to_remote_by_name(slave),
-                service_name='murano-api')
-
-        cluster_vip = self.fuel_web.get_public_vip(cluster_id)
-        common_func = Common(cluster_vip, data['user'], data['password'],
-                             data['tenant'])
-
-        LOGGER.debug('Run sanity and functional Murano OSTF tests')
-        self.fuel_web.run_single_ostf_test(
-            cluster_id=self.fuel_web.get_last_created_cluster(),
-            test_sets=['sanity'],
-            test_name=('fuel_health.tests.sanity.test_sanity_murano.'
-                       'MuranoSanityTests.test_create_and_delete_service')
-        )
-
-        LOGGER.debug('Import Murano image')
-        common_func.image_import(
-            settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_MURANO_IMAGE,
-            settings.SERVTEST_MURANO_IMAGE_NAME,
-            settings.SERVTEST_MURANO_IMAGE_META)
-
-        LOGGER.debug('Boot instance with Murano image')
-
-        image_name = settings.SERVTEST_MURANO_IMAGE_NAME
-        srv = common_func.create_instance(flavor_name='test_murano_flavor',
-                                          ram=2048, vcpus=1, disk=20,
-                                          server_name='murano_instance',
-                                          image_name=image_name,
-                                          neutron_network=True)
-
-        wait(lambda: common_func.get_instance_detail(srv).status == 'ACTIVE',
-             timeout=60 * 60)
-
-        common_func.delete_instance(srv)
-
-        LOGGER.debug('Run OSTF platform tests')
-
-        test_class_main = ('fuel_health.tests.platform_tests'
-                           '.test_platform_murano_linux.'
-                           'MuranoDeployLinuxServicesTests')
-        tests_names = ['test_deploy_telnet_service',
-                       'test_deploy_apache_service']
-
-        test_classes = []
-
-        for test_name in tests_names:
-            test_classes.append('{0}.{1}'.format(test_class_main,
-                                                 test_name))
-
-        for test_name in test_classes:
-            self.fuel_web.run_single_ostf_test(
-                cluster_id=cluster_id, test_sets=['platform_tests'],
-                test_name=test_name, timeout=60 * 20)
-
-        self.env.make_snapshot("deploy_murano_ha_with_gre")
+        self.env.make_snapshot("deploy_murano_simple")
 
 
 class CeilometerOSTFTestsRun(TestBasic):
@@ -993,6 +772,7 @@ class HeatHA(TestBasic):
                            'test_heat.'
                            'HeatSmokeTests')
         tests_names = ['test_actions',
+                       'test_autoscaling',
                        'test_rollback']
 
         test_classes = []
