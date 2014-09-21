@@ -73,6 +73,26 @@ def check_ceph_disks(remote, nodes_ids):
 
 
 @logwrap
+def check_cinder_status(remote):
+    """Parse output and return False
+       if any enabled service is down.
+       'cinder service-list' stdout example:
+    | cinder-scheduler | node-1.test.domain.local | nova | enabled |   up  |
+    | cinder-scheduler | node-2.test.domain.local | nova | enabled |  down |
+    """
+    cmd = '. openrc; cinder service-list'
+    result = remote.execute(cmd)
+    cinder_services = ''.join(result['stdout'])
+    logger.debug('>$ cinder service-list\n{}'.format(cinder_services))
+    if result['exit_code'] == 0:
+        return all(' up ' in x.split('enabled')[1]
+                   for x in cinder_services.split('\n')
+                   if 'cinder' in x and 'enabled' in x
+                   and len(x.split('enabled')))
+    return False
+
+
+@logwrap
 def check_image(image, md5, path):
     local_path = "{0}/{1}".format(path, image)
     logger.debug('Check md5 {0} of image {1}/{2}'.format(md5, path, image))
