@@ -82,8 +82,12 @@ class TestHaFailover(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=16, networks_count=1, timeout=300)
+        if NEUTRON_ENABLE:
+            self.fuel_web.assert_cluster_ready(
+                'slave-01', smiles_count=14, networks_count=1, timeout=300)
+        else:
+            self.fuel_web.assert_cluster_ready(
+                'slave-01', smiles_count=16, networks_count=1, timeout=300)
         self.fuel_web.verify_network(cluster_id)
 
         # Bug #1289297. Pause 5 min to make sure that all remain activity
