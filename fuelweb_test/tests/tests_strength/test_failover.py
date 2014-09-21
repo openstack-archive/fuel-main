@@ -125,6 +125,9 @@ class TestHaFailover(TestBasic):
         # Wait until MySQL Galera is UP on some controller
         self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
 
+        # Wait until Cinder services UP on a controller
+        self.fuel_web.wait_cinder_is_up(['slave-01'])
+
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             test_sets=['ha', 'smoke', 'sanity'],
@@ -163,6 +166,9 @@ class TestHaFailover(TestBasic):
 
         # Wait until MySQL Galera is UP on some controller
         self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
+
+        # Wait until Cinder services UP on a controller
+        self.fuel_web.wait_cinder_is_up(['slave-01'])
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
@@ -299,6 +305,9 @@ class TestHaFailover(TestBasic):
 
         self.fuel_web.wait_mysql_galera_is_up(['slave-01', 'slave-02',
                                                'slave-03'])
+
+        # Wait until Cinder services UP on a controller
+        self.fuel_web.wait_cinder_is_up(['slave-01'])
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
