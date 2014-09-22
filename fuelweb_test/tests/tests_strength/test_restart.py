@@ -59,6 +59,9 @@ class CephRestart(TestBasic):
 
         self.fuel_web.check_ceph_status(cluster_id)
 
+        # Wait until Cinder services UP on a controller
+        self.fuel_web.wait_cinder_is_up(['slave-01'])
+
         try:
             self.fuel_web.run_single_ostf_test(
                 cluster_id, test_sets=['smoke'],
@@ -103,6 +106,9 @@ class CephRestart(TestBasic):
         # Wait until MySQL Galera is UP on some controller
         self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
 
+        # Wait until Cinder services UP on a controller
+        self.fuel_web.wait_cinder_is_up(['slave-01'])
+
         cluster_id = self.fuel_web.get_last_created_cluster()
 
         self.fuel_web.check_ceph_status(cluster_id)
@@ -138,6 +144,9 @@ class CephRestart(TestBasic):
 
         # Wait until MySQL Galera is UP on some controller
         self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
+
+        # Wait until Cinder services UP on a controller
+        self.fuel_web.wait_cinder_is_up(['slave-01'])
 
         try:
             self.fuel_web.run_single_ostf_test(
