@@ -232,9 +232,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
 
 @test(groups=["rollback"])
 class RollbackFuelMaster(base_test_data.TestBasic):
-    @test(groups=["rollback_manual"])
+    @test(groups=["rollback_automatic_ha"])
     @log_snapshot_on_error
-    def rollback_simple_env(self):
+    def rollback_automatically_ha_env(self):
         """Rollback manually simple deployed cluster
 
         Scenario:
@@ -247,10 +247,10 @@ class RollbackFuelMaster(base_test_data.TestBasic):
 
         """
         if not self.env.get_virtual_environment().has_snapshot(
-                'ceph_multinode_compact'):
+                'deploy_neutron_gre_ha'):
             raise SkipTest()
 
-        self.env.revert_snapshot("ceph_multinode_compact")
+        self.env.revert_snapshot("deploy_neutron_gre_ha")
         cluster_id = self.fuel_web.get_last_created_cluster()
         checkers.upload_tarball(self.env.get_admin_remote(),
                                 hlp_data.TARBALL_PATH, '/var')
@@ -261,29 +261,34 @@ class RollbackFuelMaster(base_test_data.TestBasic):
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
                                         TARBALL_PATH), '/var')
-        checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh')
-        checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
-                                      phrase='*** UPGRADE DONE SUCCESSFULLY')
-        checkers.check_upgraded_containers(self.env.get_admin_remote(),
-                                           hlp_data.UPGRADE_FUEL_FROM,
-                                           hlp_data.UPGRADE_FUEL_TO)
-        self.fuel_web.assert_nodes_in_ready_state(cluster_id)
-        self.fuel_web.assert_fuel_version(hlp_data.UPGRADE_FUEL_TO)
-        self.fuel_web.assert_nailgun_upgrade_migration()
-
-        self.fuel_web.manual_rollback(self.env.get_admin_remote(),
-                                      hlp_data.UPGRADE_FUEL_FROM)
-        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:3])
-        self.fuel_web.assert_nodes_in_ready_state(cluster_id)
-        self.fuel_web.assert_fuel_version(hlp_data.UPGRADE_FUEL_FROM)
+        self.fuel_web.modify_python_file(self.env.get_admin_remote(),
+                                         "61i \ \ \ \ \ \ \ \ raise errors."
+                                         "ExecutedErrorNonZeroExitCode('{0}')"
+                                         .format('Some bad error'),
+                                         '/var/upgrade/site-packages/'
+                                         'fuel_upgrade/engines/'
+                                         'openstack.py')
+        checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
+                            rollback=True, exit_code=255)
+        checkers.wait_rollback_is_done(self.env.get_admin_remote(), 3000)
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_TO,
                                            hlp_data.UPGRADE_FUEL_FROM)
+        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:5])
+        self.fuel_web.assert_nodes_in_ready_state(cluster_id)
+        self.fuel_web.assert_fuel_version(hlp_data.UPGRADE_FUEL_FROM)
+
+        self.env.bootstrap_nodes(self.env.nodes().slaves[5:6])
+        self.fuel_web.update_nodes(
+            cluster_id, {'slave-06': ['cinder']},
+            True, False
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
-        self.env.make_snapshot("rollback_manual")
+        self.env.make_snapshot("rollback_automatic_ha")
 
-    @test(groups=["rollback_automatic"])
+    @test(groups=["rollback_automatic_simple"])
     @log_snapshot_on_error
     def rollback_automatically_simple_env(self):
         """Rollback automatically simple deployed cluster
@@ -314,7 +319,7 @@ class RollbackFuelMaster(base_test_data.TestBasic):
                        os.path.basename(hlp_data.
                                         TARBALL_PATH), '/var')
         self.fuel_web.modify_python_file(self.env.get_admin_remote(),
-                                         "80i \ \ \ \ \ \ \ \ raise errors."
+                                         "98i \ \ \ \ \ \ \ \ raise errors."
                                          "ExecutedErrorNonZeroExitCode('{0}')"
                                          .format('Some bad error'),
                                          '/var/upgrade/site-packages/'
@@ -343,4 +348,4 @@ class RollbackFuelMaster(base_test_data.TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
-        self.env.make_snapshot("rollback_automatic")
+        self.env.make_snapshot("rollback_automatic_simple")
