@@ -57,7 +57,7 @@ function confirm_format {
     parted -s /dev/$check_drive print
     echo
     read -p "Are you sure you want to erase ALL data on disk $check_drive? (y/N)" confirm_format
-    if [[ "$confirm_format" == "y" ]] || [[ "$forceformat" == "yes" ]]; then
+    if [[ "$confirm_format" == "y" ]] || [[ "$confirm_format" == "Y" ]] || [[ "$forceformat" == "yes" ]]; then
       return 0
     else
       return 1
