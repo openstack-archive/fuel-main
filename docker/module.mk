@@ -20,6 +20,7 @@ else
 # Lrzip all containers into single archive
 $(BUILD_DIR)/docker/build.done: \
 		$(BUILD_DIR)/docker/busybox.done \
+		$(BUILD_DIR)/docker/nsenter.done \
 		$(BUILD_DIR)/docker/sources.done
 	(cd $(BUILD_DIR)/docker/containers && tar cf $(BUILD_DIR)/docker/fuel-images.tar *.tar)
 	lrzip -L2 -U -D -f $(BUILD_DIR)/docker/fuel-images.tar -o $(BUILD_DIR)/docker/$(DOCKER_ART_NAME)
@@ -63,6 +64,12 @@ $(BUILD_DIR)/docker/busybox.done: \
 		$(BUILD_DIR)/docker/base-images.done
 	mkdir -p "$(BUILD_DIR)/docker/containers"
 	sudo docker save busybox > $(BUILD_DIR)/docker/containers/busybox.tar
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/docker/nsenter.done: \
+		$(BUILD_DIR)/docker/base-images.done
+	mkdir -p "$(BUILD_DIR)/docker/containers"
+	sudo docker save nsenter > $(BUILD_DIR)/docker/containers/nsenter.tar
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/docker/sources.done: \
