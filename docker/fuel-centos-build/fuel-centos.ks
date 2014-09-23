@@ -80,6 +80,9 @@ passwd -l root
 # create necessary devices
 /sbin/MAKEDEV /dev/console
 
+# remove Hiera external data binding in Puppet
+sed -i '/\[main\]/ a\    data_binding_terminus = none\n' /etc/puppet/puppet.conf
+
 # cleanup unwanted stuff
 
 # ami-creator requires grub during the install, so we remove it (and
