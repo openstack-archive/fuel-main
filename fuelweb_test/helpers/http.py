@@ -107,3 +107,25 @@ class HTTPClient(object):
                 logger.warning('Failed with auth in http _get_response')
                 logger.warning(traceback.format_exc())
         return self.opener.open(req)
+
+
+class HTTPClientZabbix(object):
+    def __init__(self, url):
+        self.url = url
+        self.opener = urllib2.build_opener(urllib2.HTTPHandler)
+
+    def get(self, endpoint=None, cookie=None):
+        req = urllib2.Request(self.url + endpoint)
+        if cookie:
+            req.add_header('cookie', cookie)
+        return self.opener.open(req)
+
+    def post(self, endpoint=None, data=None, content_type="text/css",
+             cookie=None):
+        if not data:
+            data = {}
+        req = urllib2.Request(self.url + endpoint, data=json.dumps(data))
+        req.add_header('Content-Type', content_type)
+        if cookie:
+            req.add_header('cookie', cookie)
+        return self.opener.open(req)
