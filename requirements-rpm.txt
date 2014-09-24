@@ -159,6 +159,7 @@ http-parser-2.0-4.20121128gitcd01361.el6
 httpd-2.2.15-15.el6.1
 httpd-tools-2.2.15-15.el6.1
 iproute-2.6.32-130.el6.netns.2.mira1
+ipset-6.11-1.el6
 json-c
 keepalived-1.2.4-1.el6
 kernel-0:2.6.32-431.20.3.el6.x86_64
