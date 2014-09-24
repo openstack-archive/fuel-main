@@ -64,6 +64,9 @@ CENTOS_MINOR:=5
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
 UBUNTU_RELEASE:=precise
+UBUNTU_MAJOR:=12
+UBUNTU_MINOR:=04
+UBUNTU_RELEASE_NUMBER:=$(UBUNTU_MAJOR).$(UBUNTU_MINOR)
 
 # Rebuld packages locally (do not use upstream versions)
 # This option is depricated, because there are no upstream versions
