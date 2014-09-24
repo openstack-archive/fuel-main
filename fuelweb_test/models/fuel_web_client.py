@@ -353,6 +353,8 @@ class FuelWebClient(object):
                 if option in ('vc_password', 'cluster', 'host_ip', 'vc_user',
                               'use_vcenter'):
                     section = 'vcenter'
+                if option == 'assign_to_all_nodes':
+                    section = 'public_network_assignment'
                 if section:
                     attributes['editable'][section][option]['value'] =\
                         settings[option]
