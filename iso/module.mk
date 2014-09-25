@@ -19,6 +19,7 @@ $(ARTS_DIR)/$(VERSION_YAML_ART_NAME): $(ISOROOT)/$(VERSION_YAML_ART_NAME)
 $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,PRODUCT_VERSION)
 $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,FEATURE_GROUPS)
 $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(BUILD_DIR)/repos/repos.done
+	mkdir -p $(@D)
 	echo "VERSION:" > $@
 	echo "  feature_groups:" >> $@
 	$(foreach group,$(FEATURE_GROUPS),echo "    - $(group)" >> $@;)
@@ -34,7 +35,7 @@ endif
 	cat $(BUILD_DIR)/repos/version.yaml >> $@
 
 ########################
-# CENTOS ARTIFACT
+# CENTOS MIRROR ARTIFACT
 ########################
 centos-repo: $(ARTS_DIR)/$(CENTOS_REPO_ART_NAME)
 
@@ -68,7 +69,7 @@ endif
 
 
 ########################
-# UBUNTU ARTIFACT
+# UBUNTU MIRROR ARTIFACT
 ########################
 ubuntu-repo: $(ARTS_DIR)/$(UBUNTU_REPO_ART_NAME)
 
