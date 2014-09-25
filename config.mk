@@ -15,6 +15,8 @@ ARTS_DIR:=$(abspath $(ARTS_DIR))
 # Path for cache of downloaded packages
 LOCAL_MIRROR?=$(TOP_DIR)/local_mirror
 LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
+# Path to the old mirror which is used for repo-diff
+OLD_MIRROR?=
 # Path to pre-built artifacts
 DEPS_DIR?=$(TOP_DIR)/deps
 DEPS_DIR:=$(abspath $(DEPS_DIR))
@@ -45,6 +47,8 @@ DOCKER_ART_NAME?=fuel-images.tar.lrz
 VERSION_YAML_ART_NAME?=version.yaml
 CENTOS_REPO_ART_NAME?=centos-repo.tar
 UBUNTU_REPO_ART_NAME?=ubuntu-repo.tar
+DIFF_CENTOS_ART_NAME?=centos-diff-repo.tar
+DIFF_UBUNTU_ART_NAME?=ubuntu-diff-repo.tar
 PUPPET_ART_NAME?=puppet.tgz
 OPENSTACK_YAML_ART_NAME?=openstack.yaml
 
@@ -124,7 +128,10 @@ LOCAL_MIRROR_UBUNTU:=$(LOCAL_MIRROR)/ubuntu
 LOCAL_MIRROR_UBUNTU_OS_BASEURL:=$(LOCAL_MIRROR_UBUNTU)
 LOCAL_MIRROR_DOCKER:=$(LOCAL_MIRROR)/docker
 LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
-
+DIFF_MIRROR_CENTOS:=$(LOCAL_MIRROR)/centos_updates
+DIFF_MIRROR_UBUNTU:=$(LOCAL_MIRROR)/ubuntu_updates
+DIFF_MIRROR_CENTOS_OS_PKGS:=$(DIFF_MIRROR_CENTOS)/os/$(CENTOS_ARCH)/Packages
+DIFF_MIRROR_UBUNTU_OS_PKGS:=$(DIFF_MIRROR_UBUNTU)/pool/main
 
 # Use download.mirantis.com mirror by default. Other possible values are
 # 'msk', 'srt', 'usa', 'hrk'.
