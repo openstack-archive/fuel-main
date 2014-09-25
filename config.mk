@@ -19,7 +19,7 @@ LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 DEPS_DIR?=$(TOP_DIR)/deps
 DEPS_DIR:=$(abspath $(DEPS_DIR))
 
-PRODUCT_VERSION:=6.0
+PRODUCT_VERSION:=5.1.1
 # This variable is used mostly for
 # keeping things uniform. Some files
 # contain versions as a part of their paths
