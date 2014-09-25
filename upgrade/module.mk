@@ -108,8 +108,10 @@ $(BUILD_DIR)/upgrade/fuel-lrzip-part.tar: \
 ########################
 # OPENSTACK PART
 ########################
+define build_openstack_part
+# 1 - new vervion
+# 2 - old version
 
-define openstack-version-part
 ifeq ($(CURRENT_VERSION),$1)
 ARTS_DIR_$1:=$(ARTS_DIR)
 else
@@ -119,32 +121,47 @@ endif
 $(BUILD_DIR)/upgrade/openstack_version_$1: $$(ARTS_DIR_$1)/$(OPENSTACK_YAML_ART_NAME)
 	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$$(ARTS_DIR_$1)/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $$@
 
-$(BUILD_DIR)/upgrade/openstack-part.tar: $(BUILD_DIR)/upgrade/openstack-$1-part.tar
+ifneq ($2,)
+CENTOS_REPO_ART:=$(DIFF_CENTOS_REPO_ART_BASE)-$1-$2.tar
+CENTOS_REPO_ART_TOPDIR:=centos_updates-$1-$2
+UBUNTU_REPO_ART:=$(DIFF_UBUNTU_REPO_ART_BASE)-$1-$2.tar
+UBUNTU_REPO_ART_TOPDIR:=ubuntu_updates-$1-$2
+OPENSTACK_PART_DONE:=$(BUILD_DIR)/upgrade/openstack-$1-$2-part.done
+else
+CENTOS_REPO_ART:=$(CENTOS_REPO_ART_NAME)
+CENTOS_REPO_ART_TOPDIR:=centos-repo
+UBUNTU_REPO_ART:=$(UBUNTU_REPO_ART_NAME)
+UBUNTU_REPO_ART_TOPDIR:=ubuntu-repo
+OPENSTACK_PART_DONE:=$(BUILD_DIR)/upgrade/openstack-$1-part.done
+endif
 
-.DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/openstack-$1-part.tar
+$(BUILD_DIR)/upgrade/openstack-part.done: $$(OPENSTACK_PART_DONE)
 
-$(BUILD_DIR)/upgrade/openstack-$1-part.tar: BASE=$(BUILD_DIR)/upgrade/openstack-$1-part
-$(BUILD_DIR)/upgrade/openstack-$1-part.tar: OPENSTACK_VERSION=$$(shell cat $(BUILD_DIR)/upgrade/openstack_version_$1)
-$(BUILD_DIR)/upgrade/openstack-$1-part.tar: CENTOS_BASE=$$(BASE)/upgrade/repos/$$(OPENSTACK_VERSION)/centos/x86_64
-$(BUILD_DIR)/upgrade/openstack-$1-part.tar: UBUNTU_BASE=$$(BASE)/upgrade/repos/$$(OPENSTACK_VERSION)/ubuntu/x86_64
-$(BUILD_DIR)/upgrade/openstack-$1-part.tar: PUPPET_BASE=$$(BASE)/upgrade/puppet/$$(OPENSTACK_VERSION)
-$(BUILD_DIR)/upgrade/openstack-$1-part.tar: RELEASES_BASE=$$(BASE)/upgrade/releases
-$(BUILD_DIR)/upgrade/openstack-$1-part.tar: RELEASE_VERSIONS_BASE=$$(BASE)/upgrade/release_versions
-$(BUILD_DIR)/upgrade/openstack-$1-part.tar: \
+.DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/openstack-part.tar
+.DELETE_ON_ERROR: $$(OPENSTACK_PART_DONE)
+
+$$(OPENSTACK_PART_DONE): BASE=$(BUILD_DIR)/upgrade/openstack-$1-$2-part
+$$(OPENSTACK_PART_DONE): OPENSTACK_VERSION=$$(shell cat $(BUILD_DIR)/upgrade/openstack_version_$1)
+$$(OPENSTACK_PART_DONE): CENTOS_BASE=$$(BASE)/upgrade/repos/$$(OPENSTACK_VERSION)/centos/x86_64
+$$(OPENSTACK_PART_DONE): UBUNTU_BASE=$$(BASE)/upgrade/repos/$$(OPENSTACK_VERSION)/ubuntu/x86_64
+$$(OPENSTACK_PART_DONE): PUPPET_BASE=$$(BASE)/upgrade/puppet/$$(OPENSTACK_VERSION)
+$$(OPENSTACK_PART_DONE): RELEASES_BASE=$$(BASE)/upgrade/releases
+$$(OPENSTACK_PART_DONE): RELEASE_VERSIONS_BASE=$$(BASE)/upgrade/release_versions
+$$(OPENSTACK_PART_DONE): \
 		$(BUILD_DIR)/upgrade/openstack_version_$1 \
 		$$(ARTS_DIR_$1)/$(OPENSTACK_YAML_ART_NAME) \
 		$$(ARTS_DIR_$1)/$(VERSION_YAML_ART_NAME) \
-		$$(ARTS_DIR_$1)/$(CENTOS_REPO_ART_NAME) \
-		$$(ARTS_DIR_$1)/$(UBUNTU_REPO_ART_NAME) \
+		$$(ARTS_DIR_$1)/$$(CENTOS_REPO_ART) \
+		$$(ARTS_DIR_$1)/$$(UBUNTU_REPO_ART) \
 		$$(ARTS_DIR_$1)/$(PUPPET_ART_NAME)
 	rm -f $$@
 	mkdir -p $$(@D)
 #	CENTOS REPO
 	mkdir -p $$(CENTOS_BASE)
-	tar xf $$(ARTS_DIR_$1)/$(CENTOS_REPO_ART_NAME) -C $$(CENTOS_BASE) --xform s:^centos-repo/::
+	tar xf $$(ARTS_DIR_$1)/$(CENTOS_REPO_ART) -C $$(CENTOS_BASE) --xform s:^$(CENTOS_REPO_ART_TOPDIR)/::
 #	UBUNTU REPO
 	mkdir -p $$(UBUNTU_BASE)
-	tar xf $$(ARTS_DIR_$1)/$(UBUNTU_REPO_ART_NAME) -C $$(UBUNTU_BASE) --xform s:^ubuntu-repo/::
+	tar xf $$(ARTS_DIR_$1)/$(UBUNTU_REPO_ART) -C $$(UBUNTU_BASE) --xform s:^$(UBUNTU_REPO_ART_TOPDIR)/::
 #	PUPPET MODULES
 	mkdir -p $$(PUPPET_BASE)/modules
 	tar zxf $$(ARTS_DIR_$1)/$(PUPPET_ART_NAME) -C $$(PUPPET_BASE)/modules --xform s:^puppet/::
@@ -160,22 +177,11 @@ $(BUILD_DIR)/upgrade/openstack-$1-part.tar: \
 	mkdir -p $$(RELEASE_VERSIONS_BASE)
 	cp $$(ARTS_DIR_$1)/$(VERSION_YAML_ART_NAME) $$(RELEASE_VERSIONS_BASE)/$$(OPENSTACK_VERSION).yaml
 #	ARCHIVING
-	tar cf $$@ -C $$(BASE) .
+	tar rf $(BUILD_DIR)/upgrade/openstack-part.tar -C $$(BASE) .
+	$(ACTION.TOUCH)
 endef
 
-$(foreach version,$(CURRENT_VERSION) $(UPGRADE_VERSIONS),$(eval $(call openstack-version-part,$(version))))
+$(foreach diff,$(UPGRADE_VERSIONS),$(eval $(call build_openstack_part,$(shell echo $(diff) | awk -F':' '{print $$1}'),$(shell echo $(diff) | awk -F':' '{print $$2}'))))
 
-# ===========================
-# ALL VERSIONS IN ONE ARCHIVE
-# ===========================
-$(BUILD_DIR)/upgrade/openstack-part.tar: \
-		$(BUILD_DIR)/upgrade/openstack-$(CURRENT_VERSION)-part.tar
-#	Workaround for puppet issue in 5.0 and 5.0.1 releases:
-	tar cf $@ -C $(SOURCE_DIR) upgrade/config/5.0/*
-	tar rf $@ -C $(SOURCE_DIR) upgrade/config/5.0.1/*
-#	Packing current version
-	tar Af $@ $(BUILD_DIR)/upgrade/openstack-$(CURRENT_VERSION)-part.tar
-#	Packing all upgrade versions
-#	They are already built because we added them
-#	as dependencies for this target before in openstack-version-part define
-	$(foreach version,$(UPGRADE_VERSIONS),tar Af $@ $(BUILD_DIR)/upgrade/openstack-$(version)-part.tar;)
+$(BUILD_DIR)/upgrade/openstack-part.done:
+	$(ACTION.TOUCH)
