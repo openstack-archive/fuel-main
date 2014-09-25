@@ -184,6 +184,7 @@ install-info
 installation-report
 intel-microcode
 iproute
+ipset
 iptables
 iptables-persistent
 iputils-arping
