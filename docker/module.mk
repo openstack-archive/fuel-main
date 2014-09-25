@@ -1,7 +1,5 @@
 .PHONY: docker
 
-DOCKER_ART_NAME:=fuel-images.tar.lrz
-
 docker: $(ARTS_DIR)/$(DOCKER_ART_NAME)
 
 $(ARTS_DIR)/$(DOCKER_ART_NAME): \
