@@ -54,6 +54,12 @@ SOURCE_DIR:=$(abspath $(SOURCE_DIR))
 
 all: iso
 
+upgrade_versions: $(BUILD_DIR)/upgrade_versions
+
+$(BUILD_DIR)/upgrade_versions: $(call depv,UPGRADE_VERSIONS)
+	echo > $@
+	(foreach diff,$(UPGRADE_VERSIONS),echo $(diff) >> $@)
+
 test: test-unit test-integration
 
 clean:
