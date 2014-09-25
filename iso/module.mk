@@ -34,7 +34,7 @@ endif
 	cat $(BUILD_DIR)/repos/version.yaml >> $@
 
 ########################
-# CENTOS ARTIFACT
+# CENTOS MIRROR ARTIFACT
 ########################
 centos-repo: $(ARTS_DIR)/$(CENTOS_REPO_ART_NAME)
 
@@ -68,7 +68,7 @@ endif
 
 
 ########################
-# UBUNTU ARTIFACT
+# UBUNTU MIRROR ARTIFACT
 ########################
 ubuntu-repo: $(ARTS_DIR)/$(UBUNTU_REPO_ART_NAME)
 
