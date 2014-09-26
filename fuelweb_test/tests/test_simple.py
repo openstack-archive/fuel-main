@@ -22,6 +22,7 @@ from proboscis import test
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers.eb_tables import Ebtables
+from fuelweb_test.helpers.common import Common
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.settings import NODE_VOLUME_SIZE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -121,6 +122,37 @@ class SimpleFlat(TestBasic):
             cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_simple_flat", is_make=True)
+
+    @test(depends_on=[deploy_simple_flat],
+          groups=["simple_flat_create_instance"])
+    @log_snapshot_on_error
+    def simple_flat_create_instance(self):
+        """Create instance with file injection
+
+         Scenario:
+            1. Revert "simple flat" environment
+            2. Create instance with file injection
+            3. Assert instance was created
+
+        """
+        #self.env.revert_snapshot("deploy_simple_flat")
+        data = {
+            'tenant': 'novaSimpleFlat',
+            'user': 'novaSimpleFlat',
+            'password': 'novaSimpleFlat'
+        }
+        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
+        common_func = Common(controller['ip'], data['user'], data['password'],
+                             data['tenant'])
+
+        remote = self.env.get_ssh_to_remote_by_name('slave-01')
+        remote.execute("echo 'Hello World' > /root/test.txt")
+        server_files = {"/root/test.txt": 'Hello World'}
+        instance = common_func.create_instance(file=server_files)
+        wait(lambda: common_func.get_instance_detail(instance).status
+             == 'ACTIVE',
+             timeout=10 * 60)
+        common_func.verify_instance_status(instance, 'ACTIVE')
 
     @test(depends_on=[deploy_simple_flat],
           groups=["simple_flat_node_deletion"])

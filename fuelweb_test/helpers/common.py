@@ -87,7 +87,7 @@ class Common(object):
 
     def create_instance(self, flavor_name='test_flavor', ram=64, vcpus=1,
                         disk=1, server_name='test_instance', image_name=None,
-                        neutron_network=False):
+                        neutron_network=False, file=None):
         LOGGER.debug('Try to create instance')
 
         start_time = time.time()
@@ -114,7 +114,8 @@ class Common(object):
             name=flavor_name, ram=ram, vcpus=vcpus, disk=disk)
         LOGGER.info('flavor is {0}'.format(flavor.name))
         server = self.nova.servers.create(
-            name=server_name, image=image[0], flavor=flavor, **kwargs)
+            name=server_name, image=image[0], flavor=flavor,
+            files=file, **kwargs)
         LOGGER.info('server is {0}'.format(server.name))
         return server
 
