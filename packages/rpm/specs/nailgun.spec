@@ -14,7 +14,7 @@ Prefix: %{_prefix}
 BuildRequires:  python-setuptools
 BuildArch: noarch
 
-Requires:    python-alembic == 0.6.2
+Requires:    python-alembic >= 0.6.2
 Requires:    python-amqplib == 1.0.2
 Requires:    python-anyjson == 0.3.3
 Requires:    python-argparse == 1.2.1
@@ -36,7 +36,7 @@ Requires:    python-paste == 1.7.5.1
 Requires:    python-ply >= 3.4
 Requires:    python-psycopg2 == 2.5.1
 Requires:    python-simplejson == 3.3.0
-Requires:    python-sqlalchemy == 0.7.9
+Requires:    python-sqlalchemy >= 0.7.9
 Requires:    python-webpy == 0.37
 Requires:    python-wsgilog == 0.3
 Requires:    python-wsgiref == 0.1.2
@@ -62,5 +62,3 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root)
-
-
