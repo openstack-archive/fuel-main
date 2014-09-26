@@ -58,7 +58,7 @@ class OpenStackActions(common.Common):
             return servers
 
     def create_server_for_migration(self, neutron=False, scenario='',
-                                    timeout=100):
+                                    timeout=100, file=None):
         name = "test-serv" + str(random.randint(1, 0x7fffffff))
         security_group = {}
         try:
@@ -87,6 +87,7 @@ class OpenStackActions(common.Common):
                                        image=image_id,
                                        flavor=1,
                                        userdata=scenario,
+                                       files=file,
                                        **kwargs)
         try:
             helpers.wait(
