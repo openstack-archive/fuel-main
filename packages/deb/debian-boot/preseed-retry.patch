@@ -1,0 +1,23 @@
+diff -Nuar ./lib/preseed/preseed.sh ../initrd-tweaking/lib/preseed/preseed.sh
+--- ./lib/preseed/preseed.sh	2014-09-26 11:27:29.334152576 +0000
++++ ../initrd-tweaking/lib/preseed/preseed.sh	2014-09-26 08:40:18.497532287 +0000
+@@ -45,10 +45,15 @@
+ 	local checksum="$2"
+ 	
+ 	local tmp=/tmp/debconf-seed
+-	
+-	if ! preseed_fetch "$location" "$tmp"; then
+-		error retrieve_error "$location"
+-	fi
++	attempts=0
++	max_attempts=10
++	until preseed_fetch "$location" "$tmp"; do
++		(( attempts+=1 ))
++		if [ $attempts -ge $max_attempts ];then
++		   error retrieve_error "$location"
++		   break
++		fi
++	done
+ 	if [ -n "$checksum" ] && \
+ 	   [ "$(md5sum $tmp | cut -d' ' -f1)" != "$checksum" ]; then
+ 		error retrieve_error "$location"
