@@ -45,7 +45,12 @@ class SecurityChecks(object):
         cmd = ('netstat -A inet -ln --{proto} | awk \'$4 ~ /^({ip}'
                '|0\.0\.0\.0):[0-9]+/ {{split($4,port,":"); print '
                'port[2]}}\'').format(ip=ip_address, proto=protocol)
-        used_ports = remote.execute(cmd)
+        used_ports = ()
+        retries = 3
+        # Execute remote command few times until it returns non-empty result
+        while len(used_ports) < 1 and retries > 0:
+            used_ports = remote.execute(cmd)
+            retries -= 1
 
         # Get list of opened ports
         cmd = ('iptables -t filter -S INPUT | sed -rn -e \'s/^.*\s\-p\s+'
@@ -55,7 +60,13 @@ class SecurityChecks(object):
                '[[:blank:]][[:digit:]] ]]; then seq $ports; else echo '
                '"$ports";fi; done').format(proto=protocol)
 
-        allowed_ports = remote.execute(cmd)
+        allowed_ports = ()
+        # Execute remote command few times until it returns non-empty result
+        retries = 3
+        while len(allowed_ports) < 1 and retries > 0:
+            allowed_ports = remote.execute(cmd)
+            retries -= 1
+
         test_port = randrange(10000)
         while test_port in used_ports or test_port in allowed_ports:
             test_port = randrange(10000)
