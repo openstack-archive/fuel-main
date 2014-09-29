@@ -133,7 +133,7 @@ LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
 USE_MIRROR?=ext
 ifeq ($(USE_MIRROR),us)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://fuel-repository.mirantis.com/fwm/$(PRODUCT_VERSION)
+MIRROR_BASE?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
@@ -171,7 +171,7 @@ MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos/$(CENTOS_RELEASE
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 MIRROR_UBUNTU?=http://mirrors-local-msk.msk.mirantis.net/ubuntu/
 MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://fuel-repository.mirantis.com/fwm/$(PRODUCT_VERSION)/docker
+MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
