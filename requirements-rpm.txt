@@ -208,7 +208,7 @@ mod_fastcgi
 mod_ssl-2.2.15-15.el6.1
 mod_wsgi-3.2-1.el6
 mtools-4.0.17-3.el6
-murano-api
+murano
 murano-dashboard
 murano-apps
 nagios-3.5.0-1.el6
