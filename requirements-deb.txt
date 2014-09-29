@@ -778,6 +778,7 @@ python-zmq
 python-yaml
 python-pexpect
 python2.7
+python2.7-dbg
 python2.7-minimal
 qemu-kvm
 qemu-utils
