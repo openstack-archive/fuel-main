@@ -548,7 +548,7 @@ mongodb-server
 msr-tools
 mtr-tiny
 multiarch-support
-murano-api
+murano
 murano-dashboard
 murano-apps
 mysql-client
