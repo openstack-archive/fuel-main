@@ -181,20 +181,25 @@ vm_slave_third_disk_mb=65535
 
 total_memory=$(get_available_memory $os_type)
 
-# Count selected RAM configuration
-for machine_number in $(eval echo {1..$cluster_size}); do
-  if [ -n "${vm_slave_memory_mb[$machine_number]}" ]; then
-    vm_total_mb=$(( $vm_total_mb + ${vm_slave_memory_mb[$machine_number]} ))
-  else
-    vm_total_mb=$(( $vm_total_mb + $vm_slave_memory_default ))
-  fi
-done
-vm_total_mb=$(( $vm_total_mb + $vm_master_memory_mb ))
+if [ $total_memory -eq -1 ]; then
+  echo "Launch without checking RAM on host PC"
+  echo "Auto check memory is unavailable, you need install 'top' and 'free'. Please install procps package."
+else
+  # Count selected RAM configuration
+  for machine_number in $(eval echo {1..$cluster_size}); do
+    if [ -n "${vm_slave_memory_mb[$machine_number]}" ]; then
+      vm_total_mb=$(( $vm_total_mb + ${vm_slave_memory_mb[$machine_number]} ))
+    else
+      vm_total_mb=$(( $vm_total_mb + $vm_slave_memory_default ))
+    fi
+  done
+  vm_total_mb=$(( $vm_total_mb + $vm_master_memory_mb ))
 
-# Do not run VMs if host PC not have enough RAM
-can_allocate_mb=$(( ($total_memory - 524288) / 1024 ))
-if [ $vm_total_mb -gt $can_allocate_mb ]; then
-  echo "Your host has not enough memory."
-  echo "You can allocate no more than ${can_allocate_mb}MB, but trying to run VMs with ${vm_total_mb}MB"
-  exit 1
+  # Do not run VMs if host PC not have enough RAM
+  can_allocate_mb=$(( ($total_memory - 524288) / 1024 ))
+  if [ $vm_total_mb -gt $can_allocate_mb ]; then
+    echo "Your host has not enough memory."
+    echo "You can allocate no more than ${can_allocate_mb}MB, but trying to run VMs with ${vm_total_mb}MB"
+    exit 1
+  fi
 fi
