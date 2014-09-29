@@ -27,6 +27,12 @@ source config.sh
 source functions/vm.sh
 source functions/network.sh
 
+# Check for procps package
+echo -n "Checking for 'top' and 'free'"
+free -V >/dev/null 2>&1 || { echo >&2 " \"free\" is not available in the path, but it's required. Please install \"procpc\" package. Aborting."; exit 1; }
+top -v >/dev/null 2>&1 || { echo >&2 " \"top\" is not available in the path, but it's required. Please install \"procpc\" package. Aborting."; exit 1; }
+echo "OK"
+
 # Check for expect
 echo -n "Checking for 'expect'... "
 expect -v >/dev/null 2>&1 || { echo >&2 " \"expect\" is not available in the path, but it's required. Please install Tcl \"expect\" package. Aborting."; exit 1; }
