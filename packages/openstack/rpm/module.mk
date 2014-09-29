@@ -9,7 +9,7 @@ priority=10
 
 [centos-master]
 name=CentOS-master
-baseurl=http://fuel-repository.mirantis.com/repos/centos-fuel-master/centos/
+baseurl=http://mirror.fuel-infra.org/repos/centos-fuel-master/centos/
 gpgcheck=0
 enabled=0
 priority=1
