@@ -810,7 +810,6 @@ ruby1.8
 ruby1.8-dev
 rubygems
 sahara
-sahara-dashboard
 screen
 scrub
 seabios

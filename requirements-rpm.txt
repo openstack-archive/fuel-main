@@ -586,7 +586,6 @@ libselinux-ruby-2.0.94
 ruby21-augeas
 ruby21-rubygem-shadow
 sahara
-sahara-dashboard
 scapy-2.0.0.10-5.el6
 screen-4.0.3-16.el6
 selinux-policy
