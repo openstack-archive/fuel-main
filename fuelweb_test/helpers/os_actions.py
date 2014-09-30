@@ -229,7 +229,8 @@ class OpenStackActions(common.Common):
             channel.shutdown_write()
             return output
         except Exception as exc:
-            logger.info("An exception occured: %s" % exc)
+            logger.error("An exception occurred: %s" % exc)
+            return ''
 
     def get_tenant(self, tenant_name):
         tenant_list = self.keystone.tenants.list()
