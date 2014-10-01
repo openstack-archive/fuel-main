@@ -1,11 +1,12 @@
 import time
 from selenium.webdriver import ActionChains
 import browser
-from pageobjects.environments import Environments, DeployChangesPopup
+from pageobjects.environments import DeployChangesPopup
 from pageobjects.header import TaskResultAlert
 from pageobjects.node_disks_settings import DisksSettings
 from pageobjects.node_interfaces_settings import InterfacesSettings
 from pageobjects.nodes import Nodes, RolesPanel, DeleteNodePopup, NodeInfo
+from pageobjects.base import PageObject
 from tests import preconditions
 from tests.base import BaseTestCase
 
@@ -26,7 +27,6 @@ class TestDeploy(BaseTestCase):
         BaseTestCase.clear_nailgun_database()
         BaseTestCase.setUp(self)
         preconditions.Environment.simple_flat()
-        Environments().create_cluster_boxes[0].click()
         time.sleep(1)
 
     def test_add_nodes(self):
@@ -90,7 +90,7 @@ class TestDeploy(BaseTestCase):
 
         Nodes().deploy_changes.click()
         DeployChangesPopup().deploy.click()
-        TaskResultAlert().close.click()
+        PageObject.click_element(TaskResultAlert(), 'close')
 
         with Nodes() as n:
             self.assertEqual(1, len(n.nodes), 'Nodes amount')

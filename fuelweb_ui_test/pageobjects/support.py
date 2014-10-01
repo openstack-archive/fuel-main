@@ -13,13 +13,17 @@ class Support(PageObject):
 
     @property
     def generate_snapshot(self):
-        return self.parent.find_element_by_css_selector('button.download-logs')
+        return self.parent.find_element_by_css_selector('.snapshot > button')
 
     @property
     def download_snapshot(self):
         return self.parent.\
-            find_element_by_css_selector('span.donwload-logs-link > a')
+            find_element_by_css_selector('span.ready > a')
 
     @property
     def view_capacity_audit(self):
         return self.parent.find_element_by_link_text('View Capacity Audit')
+
+    @property
+    def capacity_report(self):
+        return self.parent.find_element_by_css_selector('.btn.btn-info')

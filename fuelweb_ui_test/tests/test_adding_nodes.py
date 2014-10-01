@@ -56,7 +56,7 @@ class TestNodesAddPage(BaseTestCase):
         """
         with Nodes()as n:
             for node in n.nodes_offline:
-                self.assertFalse(
+                self.assertTrue(
                     node.checkbox.find_element_by_tag_name('input').
                     is_enabled(),
                     'Node disabled')
@@ -94,7 +94,7 @@ class TestNodesAddPage(BaseTestCase):
                     is_selected(),
                     'Discovered node is selected')
             for node in n.nodes_offline:
-                self.assertFalse(
+                self.assertTrue(
                     node.checkbox.find_element_by_tag_name('input').
                     is_selected(),
                     'Offline node is not selected')
@@ -136,6 +136,8 @@ class TestNodesAddPage(BaseTestCase):
             for i, group in enumerate(n.node_groups):
                 for node in group.nodes_discovered:
                     node.checkbox.click()
+                for node in group.nodes_offline:
+                    node.checkbox.click()
                 self.assertTrue(
                     group.select_all_in_group[0].is_selected(),
                     '"Select all in group" is checked')
@@ -167,7 +169,7 @@ class TestNodesAddPage(BaseTestCase):
         with Nodes()as n:
             for node in n.nodes_offline:
                 node.parent.click()
-                self.assertFalse(
+                self.assertTrue(
                     node.checkbox.find_element_by_tag_name('input').
                     is_selected(),
                     'Offline node is not selected')
@@ -235,6 +237,7 @@ class TestNodesAddPage(BaseTestCase):
                 old_name, n.nodes_discovered[0].name.text,
                 'Node has old name')
             n.nodes_discovered[0].name.click()
+            n.nodes_discovered[0].name_input.clear()
             n.nodes_discovered[0].name_input.send_keys(name)
             n.nodes_discovered[0].name_input.send_keys(Keys.ENTER)
             time.sleep(2)
@@ -282,7 +285,7 @@ class TestAddingNodes(BaseTestCase):
         Nodes().apply_changes.click()
         time.sleep(1)
         with Nodes() as n:
-            self.assertTrue(n.env_name.is_displayed())
+            self.assertTrue(n.env_summary.is_displayed())
             self.assertEqual(len(n.nodes), 1, 'Nodes amount')
             self.assertEqual(n.nodes[0].name.text, name, 'Node name')
             self.assertIn(ROLE_CONTROLLER, n.nodes[0].roles.text, 'Node role')
@@ -304,7 +307,7 @@ class TestAddingNodes(BaseTestCase):
         Nodes().apply_changes.click()
         time.sleep(1)
         with Nodes() as n:
-            self.assertTrue(n.env_name.is_displayed())
+            self.assertTrue(n.env_summary.is_displayed())
             self.assertIn(ROLE_CONTROLLER, n.nodes[0].roles.text,
                           'Node first role')
             self.assertIn(ROLE_CINDER, n.nodes[0].roles.text,
@@ -413,6 +416,7 @@ class TestGroupBy(BaseTestCase):
         BaseTestCase.setUpClass()
         BaseTestCase.get_home()
         preconditions.Environment().simple_flat()
+        BaseTestCase.get_home()
         Environments().create_cluster_boxes[0].click()
         time.sleep(1)
 

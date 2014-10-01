@@ -63,6 +63,7 @@ class TestEnvWizard(BaseTestCase):
             w.create.click()
             w.wait_until_exists()
 
+        self.get_home()
         Environments().create_cluster_box.click()
         with Wizard() as w:
             w.name.send_keys(name)
@@ -341,7 +342,7 @@ class TestEnvWizard(BaseTestCase):
                              OPENSTACK_RELEASE_CENTOS)
             w.name.send_keys(OPENSTACK_RELEASE_UBUNTU)
             w.next.click()
-            self.assertTrue(w.mode_multinode.
+            self.assertTrue(w.mode_ha_compact.
                             find_element_by_tag_name('input').is_selected())
             w.next.click()
             self.assertTrue(w.hypervisor_qemu.
