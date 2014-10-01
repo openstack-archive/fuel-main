@@ -16,7 +16,9 @@ class Environment:
         with Wizard() as w:
             w.name.send_keys(name)
             w.release.select_by_visible_text(release)
-            for i in range(6):
+            w.next.click()
+            w.mode_multinode.click()
+            for i in range(5):
                 w.next.click()
             w.create.click()
             w.wait_until_exists()
@@ -44,7 +46,9 @@ class Environment:
         with Wizard() as w:
             w.name.send_keys(name)
             w.release.select_by_visible_text(release)
-            for i in range(3):
+            w.next.click()
+            w.mode_multinode.click()
+            for i in range(2):
                 w.next.click()
             w.network_neutron_gre.click()
             for i in range(3):

@@ -21,7 +21,6 @@ class TestConfigureDisks(BaseTestCase):
         """
         BaseTestCase.setUpClass()
         preconditions.Environment.simple_flat()
-        Environments().create_cluster_boxes[0].click()
         time.sleep(1)
         Nodes().add_nodes.click()
         time.sleep(1)

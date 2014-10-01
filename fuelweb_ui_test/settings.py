@@ -15,11 +15,11 @@ FOLDER_SCREEN_CURRENT = os.environ.get(
     'FOLDER_SCREEN_CURRENT', '/home/nfedotov/testscreens/current')
 
 OPENSTACK_RELEASE_CENTOS = os.environ.get(
-    'OPENSTACK_RELEASE_CENTOS', 'Icehouse on CentOS 6.5 (2014.1.1-5.1)')
+    'OPENSTACK_RELEASE_CENTOS', 'Icehouse on CentOS 6.5 (2014.2-6.0)')
 OPENSTACK_RELEASE_REDHAT = os.environ.get(
     'OPENSTACK_RELEASE_REDHAT', 'RHOS 3.0 for RHEL 6.4 (2013.2.2)')
 OPENSTACK_RELEASE_UBUNTU = os.environ.get(
-    'OPENSTACK_RELEASE_UBUNTU', 'Havana on Ubuntu 12.04 (2013.2.2)')
+    'OPENSTACK_RELEASE_UBUNTU', 'Icehouse on Ubuntu 12.04.4 (2014.2-6.0)')
 
 REDHAT_USERNAME = os.environ.get('REDHAT_USERNAME', 'rheltest')
 REDHAT_PASSWORD = os.environ.get('REDHAT_PASSWORD', 'password')
@@ -34,7 +34,7 @@ OPENSTACK_UBUNTU = openstack_name(OPENSTACK_RELEASE_UBUNTU)
 
 NAILGUN_FIXTURES = os.environ.get('NAILGUN_FIXTURES', '')
 
-URL_HOME = os.environ.get('URL_HOME', 'http://localhost:5544')
+URL_HOME = os.environ.get('URL_HOME', 'http://localhost:8000')
 SELENIUM_IMPLICIT_WAIT = os.environ.get('SELENIUM_IMPLICIT_WAIT', 10)
 Fuel_UI_Login = 'admin'
 Fuel_UI_Password = 'admin'

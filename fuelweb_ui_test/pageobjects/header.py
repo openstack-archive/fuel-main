@@ -38,7 +38,7 @@ class Header(PageObject):
     @property
     def unallocated_nodes(self):
         return self.parent.\
-            find_element_by_css_selector('div.unallocated-nodes-count')
+            find_element_by_xpath("//div[@class='statistic']/div[3]")
 
 
 class TaskResultAlert(PageObject):
@@ -46,7 +46,7 @@ class TaskResultAlert(PageObject):
     @implicit_wait(60)
     def __init__(self):
         element = browser.driver.\
-            find_element_by_css_selector('div.task-result')
+            find_element_by_css_selector('div.alert-success')
         PageObject.__init__(self, element)
 
     @property

@@ -40,7 +40,7 @@ class Networks(PageObject):
 
     @property
     def fixed(self):
-        return Network('VM (Fixed)')
+        return Network('Nova-network Configuration')
 
     @property
     def neutron(self):
@@ -49,12 +49,14 @@ class Networks(PageObject):
     @property
     def dns1(self):
         return self.parent.\
-            find_element_by_css_selector('.nameservers-row input[name=range0]')
+            find_element_by_css_selector(
+                '.dns_nameservers-row input[name=range0]')
 
     @property
     def dns2(self):
         return self.parent.\
-            find_element_by_css_selector('.nameservers-row input[name=range1]')
+            find_element_by_css_selector(
+                '.dns_nameservers-row input[name=range1]')
 
     @property
     @implicit_wait(20)
@@ -127,7 +129,8 @@ class Network(PageObject):
 
     @property
     def number_of_networks(self):
-        return self.parent.find_element_by_css_selector('input[name$=amount]')
+        return self.parent.\
+            find_element_by_css_selector('input[name$=amount]')
 
     @property
     def network_size(self):
@@ -139,48 +142,55 @@ class Network(PageObject):
 class NeutronParameters(PageObject):
     def __init__(self):
         el = browser.driver.\
-            find_element_by_css_selector('div.neutron-parameters')
+            find_element_by_css_selector('div.networking-parameters')
         PageObject.__init__(self, el)
 
     @property
     def id_start(self):
-        return self.parent.find_element_by_css_selector('input[name=id0]')
+        return self.parent.find_element_by_css_selector('input[name=range0]')
 
     @property
     def id_end(self):
-        return self.parent.find_element_by_css_selector('input[name=id1]')
+        return self.parent.find_element_by_css_selector('input[name=range1]')
 
     @property
     def base_mac(self):
-        return self.parent.find_element_by_css_selector('input[name=base_mac]')
+        return self.parent.\
+            find_element_by_css_selector('input[name=base_mac]')
 
     @property
     def floating_start(self):
         return self.parent.\
-            find_element_by_css_selector('.floating-row input[name=range0]')
+            find_element_by_css_selector(
+                '.floating-ranges-rows input[name=range0]')
 
     @property
     def floating_end(self):
         return self.parent.\
-            find_element_by_css_selector('.floating-row input[name=range1]')
+            find_element_by_css_selector(
+                '.floating-ranges-rows input[name=range1]')
 
     @property
     def cidr(self):
-        return self.parent.find_element_by_css_selector('input[name=cidr-int]')
+        return self.parent.\
+            find_element_by_css_selector('input[name=internal_cidr]')
 
     @property
     def gateway(self):
-        return self.parent.find_element_by_css_selector('input[name=gateway]')
+        return self.parent.find_element_by_css_selector(
+            'input[name=internal_gateway]')
 
     @property
     def nameserver0(self):
         return self.parent.\
-            find_element_by_css_selector('.nameservers-row input[name=range0]')
+            find_element_by_css_selector(
+                '.dns_nameservers-row input[name=range0]')
 
     @property
     def nameserver1(self):
         return self.parent.\
-            find_element_by_css_selector('.nameservers-row input[name=range1]')
+            find_element_by_css_selector(
+                '.dns_nameservers-row input[name=range1]')
 
 
 class IpRange(PageObject):

@@ -24,14 +24,12 @@ class TestConfigureNetworksPage(BaseTestCase):
         """
         BaseTestCase.setUpClass()
         preconditions.Environment.simple_flat()
-        Environments().create_cluster_boxes[0].click()
         time.sleep(1)
         Nodes().add_nodes.click()
         time.sleep(1)
         Nodes().nodes_discovered[0].checkbox.click()
         RolesPanel().controller.click()
         Nodes().apply_changes.click()
-        time.sleep(1)
 
     def setUp(self):
         """Each test precondition
@@ -76,27 +74,19 @@ class TestConfigureNetworksPage(BaseTestCase):
                 'vm (fixed)', s.interfaces[2].networks,
                 'vm (fixed) at eht2')
 
-    def test_public_floating_grouped(self):
+    def test_public_network(self):
         """Drag and drop public and floating networks
 
         Scenario:
             1. Drag and drop Public network from eth0 to eth1
-            2. Verify that Floating network is moved to eth1 too
-            3. Drag and drop Floating network from eth1 to eth2
-            4. Verify that Public network is moved to eth2 too
+            2. Verify that Public network is moved to eth1
         """
         with InterfacesSettings() as s:
             ActionChains(browser.driver).drag_and_drop(
                 s.interfaces[0].networks['public'],
                 s.interfaces[1].networks_box).perform()
             self.assertIn(
-                'floating', s.interfaces[1].networks,
-                'Floating has been moved')
-            ActionChains(browser.driver).drag_and_drop(
-                s.interfaces[1].networks['floating'],
-                s.interfaces[2].networks_box).perform()
-            self.assertIn(
-                'public', s.interfaces[2].networks,
+                'public', s.interfaces[1].networks,
                 'Public has been moved')
 
     def test_admin_pxe_is_not_dragable(self):
@@ -125,7 +115,7 @@ class TestConfigureNetworksPage(BaseTestCase):
             4. Verify that eth2 isn't highlighted, error message
                has disappeared and Apply button is active
         """
-        error = 'Untagged networks can not be assigned to one interface'
+        error = 'Untagged networks can not be assigned to the same interface'
         with InterfacesSettings() as s:
             ActionChains(browser.driver).drag_and_drop(
                 s.interfaces[0].networks['public'],
@@ -178,9 +168,6 @@ class TestConfigureNetworksPage(BaseTestCase):
             self.assertIn(
                 'public', s.interfaces[0].networks,
                 'public at eht0')
-            self.assertIn(
-                'floating', s.interfaces[0].networks,
-                'floating at eht0')
 
 
 class TestConfigureNetworks(BaseTestCase):
@@ -201,9 +188,7 @@ class TestConfigureNetworks(BaseTestCase):
         """
         BaseTestCase.clear_nailgun_database()
         BaseTestCase.setUp(self)
-
         preconditions.Environment.simple_flat()
-        Environments().create_cluster_boxes[0].click()
         time.sleep(1)
         Nodes().add_nodes.click()
         time.sleep(1)
@@ -213,6 +198,7 @@ class TestConfigureNetworks(BaseTestCase):
         time.sleep(1)
         Nodes().nodes[0].details.click()
         NodeInfo().edit_networks.click()
+        time.sleep(1)
 
     def test_save_load_defaults(self):
         """Load default network settings
@@ -222,8 +208,7 @@ class TestConfigureNetworks(BaseTestCase):
             2. Drag and drop Storage network from eth0 to eth2
             3. Click Apply
             4. Click Load Defaults
-            5. Verify that Public, Storage, Floating network
-               are on eth0 interface
+            5. Verify that Public, Storage are on eth0 interface
         """
         with InterfacesSettings() as s:
             ActionChains(browser.driver).drag_and_drop(
@@ -242,9 +227,6 @@ class TestConfigureNetworks(BaseTestCase):
             self.assertIn(
                 'public', s.interfaces[1].networks,
                 'public at eht1')
-            self.assertIn(
-                'floating', s.interfaces[1].networks,
-                'floating at eht1')
             s.load_defaults.click()
             time.sleep(1)
             self.assertIn(
@@ -253,9 +235,6 @@ class TestConfigureNetworks(BaseTestCase):
             self.assertIn(
                 'public', s.interfaces[0].networks,
                 'public at eht0')
-            self.assertIn(
-                'floating', s.interfaces[0].networks,
-                'floating at eht0')
 
     def test_configure_interfaces_of_several_nodes(self):
         """Configure interfaces on several nodes
@@ -276,42 +255,44 @@ class TestConfigureNetworks(BaseTestCase):
         # Add second node
         time.sleep(1)
         Nodes().add_nodes.click()
-        Nodes().nodes_discovered[0].checkbox.click()
+        Nodes().nodes_discovered[2].checkbox.click()
+        RolesPanel().compute.click()
+        Nodes().apply_changes.click()
+        time.sleep(1)
+        Tabs().nodes.click()
+        time.sleep(1)
+        Nodes().add_nodes.click()
+        Nodes().nodes_discovered[1].checkbox.click()
         RolesPanel().compute.click()
         Nodes().apply_changes.click()
         time.sleep(1)
         # rearrange interfaces
         with Nodes() as n:
-            n.select_all.click()
+            n.nodes[1].checkbox.click()
+            n.nodes[2].checkbox.click()
             n.configure_interfaces.click()
         with InterfacesSettings() as s:
-            ActionChains(browser.driver).drag_and_drop(
-                s.interfaces[0].networks['public'],
-                s.interfaces[1].networks_box).perform()
             ActionChains(browser.driver).drag_and_drop(
                 s.interfaces[0].networks['management'],
                 s.interfaces[1].networks_box).perform()
             ActionChains(browser.driver).drag_and_drop(
                 s.interfaces[0].networks['storage'],
-                s.interfaces[2].networks_box).perform()
+                s.interfaces[1].networks_box).perform()
             s.apply.click()
             time.sleep(1)
 
-        for i in range(2):
+        for i in range(1, 3):
             # Go to nodes page
             Tabs().nodes.click()
             # Verify interfaces settings of each node
             Nodes().nodes[i].details.click()
             NodeInfo().edit_networks.click()
             self.assertIn(
-                'public', s.interfaces[1].networks,
-                'public at eht1. Node #{0}'.format(i))
-            self.assertIn(
                 'management', s.interfaces[1].networks,
                 'management at eht1. Node #{0}'.format(i))
             self.assertIn(
-                'storage', s.interfaces[2].networks,
-                'storage at eht2. Node #{0}'.format(i))
+                'storage', s.interfaces[1].networks,
+                'storage at eht1. Node #{0}'.format(i))
 
     def test_vlan_id_labels_visibility(self):
         """Checking vlan id label when vlan tagging is disabled
@@ -412,7 +393,6 @@ class TestBondingInterfaces(BaseTestCase):
         BaseTestCase.clear_nailgun_database()
         BaseTestCase.setUp(self)
         preconditions.Environment.simple_neutron_gre()
-        Environments().create_cluster_boxes[0].click()
         PageObject.click_element(Nodes(), 'add_nodes')
         PageObject.click_element(Nodes(), 'nodes_discovered', 'checkbox', 0)
         RolesPanel().controller.click()
@@ -430,7 +410,9 @@ class TestBondingInterfaces(BaseTestCase):
         self.assertFalse(PageObject.find_element
                          (InterfacesSettings(), 'bond_interfaces').
                          is_enabled())
-        self.assertFalse(InterfacesSettings().unbond_interfaces.is_enabled())
+        self.assertFalse(PageObject.find_element
+                         (InterfacesSettings(), 'unbond_interfaces').
+                         is_enabled())
 
     def test_inactive_one_selected(self):
         """Check bond buttons are inactive if one interface is selected
@@ -440,7 +422,7 @@ class TestBondingInterfaces(BaseTestCase):
             2. Verify bond and unbond buttons are disabled
         """
         with InterfacesSettings() as s:
-            s.interfaces[0].interface_checkbox.click()
+            PageObject.click_element(s, 'interfaces', 'interface_checkbox', 0)
             self.assertFalse(s.bond_interfaces.is_enabled())
             self.assertFalse(s.unbond_interfaces.is_enabled())
 
@@ -453,7 +435,7 @@ class TestBondingInterfaces(BaseTestCase):
             3. Verify that interfaces were bonded
         """
         with InterfacesSettings() as s:
-            s.interfaces[0].interface_checkbox.click()
+            PageObject.click_element(s, 'interfaces', 'interface_checkbox', 0)
             s.interfaces[1].interface_checkbox.click()
             self.assertTrue(s.bond_interfaces.is_enabled())
             s.bond_interfaces.click()
@@ -471,7 +453,7 @@ class TestBondingInterfaces(BaseTestCase):
             4. Verify that interfaces aren't bonded
         """
         with InterfacesSettings() as s:
-            s.interfaces[0].interface_checkbox.click()
+            PageObject.click_element(s, 'interfaces', 'interface_checkbox', 0)
             s.interfaces[1].interface_checkbox.click()
             s.bond_interfaces.click()
             s.cancel_changes.click()
@@ -487,7 +469,7 @@ class TestBondingInterfaces(BaseTestCase):
             4. Verify that interfaces aren't bonded
         """
         with InterfacesSettings() as s:
-            s.interfaces[0].interface_checkbox.click()
+            PageObject.click_element(s, 'interfaces', 'interface_checkbox', 0)
             s.interfaces[1].interface_checkbox.click()
             s.bond_interfaces.click()
             s.apply.click()
@@ -507,7 +489,7 @@ class TestBondingInterfaces(BaseTestCase):
             4. Verify that interfaces aren't bonded
         """
         with InterfacesSettings() as s:
-            s.interfaces[0].interface_checkbox.click()
+            PageObject.click_element(s, 'interfaces', 'interface_checkbox', 0)
             s.interfaces[1].interface_checkbox.click()
             s.bond_interfaces.click()
             s.interfaces[0].interface_checkbox.click()
@@ -524,7 +506,7 @@ class TestBondingInterfaces(BaseTestCase):
             4. Verify that modes are saved correctly
         """
         with InterfacesSettings() as s:
-            s.interfaces[0].interface_checkbox.click()
+            PageObject.click_element(s, 'interfaces', 'interface_checkbox', 0)
             s.interfaces[1].interface_checkbox.click()
             s.bond_interfaces.click()
             s.interfaces[0].select_mode.select_by_visible_text('Balance SLB')
