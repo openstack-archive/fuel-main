@@ -1,5 +1,8 @@
+import time
+
 from pageobjects.base import PageObject
 from pageobjects.base import Popup
+from pageobjects.tabs import Tabs
 
 
 class Actions(PageObject):
@@ -7,17 +10,17 @@ class Actions(PageObject):
     @property
     def name(self):
         return self.parent.\
-            find_element_by_css_selector('.rename-cluster-form input')
+            find_element_by_css_selector('.environment-action-form input')
 
     @property
     def rename(self):
         return self.parent.\
-            find_element_by_css_selector('button.apply-name-btn')
+            find_element_by_css_selector('button.rename-environment-btn')
 
     @property
     def delete(self):
         return self.parent.\
-            find_element_by_css_selector('button.delete-cluster-btn')
+            find_element_by_css_selector('button.delete-environment-btn')
 
     @property
     def reset(self):
@@ -51,7 +54,8 @@ class Actions(PageObject):
 
     @property
     def verify_disabled_deploy(self):
-        return self.parent.find_element_by_css_selector('.deploy-btn.disabled')
+        return self.parent.find_element_by_xpath(
+            "//div[@class='deployment-control-item-box']/button[@disabled]")
 
     @property
     def stop_deploy(self):
@@ -67,18 +71,24 @@ class Actions(PageObject):
     @classmethod
     def reset_env(cls):
         PageObject.click_element(Actions(), 'reset')
-        Actions().reset_popup.click()
+        PageObject.wait_element(Actions(), 'reset_popup')
+        time.sleep(2)
+        PageObject.click_element(Actions(), 'reset_popup')
+        PageObject.click_element(Tabs(), 'nodes')
         PageObject.long_wait_element(Actions(), 'pending_nodes')
 
     @classmethod
     def cancel_reset(cls):
         Actions().reset.click()
-        Actions().cancel_popup.click()
+        PageObject.click_element(Actions(), 'cancel_popup')
+        PageObject.click_element(Tabs(), 'nodes')
 
     @classmethod
     def stop_deploy_process(cls):
         PageObject.click_element(Actions(), 'stop_deploy')
-        Actions().stop_deploy_popup.click()
+        PageObject.wait_element(Actions, "stop_deploy_popup")
+        PageObject.click_element(Actions(), 'stop_deploy_popup')
+        PageObject.click_element(Tabs(), 'nodes')
         PageObject.long_wait_element(Actions(), 'pending_nodes')
 
 

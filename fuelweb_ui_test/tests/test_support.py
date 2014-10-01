@@ -81,8 +81,9 @@ class TestSupport(BaseTestCase):
             2. Verify that system information is present
         """
         Support().view_capacity_audit.click()
+        PageObject.wait_element(Support(), 'capacity_report')
         self.assertEqual(
-            'Home/ Support/ Capacity',
+            'Home/Support/Capacity',
             Header().breadcrumb.text,
             'Breadcrumb text'
         )

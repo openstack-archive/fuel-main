@@ -28,8 +28,7 @@ class TestEnvironment(BaseTestCase):
             1. Create environment with default values
             2. Click on created environment
             3. Verify that correct environment name is displayed
-            4. Click on information icon and verify all
-               information is displayed correctly
+            4. Verify all information is displayed correctly
             5. Verify all info on Networks and Settings tab
         """
         with Wizard() as w:
@@ -40,23 +39,17 @@ class TestEnvironment(BaseTestCase):
             w.create.click()
             w.wait_until_exists()
 
+        self.get_home()
         cb = Environments().create_cluster_boxes[0]
         self.assertIn(OPENSTACK_CENTOS, cb.text)
         cb.click()
 
         with Nodes() as n:
             time.sleep(1)
-            self.assertEqual(n.env_name.text, OPENSTACK_CENTOS)
-            n.info_icon.click()
-            self.assertIn('display: block;',
-                          n.env_details.get_attribute('style'))
-            self.assertIn(OPENSTACK_CENTOS, n.env_details.text)
-            self.assertIn('New', n.env_details.text)
-            self.assertIn('Multi-node', n.env_details.text)
-            self.assertNotIn('with HA', n.env_details.text)
-            n.info_icon.click()
-            self.assertIn('display: none;',
-                          n.env_details.get_attribute('style'))
+            self.assertIn(OPENSTACK_CENTOS, n.env_summary.text)
+            self.assertIn('New', n.env_summary.text)
+            self.assertIn('Multi-node', n.env_summary.text)
+            self.assertIn('with HA', n.env_summary.text)
         Tabs().networks.click()
         with Networks() as n:
             self.assertTrue(n.flatdhcp_manager.
@@ -73,36 +66,33 @@ class TestEnvironment(BaseTestCase):
                             find_element_by_tag_name('input').is_selected())
         pass
 
-    def test_ha_mode(self):
-        """Create environment with HA mode
+    def test_simple_mode(self):
+        """Create environment with simple mode
 
         Scenario:
-            1. Create environment with HA mode
+            1. Create environment with simple mode
             2. Click on created environment
             3. Verify that correct environment name is displayed
-            4. Click on information icon and verify
-               all information is displayed correctly
+            4. Verify all information is displayed correctly
         """
         with Wizard() as w:
             w.name.send_keys(OPENSTACK_CENTOS)
             w.release.select_by_visible_text(OPENSTACK_RELEASE_CENTOS)
             w.next.click()
-            w.mode_ha_compact.click()
+            w.mode_multinode.click()
             for i in range(5):
                 w.next.click()
             w.create.click()
             w.wait_until_exists()
 
+        self.get_home()
         cb = Environments().create_cluster_boxes[0]
         cb.click()
 
         with Nodes() as n:
-            self.assertEqual(PageObject.get_text(n, 'env_name'),
-                             OPENSTACK_CENTOS)
-            PageObject.click_element(n, 'info_icon')
-            self.assertIn(OPENSTACK_CENTOS, PageObject.get_text
-                          (n, 'env_details'))
-            self.assertIn('Multi-node with HA', n.env_details.text)
+            self.assertIn(OPENSTACK_CENTOS,
+                          PageObject.get_text(n, 'env_summary'))
+            self.assertIn('Multi-node', n.env_summary.text)
 
     def test_hypervisor_kvm(self):
         """Create environment with KVM hypervisor
@@ -124,8 +114,6 @@ class TestEnvironment(BaseTestCase):
             w.create.click()
             w.wait_until_exists()
 
-        cb = Environments().create_cluster_boxes[0]
-        cb.click()
         Tabs().settings.click()
 
         with Settings() as s:
@@ -153,13 +141,11 @@ class TestEnvironment(BaseTestCase):
             w.create.click()
             w.wait_until_exists()
 
-        cb = Environments().create_cluster_boxes[0]
-        cb.click()
         Tabs().networks.click()
 
         with Networks() as n:
             self.assertEqual(n.segmentation_type.text,
-                             'Neutron with gre segmentation')
+                             'Neutron with GRE segmentation')
             self.assertTrue(NeutronParameters().parent.is_displayed())
 
     def test_neutron_vlan(self):
@@ -183,13 +169,11 @@ class TestEnvironment(BaseTestCase):
             w.create.click()
             w.wait_until_exists()
 
-        cb = Environments().create_cluster_boxes[0]
-        cb.click()
         Tabs().networks.click()
 
         with Networks() as n:
             self.assertEqual(n.segmentation_type.text,
-                             'Neutron with vlan segmentation')
+                             'Neutron with VLAN segmentation')
             self.assertTrue(NeutronParameters().parent.is_displayed())
 
     def test_storage_ceph(self):
@@ -214,8 +198,6 @@ class TestEnvironment(BaseTestCase):
             w.create.click()
             w.wait_until_exists()
 
-        cb = Environments().create_cluster_boxes[0]
-        cb.click()
         Tabs().settings.click()
 
         with Settings() as s:
@@ -252,8 +234,6 @@ class TestEnvironment(BaseTestCase):
             w.create.click()
             w.wait_until_exists()
 
-        cb = Environments().create_cluster_boxes[0]
-        cb.click()
         Tabs().settings.click()
 
         with Settings() as s:

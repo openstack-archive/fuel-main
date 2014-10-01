@@ -25,7 +25,6 @@ class TestEnvironmentActions(BaseTestCase):
         """
         BaseTestCase.clear_nailgun_database()
         preconditions.Environment.simple_flat()
-        Environments().create_cluster_boxes[0].click()
         Tabs().actions.click()
 
     def test_rename(self):
@@ -44,8 +43,8 @@ class TestEnvironmentActions(BaseTestCase):
             a.rename.click()
             time.sleep(1)
         Tabs().nodes.click()
-        self.assertEqual(value, Nodes().env_name.text,
-                         'Environment has been renamed')
+        self.assertIn(value, Nodes().env_name.text,
+                      'Environment has been renamed')
 
     def test_delete(self):
         """Delete environment
@@ -110,7 +109,6 @@ class TestEnvironmentActions(BaseTestCase):
         TaskResultAlert().close.click()
         Tabs().actions.click()
         Actions().cancel_reset()
-        Tabs().nodes.click()
         for node in Nodes().nodes:
             self.assertEqual(
                 'ready', node.status.text.lower(),
@@ -132,10 +130,9 @@ class TestEnvironmentActions(BaseTestCase):
         DeployChangesPopup().deploy.click()
         Actions().cancel_popup.click()
         Actions().stop_deploy_process()
-        PageObject.find_element(Nodes(), 'nodes', 'status', 0)
         for node in Nodes().nodes:
             self.assertEqual(
-                'pending addition', node.status.text.lower(),
+                'pending addition', PageObject.get_lower_text(node, 'status'),
                 'Node status is Pending Addition')
         self.assertTrue(Nodes().deploy_changes.is_enabled())
 

@@ -1,5 +1,6 @@
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import StaleElementReferenceException
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support.wait import WebDriverWait
 import browser
 import time
@@ -109,7 +110,8 @@ class PageObject:
                                             attributes[0])[attributes[3]],
                                     attributes[1]), attributes[2]).click()
                 break
-            except (StaleElementReferenceException, NoSuchElementException):
+            except (StaleElementReferenceException, NoSuchElementException,
+                    WebDriverException):
                 time.sleep(0.5)
             attempts += 1
 
@@ -130,7 +132,8 @@ class PageObject:
                                            attributes[0])[attributes[3]],
                                    attributes[1]), attributes[2])
                 break
-            except (StaleElementReferenceException, NoSuchElementException):
+            except (StaleElementReferenceException, NoSuchElementException,
+                    WebDriverException):
                 time.sleep(0.5)
             attempts += 1
 
@@ -150,6 +153,27 @@ class PageObject:
                     return getattr(getattr(getattr(page_object,
                                            attributes[0])[attributes[3]],
                                    attributes[1]), attributes[2]).text
+                break
+            except (StaleElementReferenceException, NoSuchElementException):
+                time.sleep(0.5)
+            attempts += 1
+
+    @staticmethod
+    def get_lower_text(page_object, *args):
+        attributes = [attribute for attribute in args]
+        attempts = 0
+        while attempts < 5:
+            try:
+                if len(attributes) == 1:
+                    return getattr(page_object, attributes[0]).text.lower()
+                elif len(attributes) == 3:
+                    return getattr(getattr(page_object,
+                                   attributes[0])[attributes[2]],
+                                   attributes[1]).text.lower()
+                elif len(attributes) == 4:
+                    return getattr(getattr(getattr(page_object,
+                                           attributes[0])[attributes[3]],
+                                   attributes[1]), attributes[2]).text.lower()
                 break
             except (StaleElementReferenceException, NoSuchElementException):
                 time.sleep(0.5)

@@ -21,15 +21,15 @@ class Release(PageObject):
 
     @property
     def name(self):
-        return self.parent.find_element_by_css_selector('.release-name')
+        return self.parent.find_element_by_css_selector('.enable-selection:nth-child(1)')
 
     @property
     def version(self):
-        return self.parent.find_element_by_css_selector('.release-version')
+        return self.parent.find_element_by_css_selector('.enable-selection:nth-child(2)')
 
     @property
     def status(self):
-        return self.parent.find_element_by_css_selector('.release-status')
+        return self.parent.find_element_by_css_selector('.enable-selection:nth-child(3)')
 
     @property
     def download_progress(self):
