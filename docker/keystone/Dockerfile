@@ -15,7 +15,7 @@ RUN puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples
 ADD start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/fuelweb/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo
+RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo
 RUN yum clean all
 
 EXPOSE 35357
