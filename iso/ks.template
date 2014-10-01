@@ -359,6 +359,7 @@ save_cfg
 # Mounting installation source
 SOURCE=/tmp/source
 FS=/tmp/fs
+OPENSTACK_VERSION=`cat ${SOURCE}/openstack_version`
 
 echo
 mkdir -p ${SOURCE}
@@ -370,23 +371,23 @@ if test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
 fi
 
 # Copying Repo to the nailgun /var/www directory
-repodir="/var/www/nailgun"
+repodir="/var/www/nailgun/${OPENSTACK_VERSION}"
 mkdir -p ${repodir}/centos/fuelweb/x86_64
-cp -r ${SOURCE}/images ${repodir}/centos/fuelweb/x86_64
-cp -r ${SOURCE}/isolinux ${repodir}/centos/fuelweb/x86_64
-cp -r ${SOURCE}/repodata ${repodir}/centos/fuelweb/x86_64
-cp -r ${SOURCE}/Packages ${repodir}/centos/fuelweb/x86_64
-cp ${SOURCE}/.treeinfo ${repodir}/centos/fuelweb/x86_64
+cp -r ${SOURCE}/images ${repodir}/centos/x86_64
+cp -r ${SOURCE}/isolinux ${repodir}/centos/x86_64
+cp -r ${SOURCE}/repodata ${repodir}/centos/x86_64
+cp -r ${SOURCE}/Packages ${repodir}/centos/x86_64
+cp ${SOURCE}/.treeinfo ${repodir}/centos/x86_64
 
 # Copying Ubuntu files
 mkdir -p ${repodir}/ubuntu/fuelweb/x86_64/images
-cp -r ${SOURCE}/ubuntu/conf ${repodir}/ubuntu/fuelweb/x86_64
-cp -r ${SOURCE}/ubuntu/db ${repodir}/ubuntu/fuelweb/x86_64
-cp -r ${SOURCE}/ubuntu/dists ${repodir}/ubuntu/fuelweb/x86_64
-cp -r ${SOURCE}/ubuntu/indices ${repodir}/ubuntu/fuelweb/x86_64
-cp -r ${SOURCE}/ubuntu/pool ${repodir}/ubuntu/fuelweb/x86_64
-cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/linux ${repodir}/ubuntu/fuelweb/x86_64/images
-cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz ${repodir}/ubuntu/fuelweb/x86_64/images
+cp -r ${SOURCE}/ubuntu/conf ${repodir}/ubuntu/x86_64
+cp -r ${SOURCE}/ubuntu/db ${repodir}/ubuntu/x86_64
+cp -r ${SOURCE}/ubuntu/dists ${repodir}/ubuntu/x86_64
+cp -r ${SOURCE}/ubuntu/indices ${repodir}/ubuntu/x86_64
+cp -r ${SOURCE}/ubuntu/pool ${repodir}/ubuntu/x86_64
+cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/linux ${repodir}/ubuntu/x86_64/images
+cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz ${repodir}/ubuntu/x86_64/images
 
 # Copying bootstrap image
 mkdir -p ${repodir}/bootstrap
@@ -400,10 +401,10 @@ chmod 600 /root/.ssh/bootstrap.rsa
 
 # Unpacking puppet manifests for master and slave
 cp ${SOURCE}/puppet-slave.tgz ${repodir}/
-tar zxf ${SOURCE}/puppet-slave.tgz -C /etc/puppet/modules
-mkdir -p /etc/puppet/manifests/
-cp /etc/puppet/modules/osnailyfacter/examples/site.pp /etc/puppet/manifests/site.pp
-cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/manifests/
+tar zxf ${SOURCE}/puppet-slave.tgz -C /etc/puppet/${OPENSTACK_VERSION}/modules
+mkdir -p /etc/puppet/${OPENSTACK_VERSION}/manifests/
+cp /etc/puppet/${OPENSTACK_VERSION}/modules/osnailyfacter/examples/site.pp /etc/puppet/${OPENSTACK_VERSION}/manifests/site.pp
+cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/${OPENSTACK_VERSION}/manifests/
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 mkdir -p /var/lib/hiera
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
