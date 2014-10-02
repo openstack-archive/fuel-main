@@ -17,6 +17,11 @@ fi
 
 mkdir -p /repo/download/
 
+cat >> /requirements-deb.txt << EOF
+linux-image-${UBUNTU_INSTALLER_KERNEL_VERSION}
+linux-headers-${UBUNTU_INSTALLER_KERNEL_VERSION}
+EOF
+
 cat /requirements-deb.txt | while read pkg; do apt-get --print-uris --yes install $pkg | grep ^\' | cut -d\' -f2 >/downloads_$pkg.list; done
 cat /downloads_*.list | sort | uniq > /repo/download/download_urls.list
 rm /downloads_*.list
