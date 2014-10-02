@@ -510,8 +510,8 @@ libyaml-0-2
 libzmq1
 linux-firmware
 linux-firmware-nonfree
-linux-headers-3.11.0-18
-linux-image-3.11.0-18
+linux-headers-3.11.0-26
+linux-image-3.11.0-26
 linux-libc-dev
 linux-server
 lksctp-tools
