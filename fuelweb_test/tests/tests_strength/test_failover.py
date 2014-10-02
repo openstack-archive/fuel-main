@@ -205,12 +205,12 @@ class TestHaFailover(TestBasic):
             logger.debug("Pacemaker status {0} for node {1}".format
                          (ret, devops_node.name))
             assert_true(
-                re.search('vip__management_old\s+\(ocf::mirantis:ns_IPaddr2\):'
+                re.search('vip__management\s+\(ocf::mirantis:ns_IPaddr2\):'
                           '\s+Started node', ret),
                 'vip management not started. '
                 'Current pacemaker status is {0}'.format(ret))
             assert_true(
-                re.search('vip__public_old\s+\(ocf::mirantis:ns_IPaddr2\):'
+                re.search('vip__public\s+\(ocf::mirantis:ns_IPaddr2\):'
                           '\s+Started node', ret),
                 'vip public not started. '
                 'Current pacemaker status is {0}'.format(ret))
@@ -373,6 +373,6 @@ class TestHaFailover(TestBasic):
             assert_true('primitive p_haproxy' in config, 'haproxy')
             assert_true('primitive p_mysql' in config, 'mysql')
             assert_true(
-                'primitive vip__management_old' in config, 'vip management')
+                'primitive vip__management' in config, 'vip management')
             assert_true(
-                'primitive vip__public_old' in config, 'vip public')
+                'primitive vip__public' in config, 'vip public')
