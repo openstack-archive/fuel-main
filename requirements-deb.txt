@@ -511,8 +511,8 @@ libyaml-0-2
 libzmq1
 linux-firmware
 linux-firmware-nonfree
-linux-headers-3.11.0-18
-linux-image-3.11.0-18
+linux-image-@@INSTALLER_KERNEL_VERSION@@
+linux-headers-@@INSTALLER_KERNEL_VERSION@@
 linux-libc-dev
 linux-server
 lksctp-tools
