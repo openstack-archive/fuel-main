@@ -19,6 +19,7 @@ import traceback
 
 from fuelweb_test import logger
 from fuelweb_test import logwrap
+from fuelweb_test import settings
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from proboscis.asserts import assert_equal
@@ -442,3 +443,21 @@ def check_mysql(remote, node_name):
     _wait(lambda: assert_equal(remote.execute(check_crm_cmd)['exit_code'], 0,
                                'MySQL resource is NOT running on {0}'.format(
                                    node_name)), timeout=60)
+
+
+@logwrap
+def upload_master_manifests(remote):
+    try:
+        logger.info("Uploading new manifests from %s" %
+                    settings.UPLOAD_MANIFESTS_PATH)
+        remote.execute('rm -rf /etc/puppet/modules/*')
+        remote.upload(settings.UPLOAD_MANIFESTS_PATH,
+                      '/etc/puppet/modules/')
+        logger.info("Copying new site.pp from %s" %
+                    settings.SITEPP_FOR_UPLOAD)
+        remote.execute("cp %s /etc/puppet/manifests" %
+                       settings.SITEPP_FOR_UPLOAD)
+    except Exception as e:
+            logger.error("Could not upload manifests {0}".format(e))
+            raise
+    return 0
