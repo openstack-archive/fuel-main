@@ -235,11 +235,12 @@ MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
-MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-stable/centos/
+MIRROR_POSTFIX?=stable
+MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-$(MIRROR_POSTFIX)/centos/
 ifeq (precise,$(strip $(UBUNTU_RELEASE)))
-MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-stable/reprepro
+MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-$(MIRROR_POSTFIX)/reprepro
 else
-MIRROR_FUEL_UBUNTU?=http://obs-1.mirantis.com:82/$(UBUNTU_RELEASE)-fuel-$(PRODUCT_VERSION)-stable/reprepro
+MIRROR_FUEL_UBUNTU?=http://obs-1.mirantis.com:82/$(UBUNTU_RELEASE)-fuel-$(PRODUCT_VERSION)-$(MIRROR_POSTFIX)/reprepro
 endif
 
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
