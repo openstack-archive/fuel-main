@@ -21,6 +21,8 @@ from fuelweb_test import logger
 from fuelweb_test import logwrap
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
+from fuelweb_test.settings import SITEPP_FOR_UPLOAD
+from fuelweb_test.settings import UPLOAD_MANIFESTS_PATH
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_true
