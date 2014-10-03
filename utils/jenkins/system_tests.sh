@@ -346,10 +346,10 @@ RunTest() {
             exit $NOISOFOUND_ERR
         else
             if [ "${DRY_RUN}" = "yes" ]; then
-                echo wget -c ${ISO_URL} -O ${ISO_PATH}
+                echo wget -nv -c ${ISO_URL} -O ${ISO_PATH}
             else
                 echo "No ${ISO_PATH} found. Trying to download file."
-                wget -c ${ISO_URL} -O ${ISO_PATH}
+                wget -nv -c ${ISO_URL} -O ${ISO_PATH}
                 rc=$?
                 if [ $rc -ne 0 ]; then
                     echo "Failed to fetch ISO from ${ISO_URL}"

@@ -75,14 +75,14 @@ show-yum-urls-centos: \
 		$(REQUIRED_RPMS)
 
 $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml: \
-		export COMPSXML=$(shell wget -qO- $(MIRROR_CENTOS_OS_BASEURL)/repodata/repomd.xml | grep -m 1 '$(@F)' | awk -F'"' '{ print $$2 }')
+		export COMPSXML=$(shell wget -nv -qO- $(MIRROR_CENTOS_OS_BASEURL)/repodata/repomd.xml | grep -m 1 '$(@F)' | awk -F'"' '{ print $$2 }')
 $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml:
 	@mkdir -p $(@D)
 	if ( echo $${COMPSXML} | grep -q '\.gz$$' ); then \
-		wget -O $@.gz $(MIRROR_CENTOS_OS_BASEURL)/$${COMPSXML}; \
+		wget -nv -O $@.gz $(MIRROR_CENTOS_OS_BASEURL)/$${COMPSXML}; \
 		gunzip $@.gz; \
 	else \
-		wget -O $@ $(MIRROR_CENTOS_OS_BASEURL)/$${COMPSXML}; \
+		wget -nv -O $@ $(MIRROR_CENTOS_OS_BASEURL)/$${COMPSXML}; \
 	fi
 
 $(BUILD_DIR)/mirror/centos/repo.done: \
