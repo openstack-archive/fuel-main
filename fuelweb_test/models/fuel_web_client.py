@@ -19,6 +19,7 @@ import traceback
 from devops.error import DevopsCalledProcessError
 from devops.error import TimeoutError
 from devops.helpers.helpers import _wait
+from devops.helpers.helpers import _tcp_ping
 from devops.helpers.helpers import wait
 from netaddr import IPNetwork
 from proboscis.asserts import assert_equal
@@ -1267,3 +1268,10 @@ class FuelWebClient(object):
 
     def get_public_vip(self, cluster_id):
         return self.client.get_networks(cluster_id)['public_vip']
+
+    @logwrap
+    @upload_manifests
+    def wait_for_provisioning(self, admin):
+        _wait(lambda: _tcp_ping(
+            self._environment.nodes().admin.get_ip_address_by_network_name
+            (self._environment.admin_net), 22), timeout=10 * 60)

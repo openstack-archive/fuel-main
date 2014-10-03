@@ -245,14 +245,16 @@ class EnvironmentModel(object):
     def get_host_node_ip(self):
         return self.router()
 
-    def get_keys(self, node):
+    def get_keys(self, node, custom=None):
+        showmenu = 'yes' if custom else 'no'
         params = {
             'ip': node.get_ip_address_by_network_name(self.admin_net),
             'mask': self.get_net_mask(self.admin_net),
             'gw': self.router(),
             'hostname': '.'.join((self.hostname, self.domain)),
             'nat_interface': self.nat_interface,
-            'dns1': settings.DNS
+            'dns1': settings.DNS,
+            'showmenu': showmenu
 
         }
         keys = (
@@ -266,6 +268,7 @@ class EnvironmentModel(object):
             " dns1=%(dns1)s\n"
             " hostname=%(hostname)s\n"
             " dhcp_interface=%(nat_interface)s\n"
+            " showmenu=%(showmenu)s\n"
             " <Enter>\n"
         ) % params
         return keys
@@ -380,7 +383,7 @@ class EnvironmentModel(object):
             return True
         return False
 
-    def setup_environment(self):
+    def setup_environment(self, custom=False):
         # start admin node
         admin = self.nodes().admin
         admin.disk_devices.get(device='cdrom').volume.upload(settings.ISO_PATH)
@@ -389,12 +392,25 @@ class EnvironmentModel(object):
         wait(lambda: admin.driver.node_active(admin), 60)
         logger.info("Proceed with installation")
         # update network parameters at boot screen
-        admin.send_keys(self.get_keys(admin))
+        admin.send_keys(self.get_keys(admin, custom=custom))
+        if custom:
+            self.setup_customisation(admin)
         # wait while installation complete
         admin.await(self.admin_net, timeout=10 * 60)
         self.wait_bootstrap()
         time.sleep(10)
         self.sync_time_admin_node()
+
+    def setup_customisation(self, admin):
+        self.fuel_web.wait_for_provisioning(admin)
+        try:
+            remote = self.get_admin_remote()
+            pid = remote.execute("pgrep 'fuelmenu'")['stdout'][0]
+            pid.rstrip('\n')
+            remote.execute("kill -sigusr1 {0}".format(pid))
+        except Exception:
+            logger.error("Could not kill pid of fuelmenu")
+            raise
 
     @retry()
     @logwrap
