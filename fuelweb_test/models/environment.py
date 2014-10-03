@@ -20,6 +20,7 @@ from devops.helpers.helpers import _wait
 from devops.helpers.helpers import SSHClient
 from devops.helpers.helpers import wait
 from devops.manager import Manager
+from devops.helpers.helpers import _tcp_ping
 from ipaddr import IPNetwork
 from paramiko import RSAKey
 from proboscis.asserts import assert_equal
@@ -245,14 +246,19 @@ class EnvironmentModel(object):
     def get_host_node_ip(self):
         return self.router()
 
-    def get_keys(self, node):
+    def get_keys(self, node, custom=None):
+        if custom:
+            showmenu = 'yes'
+        else:
+            showmenu = 'no'
         params = {
             'ip': node.get_ip_address_by_network_name(self.admin_net),
             'mask': self.get_net_mask(self.admin_net),
             'gw': self.router(),
             'hostname': '.'.join((self.hostname, self.domain)),
             'nat_interface': self.nat_interface,
-            'dns1': settings.DNS
+            'dns1': settings.DNS,
+            'showmenu': showmenu
 
         }
         keys = (
@@ -266,6 +272,7 @@ class EnvironmentModel(object):
             " dns1=%(dns1)s\n"
             " hostname=%(hostname)s\n"
             " dhcp_interface=%(nat_interface)s\n"
+            " showmenu=%(showmenu)s\n"
             " <Enter>\n"
         ) % params
         return keys
@@ -391,6 +398,35 @@ class EnvironmentModel(object):
         # update network parameters at boot screen
         admin.send_keys(self.get_keys(admin))
         # wait while installation complete
+        admin.await(self.admin_net, timeout=10 * 60)
+        self.wait_bootstrap()
+        time.sleep(10)
+        self.sync_time_admin_node()
+
+    def setup_environment_custom(self):
+        # start admin node
+        admin = self.nodes().admin
+        admin.disk_devices.get(device='cdrom').volume.upload(settings.ISO_PATH)
+        self.get_virtual_environment().start(self.nodes().admins)
+        logger.info("Waiting for admin node to start up")
+        wait(lambda: admin.driver.node_active(admin), 60)
+        logger.info("Proceed with installation")
+        # update network parameters at boot screen
+        admin.send_keys(self.get_keys(admin, custom=True))
+        _wait(
+            lambda: _tcp_ping(self.nodes().
+                              admin.get_ip_address_by_network_name
+                              (self.admin_net), 22), timeout=10 * 60)
+        checkers.upload_master_manifests(self.get_admin_remote())
+        try:
+            remote = self.get_admin_remote()
+            pid = remote.execute("pgrep 'fuelmenu'")['stdout'][0]
+            pid.rstrip('\n')
+            remote.execute("kill -sigusr1 {0}".format(pid))
+        except Exception:
+            logger.error("Could not kill pid of fuelmenu")
+            raise
+        #wait while installation complete
         admin.await(self.admin_net, timeout=10 * 60)
         self.wait_bootstrap()
         time.sleep(10)

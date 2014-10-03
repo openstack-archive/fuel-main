@@ -109,3 +109,20 @@ class TestAdminNodeBackupRestore(TestBasic):
         self.fuel_web.restore_check_nailgun_api(self.env.get_admin_remote())
         checkers.restore_check_sum(self.env.get_admin_remote())
         checkers.iptables_check(self.env.get_admin_remote())
+
+
+@test(groups=["setup_master_custom"])
+class TestAdminNodeCustomManifests(TestBasic):
+    @test(groups=["setup_master_custom_manifests"])
+    @log_snapshot_on_error
+    def setup_with_custom_manifests(self):
+        """Setup master node with custom manifests
+        Scenario:
+        1. Start installation of master node
+        2. Enter "fuelmenu"
+        3. Upload custom manifests
+        4. Kill "fuelmenu" pid
+        """
+        self.check_run("empty")
+        self.env.setup_environment_custom()
+        self.env.make_snapshot("empty", is_make=True)
