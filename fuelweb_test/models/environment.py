@@ -43,6 +43,8 @@ class EnvironmentModel(object):
     puppet_timeout = 2000
     nat_interface = ''  # INTERFACES.get('admin')
     admin_net = 'admin'
+    admin_net2 = 'admin2'
+    multiple_cluster_networks = settings.MULTIPLE_NETWORKS
 
     def __init__(self, os_image=None):
         self._virtual_environment = None
@@ -148,6 +150,9 @@ class EnvironmentModel(object):
         environment = self.manager.environment_create(self.env_name)
         networks = []
         interfaces = settings.INTERFACE_ORDER
+        if self.multiple_cluster_networks:
+            logger.info('Multiple cluster networks feature is enabled!')
+            interfaces.extend(settings.INTERFACE_ORDER2)
         if settings.BONDING:
             interfaces = settings.BONDING_INTERFACES.keys()
 
@@ -156,7 +161,15 @@ class EnvironmentModel(object):
         for name in self.node_roles.admin_names:
             self.describe_admin_node(name, networks)
         for name in self.node_roles.other_names:
-            self.describe_empty_node(name, networks)
+            if self.multiple_cluster_networks:
+                networks1 = [net for net in networks if net.name[-1] != '2']
+                networks2 = [net for net in networks if net.name[-1] == '2']
+                if int(name[-2:]) % 2 == 1:
+                    self.describe_empty_node(name, networks1)
+                elif int(name[-2:])% 2 == 0:
+                    self.describe_empty_node(name, networks2)
+            else:
+                self.describe_empty_node(name, networks)
         return environment
 
     def create_networks(self, name, environment):
@@ -395,6 +408,10 @@ class EnvironmentModel(object):
         self.wait_bootstrap()
         time.sleep(10)
         self.sync_time_admin_node()
+        if settings.MULTIPLE_NETWORKS:
+            self.describe_second_admin_interface()
+            self.configure_second_admin_cobbler()
+            self.configure_second_dhcrelay()
 
     @retry()
     @logwrap
@@ -518,6 +535,95 @@ class EnvironmentModel(object):
                      'Failed to execute "{0}" on remote host: {1}'.
                      format(cmd, result['stderr']))
         return result['stdout']
+
+    @logwrap
+    def describe_second_admin_interface(self):
+        remote = self.get_admin_remote()
+        second_admin_network = self.get_network(self.admin_net2).split('/')[0]
+        second_admin_netmask = self.get_net_mask(self.admin_net2)
+        second_admin_if = settings.INTERFACES.get(self.admin_net2)
+        second_admin_ip = str(self.nodes().admin.
+                              get_ip_address_by_network_name(self.admin_net2))
+        logger.info(('Parameters for second admin interface configuration: '
+                     'Network - {0}, Netmask - {1}, Interface - {2}, '
+                     'IP Address - {3}').format(second_admin_network,
+                                                second_admin_netmask,
+                                                second_admin_if,
+                                                second_admin_ip))
+        add_second_admin_ip = ('DEVICE={0}\\n'
+                               'ONBOOT=yes\\n'
+                               'NM_CONTROLLED=no\\n'
+                               'USERCTL=no\\n'
+                               'PEERDNS=no\\n'
+                               'BOOTPROTO=static\\n'
+                               'IPADDR={1}\\n'
+                               'NETMASK={2}\\n').format(second_admin_if,
+                                                        second_admin_ip,
+                                                        second_admin_netmask)
+        cmd = ('echo -e "{0}" > /etc/sysconfig/network-scripts/ifcfg-{1};'
+               'ifup {1}; ip -o -4 a s {1} | grep -w {2}').format(
+            add_second_admin_ip, second_admin_if, second_admin_ip)
+        logger.debug('Trying to assign {0} IP to the {1} on master node...'.
+                     format(second_admin_ip, second_admin_if))
+        result = remote.execute(cmd)
+        assert_equal(result['exit_code'], 0, ('Failed to assign second admin '
+                     'IP address on master node: {0}').format(result))
+        logger.debug('Done: {0}'.format(result['stdout']))
+        self.configure_second_admin_firewall(second_admin_network,
+                                             second_admin_netmask)
+
+    @logwrap
+    def configure_second_admin_cobbler(self):
+        dhcp_template = '/etc/cobbler/dnsmasq.template'
+        remote = self.get_admin_remote()
+        main_admin_ip = str(self.nodes().admin.
+                              get_ip_address_by_network_name(self.admin_net))
+        second_admin_ip = str(self.nodes().admin.
+                      get_ip_address_by_network_name(self.admin_net2))
+        second_admin_network = self.get_network(self.admin_net2).split('/')[0]
+        second_admin_netmask = self.get_net_mask(self.admin_net2)
+        network = IPNetwork('{0}/{1}'.format(second_admin_network,
+                                             second_admin_netmask))
+        discovery_subnet = [net for net in network.iter_subnets(1)][-1]
+        first_discovery_address = str(discovery_subnet.network)
+        last_discovery_address = str(discovery_subnet.broadcast -1)
+        new_range = ('dhcp-range=internal2,{0},{1},{2}\\n'
+                     'dhcp-option=net:internal2,option:router,{3}\\n'
+                     'dhcp-boot=net:internal2,pxelinux.0,boothost,{4}\\n').\
+            format(first_discovery_address, last_discovery_address,
+                   second_admin_netmask, second_admin_ip, main_admin_ip)
+        cmd = ("dockerctl shell cobbler sed -r '$a \{0}' -i {1};"
+               "dockerctl shell cobbler cobbler sync").format(new_range,
+                                                              dhcp_template)
+        result = remote.execute(cmd)
+        assert_equal(result['exit_code'], 0, ('Failed to add second admin'
+                     'network to cobbler: {0}').format(result))
+
+    @logwrap
+    def configure_second_admin_firewall(self, network, netmask):
+        remote = self.get_admin_remote()
+        cmd = ('iptables -t nat -I POSTROUTING -s {0}/{1} -p udp -m udp '
+               '--dport 514 -m comment --comment "rsyslog-udp-514-unmasq'
+               'uerade" -j ACCEPT;iptables -t nat -I POSTROUTING -s {0}/'
+               '{1} -p tcp -m tcp --dport 514 -m comment --comment "rsys'
+               'log-tcp-514-unmasquerade" -j ACCEPT; service iptables '
+               'save;').format(network, netmask)
+        result = remote.execute(cmd)
+        assert_equal(result['exit_code'], 0, ('Failed to add firewall rules '
+             'for second admin network on master node: {0}').format(result))
+
+    @logwrap
+    def configure_second_dhcrelay(self):
+        remote = self.get_admin_remote()
+        second_admin_if = settings.INTERFACES.get(self.admin_net2)
+        sed_cmd = "/  interface:/a \  interface: {0}".format(second_admin_if)
+        self._fuel_web.modify_python_file(remote, sed_cmd,
+                                          settings.FUEL_SETTINGS_YAML)
+        cmd = ('supervisorctl restart dhcrelay_monitor; '
+               'pgrep -f "[d]hcrelay.*{0}"').format(second_admin_if)
+        result = remote.execute(cmd)
+        assert_equal(result['exit_code'], 0, ('Failed to start DHCP relay on '
+                     'second admin interface: {0}').format(result))
 
 
 class NodeRoles(object):

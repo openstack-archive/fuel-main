@@ -20,6 +20,7 @@ def run_tests():
     from tests.tests_strength import test_neutron  # noqa
     from tests import test_zabbix  # noqa
     from tests import test_upgrade  # noqa
+    from tests import test_multiple_networks # noqa
 
     # Run Proboscis and exit.
     TestProgram().run_and_exit()
