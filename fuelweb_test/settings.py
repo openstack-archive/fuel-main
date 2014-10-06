@@ -73,6 +73,11 @@ FORWARDING = {
     'management': MGMT_FORWARD,
     'private': PRIVATE_FORWARD,
     'storage': STORAGE_FORWARD,
+    'admin2': ADMIN_FORWARD,
+    'public2': PUBLIC_FORWARD,
+    'management2': MGMT_FORWARD,
+    'private2': PRIVATE_FORWARD,
+    'storage2': STORAGE_FORWARD,
 }
 
 DHCP = {
@@ -80,7 +85,12 @@ DHCP = {
     'public': False,
     'management': False,
     'private': False,
-    'storage': False
+    'storage': False,
+    'admin2': False,
+    'public2': False,
+    'management2': False,
+    'private2': False,
+    'storage2': False
 }
 
 INTERFACES = {
@@ -89,6 +99,11 @@ INTERFACES = {
     'management': 'eth2',
     'private': 'eth3',
     'storage': 'eth4',
+    'admin2': 'eth5',
+    'public2': 'eth6',
+    'management2': 'eth7',
+    'private2': 'eth8',
+    'storage2': 'eth9',
 }
 
 # May be one of virtio, e1000, pcnet, rtl8139
@@ -109,6 +124,21 @@ DEFAULT_POOLS = {
     'storage': POOL_STORAGE,
 }
 
+POOL_DEFAULT2 = os.environ.get('POOL_DEFAULT2', '10.108.0.0/16:24')
+POOL_ADMIN2 = os.environ.get('POOL_ADMIN2', POOL_DEFAULT2)
+POOL_PUBLIC2 = os.environ.get('POOL_PUBLIC2', POOL_DEFAULT2)
+POOL_MANAGEMENT2 = os.environ.get('POOL_MANAGEMENT', POOL_DEFAULT2)
+POOL_PRIVATE2 = os.environ.get('POOL_PRIVATE', POOL_DEFAULT2)
+POOL_STORAGE2 = os.environ.get('POOL_STORAGE', POOL_DEFAULT2)
+
+DEFAULT_POOLS2 = {
+    'admin2': POOL_ADMIN2,
+    'public2': POOL_PUBLIC2,
+    'management2': POOL_MANAGEMENT2,
+    'private2': POOL_PRIVATE2,
+    'storage2': POOL_STORAGE2,
+}
+
 POOLS = {
     'admin': os.environ.get(
         'PUBLIC_POOL',
@@ -125,7 +155,26 @@ POOLS = {
     'storage': os.environ.get(
         'NAT_POOL',
         DEFAULT_POOLS.get('storage')).split(':'),
+    'admin2': os.environ.get(
+        'PUBLIC_POOL2',
+        DEFAULT_POOLS2.get('admin2')).split(':'),
+    'public2': os.environ.get(
+        'PUBLIC_POOL2',
+        DEFAULT_POOLS2.get('public2')).split(':'),
+    'management2': os.environ.get(
+        'PRIVATE_POOL2',
+        DEFAULT_POOLS2.get('management2')).split(':'),
+    'private2': os.environ.get(
+        'INTERNAL_POOL2',
+        DEFAULT_POOLS2.get('private2')).split(':'),
+    'storage2': os.environ.get(
+        'NAT_POOL2',
+        DEFAULT_POOLS2.get('storage2')).split(':'),
 }
+
+DEFAULT_INTERFACE_ORDER2 = 'admin2,public2,management2,private2,storage2'
+INTERFACE_ORDER2 = os.environ.get('INTERFACE_ORDER2',
+                                  DEFAULT_INTERFACE_ORDER2).split(',')
 
 BONDING = os.environ.get("BONDING", 'false') == 'true'
 
@@ -241,3 +290,5 @@ SNAPSHOT = os.environ.get('SNAPSHOT', '')
 RELEASE_VERSION = os.environ.get('RELEASE_VERSION', '')
 
 UPDATE_TIMEOUT = os.environ.get('UPDATE_TIMEOUT', 3600)
+
+MULTIPLE_NETWORKS = os.environ.get('MULTIPLE_NETWORKS', False) == 'true'
