@@ -36,8 +36,10 @@ from fuelweb_test.settings import ATTEMPTS
 from fuelweb_test.settings import BONDING
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.settings import KVM_USE
+from fuelweb_test.settings import MULTIPLE_NETWORKS
 from fuelweb_test.settings import NEUTRON
 from fuelweb_test.settings import NEUTRON_SEGMENT
+from fuelweb_test.settings import NODEGROUPS
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from fuelweb_test.settings import OSTF_TEST_NAME
@@ -378,7 +380,14 @@ class FuelWebClient(object):
             self.client.update_cluster_attributes(cluster_id, attributes)
             logger.debug("Attributes of cluster were updated,"
                          " going to update networks ...")
-            self.update_network_configuration(cluster_id)
+            if MULTIPLE_NETWORKS:
+                node_groups = {n['name']: [] for n in NODEGROUPS}
+                self.update_nodegroups(cluster_id, node_groups)
+                for NODEGROUP in NODEGROUPS:
+                    self.update_network_configuration(cluster_id,
+                                                      nodegroup=NODEGROUP)
+            else:
+                self.update_network_configuration(cluster_id)
 
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
@@ -614,10 +623,19 @@ class FuelWebClient(object):
 
     @logwrap
     def update_nodes(self, cluster_id, nodes_dict,
-                     pending_addition=True, pending_deletion=False):
+                     pending_addition=True, pending_deletion=False,
+                     update_nodegroups=False):
         # update nodes in cluster
         nodes_data = []
+        nodes_groups = {}
         for node_name in nodes_dict:
+            if MULTIPLE_NETWORKS:
+                node_roles = nodes_dict[node_name][0]
+                node_group = nodes_dict[node_name][1]
+            else:
+                node_roles = nodes_dict[node_name]
+                node_group = 'default'
+
             devops_node = self.environment.get_virtual_environment().\
                 node_by_name(node_name)
 
@@ -633,13 +651,13 @@ class FuelWebClient(object):
                 'id': node['id'],
                 'pending_addition': pending_addition,
                 'pending_deletion': pending_deletion,
-                'pending_roles': nodes_dict[node_name],
-                'name': '{}_{}'.format(
-                    node_name,
-                    "_".join(nodes_dict[node_name])
-                )
+                'pending_roles': node_roles,
+                'name': '{}_{}'.format(node_name, "_".join(node_roles))
             }
             nodes_data.append(node_data)
+            if node_group not in nodes_groups.keys():
+                nodes_groups[node_group] = []
+            nodes_groups[node_group].append(node)
 
         # assume nodes are going to be updated for one cluster only
         cluster_id = nodes_data[-1]['cluster_id']
@@ -652,6 +670,8 @@ class FuelWebClient(object):
             all([node_id in cluster_node_ids for node_id in node_ids]))
 
         self.update_nodes_interfaces(cluster_id)
+        if update_nodegroups:
+            self.update_nodegroups(nodes_groups)
 
         return nailgun_nodes
 
@@ -743,6 +763,12 @@ class FuelWebClient(object):
 
     @logwrap
     def verify_network(self, cluster_id, timeout=60 * 5, success=True):
+        # TODO(apanchenko): remove this hack when network verification begins
+        # TODO(apanchenko): to work for environments with multiple net groups
+        if MULTIPLE_NETWORKS:
+            logger.warning('Network verification is temporary disabled when'
+                           '"multiple cluster networks" feature is used')
+            return
         task = self.run_network_verify(cluster_id)
         if success:
             self.assert_task_success(task, timeout, interval=10)
@@ -777,26 +803,55 @@ class FuelWebClient(object):
             self.update_node_networks(node['id'], assigned_networks)
 
     @logwrap
-    def update_network_configuration(self, cluster_id):
-        logger.info('Update network settings of cluster %s', cluster_id)
+    def update_network_configuration(self, cluster_id, nodegroup=None):
         net_config = self.client.get_networks(cluster_id)
+        if not nodegroup:
+            logger.info('Update network settings of cluster %s', cluster_id)
+            new_settings = self.update_net_settings(net_config)
+            self.client.update_network(
+                cluster_id=cluster_id,
+                networking_parameters=new_settings["networking_parameters"],
+                networks=new_settings["networks"]
+            )
+        else:
+            logger.info('Update network settings of cluster %s, nodegroup %s',
+                        cluster_id, nodegroup['name'])
+            new_settings = self.update_net_settings(net_config, nodegroup,
+                                                    cluster_id)
+            self.client.update_network(
+                cluster_id=cluster_id,
+                networking_parameters=new_settings["networking_parameters"],
+                networks=new_settings["networks"]
+            )
 
-        new_settings = self.update_net_settings(net_config)
-        self.client.update_network(
-            cluster_id=cluster_id,
-            networking_parameters=new_settings["networking_parameters"],
-            networks=new_settings["networks"]
-        )
+    def update_net_settings(self, network_configuration, nodegroup=None,
+                            cluster_id=None):
+        if not nodegroup:
+            for net in network_configuration.get('networks'):
+                self.set_network(net_config=net,
+                                 net_name=net['name'])
 
-    def update_net_settings(self, network_configuration):
-        for net in network_configuration.get('networks'):
-            self.set_network(net_config=net,
-                             net_name=net['name'])
+            self.common_net_settings(network_configuration)
+            logger.info('Network settings for push: {0}'.format(
+                network_configuration))
+            return network_configuration
+        else:
+            nodegroup_id = self.get_nodegroup(cluster_id,
+                                              nodegroup['name'])['id']
+            for net in network_configuration.get('networks'):
+                if net['group_id'] == nodegroup_id:
+                    # Do not overwrite default PXE admin network configuration
+                    if nodegroup['name'] == 'default' and \
+                       net['name'] == 'fuelweb_admin':
+                        continue
+                    self.set_network(net_config=net,
+                                     net_name=net['name'],
+                                     net_pools=nodegroup['pools'])
 
-        self.common_net_settings(network_configuration)
-        logger.info('Network settings for push: {0}'.format(
-            network_configuration))
-        return network_configuration
+            self.common_net_settings(network_configuration)
+            logger.info('Network settings for push: {0}'.format(
+                network_configuration))
+            return network_configuration
 
     def common_net_settings(self, network_configuration):
         nc = network_configuration["networking_parameters"]
@@ -805,24 +860,51 @@ class FuelWebClient(object):
         float_range = public if not BONDING else list(public.subnet(27))[0]
         nc["floating_ranges"] = self.get_range(float_range, 1)
 
-    def set_network(self, net_config, net_name):
+    def set_network(self, net_config, net_name, net_pools=None):
         nets_wo_floating = ['public', 'management', 'storage']
-
-        if not BONDING:
-            if 'floating' == net_name:
-                self.net_settings(net_config, 'public', floating=True)
-            elif net_name in nets_wo_floating:
-                self.net_settings(net_config, net_name)
+        if not net_pools:
+            if not BONDING:
+                if 'floating' == net_name:
+                    self.net_settings(net_config, 'public', floating=True)
+                elif net_name in nets_wo_floating:
+                    self.net_settings(net_config, net_name)
+            else:
+                pub_subnets = list(IPNetwork(
+                    self.environment.get_network("public")).subnet(27))
+                if "floating" == net_name:
+                    self.net_settings(net_config, pub_subnets[0],
+                                      floating=True, jbond=True)
+                elif net_name in nets_wo_floating:
+                    i = nets_wo_floating.index(net_name)
+                    self.net_settings(net_config, pub_subnets[i], jbond=True)
         else:
-            pub_subnets = list(IPNetwork(
-                self.environment.get_network("public")).subnet(27))
+            def _get_true_net_name(_name):
+                for _net in net_pools:
+                    if _name in _net:
+                        return _net
 
-            if "floating" == net_name:
-                self.net_settings(net_config, pub_subnets[0], floating=True,
-                                  jbond=True)
-            elif net_name in nets_wo_floating:
-                i = nets_wo_floating.index(net_name)
-                self.net_settings(net_config, pub_subnets[i], jbond=True)
+            public_net = _get_true_net_name('public')
+            admin_net = _get_true_net_name('admin')
+
+            if not BONDING:
+                if 'floating' == net_name:
+                    self.net_settings(net_config, public_net, floating=True)
+                elif net_name in nets_wo_floating:
+                    self.net_settings(net_config, _get_true_net_name(net_name))
+                elif net_name in 'fuelweb_admin':
+                    self.net_settings(net_config, admin_net)
+            else:
+                pub_subnets = list(IPNetwork(
+                    self.environment.get_network(public_net)).subnet(27))
+
+                if "floating" == net_name:
+                    self.net_settings(net_config, pub_subnets[0],
+                                      floating=True, jbond=True)
+                elif net_name in nets_wo_floating:
+                    i = nets_wo_floating.index(net_name)
+                    self.net_settings(net_config, pub_subnets[i], jbond=True)
+                elif net_name in 'fuelweb_admin':
+                    self.net_settings(net_config, admin_net)
 
     def net_settings(self, net_config, net_name, floating=False, jbond=False):
         if jbond:
@@ -830,12 +912,12 @@ class FuelWebClient(object):
         else:
             ip_network = IPNetwork(self.environment.get_network(net_name))
 
-        if 'nova_network':
-            net_config['ip_ranges'] = self.get_range(ip_network, 1) \
-                if floating else self.get_range(ip_network, -1)
-        else:
-            net_config['ip_ranges'] = self.get_range(net_name)
+        net_config['ip_ranges'] = self.get_range(ip_network, 1) \
+            if floating else self.get_range(ip_network, -1)
+        if 'admin' in net_name:
+            net_config['ip_ranges'] = self.get_range(ip_network, 2)
         net_config['cidr'] = str(ip_network)
+
         if jbond:
             net_config['gateway'] = self.environment.router('public')
         else:
@@ -851,9 +933,13 @@ class FuelWebClient(object):
             return [[str(net[half]), str(net[-2])]]
         elif ip_range == -1:
             return [[str(net[2]), str(net[half - 1])]]
+        elif ip_range == 2:
+            return [[str(net[3]), str(net[half - 1])]]
 
-    def get_floating_ranges(self):
-        net = list(IPNetwork(self.environment.get_network('public')))
+    def get_floating_ranges(self, network_set=None):
+        if network_set:
+            net_name = 'public{0}'.format(network_set)
+        net = list(IPNetwork(self.environment.get_network(net_name)))
         ip_ranges, expected_ips = [], []
 
         for i in [0, -20, -40]:
@@ -1269,3 +1355,21 @@ class FuelWebClient(object):
 
     def get_public_vip(self, cluster_id):
         return self.client.get_networks(cluster_id)['public_vip']
+
+    def get_nodegroup(self, cluster_id, name='default', group_id=None):
+        ngroups = self.client.get_nodegroups()
+        for group in ngroups:
+            if group['cluster'] == cluster_id and group['name'] == name:
+                if group_id and group['id'] != group_id:
+                    continue
+                return group
+        return None
+
+    def update_nodegroups(self, cluster_id, node_groups):
+        for ngroup in node_groups:
+            if not self.get_nodegroup(cluster_id, name=ngroup):
+                self.client.create_nodegroup(cluster_id, ngroup)
+            # Assign nodes to nodegroup if nodes are specified
+            if len(node_groups[ngroup]) > 0:
+                ngroup_id = self.get_nodegroup(cluster_id, name=ngroup)['id']
+                self.client.assign_nodegroup(ngroup_id, node_groups[ngroup])
