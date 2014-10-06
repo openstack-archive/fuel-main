@@ -337,3 +337,20 @@ class NailgunClient(object):
     def run_update(self, cluster_id):
         return self.client.put(
             "/api/clusters/{0}/update/".format(str(cluster_id)))
+
+    @logwrap
+    @json_parse
+    def create_nodegroup(self, cluster_id, group_name):
+        data = {"cluster_id": cluster_id, "name": group_name}
+        return self.client.post("/api/nodegroups/", data=data)
+
+    @logwrap
+    @json_parse
+    def get_nodegroups(self):
+        return self.client.get("/api/nodegroups/")
+
+    @logwrap
+    @json_parse
+    def assign_nodegroup(self, group_id, nodes):
+        return self.client.post("/api/nodegroups/{0}/".format(group_id),
+                                data=nodes)
