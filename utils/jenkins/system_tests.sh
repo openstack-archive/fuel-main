@@ -359,15 +359,13 @@ RunTest() {
         fi
     fi
 
-    if [ -z "${VENV_PATH}" ]; then
-        VENV_PATH="/home/jenkins/venv-nailgun-tests"
-    fi
-
     # run python virtualenv
-    if [ "${DRY_RUN}" = "yes" ]; then
-        echo . $VENV_PATH/bin/activate
-    else
-        . $VENV_PATH/bin/activate
+    if [ -v VENV_PATH ]; then
+        if [ "${DRY_RUN}" = "yes" ]; then
+            echo source $VENV_PATH/bin/activate
+        else
+            source $VENV_PATH/bin/activate
+        fi
     fi
 
     if [ "${ENV_NAME}" = "" ]; then
