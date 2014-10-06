@@ -31,6 +31,7 @@ from fuelweb_test.helpers.decorators import revert_info
 from fuelweb_test.helpers.decorators import retry
 from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.helpers.eb_tables import Ebtables
+from fuelweb_test.helpers import multiple_networks_hacks
 from fuelweb_test.models.fuel_web_client import FuelWebClient
 from fuelweb_test import settings
 from fuelweb_test import logwrap
@@ -45,6 +46,8 @@ class EnvironmentModel(object):
     puppet_timeout = 2000
     nat_interface = ''  # INTERFACES.get('admin')
     admin_net = 'admin'
+    admin_net2 = 'admin2'
+    multiple_cluster_networks = settings.MULTIPLE_NETWORKS
 
     def __init__(self, os_image=None):
         self._virtual_environment = None
@@ -63,6 +66,9 @@ class EnvironmentModel(object):
 
     def router(self, router_name=None):
         router_name = router_name or self.admin_net
+        if router_name == self.admin_net2:
+            return str(IPNetwork(self.get_virtual_environment().
+                                 network_by_name(router_name).ip_network)[2])
         return str(
             IPNetwork(
                 self.get_virtual_environment().network_by_name(router_name).
@@ -154,6 +160,8 @@ class EnvironmentModel(object):
         environment = self.manager.environment_create(self.env_name)
         networks = []
         interfaces = settings.INTERFACE_ORDER
+        if self.multiple_cluster_networks:
+            logger.info('Multiple cluster networks feature is enabled!')
         if settings.BONDING:
             interfaces = settings.BONDING_INTERFACES.keys()
 
@@ -162,7 +170,19 @@ class EnvironmentModel(object):
         for name in self.node_roles.admin_names:
             self.describe_admin_node(name, networks)
         for name in self.node_roles.other_names:
-            self.describe_empty_node(name, networks)
+            if self.multiple_cluster_networks:
+                networks1 = [net for net in networks if net.name
+                             in settings.NODEGROUPS[0]['pools']]
+                networks2 = [net for net in networks if net.name
+                             in settings.NODEGROUPS[1]['pools']]
+                # If slave index is even number, then attach to
+                # it virtual networks from the second network group.
+                if int(name[-2:]) % 2 == 1:
+                    self.describe_empty_node(name, networks1)
+                elif int(name[-2:]) % 2 == 0:
+                    self.describe_empty_node(name, networks2)
+            else:
+                self.describe_empty_node(name, networks)
         return environment
 
     def create_networks(self, name, environment):
@@ -405,6 +425,10 @@ class EnvironmentModel(object):
         self.wait_bootstrap()
         time.sleep(10)
         self.sync_time_admin_node()
+        if settings.MULTIPLE_NETWORKS:
+            self.describe_second_admin_interface()
+            multiple_networks_hacks.configure_second_admin_cobbler(self)
+            multiple_networks_hacks.configure_second_dhcrelay(self)
 
     @upload_manifests
     def wait_for_provisioning(self):
@@ -572,6 +596,44 @@ class EnvironmentModel(object):
                      'Failed to execute "{0}" on remote host: {1}'.
                      format(cmd, result['stderr']))
         return result['stdout']
+
+    @logwrap
+    def describe_second_admin_interface(self):
+        remote = self.get_admin_remote()
+        second_admin_network = self.get_network(self.admin_net2).split('/')[0]
+        second_admin_netmask = self.get_net_mask(self.admin_net2)
+        second_admin_if = settings.INTERFACES.get(self.admin_net2)
+        second_admin_ip = str(self.nodes().admin.
+                              get_ip_address_by_network_name(self.admin_net2))
+        logger.info(('Parameters for second admin interface configuration: '
+                     'Network - {0}, Netmask - {1}, Interface - {2}, '
+                     'IP Address - {3}').format(second_admin_network,
+                                                second_admin_netmask,
+                                                second_admin_if,
+                                                second_admin_ip))
+        add_second_admin_ip = ('DEVICE={0}\\n'
+                               'ONBOOT=yes\\n'
+                               'NM_CONTROLLED=no\\n'
+                               'USERCTL=no\\n'
+                               'PEERDNS=no\\n'
+                               'BOOTPROTO=static\\n'
+                               'IPADDR={1}\\n'
+                               'NETMASK={2}\\n').format(second_admin_if,
+                                                        second_admin_ip,
+                                                        second_admin_netmask)
+        cmd = ('echo -e "{0}" > /etc/sysconfig/network-scripts/ifcfg-{1};'
+               'ifup {1}; ip -o -4 a s {1} | grep -w {2}').format(
+            add_second_admin_ip, second_admin_if, second_admin_ip)
+        logger.debug('Trying to assign {0} IP to the {1} on master node...'.
+                     format(second_admin_ip, second_admin_if))
+        result = remote.execute(cmd)
+        assert_equal(result['exit_code'], 0, ('Failed to assign second admin '
+                     'IP address on master node: {0}').format(result))
+        logger.debug('Done: {0}'.format(result['stdout']))
+        multiple_networks_hacks.configure_second_admin_firewall(
+            self,
+            second_admin_network,
+            second_admin_netmask)
 
 
 class NodeRoles(object):
