@@ -403,10 +403,10 @@ cp ${SOURCE}/puppet-slave.tgz ${repodir}/
 tar zxf ${SOURCE}/puppet-slave.tgz -C /etc/puppet/modules
 mkdir -p /etc/puppet/manifests/
 cp /etc/puppet/modules/osnailyfacter/examples/site.pp /etc/puppet/manifests/site.pp
+rm -f /etc/puppet/hiera.yaml
+ln -s /etc/puppet/modules/osnailyfacter/examples/hiera.yaml /etc/puppet/hiera.yaml
 cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/manifests/
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
-mkdir -p /var/lib/hiera
-touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
 # Deploy docker images and ctl tools if we built ISO with docker containers support
 [ -d "${SOURCE}/docker" ] && cp -r ${SOURCE}/docker ${repodir}/docker
