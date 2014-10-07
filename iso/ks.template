@@ -379,22 +379,22 @@ wwwdir="/var/www/nailgun"
 repodir="${wwwdir}/${OPENSTACK_VERSION}"
 
 # Copying Centos files
-mkdir -p ${repodir}/centos/fuelweb/x86_64
-cp -r ${SOURCE}/images ${repodir}/centos/fuelweb/x86_64
-cp -r ${SOURCE}/isolinux ${repodir}/centos/fuelweb/x86_64
-cp -r ${SOURCE}/repodata ${repodir}/centos/fuelweb/x86_64
-cp -r ${SOURCE}/Packages ${repodir}/centos/fuelweb/x86_64
-cp ${SOURCE}/.treeinfo ${repodir}/centos/fuelweb/x86_64
+mkdir -p ${repodir}/centos/x86_64
+cp -r ${SOURCE}/images ${repodir}/centos/x86_64
+cp -r ${SOURCE}/isolinux ${repodir}/centos/x86_64
+cp -r ${SOURCE}/repodata ${repodir}/centos/x86_64
+cp -r ${SOURCE}/Packages ${repodir}/centos/x86_64
+cp ${SOURCE}/.treeinfo ${repodir}/centos/x86_64
 
 # Copying Ubuntu files
-mkdir -p ${repodir}/ubuntu/fuelweb/x86_64/images
-cp -r ${SOURCE}/ubuntu/conf ${repodir}/ubuntu/fuelweb/x86_64
-cp -r ${SOURCE}/ubuntu/db ${repodir}/ubuntu/fuelweb/x86_64
-cp -r ${SOURCE}/ubuntu/dists ${repodir}/ubuntu/fuelweb/x86_64
-cp -r ${SOURCE}/ubuntu/indices ${repodir}/ubuntu/fuelweb/x86_64
-cp -r ${SOURCE}/ubuntu/pool ${repodir}/ubuntu/fuelweb/x86_64
-cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/linux ${repodir}/ubuntu/fuelweb/x86_64/images
-cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz ${repodir}/ubuntu/fuelweb/x86_64/images
+mkdir -p ${repodir}/ubuntu/x86_64/images
+cp -r ${SOURCE}/ubuntu/conf ${repodir}/ubuntu/x86_64
+cp -r ${SOURCE}/ubuntu/db ${repodir}/ubuntu/x86_64
+cp -r ${SOURCE}/ubuntu/dists ${repodir}/ubuntu/x86_64
+cp -r ${SOURCE}/ubuntu/indices ${repodir}/ubuntu/x86_64
+cp -r ${SOURCE}/ubuntu/pool ${repodir}/ubuntu/x86_64
+cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/linux ${repodir}/ubuntu/x86_64/images
+cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz ${repodir}/ubuntu/x86_64/images
 
 # make links for backward compatibility
 ln -s ${repodir}/centos ${wwwdir}/centos
@@ -443,7 +443,7 @@ rm /etc/yum.repos.d/CentOS*.repo
 cat > /etc/yum.repos.d/nailgun.repo << EOF
 [nailgun]
 name=Nailgun Local Repo
-baseurl=file:/var/www/nailgun/${OPENSTACK_VERSION}/centos/fuelweb/x86_64
+baseurl=file:/var/www/nailgun/${OPENSTACK_VERSION}/centos/x86_64
 gpgcheck=0
 EOF
 

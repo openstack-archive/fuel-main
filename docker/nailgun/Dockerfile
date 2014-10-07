@@ -18,7 +18,7 @@ RUN mkdir -p /var/log/remote /var/www/nailgun
 #clean everything up
 RUN yum --quiet remove -y gcc-c++ --skip-broken
 
-RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/fuelweb/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean all; chmod +x /usr/local/bin/start.sh
+RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean all; chmod +x /usr/local/bin/start.sh
 
 EXPOSE 8001
 VOLUME ["/usr/share/nailgun/static", "/etc/nailgun"]
