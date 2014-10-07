@@ -434,9 +434,11 @@ cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/${O
 ln -s /etc/puppet/${OPENSTACK_VERSION}/manifests/ /etc/puppet/manifests
 ln -s /etc/puppet/${OPENSTACK_VERSION}/modules/ /etc/puppet/modules
 
+# prepare puppet hiera config symlinks
+rm -f /etc/puppet/hiera.yaml
+ln -s /etc/puppet/modules/osnailyfacter/examples/hiera.yaml /etc/puppet/hiera.yaml
+
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
-mkdir -p /var/lib/hiera
-touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
 # Deploy docker images and ctl tools if we built ISO with docker containers support
 [ -d "${SOURCE}/docker" ] && cp -r ${SOURCE}/docker ${wwwdir}/docker
