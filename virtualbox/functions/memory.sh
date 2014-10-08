@@ -24,10 +24,10 @@ get_available_memory() {
     # runing on linux
     if [ "$(which free)" != "" ]; then
       # using free
-      total_memory=$(free | grep Mem | awk '{print $2}')
+      total_memory=$(LANG=C free | grep Mem | awk '{print $2}')
     elif [ $(which top) != '' ]; then
       # using top
-      total_memory=$(top -n 1 | grep "Mem:" | awk '{ print $4 }')
+      total_memory=$(LANG=C top -n 1 | grep "Mem:" | awk '{ print $4 }')
     else
       total_memory="-1"
     fi
@@ -44,10 +44,10 @@ get_available_memory() {
     # runing on cygwin
     if [ "$(which free)" != "" ]; then
       # using free
-      total_memory=$(free | grep Mem | awk '{print $2}')
+      total_memory=$(LANG=C free | grep Mem | awk '{print $2}')
     elif [ $(which top) != '' ]; then
       # using top
-      total_memory=$(top -n 1 | grep "Mem:" | awk '{ print $4 }')
+      total_memory=$(LANG=C top -n 1 | grep "Mem:" | awk '{ print $4 }')
     else
       total_memory="-1"
     fi
