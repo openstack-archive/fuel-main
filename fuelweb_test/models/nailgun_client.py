@@ -158,10 +158,16 @@ class NailgunClient(object):
         return self.client.put("/api/nodes/{}/disks".format(node_id), data)
 
     @logwrap
-    def get_release_id(self, release_name=OPENSTACK_RELEASE):
+    def get_release_id(self, release_name=OPENSTACK_RELEASE,
+                       image_based=None):
         for release in self.get_releases():
-            if release["name"].find(release_name) != -1:
-                return release["id"]
+            if not image_based:
+                if release["name"].find(release_name) != -1:
+                    return release["id"]
+            else:
+                if release["name"].find(release_name) != -1 and \
+                        release["name"].find('(image provisioning)') != -1:
+                    return release["id"]
 
     @logwrap
     @json_parse

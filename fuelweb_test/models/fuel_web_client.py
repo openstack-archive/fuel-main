@@ -309,7 +309,9 @@ class FuelWebClient(object):
         """
         logger.info('Create cluster with name %s', name)
         if not release_id:
-            release_id = self.client.get_release_id(release_name=release_name)
+            release_id = self.client.get_release_id(
+                release_name=release_name,
+                image_based=help_data.IMAGE_PROVISIONING)
             logger.info('Release_id of %s is %s',
                         release_name, str(release_id))
 
