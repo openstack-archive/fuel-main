@@ -119,7 +119,7 @@ add_disk_to_vm() {
     vm_disk_path="$(get_vm_base_path)/$vm_name/"
     disk_name="${vm_name}_${port}"
     disk_filename="${disk_name}.vdi"
-    VBoxManage createhd --filename "$vm_disk_path/$disk_name" --size $disk_mb --format VDI
+    VBoxManage createhd --filename "$vm_disk_path/$disk_filename" --size $disk_mb --format VDI
     VBoxManage storageattach $vm_name --storagectl 'SATA' --port $port --device 0 --type hdd --medium "$vm_disk_path/$disk_filename"
 }
 
