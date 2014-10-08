@@ -1,4 +1,4 @@
-BASE_IMAGE_FILES:=fuel-centos.tar.xz busybox.tar.xz
+BASE_IMAGE_FILES:=fuel-centos.tar.xz busybox.tar.xz nsenter.tar.xz
 
 # docker base image files
 $(addprefix $(LOCAL_MIRROR_DOCKER_BASEURL)/,$(BASE_IMAGE_FILES)):
