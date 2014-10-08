@@ -359,6 +359,7 @@ save_cfg
 # Mounting installation source
 SOURCE=/tmp/source
 FS=/tmp/fs
+OPENSTACK_VERSION=`cat ${SOURCE}/openstack_version`
 
 echo
 mkdir -p ${SOURCE}
@@ -369,8 +370,15 @@ if test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
     mount -o loop ${FS}/nailgun.iso ${SOURCE}
 fi
 
-# Copying Repo to the nailgun /var/www directory
-repodir="/var/www/nailgun"
+
+# ----------------------
+# UNPACKING REPOSITORIES
+# ----------------------
+
+wwwdir="/var/www/nailgun"
+repodir="${wwwdir}/${OPENSTACK_VERSION}"
+
+# Copying Centos files
 mkdir -p ${repodir}/centos/fuelweb/x86_64
 cp -r ${SOURCE}/images ${repodir}/centos/fuelweb/x86_64
 cp -r ${SOURCE}/isolinux ${repodir}/centos/fuelweb/x86_64
@@ -388,35 +396,54 @@ cp -r ${SOURCE}/ubuntu/pool ${repodir}/ubuntu/fuelweb/x86_64
 cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/linux ${repodir}/ubuntu/fuelweb/x86_64/images
 cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz ${repodir}/ubuntu/fuelweb/x86_64/images
 
+# make links for backward compatibility
+ln -s ${repodir}/centos ${wwwdir}/centos
+ln -s ${repodir}/ubuntu ${wwwdir}/ubuntu
+
 # Copying bootstrap image
-mkdir -p ${repodir}/bootstrap
-cp -r ${SOURCE}/bootstrap/initramfs.img ${repodir}/bootstrap
-cp -r ${SOURCE}/bootstrap/linux ${repodir}/bootstrap
+mkdir -p ${wwwdir}/bootstrap
+cp -r ${SOURCE}/bootstrap/initramfs.img ${wwwdir}/bootstrap
+cp -r ${SOURCE}/bootstrap/linux ${wwwdir}/bootstrap
 
 mkdir -p /root/.ssh
 chmod 700 /root/.ssh
 cp ${SOURCE}/bootstrap/bootstrap.rsa /root/.ssh
 chmod 600 /root/.ssh/bootstrap.rsa
 
-# Unpacking puppet manifests for master and slave
-cp ${SOURCE}/puppet-slave.tgz ${repodir}/
-tar zxf ${SOURCE}/puppet-slave.tgz -C /etc/puppet/modules
-mkdir -p /etc/puppet/manifests/
-cp /etc/puppet/modules/osnailyfacter/examples/site.pp /etc/puppet/manifests/site.pp
-cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/manifests/
+# --------------------------
+# UNPACKING PUPPET MANIFESTS
+# --------------------------
+
+# create folders
+mkdir -p /etc/puppet/${OPENSTACK_VERSION}/manifests/
+mkdir -p /etc/puppet/${OPENSTACK_VERSION}/modules/
+rm -rf /etc/puppet/modules/
+
+# TODO(ikalnitsky): investigate why we need this
+cp ${SOURCE}/puppet-slave.tgz ${wwwdir}/
+
+# place modules and manifests
+tar zxf ${SOURCE}/puppet-slave.tgz -C /etc/puppet/${OPENSTACK_VERSION}/modules
+cp /etc/puppet/${OPENSTACK_VERSION}/modules/osnailyfacter/examples/site.pp /etc/puppet/${OPENSTACK_VERSION}/manifests/site.pp
+cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/${OPENSTACK_VERSION}/manifests/
+
+# make links for backward compatibility
+ln -s /etc/puppet/${OPENSTACK_VERSION}/manifests/ /etc/puppet/manifests
+ln -s /etc/puppet/${OPENSTACK_VERSION}/modules/ /etc/puppet/modules
+
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 mkdir -p /var/lib/hiera
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
 # Deploy docker images and ctl tools if we built ISO with docker containers support
-[ -d "${SOURCE}/docker" ] && cp -r ${SOURCE}/docker ${repodir}/docker
+[ -d "${SOURCE}/docker" ] && cp -r ${SOURCE}/docker ${wwwdir}/docker
 
 # Prepare local repository specification
 rm /etc/yum.repos.d/CentOS*.repo
 cat > /etc/yum.repos.d/nailgun.repo << EOF
 [nailgun]
 name=Nailgun Local Repo
-baseurl=file:/var/www/nailgun/centos/fuelweb/x86_64
+baseurl=file:/var/www/nailgun/${OPENSTACK_VERSION}/centos/fuelweb/x86_64
 gpgcheck=0
 EOF
 
