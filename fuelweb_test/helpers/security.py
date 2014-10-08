@@ -62,6 +62,9 @@ class SecurityChecks(object):
         while test_port in used_ports or test_port in allowed_ports:
             test_port = randrange(10000)
 
+        # Create dump of iptables rules
+        cmd = 'iptables-save > {0}.dump'.format(tmp_file_path)
+
         # Start listening for connections on test_port
         cmd = ('socat {proto}4-LISTEN:{port},bind={ip} {file} '
                '&>/dev/null & pid=$! ; disown; sleep 1; kill -0 $pid').\
@@ -100,12 +103,14 @@ class SecurityChecks(object):
                            port=port)
                 admin_remote.execute(cmd)
                 remote = self.environment.get_ssh_to_remote(node['ip'])
-                cmd = 'cat {0}; rm -f {0}'.format(tmp_file_path)
+                cmd = 'cat {0}; mv {0}{{,.old}}'.format(tmp_file_path)
                 result = remote.execute(cmd)
                 if ''.join(result['stdout']).strip() == check_string:
                     raise Exception(('Firewall vulnerability detected. '
                                     'Unused port {0}/{1} can be accessed'
-                                    ' on {2} (node-{3}) node.').
-                                    format(port, protocol, node['name'],
-                                           node['id']))
+                                    ' on {2} (node-{3}) node. Check {4}.old'
+                                    ' and {4}.dump files on the node for de'
+                                    'tails').format(port, protocol,
+                                                    node['name'], node['id'],
+                                                    tmp_file_path))
         logger.info('Firewall test passed')
