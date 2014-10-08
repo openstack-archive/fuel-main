@@ -358,6 +358,8 @@ class FuelWebClient(object):
                 if section:
                     attributes['editable'][section][option]['value'] =\
                         settings[option]
+            if help_data.IMAGE_PROVISIONING:
+                attributes['editable']['provision']['method']['value'] = 'image'
 
             logger.info('Set DEBUG MODE to %s', help_data.DEBUG_MODE)
             attributes['editable']['common']['debug']['value'] = \
