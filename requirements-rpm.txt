@@ -517,7 +517,7 @@ rubygem-httpclient-doc-2.3.2-5.el6
 rubygem-i18n-0.6.4-1.el6
 rubygem-ipaddress-0.8.0-3.el6
 rubygem-ipaddress-doc-0.8.0-3.el6
-rubygem-json
+rubygem-json-1.7.7
 rubygem-json-doc
 rubygem-json_pure
 rubygem-json_pure-doc
