@@ -125,11 +125,11 @@ def get_interface_description(ctrl_ssh, interface_short_name):
 
 
 @logwrap
-def verify_glance_index(remote):
-    ret = remote.check_call('. /root/openrc; glance index')['stdout']
-    logger.info("glance index output: \\n{}" .format(ret))
+def verify_glance_image_list(remote):
+    ret = remote.check_call('. /root/openrc; glance image-list')['stdout']
+    logger.info("glance image-list output: \\n{}" .format(ret))
     assert_equal(1, ''.join(ret).count("TestVM"),
-                 "TestVM not found in glance index")
+                 "TestVM not found in glance image-list")
 
 
 def verify_network_configuration(remote, node):

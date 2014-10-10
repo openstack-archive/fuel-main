@@ -69,7 +69,7 @@ class FuelWebClient(object):
     @logwrap
     def get_cluster_status(ssh_remote, smiles_count, networks_count=1):
         checkers.verify_service_list(ssh_remote, smiles_count)
-        checkers.verify_glance_index(ssh_remote)
+        checkers.verify_glance_image_list(ssh_remote)
         checkers.verify_network_list(networks_count, ssh_remote)
 
     @logwrap
