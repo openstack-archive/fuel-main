@@ -379,7 +379,7 @@ class EnvironmentModel(object):
         if settings.MAKE_SNAPSHOT or is_make:
             self.get_virtual_environment().suspend(verbose=False)
             self.get_virtual_environment().snapshot(snapshot_name, force=True)
-            revert_info(snapshot_name, description)
+            revert_info(snapshot_name, self.get_admin_node_ip(), description)
         if self.__wrapped__ == 'check_fuel_statistics':
             self.get_virtual_environment().resume()
             try:
