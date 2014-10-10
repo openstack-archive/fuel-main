@@ -139,7 +139,7 @@ class NeutronVlan(TestBasic):
         self.env.make_snapshot("deploy_neutron_vlan")
 
 
-@test(groups=["thread_4", "neutron", "ha", "neutron_ha"])
+@test(groups=["thread_4", "neutron", "ha", "ha_neutron"])
 class NeutronGreHa(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
@@ -197,7 +197,7 @@ class NeutronGreHa(TestBasic):
         self.env.make_snapshot("deploy_neutron_gre_ha")
 
 
-@test(groups=["thread_4", "neutron", "ha", "neutron_ha"])
+@test(groups=["thread_6", "neutron", "ha", "ha_neutron"])
 class NeutronGreHaPublicNetwork(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
@@ -259,7 +259,7 @@ class NeutronGreHaPublicNetwork(TestBasic):
         self.env.make_snapshot("deploy_neutron_gre_ha_public_network")
 
 
-@test(groups=["thread_3", "neutron", "ha", "neutron_ha", "bvt_1"])
+@test(groups=["thread_3", "neutron", "ha", "ha_neutron", "bvt_1"])
 class NeutronVlanHa(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
@@ -318,7 +318,7 @@ class NeutronVlanHa(TestBasic):
         self.env.make_snapshot("deploy_neutron_vlan_ha")
 
 
-@test(groups=["thread_3", "neutron", "ha", "neutron_ha"])
+@test(groups=["thread_6", "neutron", "ha", "ha_neutron"])
 class NeutronVlanHaPublicNetwork(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
