@@ -112,9 +112,8 @@ def revert_info(snapshot_name, description=""):
     logger.info("<" * 5 + "*" * 100 + ">" * 5)
     logger.info("{} Make snapshot: {}".format(description, snapshot_name))
     logger.info("You could revert this snapshot using [{command}]".format(
-        command="dos.py revert {env} --snapshot-name {name} && "
-        "dos.py resume {env} && virsh net-dumpxml {env}_admin | "
-        "grep -P {pattern} -o "
+        command="dos.py revert-resume {env} --snapshot-name {name} && "
+        "virsh net-dumpxml {env}_admin | grep -P {pattern} -o "
         "| awk {awk_command}".format(
             env=settings.ENV_NAME,
             name=snapshot_name,
