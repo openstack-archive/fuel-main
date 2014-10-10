@@ -108,18 +108,15 @@ def upload_manifests(func):
     return wrapper
 
 
-def revert_info(snapshot_name, description=""):
+def revert_info(snapshot_name, master_ip, description=""):
     logger.info("<" * 5 + "*" * 100 + ">" * 5)
     logger.info("{} Make snapshot: {}".format(description, snapshot_name))
-    logger.info("You could revert this snapshot using [{command}]".format(
-        command="dos.py revert {env} --snapshot-name {name} && "
-        "dos.py resume {env} && virsh net-dumpxml {env}_admin | "
-        "grep -P {pattern} -o "
-        "| awk {awk_command}".format(
+    logger.info("You could revert and ssh to master node: [{command}]".format(
+        command="dos.py revert-resume {env} --snapshot-name {name} && "
+        "ssh root@{master_ip}".format(
             env=settings.ENV_NAME,
             name=snapshot_name,
-            pattern="\"(\d+\.){3}\"",
-            awk_command="'{print \"Admin node IP: \"$0\"2\"}'"
+            master_ip=master_ip
         )
     )
     )
