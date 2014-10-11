@@ -16,6 +16,16 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	echo "suite=@@UBUNTU_RELEASE@@-updates" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
 	echo "omitdebsrc=true" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
 	fi
+	if [ -n "$(EXTRA_DEB_REPOS)" ]; then \
+		extra_count=1; \
+		echo "$(EXTRA_DEB_REPOS)" | tr '|' '\n' | \
+		while read repo; \
+			do [ -z "$$repo" ] && continue;	\
+			echo "[Extra$$extra_count]\nsource=$$repo/\nomitdebsrc=true" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
+			sed -i -e "s/\(bootstrap\|aptsources\)=.*/\0 Extra$$extra_count/g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
+			extra_count=$$(expr $$extra_count + 1); \
+		done \
+	fi
 	sed -i -e "s/@@UBUNTU_RELEASE@@/$(UBUNTU_RELEASE)/g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf
 	sed -i -e "s]@@MIRROR_UBUNTU@@]$(MIRROR_UBUNTU)]g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf
 	mount | grep -q $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc || sudo mount -t proc none $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc
@@ -40,5 +50,6 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	sudo mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo
 	sudo rsync -a $(SOURCE_DIR)/mirror/ubuntu/files/ $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "chmod +x /repo/mkrepo.sh && /repo/mkrepo.sh"
-	sudo rsync -a --delete $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/* $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ && sudo rm -rf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/
+	sudo rsync -a --delete $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/* $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/
+	sudo rm -rf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/
 	$(ACTION.TOUCH)

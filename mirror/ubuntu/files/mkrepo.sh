@@ -11,8 +11,12 @@ mkdir -p /repo/download/
 cat /requirements-deb.txt | while read pkg; do apt-get --print-uris --yes install $pkg | grep ^\' | cut -d\' -f2 >/downloads_$pkg.list; done
 cat /downloads_*.list | sort | uniq > /repo/download/download_urls.list
 rm /downloads_*.list
-(cat /repo/download/download_urls.list | xargs -n1 -P4 wget -P /repo/download/) || exit 1
+
+echo "Downloading $(wc -l < /repo/download/download_urls.list) packages quietly"
+(cat /repo/download/download_urls.list | xargs -n32 -P4 wget -c -nv -P /repo/download/) || exit 1
+
 mv /var/cache/apt/archives/*deb /repo/download/
+
 # Make structure and mocks for multiarch
 for dir in binary-i386 binary-amd64; do 
 	mkdir -p /repo/dists/precise/main/$dir /repo/dists/precise/main/debian-installer/$dir
