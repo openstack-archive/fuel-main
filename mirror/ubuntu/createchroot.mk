@@ -16,6 +16,11 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	echo "suite=@@UBUNTU_RELEASE@@-updates" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
 	echo "omitdebsrc=true" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
 	fi
+	if [ -n "$(EXTRA_DEB_REPOS)" ]; then \
+		extra_count=1; \
+		echo "$(EXTRA_DEB_REPOS)" | tr '|' '\n' | while read repo; do echo "[Extra$$extra_count]\nsource=$$repo/\nomitdebsrc=true"; extra_count=$$(expr $$extra_count + 1); done >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
+		if grep -q "\[Extra4\]" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; then echo "Too much extra repositories, exiting"; exit 1; fi; \
+	fi
 	sed -i -e "s/@@UBUNTU_RELEASE@@/$(UBUNTU_RELEASE)/g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf
 	sed -i -e "s]@@MIRROR_UBUNTU@@]$(MIRROR_UBUNTU)]g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf
 	mount | grep -q $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc || sudo mount -t proc none $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc
