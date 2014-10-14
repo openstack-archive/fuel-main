@@ -159,6 +159,8 @@ MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 endif
 
+YUM_DOWNLOAD_SRC?=
+
 MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 MIRROR_UBUNTU?=http://mirrors-local-msk.msk.mirantis.net/ubuntu/
