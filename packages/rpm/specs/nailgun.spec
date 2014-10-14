@@ -62,4 +62,4 @@ python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUIL
 rm -rf $RPM_BUILD_ROOT
 
 %files -f INSTALLED_FILES
-%defattr(-,root,root)
+%defattr(0755,root,root)
