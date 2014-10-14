@@ -50,6 +50,12 @@ $(BUILD_DIR)/mirror/centos/yum.done: \
 		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
 		--destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \
 		$(REQUIRED_RPMS) 2>&1 | grep -v '^looking for' | tee $(BUILD_DIR)/mirror/centos/yumdownloader.log
+	[ -z "$(YUM_DOWNLOAD_SRC)" ] || \
+	 yumdownloader  --source -c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
+	 --destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Sources $(REQUIRED_RPMS) 2>&1 | \
+	 grep -v '^looking for' | tee $(BUILD_DIR)/mirror/centos/yumdownloader_src.log && \
+	 rm -rvf $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Sources/*.x86_64.rpm \
+	 $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Sources/*.noarch.rpm
 	# Yumdownloader/repotrack workaround number one:
 	# i686 packages are downloaded by mistake. Remove them
 	rm -rf $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages/*.i686.rpm
