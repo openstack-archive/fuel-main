@@ -461,7 +461,7 @@ class MuranoHA(TestBasic):
         for test_name in test_classes:
             self.fuel_web.run_single_ostf_test(
                 cluster_id=cluster_id, test_sets=['platform_tests'],
-                test_name=test_name, timeout=60 * 20)
+                test_name=test_name, timeout=60 * 36)
 
         self.env.make_snapshot("deploy_murano_ha_with_gre")
 
