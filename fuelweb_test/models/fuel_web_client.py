@@ -1230,7 +1230,7 @@ class FuelWebClient(object):
             nailgun_cidr = self.client.get_networks(cluster_id).\
                 get("networking_parameters").get("fixed_networks_cidr")
             logger.debug('nailgun cidr is {0}'.format(nailgun_cidr))
-            slave_cidr = ''.join(remote.execute(". openrc; nova network-list"
+            slave_cidr = ''.join(remote.execute(". openrc; nova net-list"
                                                 " | awk '$4 =="
                                                 " \"novanetwork\"{print $6}'"
                                                 )['stdout'])

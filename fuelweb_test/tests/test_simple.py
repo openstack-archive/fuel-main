@@ -534,6 +534,11 @@ class SimpleCinder(TestBasic):
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
 
+        self.fuel_web.check_fixed_network_cidr(
+            cluster_id, self.env.get_ssh_to_remote_by_name('slave-01'))
+        self.fuel_web.verify_network(cluster_id)
+        self.env.verify_network_configuration("slave-01")
+
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
         self.env.make_snapshot("deploy_simple_cinder")

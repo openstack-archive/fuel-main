@@ -248,8 +248,8 @@ CUSTOM_PKGS_MIRROR = os.environ.get('CUSTOM_PKGS_MIRROR', '')
 
 # Location of local mirrors on master node.
 LOCAL_MIRROR_UBUNTU = os.environ.get('LOCAL_MIRROR_UBUNTU',
-                                     '/var/www/nailgun/ubuntu/fuelweb/x86_64')
+                                     '/var/www/nailgun/ubuntu/x86_64')
 LOCAL_MIRROR_CENTOS = os.environ.get('LOCAL_MIRROR_CENTOS',
-                                     '/var/www/nailgun/centos/fuelweb/x86_64')
+                                     '/var/www/nailgun/centos/x86_64')
 
 UPDATE_TIMEOUT = os.environ.get('UPDATE_TIMEOUT', 3600)
