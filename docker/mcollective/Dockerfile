@@ -17,6 +17,6 @@ RUN yum install -y nailgun Shotgun; mkdir -p /opt/nailgun/bin /var/www/nailgun/d
 # let's disable some services and commands since we don't need them in our container
 RUN echo -e '#!/bin/bash\n#chkconfig: 345 20 80\nexit 0' > /etc/init.d/mcollective
 
-RUN chmod +x /usr/local/bin/start.sh; echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/fuelweb/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean all
+RUN chmod +x /usr/local/bin/start.sh; echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean all
 
 CMD ["/usr/local/bin/start.sh"]
