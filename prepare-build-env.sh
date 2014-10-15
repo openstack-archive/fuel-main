@@ -122,4 +122,8 @@ fi
 # Fix tmp folder ownership
 [ -d ~/tmp ] && sudo chown -R `whoami`.`id -gn` ~/tmp || mkdir ~/tmp
 
-echo "Dependency check completed, please proceed with 'make iso' command"
+## Using docker without sudo
+sudo usermod -a -G docker `whoami`
+
+echo "Dependency check completed, please re-start terminal session for update groups' membership"
+echo "Then proceed with 'make iso' command"
