@@ -234,7 +234,7 @@ FUEL_SETTINGS_YAML = os.environ.get('FUEL_SETTINGS_YAML',
 TARBALL_PATH = os.environ.get('TARBALL_PATH')
 
 UPGRADE_FUEL_FROM = os.environ.get('UPGRADE_FUEL_FROM', '5.0')
-UPGRADE_FUEL_TO = os.environ.get('UPGRADE_FUEL_TO', '5.1')
+UPGRADE_FUEL_TO = os.environ.get('UPGRADE_FUEL_TO', '6.0')
 
 SNAPSHOT = os.environ.get('SNAPSHOT', '')
 # For 5.1 we have 2 releases in tarball and should specify what we need
