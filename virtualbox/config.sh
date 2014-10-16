@@ -135,7 +135,9 @@ fi
 # You may comment out all the following memory parameters to use default value for each node.
 # It is recommended if you going to try HA configurations.
 # for controller node at least 1.5Gb is required if you also run Ceph and Heat on it
-# and for Ubuntu controller we need 2Gb of ram
+# and for Ubuntu controller we need 2.5Gb of ram.
+# In case of lack of ram your controllers will swap, 
+# and deployment may fail with message "Deployment has failed. Timeout of deployment is exceeded."
 
 # For compute node 1GB is recommended, otherwise VM instances in OpenStack may not boot
 # For dedicated Cinder, 768Mb is OK, but Ceph needs 1Gb minimum
