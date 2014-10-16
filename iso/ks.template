@@ -417,6 +417,8 @@ chmod 600 /root/.ssh/bootstrap.rsa
 # create folders
 mkdir -p /etc/puppet/${OPENSTACK_VERSION}/manifests/
 mkdir -p /etc/puppet/${OPENSTACK_VERSION}/modules/
+mkdir -p /etc/puppet/${OPENSTACK_VERSION}/tasks/
+mkdir -p /etc/fuel/roles/${OPENSTACK_VERSION}/
 rm -rf /etc/puppet/modules/
 
 # TODO(ikalnitsky): investigate why we need this
@@ -430,6 +432,7 @@ cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/${O
 # make links for backward compatibility
 ln -s /etc/puppet/${OPENSTACK_VERSION}/manifests/ /etc/puppet/manifests
 ln -s /etc/puppet/${OPENSTACK_VERSION}/modules/ /etc/puppet/modules
+ln -s /etc/puppet/${OPENSTACK_VERSION}/tasks/ /etc/puppet/tasks
 
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 mkdir -p /var/lib/hiera
@@ -468,6 +471,18 @@ cp ${SOURCE}/version.yaml /etc/nailgun/version.yaml
 cp ${SOURCE}/version.yaml /etc/fuel/${RELEASE}/version.yaml
 ln -s /etc/fuel/${RELEASE}/version.yaml /etc/fuel/version.yaml
 cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_version`.yaml
+
+# Extract tasks and roles
+if [ -f "${SOURCE}/tasks.tgz" ]; then
+  # extract tasks to the symlinked tasks folder
+  tar zxf "${SOURCE}/tasks.tgz" -C /etc/puppet/tasks
+  # copy the legacy site.pp to the task
+  cp /etc/puppet/modules/osnailyfacter/examples/site.pp /etc/puppet/tasks/legacy/site.pp
+fi
+
+if [ -f "${SOURCE}/roles.tgz" ]; then
+  tar zxf "${SOURCE}/roles.tgz" -C "/etc/fuel/roles/${OPENSTACK_VERSION}/"
+fi
 
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
