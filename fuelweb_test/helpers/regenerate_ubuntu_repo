@@ -1,6 +1,21 @@
 #!/bin/bash
 # Based on the method described here:
 # http://troubleshootingrange.blogspot.com/2012/09/hosting-simple-apt-repository-on-centos.html
+#
+# Example of the use of the script (For CentOS only. For Ubuntu, please use apt-ftparchive utility instead):
+# 1) Login to the CentOS node where the Ubuntu repository is located (Fuel master node, for example).
+#                            Your Ubuntu repository must have an './indices/' folder with correct
+#                            'override.*' files for the repository. Fuel master node >=5.1 already has it.
+# 2) Copy additional packages to the Ubuntu repository if needed.
+#                            Please pay attention: this script works only with *.deb packages
+#                            located in the ./pool/main folder of the repository.
+# 3) yum install dpkg dpkg-devel # These packets can be taken from http://mirror.fuel-infra.org/fwm/
+#                                # They are already in the Fuel master node starting from version >=5.1
+# 4) Copy this script to the CentOS node to any location, for example to /tmp/regenerate_ubuntu_repo
+# 5) Set the path to the Ubuntu repository using the variable REPO_PATH and start the script:
+#    REPO_PATH=/var/www/nailgun/ubuntu/x86_64 sh /tmp/regenerate_ubuntu_repo
+# 6) Done.
+
 
 ARCH=amd64
 VERSION=12.04
