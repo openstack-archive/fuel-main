@@ -442,6 +442,19 @@ cp ${SOURCE}/version.yaml /etc/fuel/${RELEASE}/version.yaml
 ln -s /etc/fuel/${RELEASE}/version.yaml /etc/fuel/version.yaml
 cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_version`.yaml
 
+# Extract tasks and roles
+if [ -f "${SOURCE}/tasks.tgz" ]; then
+  mkdir -p /etc/puppet/tasks
+  tar zxf "${SOURCE}/tasks.tgz" -C /etc/puppet/tasks
+  # copy legacy site.pp to the task
+  cp /etc/puppet/modules/osnailyfacter/examples/site.pp /etc/puppet/tasks/legacy/site.pp
+fi
+
+if [ -f "${SOURCE}/roles.tgz" ]; then
+  mkdir -p "/etc/fuel/roles"
+  tar zxf "${SOURCE}/roles.tgz" -C "/etc/fuel/roles"
+fi
+
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
 
