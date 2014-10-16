@@ -25,7 +25,7 @@ get_available_memory() {
     if [ "$(which free)" != "" ]; then
       # using free
       total_memory=$(LANG=C free | grep Mem | awk '{print $2}')
-    elif [ $(which top) != '' ]; then
+    elif [ "$(which top)" != "" ]; then
       # using top
       total_memory=$(LANG=C top -n 1 | grep "Mem:" | awk '{ print $4 }')
     else
@@ -45,7 +45,7 @@ get_available_memory() {
     if [ "$(which free)" != "" ]; then
       # using free
       total_memory=$(LANG=C free | grep Mem | awk '{print $2}')
-    elif [ $(which top) != '' ]; then
+    elif [ "$(which top)" != "" ]; then
       # using top
       total_memory=$(LANG=C top -n 1 | grep "Mem:" | awk '{ print $4 }')
     else
