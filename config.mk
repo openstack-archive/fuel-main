@@ -123,7 +123,7 @@ endif
 # Build OpenStack packages from external sources (do not use prepackaged versions)
 # Enter the comma-separated list of OpenStack packages to build, or '0' otherwise.
 # Example: BUILD_OPENSTACK_PACKAGES=neutron,keystone
-BUILD_OPENSTACK_PACKAGES?=0
+BUILD_OPENSTACK_PACKAGES?=
 
 # Do not compress javascript and css files
 NO_UI_OPTIMIZE:=0
