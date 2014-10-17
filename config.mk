@@ -65,6 +65,9 @@ CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
 UBUNTU_RELEASE:=precise
 UBUNTU_INSTALLER_KERNEL_VERSION:=3.11.0-18
+UBUNTU_MAJOR:=12
+UBUNTU_MINOR:=04
+UBUNTU_RELEASE_NUMBER:=$(UBUNTU_MAJOR).$(UBUNTU_MINOR)
 
 # Rebuld packages locally (do not use upstream versions)
 # This option is depricated, because there are no upstream versions
@@ -74,7 +77,7 @@ BUILD_PACKAGES?=1
 # Build OpenStack packages from external sources (do not use prepackaged versions)
 # Enter the comma-separated list of OpenStack packages to build, or '0' otherwise.
 # Example: BUILD_OPENSTACK_PACKAGES=neutron,keystone
-BUILD_OPENSTACK_PACKAGES?=0
+BUILD_OPENSTACK_PACKAGES?=
 
 # Do not compress javascript and css files
 NO_UI_OPTIMIZE:=0
