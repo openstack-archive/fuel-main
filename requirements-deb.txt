@@ -546,6 +546,7 @@ mount
 mountall
 mongodb-clients
 mongodb-server
+monit
 msr-tools
 mtr-tiny
 multiarch-support
