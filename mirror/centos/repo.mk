@@ -105,20 +105,20 @@ $(BUILD_DIR)/mirror/centos/urls.list: $(rpm_download_lists)
 $(rpm_download_lists): $(BUILD_DIR)/mirror/centos/lists/%.list: \
 		$(BUILD_DIR)/mirror/centos/yum-config.done \
 		$(SOURCE_DIR)/requirements-rpm.txt
-	tmp_installchroot=$(dir $(centos_empty_installroot))installchroot-$*; \
-	cp -al "$(centos_empty_installroot)" "$$tmp_installchroot" && \
-	mkdir -p $(@D) && \
-	env \
+	    tmp_installchroot=$(dir $(centos_empty_installroot))installchroot-$*; \
+	    cp -al "$(centos_empty_installroot)" "$$tmp_installchroot" && \
+	    mkdir -p $(@D) && \
+	    env \
 		TMPDIR="$$tmp_installchroot/cache" \
 		TMP="$$tmp_installchroot/cache" \
-	yumdownloader -q --urls \
+	    yumdownloader -q --urls \
 		--archlist=$(CENTOS_ARCH) \
 		--installroot="$$tmp_installchroot" \
 		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
 		--cacheonly \
 		--resolve $* > $@.tmp 2>$@.log && \
-	rm -rf "$$tmp_installchroot" && \
-	mv $@.tmp $@
+	    rm -rf "$$tmp_installchroot" && \
+	    mv $@.tmp $@
 
 
 $(BUILD_DIR)/mirantis_rpm_pkgs_list.mk: $(BUILD_DIR)/mirror/centos/urls.list
