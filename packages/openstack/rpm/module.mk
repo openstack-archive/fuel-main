@@ -31,10 +31,10 @@ endef
 # Usage:
 # (eval (call prepare_openstack_source,package_name,file_name,source_path))
 define prepare_openstack_source
-$(BUILD_DIR)/openstack/rpm/$1.done: $(BUILD_DIR)/openstack/rpm/sources/$1/$2
-$(BUILD_DIR)/openstack/rpm/sources/$1/$2: $(call find-files,$3)
-	mkdir -p $(BUILD_DIR)/openstack/rpm/sources/$1
-	cd $3 && python setup.py sdist -d $(BUILD_DIR)/openstack/rpm/sources/$1 && python setup.py --version sdist > $(BUILD_DIR)/openstack/rpm/$1-version-tag
+$(BUILD_DIR)/openstack/rpm/$1.done: $(BUILD_DIR)/openstack/sources/$1/$2
+$(BUILD_DIR)/openstack/sources/$1/$2: $(call find-files,$3)
+	mkdir -p $(BUILD_DIR)/openstack/sources/$1 $(BUILD_DIR)/openstack/rpm
+	cd $3 && python setup.py sdist -d $(BUILD_DIR)/openstack/sources/$1 && python setup.py --version sdist > $(BUILD_DIR)/openstack/rpm/$1-version-tag
 endef
 
 # Usage:
@@ -55,15 +55,15 @@ $(BUILD_DIR)/openstack/rpm/$1.done: export SANDBOX_DOWN:=$$(SANDBOX_DOWN)
 $(BUILD_DIR)/openstack/rpm/$1.done: export INSTALL_CENTOS_REPO:=$$(INSTALL_CENTOS_REPO)
 $(BUILD_DIR)/openstack/rpm/$1.done: \
 	$(BUILD_DIR)/repos/repos.done
-	mkdir -p $(BUILD_DIR)/openstack/rpm/RPMS/x86_64 $(BUILD_DIR)/openstack/rpm/sources/specs
+	mkdir -p $(BUILD_DIR)/openstack/rpm/RPMS/x86_64 $(BUILD_DIR)/openstack/rpm/specs
 	sudo sh -c "$$$${SANDBOX_UP}"
 	sudo yum -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) -y --nogpgcheck install ruby rpm-build tar python-setuptools yum-utils
 	sudo mkdir -p $$(SANDBOX)/tmp/SPECS $$(SANDBOX)/tmp/SOURCES $$(SANDBOX)/tmp/BUILD $$(SANDBOX)/tmp/BUILDROOT $$(SANDBOX)/tmp/RPMS $$(SANDBOX)/tmp/SRPMS
-	sudo cp $(BUILD_DIR)/openstack/rpm/sources/$1/*.tar.gz $$(SANDBOX)/tmp/SOURCES/
+	sudo cp $(BUILD_DIR)/openstack/sources/$1/*.tar.gz $$(SANDBOX)/tmp/SOURCES/
 	sudo cp -r $(BUILD_DIR)/repos/$1-build/rpm/SOURCES/* $$(SANDBOX)/tmp/SOURCES
-	sed "s/Version:.*/Version:\t`cat $(BUILD_DIR)/openstack/rpm/$1-version-tag`/" $(BUILD_DIR)/repos/$1-build/rpm/SPECS/*.spec > $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec
-	sed -i "s/Source0:.*/Source0:\t$1-`cat $(BUILD_DIR)/openstack/rpm/$1-version-tag`\.tar\.gz/" $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec
-	sudo cp $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec $$(SANDBOX)/tmp/
+	sed "s/Version:.*/Version:\t`cat $(BUILD_DIR)/openstack/rpm/$1-version-tag`/" $(BUILD_DIR)/repos/$1-build/rpm/SPECS/*.spec > $(BUILD_DIR)/openstack/rpm/specs/openstack-$1.spec
+	sed -i "s/Source0:.*/Source0:\t$1-`cat $(BUILD_DIR)/openstack/rpm/$1-version-tag`\.tar\.gz/" $(BUILD_DIR)/openstack/rpm/specs/openstack-$1.spec
+	sudo cp $(BUILD_DIR)/openstack/rpm/specs/openstack-$1.spec $$(SANDBOX)/tmp/
 	sudo chroot $$(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -bs /tmp/openstack-$1.spec
 	sudo sh -c "$$$${INSTALL_CENTOS_REPO}"
 	sudo yum-builddep -c $$(SANDBOX)/etc/yum.conf --enablerepo=centos --enablerepo=centos-master --installroot=$$(SANDBOX) -y --nogpgcheck $$(SANDBOX)/tmp/SRPMS/openstack-$1*.rpm
@@ -80,7 +80,7 @@ $(BUILD_DIR)/openstack/rpm/$1-repocleanup.done: $(BUILD_DIR)/mirror/build.done
 	$$(ACTION.TOUCH)
 endef
 
-ifneq ($(BUILD_OPENSTACK_PACKAGES),0)
+ifneq ($(strip $(BUILD_OPENSTACK_PACKAGES)),)
 $(foreach pkg,$(subst $(comma), ,$(BUILD_OPENSTACK_PACKAGES)),$(eval $(call set_vars,$(pkg))))
 $(foreach pkg,$(subst $(comma), ,$(BUILD_OPENSTACK_PACKAGES)),$(eval $(call build_repo,$(pkg),$($(call uc,$(pkg))_REPO),$($(call uc,$(pkg))_COMMIT),$($(call uc,$(pkg))_GERRIT_URL),$($(call uc,$(pkg))_GERRIT_COMMIT))))
 $(foreach pkg,$(subst $(comma), ,$(BUILD_OPENSTACK_PACKAGES)),$(eval $(call build_repo,$(pkg)-build,$($(call uc,$(pkg))_SPEC_REPO),$($(call uc,$(pkg))_SPEC_COMMIT),$($(call uc,$(pkg))_SPEC_GERRIT_URL),$($(call uc,$(pkg))_SPEC_GERRIT_COMMIT))))
