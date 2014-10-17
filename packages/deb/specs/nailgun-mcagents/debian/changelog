@@ -1,3 +1,9 @@
+nailgun-mcagents (0.0.1-ubuntu1) precise; urgency=low
+
+  * Update code from upstream
+
+ -- OSCI Jenkins <dburmistrov@mirantis.com>  Wed, 03 Sep 2014 15:20:13 +0400
+
 nailgun-mcagents (0.0.1) unstable; urgency=low
 
   * Initial release.
