@@ -43,8 +43,6 @@ $(BUILD_DIR)/mirror/centos/yum.done: \
 		$(BUILD_DIR)/mirror/centos/yum-config.done \
 		$(SOURCE_DIR)/requirements-rpm.txt
 	yum -c $(BUILD_DIR)/mirror/centos/etc/yum.conf clean all
-	# sudo is required because we use 'sudo yum' in several places
-	sudo yum -c $(BUILD_DIR)/mirror/centos/etc/yum.conf clean all
 	rm -rf /var/tmp/yum-$$USER-*/
 	yumdownloader --resolve --archlist=$(CENTOS_ARCH) \
 		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \

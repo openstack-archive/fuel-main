@@ -104,12 +104,15 @@ sudo apt-get -y install build-essential make git $GEMPKG debootstrap createrepo 
   python-setuptools yum yum-utils libmysqlclient-dev isomd5sum bc \
   python-nose libvirt-bin python-ipaddr python-paramiko python-yaml \
   python-pip kpartx extlinux unzip genisoimage multistrap \
-  lrzip python-daemon python-dev
+  lrzip python-daemon python-dev mock pigz
 sudo gem install bundler -v 1.2.1
 sudo gem install builder
 sudo pip install xmlbuilder jinja2 pbr
 sudo npm install -g grunt-cli
 sudo chown -R `whoami`.`id -gn` `npm config get cache`
+
+# add user to mock group
+sudo usermod -a -G mock `whoami`
 
 # Add account to sudoers
 if sudo grep "`whoami` ALL=(ALL) NOPASSWD: ALL" /etc/sudoers; then

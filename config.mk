@@ -66,6 +66,8 @@ CENTOS_ARCH:=x86_64
 UBUNTU_RELEASE:=precise
 UBUNTU_INSTALLER_KERNEL_VERSION:=3.11.0-18
 
+# Use mock for building RPM packages, default - NO
+USE_MOCK?=N
 # Rebuld packages locally (do not use upstream versions)
 # This option is depricated, because there are no upstream versions
 # of nailgun packages any more
