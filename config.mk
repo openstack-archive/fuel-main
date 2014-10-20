@@ -38,7 +38,6 @@ DEPS_DIR_CURRENT:=$(abspath $(DEPS_DIR_CURRENT))
 # Artifacts names
 ISO_NAME?=fuel-$(PRODUCT_VERSION)
 UPGRADE_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-upgrade
-OPENSTACK_PATCH_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-patch
 VBOX_SCRIPTS_NAME?=vbox-scripts-$(PRODUCT_VERSION)
 BOOTSTARP_ART_NAME?=bootstrap.tar.gz
 DOCKER_ART_NAME?=fuel-images.tar.lrz
@@ -75,9 +74,6 @@ BUILD_PACKAGES?=1
 # Enter the comma-separated list of OpenStack packages to build, or '0' otherwise.
 # Example: BUILD_OPENSTACK_PACKAGES=neutron,keystone
 BUILD_OPENSTACK_PACKAGES?=0
-
-# Do not compress javascript and css files
-NO_UI_OPTIMIZE:=0
 
 # Define a set of defaults for each OpenStack package
 # For each component defined in BUILD_OPENSTACK_PACKAGES variable, this routine will set
