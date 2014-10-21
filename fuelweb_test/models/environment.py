@@ -36,8 +36,13 @@ from fuelweb_test import settings
 from fuelweb_test import logwrap
 from fuelweb_test import logger
 
+from fuelweb_test.interfaces.ienvironment import IEnvironment
+import zope.interface
 
-class EnvironmentModel(object):
+
+class EnvironmentModelDevops(object):
+    zope.interface.implements(IEnvironment)
+
     hostname = 'nailgun'
     domain = 'test.domain.local'
     installation_timeout = 1800

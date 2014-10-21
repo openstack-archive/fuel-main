@@ -16,9 +16,22 @@ from proboscis import SkipTest
 from proboscis import test
 
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
-from fuelweb_test.models.environment import EnvironmentModel
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_REDHAT
+
+from fuelweb_test.interfaces.ienvironment import IEnvironment
+from zope.interface.verify import verifyObject
+
+from fuelweb_test.settings import ENV_MODEL_MAP
+from fuelweb_test.settings import ENV_MODEL
+
+if ENV_MODEL in ENV_MODEL_MAP:
+    env_model = ENV_MODEL_MAP[ENV_MODEL]
+    _tmp = __import__('fuelweb_test.models.environment',
+                      fromlist=[ENV_MODEL_MAP[ENV_MODEL]])
+    EnvironmentModel = getattr(_tmp, ENV_MODEL_MAP[ENV_MODEL])
+else:
+    raise ImportError("No environment model defined")
 
 
 class TestBasic(object):
@@ -28,7 +41,11 @@ class TestBasic(object):
 
     """
     def __init__(self):
+        if IEnvironment.implementedBy(EnvironmentModel) is not True:
+            raise NotImplementedError("EnvironmentModel not implement "
+                                      "IEnvironment interface")
         self.env = EnvironmentModel()
+        verifyObject(IEnvironment, self.env)
         self.fuel_web = self.env.fuel_web
 
     def check_run(self, snapshot_name):

@@ -253,3 +253,9 @@ LOCAL_MIRROR_CENTOS = os.environ.get('LOCAL_MIRROR_CENTOS',
                                      '/var/www/nailgun/centos/x86_64')
 
 UPDATE_TIMEOUT = os.environ.get('UPDATE_TIMEOUT', 3600)
+
+ENV_MODEL_MAP = {
+    'devops': 'EnvironmentModelDevops',
+}
+
+ENV_MODEL = os.environ.get('ENV_MODEL', 'devops')
