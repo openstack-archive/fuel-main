@@ -32,6 +32,7 @@ Requires:    PyYAML >= 3.10
 Requires:    python-testresources >= 0.2.7
 
 # fuel_ostf_reqs
+Requires:    python-keystonemiddleware >= 1.2.0
 Requires:    python-nose >= 1.3.0
 Requires:    python-sqlalchemy >= 0.7.8
 Requires:    python-sqlalchemy < 1.0
