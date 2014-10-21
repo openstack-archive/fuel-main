@@ -20,7 +20,7 @@ BuildArch: noarch
 Requires:    python-oslo-config >= 1.1.1
 Requires:    python-ceilometerclient >= 1.0.9
 Requires:    python-cinderclient >= 1.0.6
-Requires:    python-keystoneclient >= 1:0.4.1
+Requires:    python-keystoneclient >= 0.11
 Requires:    python-novaclient >= 1:2.15.0
 Requires:    python-heatclient >= 0.2.5
 Requires:    python-muranoclient >= 0.2.11
@@ -32,6 +32,7 @@ Requires:    PyYAML >= 3.10
 Requires:    python-testresources >= 0.2.7
 
 # fuel_ostf_reqs
+Requires:    python-keystonemiddleware >= 1.2.0
 Requires:    python-nose >= 1.3.0
 Requires:    python-sqlalchemy >= 0.7.8
 Requires:    python-sqlalchemy < 1.0
