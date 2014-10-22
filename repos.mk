@@ -23,7 +23,7 @@ $(BUILD_DIR)/repos/$1.done:
 
 	# Pull gerrit commits if given
 	$(foreach var,$5,
-		test "$(var)" = "none" || ( cd $(BUILD_DIR)/repos/$1 && git fetch $4 $(var) && git cherry-pick FETCH_HEAD ) ;
+		test "$(var)" = "none" || ( cd $(BUILD_DIR)/repos/$1 && git pull $4 $(var) );
 	)
 	# Update versions.yaml
 	touch $(BUILD_DIR)/repos/version.yaml
