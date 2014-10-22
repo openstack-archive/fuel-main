@@ -15,12 +15,12 @@
 import re
 import time
 import traceback
+from netaddr import IPNetwork
 
 from devops.error import DevopsCalledProcessError
 from devops.error import TimeoutError
 from devops.helpers.helpers import _wait
 from devops.helpers.helpers import wait
-from netaddr import IPNetwork
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_true
 
@@ -385,8 +385,8 @@ class FuelWebClient(object):
 
         if not cluster_id:
             raise Exception("Could not get cluster '%s'" % name)
-        #TODO: rw105719
-        #self.client.add_syslog_server(
+        # TODO: rw105719
+        # self.client.add_syslog_server(
         #    cluster_id, self.environment.get_host_node_ip(), port)
 
         return cluster_id
@@ -1229,15 +1229,14 @@ class FuelWebClient(object):
     def check_fixed_network_cidr(self, cluster_id, remote):
         net_provider = self.client.get_cluster(cluster_id)['net_provider']
         if net_provider == 'nova_network':
-            nailgun_cidr = self.client.get_networks(cluster_id).\
-                get("networking_parameters").get("fixed_networks_cidr")
+            nailgun_cidr = self.client.get_networks(
+                cluster_id).get(
+                "networking_parameters").get("fixed_networks_cidr")
             logger.debug('nailgun cidr is {0}'.format(nailgun_cidr))
-            slave_cidr = ''.join(remote.execute(". openrc; nova net-list"
-                                                " | awk '$4 =="
-                                                " \"novanetwork\"{print $6}'"
-                                                )['stdout'])
-            logger.debug('slave cidr is {0}'.format(
-                slave_cidr.rstrip()))
+            slave_cidr = ''.join(
+                remote.execute(". openrc; nova net-list | awk '$4 == "
+                               "\"novanetwork\"{print $6}'")['stdout'])
+            logger.debug('slave cidr is {0}'.format(slave_cidr.rstrip()))
             assert_equal(nailgun_cidr, slave_cidr.rstrip(),
                          'Cidr after deployment is not equal'
                          ' to cidr by default')
@@ -1245,15 +1244,31 @@ class FuelWebClient(object):
             nailgun_cidr = self.client.get_networks(cluster_id).\
                 get("networking_parameters").get("internal_cidr")
             logger.debug('nailgun cidr is {0}'.format(nailgun_cidr))
-            slave_cidr = ''.join(remote.execute(". openrc; neutron"
-                                                " subnet-list | awk '$4 =="
-                                                " \"net04__subnet\""
+            slave_cidr = ''.join(remote.execute(". openrc; neutron "
+                                                "subnet-list | awk '$4 == "
+                                                "\"net04__subnet\" "
                                                 "{print $6}'")['stdout'])
-            logger.debug('slave cidr is {0}'.format(
-                slave_cidr.rstrip()))
-            assert_equal(nailgun_cidr, slave_cidr.rstrip(),
-                         'Cidr after deployment is not equal'
-                         ' to cidr by default')
+            logger.debug('slave cidr is {0}'.format(slave_cidr.rstrip()))
+            assert_equal(
+                nailgun_cidr, slave_cidr.rstrip(),
+                'Cidr after deployment is not equal to cidr by default')
+
+    @logwrap
+    def check_fixed_nova_splited_cidr(self, cluster_id, remote):
+        nailgun_cidr = self.client.get_networks(
+            cluster_id).get("networking_parameters").get(
+            "fixed_networks_cidr")
+        logger.debug('nailgun cidr is {0}'.format(nailgun_cidr))
+        slave_cidr = remote.execute(". openrc; nova net-list | "
+                                    "awk '$4 {print $6}'")['stdout']
+        logger.debug('slave cidr is {0}'.format(slave_cidr))
+
+        subnets_list = slave_cidr[1:]
+        logger.debug('slave list is {0}'.format(subnets_list))
+        for sub in subnets_list:
+            assert_true(IPNetwork(sub) in IPNetwork(nailgun_cidr),
+                        'Something goes wrong. Seems subnet {0} is out '
+                        'of net {1}'.format(sub, nailgun_cidr))
 
     def update_internal_network(self, cluster_id, cidr, gateway=None):
         net_provider = self.client.get_cluster(cluster_id)['net_provider']

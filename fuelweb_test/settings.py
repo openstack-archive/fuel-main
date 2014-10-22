@@ -220,7 +220,7 @@ DEPLOYMENT_NAME = os.environ.get('DEPLOYMENT_NAME')
 TIMEOUT = int(os.environ.get('TIMEOUT', 10))
 ATTEMPTS = int(os.environ.get('ATTEMPTS', 5))
 
-#Create snapshots as last step in test-case
+# Create snapshots as last step in test-case
 MAKE_SNAPSHOT = os.environ.get('MAKE_SNAPSHOT', 'false') == 'true'
 
 NEUTRON_ENABLE = os.environ.get('NEUTRON_ENABLE', 'false') == 'true'

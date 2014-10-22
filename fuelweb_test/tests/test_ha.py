@@ -85,6 +85,8 @@ class TestHaVLAN(TestBasic):
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=16, networks_count=8, timeout=300)
 
+        self.fuel_web.check_fixed_nova_splited_cidr(
+            cluster_id, self.env.get_ssh_to_remote_by_name('slave-01'))
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(

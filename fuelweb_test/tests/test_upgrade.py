@@ -344,7 +344,7 @@ class RollbackFuelMaster(base_test_data.TestBasic):
                                          '/var/upgrade/site-packages/'
                                          'fuel_upgrade/engines/'
                                          'docker_engine.py')
-        #we expect 255 exit code here because upgrade failed
+        # we expect 255 exit code here because upgrade failed
         # and exit status is 255
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
                             password=

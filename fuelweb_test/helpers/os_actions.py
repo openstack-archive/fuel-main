@@ -273,6 +273,9 @@ class OpenStackActions(common.Common):
                 return net
         return None
 
+    def get_nova_networks_list(self):
+        return self.nova.networks.list()
+
     def get_router(self, network):
         router_list = self.neutron.list_routers()
         for router in router_list['routers']:
