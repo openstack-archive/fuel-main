@@ -280,7 +280,7 @@ class TestPatch(TestBasic):
         self.env.make_snapshot('{0}_and_patch'.format(self.snapshot))
 
     # TODO (tleontovich) enable if rollback will be available
-    #@test(depends_on=[deploy_and_patch])
+    # @test(depends_on=[deploy_and_patch])
     @log_snapshot_on_error
     def deploy_and_rollback(self):
         """Rollback/Downgrade os on reverted env
