@@ -18,6 +18,7 @@ from proboscis import test
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers import http
+from fuelweb_test.helpers import os_actions
 from fuelweb_test import settings as hlp
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
@@ -85,8 +86,10 @@ class SimpleZabbix(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+            os_conn, smiles_count=6, networks_count=1, timeout=300)
 
         self.fuel_web.verify_network(cluster_id)
 

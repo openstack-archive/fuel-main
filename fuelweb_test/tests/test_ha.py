@@ -20,6 +20,7 @@ from proboscis import test
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers import os_actions
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
@@ -51,14 +52,16 @@ class TestHaVLAN(TestBasic):
         """
         self.env.revert_snapshot("ready_with_5_slaves")
 
+        data = {
+            'tenant': 'novaHAVlan',
+            'user': 'novaHAVlan',
+            'password': 'novaHAVlan'
+        }
+
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_HA,
-            settings={
-                'tenant': 'novaHAVlan',
-                'user': 'novaHAVlan',
-                'password': 'novaHAVlan'
-            }
+            settings=data
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -74,11 +77,14 @@ class TestHaVLAN(TestBasic):
             cluster_id, amount=8, network_size=32
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=16, networks_count=8, timeout=300)
 
-        #self.fuel_web.check_fixed_network_cidr(
-        #    cluster_id, self.env.get_ssh_to_remote_by_name('slave-01'))
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_public_vip(cluster_id),
+            data['user'], data['password'], data['tenant'])
+
+        self.fuel_web.assert_cluster_ready(
+            os_conn, smiles_count=16, networks_count=8, timeout=300)
+
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
@@ -113,14 +119,16 @@ class TestHaFlat(TestBasic):
         """
         self.env.revert_snapshot("ready_with_5_slaves")
 
+        data = {
+            'tenant': 'novaHaFlat',
+            'user': 'novaHaFlat',
+            'password': 'novaHaFlat'
+        }
+
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_HA,
-            settings={
-                'tenant': 'novaHaFlat',
-                'user': 'novaHaFlat',
-                'password': 'novaHaFlat'
-            }
+            settings=data
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -133,8 +141,11 @@ class TestHaFlat(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_public_vip(cluster_id),
+            data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=16, networks_count=1, timeout=300)
+            os_conn, smiles_count=16, networks_count=1, timeout=300)
 
         self.fuel_web.verify_network(cluster_id)
 
@@ -186,8 +197,10 @@ class TestHaFlatAddCompute(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_public_vip(cluster_id))
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=16, networks_count=1, timeout=300)
+            os_conn, smiles_count=16, networks_count=1, timeout=300)
 
         self.env.bootstrap_nodes(self.env.nodes().slaves[5:6])
         self.fuel_web.update_nodes(
@@ -296,8 +309,10 @@ class BackupRestoreHa(TestBasic):
         self.env.revert_snapshot("deploy_ha_flat")
 
         cluster_id = self.fuel_web.get_last_created_cluster()
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_public_vip(cluster_id))
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=16, networks_count=1, timeout=300)
+            os_conn, smiles_count=16, networks_count=1, timeout=300)
         self.fuel_web.backup_master(self.env.get_admin_remote())
         checkers.backup_check(self.env.get_admin_remote())
         self.env.bootstrap_nodes(self.env.nodes().slaves[5:6])
