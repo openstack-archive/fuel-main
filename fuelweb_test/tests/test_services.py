@@ -23,6 +23,7 @@ from proboscis.asserts import assert_equal
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.common import Common
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers import os_actions
 from fuelweb_test import settings
 from fuelweb_test import logger as LOGGER
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -86,15 +87,17 @@ class SaharaSimple(TestBasic):
                 'slave-02': ['compute']
             }
         )
+        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
+        os_conn = os_actions.OpenStackActions(
+            controller['ip'], data['user'], data['password'], data['tenant'])
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=5, networks_count=1, timeout=300)
+            os_conn, smiles_count=5, networks_count=1, timeout=300)
 
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='sahara-api')
 
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         common_func = Common(controller['ip'], data['user'], data['password'],
                              data['tenant'])
 
@@ -186,15 +189,20 @@ class SaharaHA(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        cluster_vip = self.fuel_web.get_public_vip(cluster_id)
+
+        os_conn = os_actions.OpenStackActions(
+            cluster_vip, data['user'], data['password'], data['tenant'])
+
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=13, networks_count=1, timeout=300)
+            os_conn, smiles_count=13, networks_count=1, timeout=300)
 
         for slave in ["slave-01", "slave-02", "slave-03"]:
             checkers.verify_service(
                 self.env.get_ssh_to_remote_by_name(slave),
                 service_name='sahara-api')
 
-        cluster_vip = self.fuel_web.get_public_vip(cluster_id)
         common_func = Common(cluster_vip, data['user'], data['password'],
                              data['tenant'])
 
@@ -283,14 +291,17 @@ class MuranoSimple(TestBasic):
                 'slave-02': ['compute']
             }
         )
+
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
+        os_conn = os_actions.OpenStackActions(
+            controller['ip'], data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=5, networks_count=1, timeout=300)
+            os_conn, smiles_count=5, networks_count=1, timeout=300)
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='murano-api')
 
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         common_func = Common(controller['ip'], data['user'], data['password'],
                              data['tenant'])
 
@@ -404,14 +415,16 @@ class MuranoHA(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        cluster_vip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            cluster_vip, data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=13, networks_count=1, timeout=300)
+            os_conn, smiles_count=13, networks_count=1, timeout=300)
         for slave in ["slave-01", "slave-02", "slave-03"]:
             checkers.verify_service(
                 self.env.get_ssh_to_remote_by_name(slave),
                 service_name='murano-api')
 
-        cluster_vip = self.fuel_web.get_public_vip(cluster_id)
         common_func = Common(cluster_vip, data['user'], data['password'],
                              data['tenant'])
 
@@ -775,14 +788,16 @@ class HeatSimple(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
+        os_conn = os_actions.OpenStackActions(
+            controller['ip'], data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=5, networks_count=1, timeout=300)
+            os_conn, smiles_count=5, networks_count=1, timeout=300)
 
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='heat-api', count=3)
 
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         common_func = Common(controller['ip'],
                              data['user'],
                              data['password'],
@@ -864,14 +879,16 @@ class HeatSimple(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
+        os_conn = os_actions.OpenStackActions(
+            controller['ip'], data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+            os_conn, smiles_count=6, networks_count=1, timeout=300)
 
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='heat-api', count=3)
 
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         common_func = Common(controller['ip'],
                              data['user'],
                              data['password'],
@@ -965,15 +982,16 @@ class HeatHA(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        cluster_vip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            cluster_vip, data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=13, networks_count=1, timeout=300)
+            os_conn, smiles_count=13, networks_count=1, timeout=300)
 
         for slave in ["slave-01", "slave-02", "slave-03"]:
             checkers.verify_service(
                 self.env.get_ssh_to_remote_by_name(slave),
                 service_name='heat-api', count=3)
-
-        cluster_vip = self.fuel_web.get_public_vip(cluster_id)
 
         common_func = Common(cluster_vip,
                              data['user'],

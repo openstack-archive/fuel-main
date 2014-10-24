@@ -60,8 +60,10 @@ class OneNodeDeploy(TestBasic):
             {'slave-01': ['controller']}
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
+        os_conn = os_actions.OpenStackActions(controller['ip'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=4, networks_count=1, timeout=300)
+            os_conn, smiles_count=4, networks_count=1, timeout=300)
         self.fuel_web.run_single_ostf_test(
             cluster_id=cluster_id, test_sets=['sanity'],
             test_name=('fuel_health.tests.sanity.test_sanity_identity'
@@ -92,14 +94,17 @@ class SimpleFlat(TestBasic):
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
+        data = {
+            'tenant': 'novaSimpleFlat',
+            'user': 'novaSimpleFlat',
+            'password': 'novaSimpleFlat'
+
+        }
+
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_SIMPLE,
-            settings={
-                'tenant': 'novaSimpleFlat',
-                'user': 'novaSimpleFlat',
-                'password': 'novaSimpleFlat'
-            }
+            settings=data
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -110,8 +115,11 @@ class SimpleFlat(TestBasic):
         )
         self.fuel_web.update_internal_network(cluster_id, '10.1.0.0/24')
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'],
+            data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+            os_conn, smiles_count=6, networks_count=1, timeout=300)
         self.fuel_web.check_fixed_network_cidr(
             cluster_id, self.env.get_ssh_to_remote_by_name('slave-01'))
 
@@ -219,8 +227,10 @@ class SimpleFlat(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+            os_conn, smiles_count=6, networks_count=1, timeout=300)
 
         ebtables = self.env.get_ebtables(
             cluster_id, self.env.nodes().slaves[:2])
@@ -256,14 +266,17 @@ class SimpleFlat(TestBasic):
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
+        data = {
+            'tenant': 'flatAddCompute',
+            'user': 'flatAddCompute',
+            'password': 'flatAddCompute'
+
+        }
+
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_SIMPLE,
-            settings={
-                'tenant': 'flatAddCompute',
-                'user': 'flatAddCompute',
-                'password': 'flatAddCompute'
-            }
+            settings=data
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -273,8 +286,11 @@ class SimpleFlat(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'],
+            data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+            os_conn, smiles_count=6, networks_count=1, timeout=300)
 
         self.fuel_web.update_nodes(
             cluster_id, {'slave-03': ['compute']}, True, False)
@@ -284,7 +300,7 @@ class SimpleFlat(TestBasic):
             3, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))
 
         self.fuel_web.assert_cluster_ready(
-            "slave-01", smiles_count=8, networks_count=1, timeout=300)
+            os_conn, smiles_count=8, networks_count=1, timeout=300)
         self.env.verify_node_service_list("slave-02", 8)
         self.env.verify_node_service_list("slave-03", 8)
 
@@ -318,14 +334,16 @@ class SimpleVlan(TestBasic):
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
+        data = {
+            'tenant': 'novaSimpleVlan',
+            'user': 'novaSimpleVlan',
+            'password': 'novaSimpleVlan'
+        }
+
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_SIMPLE,
-            settings={
-                'tenant': 'novaSimpleVlan',
-                'user': 'novaSimpleVlan',
-                'password': 'novaSimpleVlan'
-            }
+            settings=data
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -334,11 +352,17 @@ class SimpleVlan(TestBasic):
                 'slave-02': ['compute']
             }
         )
+
         self.fuel_web.update_vlan_network_fixed(
             cluster_id, amount=8, network_size=32)
         self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'],
+            data['user'], data['password'], data['tenant'])
+
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=8, timeout=300)
+            os_conn, smiles_count=6, networks_count=8, timeout=300)
 
         self.fuel_web.verify_network(cluster_id)
 
@@ -369,14 +393,16 @@ class MultiroleControllerCinder(TestBasic):
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
+        data = {
+            'tenant': 'multirolecinder',
+            'user': 'multirolecinder',
+            'password': 'multirolecinder'
+        }
+
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_SIMPLE,
-            settings={
-                'tenant': 'multirolecinder',
-                'user': 'multirolecinder',
-                'password': 'multirolecinder'
-            }
+            settings=data
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -531,8 +557,12 @@ class SimpleCinder(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
+
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+            os_conn, smiles_count=6, networks_count=1, timeout=300)
 
         self.fuel_web.check_fixed_network_cidr(
             cluster_id, self.env.get_ssh_to_remote_by_name('slave-01'))
@@ -670,8 +700,11 @@ class NodeDiskSizes(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
+
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+            os_conn, smiles_count=6, networks_count=1, timeout=300)
 
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
@@ -863,8 +896,10 @@ class BackupRestoreSimple(TestBasic):
         self.env.revert_snapshot("deploy_simple_flat")
 
         cluster_id = self.fuel_web.get_last_created_cluster()
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+            os_conn, smiles_count=6, networks_count=1, timeout=300)
         self.fuel_web.backup_master(self.env.get_admin_remote())
         checkers.backup_check(self.env.get_admin_remote())
 

@@ -280,9 +280,21 @@ class OpenStackActions(common.Common):
                 return router
         return None
 
+    def get_image_list(self):
+        return self.glance.images.list()
+
     def get_image(self, image_name):
-        image_list = self.glance.images.list()
+        image_list = self.get_image_list()
         for img in image_list:
             if img.name == image_name:
                 return img
         return None
+
+    def get_image_data(self, image_name):
+        return self.glance.images.data(image_name)
+
+    def get_nova_service_list(self):
+        return self.nova.services.list()
+
+    def get_nova_network_list(self):
+        return self.nova.networks.list()
