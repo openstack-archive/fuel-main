@@ -781,9 +781,14 @@ class HeatHA(TestBasic):
             test_classes.append('{0}.{1}'.format(test_class_main,
                                                  test_name))
 
-        for test_name in test_classes:
+        failed_names = [['{0}.test_autoscaling'.format(test_class_main)],
+                        []]
+
+        for test_name, failed_test_name in zip(test_classes, failed_names):
             self.fuel_web.run_single_ostf_test(
                 cluster_id=cluster_id, test_sets=['platform_tests'],
-                test_name=test_name, timeout=60 * 60)
+                test_name=test_name, timeout=60 * 60,
+                should_fail=len(failed_test_name),
+                failed_test_name=failed_test_name)
 
         self.env.make_snapshot("deploy_heat_ha")
