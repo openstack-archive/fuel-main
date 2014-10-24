@@ -35,7 +35,6 @@ esac
 # create host-only interfaces
 ./actions/create-interfaces.sh || exit 1
 
-
 # Create and launch master node
 ./actions/master-node-create-and-install.sh || exit 1
 
