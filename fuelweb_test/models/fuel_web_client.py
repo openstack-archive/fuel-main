@@ -68,10 +68,10 @@ class FuelWebClient(object):
 
     @staticmethod
     @logwrap
-    def get_cluster_status(ssh_remote, smiles_count, networks_count=1):
-        checkers.verify_service_list(ssh_remote, smiles_count)
-        checkers.verify_glance_image_list(ssh_remote)
-        checkers.verify_network_list(networks_count, ssh_remote)
+    def get_cluster_status(os_conn, smiles_count, networks_count=1):
+        checkers.verify_service_list_api(os_conn, service_count=smiles_count)
+        checkers.verify_glance_image_api(os_conn)
+        checkers.verify_network_list_api(os_conn, networks_count)
 
     @logwrap
     def _ostf_test_wait(self, cluster_id, timeout):
@@ -103,13 +103,12 @@ class FuelWebClient(object):
                      'Current floating IPs {0}'.format(current_ips))
 
     @logwrap
-    def assert_cluster_ready(self, node_name, smiles_count,
+    def assert_cluster_ready(self, os_conn, smiles_count,
                              networks_count=1, timeout=300):
         logger.info('Assert cluster services are UP')
-        remote = self.environment.get_ssh_to_remote_by_name(node_name)
         _wait(
             lambda: self.get_cluster_status(
-                remote,
+                os_conn,
                 smiles_count=smiles_count,
                 networks_count=networks_count),
             timeout=timeout)

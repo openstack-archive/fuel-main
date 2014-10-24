@@ -16,6 +16,7 @@ from proboscis.asserts import assert_equal
 from proboscis import test
 
 from fuelweb_test.helpers import common
+from fuelweb_test.helpers import os_actions
 from fuelweb_test import settings
 from fuelweb_test import logger
 from fuelweb_test.tests import base_test_case
@@ -57,17 +58,18 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        controller_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        os_conn = os_actions.OpenStackActions(controller_ip)
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+            os_conn, smiles_count=6, networks_count=1, timeout=300)
 
         self.fuel_web.verify_network(cluster_id)
         logger.info('PASS DEPLOYMENT')
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
         logger.info('PASS OSTF')
-        logger.info('Get controller ip')
-        controller_ip = self.fuel_web.get_nailgun_node_by_name(
-            'slave-01')['ip']
+
         logger.info('Destroy admin node...')
         self.env.nodes().admin.destroy()
         logger.info('Admin node destroyed')
