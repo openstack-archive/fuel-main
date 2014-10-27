@@ -435,6 +435,7 @@ class EnvironmentModel(object):
         remote_date = remote.execute('date')['stdout']
         logger.info("Node time: %s" % remote_date)
 
+    @retry()
     @logwrap
     def sync_time_admin_node(self):
         logger.info("Sync time on revert for admin")
@@ -450,6 +451,7 @@ class EnvironmentModel(object):
         except AssertionError as e:
             logger.warning('Error occurred while synchronizing time on master'
                            ': {0}'.format(e))
+            raise
         else:
             self.execute_remote_cmd(remote, 'service ntpd stop && ntpd -qg && '
                                             'service ntpd start')
