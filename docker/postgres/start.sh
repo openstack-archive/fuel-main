@@ -6,7 +6,11 @@ rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
 puppet apply -v /etc/puppet/modules/nailgun/examples/postgres-only.pp
-
-service postgresql stop
-
-sudo -u postgres /usr/bin/postmaster -p 5432 -D /var/lib/pgsql/data
+if [ -f '/etc/init.d/postgresql' ]; then
+  service postgresql stop
+  sudo -u postgres /usr/bin/postmaster -p 5432 -D /var/lib/pgsql/data
+else
+  pgver=$(rpm -q --queryformat '%{VERSION}' postgresql | cut -c'1-3')
+  service "postgresql-${pgver}" stop
+  sudo -u postgres "/usr/pgsql-${pgver}/bin/postmaster" -p 5432 -D "/var/lib/pgsql/${pgver}/data"
+fi
