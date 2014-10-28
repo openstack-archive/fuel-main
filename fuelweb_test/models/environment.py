@@ -13,6 +13,7 @@
 #    under the License.
 
 import time
+import traceback
 import yaml
 
 from devops.helpers.helpers import _get_file_size
@@ -31,6 +32,7 @@ from fuelweb_test.helpers.decorators import revert_info
 from fuelweb_test.helpers.decorators import retry
 from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.helpers.eb_tables import Ebtables
+from fuelweb_test.helpers.fuel_actions import FuelActions
 from fuelweb_test.models.fuel_web_client import FuelWebClient
 from fuelweb_test import settings
 from fuelweb_test import logwrap
@@ -52,6 +54,10 @@ class EnvironmentModel(object):
         self.manager = Manager()
         self.os_image = os_image
         self._fuel_web = FuelWebClient(self.get_admin_node_ip(), self)
+
+    @property
+    def nailgun_actions(self):
+        return FuelActions.Nailgun(self.get_admin_remote())
 
     def _get_or_create(self):
         try:
@@ -330,6 +336,11 @@ class EnvironmentModel(object):
                     net_name).ip_network).netmask)
 
     def make_snapshot(self, snapshot_name, description="", is_make=False):
+        if settings.FUEL_STATS_ENABLED:
+            try:
+                self.nailgun_actions.force_fuel_stats_sending()
+            except Exception:
+                logger.error(traceback.format_exc())
         if settings.MAKE_SNAPSHOT or is_make:
             self.get_virtual_environment().suspend(verbose=False)
             self.get_virtual_environment().snapshot(snapshot_name, force=True)
@@ -447,6 +458,15 @@ class EnvironmentModel(object):
         time.sleep(10)
         self.set_admin_keystone_password()
         self.sync_time_admin_node()
+        if settings.FUEL_STATS_ENABLED:
+            self.nailgun_actions.set_collector_address(
+                settings.FUEL_STATS_HOST,
+                settings.FUEL_STATS_PORT,
+                settings.FUEL_STATS_SSL)
+            self.fuel_web.client.send_fuel_stats(enabled=True)
+            logger.info('Enabled sending of statistics to {0}:{1}'.format(
+                settings.FUEL_STATS_HOST, settings.FUEL_STATS_PORT
+            ))
 
     @upload_manifests
     def wait_for_provisioning(self):
@@ -611,8 +631,8 @@ class EnvironmentModel(object):
     def execute_remote_cmd(self, remote, cmd, exit_code=0):
         result = remote.execute(cmd)
         assert_equal(result['exit_code'], exit_code,
-                     'Failed to execute "{0}" on remote host: {1}'.
-                     format(cmd, result['stderr']))
+                     'Failed to execute "{0}" on remote host: {1}; {2}'.
+                     format(cmd, result['stdout'], result['stderr']))
         return result['stdout']
 
 
