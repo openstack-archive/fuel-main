@@ -36,8 +36,8 @@ class TestHaVLAN(TestBasic):
 
         Scenario:
             1. Create cluster
-            2. Add 3 nodes with controller roles
-            3. Add 2 nodes with compute roles
+            2. Add 3 nodes with controller and cinder roles
+            3. Add 2 nodes with compute role
             4. Set up cluster to use Network VLAN manager with 8 networks
             5. Deploy the cluster
             6. Validate cluster was set up correctly, there are no dead
@@ -63,9 +63,9 @@ class TestHaVLAN(TestBasic):
         self.fuel_web.update_nodes(
             cluster_id,
             {
-                'slave-01': ['controller'],
-                'slave-02': ['controller'],
-                'slave-03': ['controller'],
+                'slave-01': ['controller', 'cinder'],
+                'slave-02': ['controller', 'cinder'],
+                'slave-03': ['controller', 'cinder'],
                 'slave-04': ['compute'],
                 'slave-05': ['compute']
             }

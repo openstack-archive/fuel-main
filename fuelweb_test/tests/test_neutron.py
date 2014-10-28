@@ -270,7 +270,7 @@ class NeutronVlanHa(TestBasic):
 
         Scenario:
             1. Create cluster
-            2. Add 3 nodes with controller role
+            2. Add 3 nodes with controller role and cinder role
             3. Add 2 nodes with compute role
             4. Deploy the cluster
             5. Run network verification
@@ -293,9 +293,9 @@ class NeutronVlanHa(TestBasic):
         self.fuel_web.update_nodes(
             cluster_id,
             {
-                'slave-01': ['controller'],
-                'slave-02': ['controller'],
-                'slave-03': ['controller'],
+                'slave-01': ['controller', 'cinder'],
+                'slave-02': ['controller', 'cinder'],
+                'slave-03': ['controller', 'cinder'],
                 'slave-04': ['compute'],
                 'slave-05': ['compute']
             }
