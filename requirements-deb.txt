@@ -117,6 +117,7 @@ manpages-dev
 mc
 mcelog
 mcollective
+mdadm
 memcached
 mlnx-ofed-light
 mongodb-clients
