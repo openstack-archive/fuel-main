@@ -122,6 +122,7 @@ memcached
 mlnx-ofed-light
 mongodb-clients
 mongodb-server
+monit
 murano-api
 murano-dashboard
 murano-apps
