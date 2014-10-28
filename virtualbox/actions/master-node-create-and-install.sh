@@ -48,6 +48,19 @@ wait_for_product_vm_to_install $vm_master_ip $vm_master_username $vm_master_pass
 # Enable outbound network/internet access for the machine
 enable_outbound_network_for_product_vm $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" 3 $vm_master_nat_gateway
 
+# Checking docker's containets
+functions/./containers-test.sh $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" nailgun
+functions/./containers-test.sh $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" rabbitmq
+functions/./containers-test.sh $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" astute
+functions/./containers-test.sh $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" rsync
+functions/./containers-test.sh $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" keystone
+functions/./containers-test.sh $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" postgres
+functions/./containers-test.sh $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" rsyslog
+functions/./containers-test.sh $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" cobbler
+functions/./containers-test.sh $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" ostf
+functions/./containers-test.sh $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" mcollective
+functions/./containers-test.sh $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" nginx
+
 # Report success
 echo
 echo "Master node has been installed."
