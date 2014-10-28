@@ -342,3 +342,9 @@ GLUSTER_PLUGIN_PATH = os.environ.get('GLUSTER_PLUGIN_PATH')
 GLUSTER_CLUSTER_ENDPOINT = os.environ.get('GLUSTER_CLUSTER_ENDPOINT')
 EXAMPLE_PLUGIN_PATH = os.environ.get('EXAMPLE_PLUGIN_PATH')
 LBAAS_PLUGIN_PATH = os.environ.get('LBAAS_PLUGIN_PATH')
+
+FUEL_STATS_ENABLED = os.environ.get('FUEL_STATS_ENABLED', 'false') == 'true'
+FUEL_STATS_SSL = os.environ.get('FUEL_STATS_SSL', 'true') == 'true'
+FUEL_STATS_HOST = os.environ.get('FUEL_STATS_HOST',
+                                 '172.18.2.169')
+FUEL_STATS_PORT = os.environ.get('FUEL_STATS_PORT', '443')
