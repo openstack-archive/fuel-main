@@ -241,3 +241,7 @@ SNAPSHOT = os.environ.get('SNAPSHOT', '')
 RELEASE_VERSION = os.environ.get('RELEASE_VERSION', '')
 
 UPDATE_TIMEOUT = os.environ.get('UPDATE_TIMEOUT', 3600)
+
+KEYSTONE_CREDS = {'username': os.environ.get('KEYSTONE_USERNAME', 'admin'),
+                  'password': os.environ.get('KEYSTONE_PASSWORD', 'admin'),
+                  'tenant_name': os.environ.get('KEYSTONE_TENANT', 'admin')}
