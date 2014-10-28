@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#    Copyright 2013 Mirantis, Inc.
+#    Copyright 2014 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -16,13 +16,14 @@
 
 #
 # This script creates a master node for the product, launches its installation,
-# and waits for its completion
+# and waits for its completion and check docker containers status
 #
 
 # Include the handy functions to operate VMs and track ISO installation progress
 source config.sh
 source functions/vm.sh
 source functions/product.sh
+source functions/containers-test.sh
 
 # Create master node for the product
 name="${vm_name_prefix}master"
@@ -47,6 +48,61 @@ wait_for_product_vm_to_install $vm_master_ip $vm_master_username $vm_master_pass
 
 # Enable outbound network/internet access for the machine
 enable_outbound_network_for_product_vm $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" 3 $vm_master_nat_gateway
+
+# Checking docker's containers
+## Create test script
+create_test_script $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
+# Check container's statuses
+for container_name in nginx nailgun rabbitmq astute rsync keystone postgres rsyslog cobbler ostf mcollective;  do
+    container_status $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" $container_name
+    task_status=$?
+if [[ $task_status == 1 ]]; then
+          echo "Waiting for $container_name container ..."
+          count=0
+             while [[ $count -ne 30 ]]; do
+               (( count++ ))
+               echo -ne "."
+               sleep 1
+             done
+             echo -e '\n'
+          container_status $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" $container_name
+          task_status_after_waiting=$?
+               if [[ $task_status_after_waiting == 1 ]]; then
+                    yellow='\e[0;33m'
+                    NORMAL='\033[0m'
+                     touch container-errors.log
+                     echo "############################################################" >> container-errors.log
+                     echo "$container_name container"
+                     echo "$container_name container" >> container-errors.log
+                     echo "Unable to start $container_name docker container."
+                     echo "Unable to start $container_name docker container." >> container-errors.log
+                     echo "Try to check it mannually by commands:"
+                     echo "Try to check it mannually by commands:" >> container-errors.log
+                     echo "Start container:"
+                     echo "Start container:" >> container-errors.log
+                     echo "dockerctl start $container_name"
+                     echo "dockerctl start $container_name" >> container-errors.log
+                     echo "Stop container:"
+                     echo "Stop container:" >> container-errors.log
+                     echo "dockerctl stop $container_name"
+                     echo "dockerctl stop $container_name" >> container-errors.log
+                     echo "Restart container:"
+                     echo "Restart container:" >>container-errors.log
+                     echo "dockerctl restart $container_name"
+                     echo "dockerctl restart $container_name" >> container-errors.log
+                     echo "Check container status:"
+                     echo "Check container status:" >> container-errors.log
+                     echo "dockerctl check $container_name"
+                     echo "dockerctl check $container_name" >> container-errors.log
+                     echo -e "\n" >> container-errors.log
+                     echo -e "${yellow}!!!       An error occured while checking container(s).          !!!${NORMAL}"
+                     echo -e "${yellow}!!!  Refer to the log file container-errors.log for details.   !!!${NORMAL}"
+               fi
+fi
+done
+
+# Remove test script from fuel master node
+remove_test_script $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
 
 # Report success
 echo
