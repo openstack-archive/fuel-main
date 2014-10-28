@@ -253,3 +253,7 @@ LOCAL_MIRROR_CENTOS = os.environ.get('LOCAL_MIRROR_CENTOS',
                                      '/var/www/nailgun/centos/x86_64')
 
 UPDATE_TIMEOUT = os.environ.get('UPDATE_TIMEOUT', 3600)
+
+DEFAULT_KEYSTONE_CREDS = {'username': 'admin',
+                          'password': 'admin',
+                          'tenant_name': 'admin'}
