@@ -17,6 +17,8 @@
 #
 # This script check availble memory on host PC for quality provision VMs via VirtualBox
 #
+source ./config.sh
+source ./functions/memory.sh
 
 total_memory=$(get_available_memory $os_type)
 
