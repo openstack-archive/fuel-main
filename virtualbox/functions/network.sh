@@ -20,6 +20,15 @@ get_hostonly_interfaces() {
   echo -e `VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`
 }
 
+get_demo_hostonly_interfaces() {
+  local interfaces=""
+  for ip in $master_ips; do
+    interface=`VBoxManage list hostonlyifs | grep -B5 $ip | grep ^Name | cut -f2 -d: | tr -d ' '`
+    interfaces+=" $interface"
+  done
+  echo "$interfaces"
+}
+
 is_hostonly_interface_present() {
   name=$1
 # String comparison with IF works different in Cygwin, probably due to encoding.
@@ -143,8 +152,9 @@ create_hostonly_interface() {
 
 delete_all_hostonly_interfaces() {
   OIFS=$IFS;IFS=",";list=(`VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`);IFS=$OIFS
-  # Delete every single hostonly interface in the system
-  for interface in "${list[@]}"; do
+  # Delete every demo hostonly interface
+  demo_interfaces=$(get_demo_hostonly_interfaces)
+  for interface in $demo_interfaces; do
     echo "Deleting host-only interface: $interface..."
     VBoxManage hostonlyif remove "$interface"
   done

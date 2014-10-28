@@ -32,7 +32,8 @@ idx=0
 # 172.16.1.1/24  - OpenStack Fixed/Internal/Private network
 # 192.168.0.1/24 - OpenStack Management network
 # 192.168.1.1/24 - OpenStack Storage network (for Ceph, Swift etc)
-for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
+master_ips="10.20.0.1 172.16.0.1 172.16.1.1"
+for ip in $master_ips; do
 # VirtualBox for Windows has different virtual NICs naming and indexing
   case "$(uname)" in
     Linux)
