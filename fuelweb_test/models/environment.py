@@ -31,6 +31,7 @@ from fuelweb_test.helpers.decorators import revert_info
 from fuelweb_test.helpers.decorators import retry
 from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.helpers.eb_tables import Ebtables
+from fuelweb_test.helpers.fuel_actions import FuelActions
 from fuelweb_test.helpers import multiple_networks_hacks
 from fuelweb_test.models.fuel_web_client import FuelWebClient
 from fuelweb_test import settings
@@ -55,6 +56,10 @@ class EnvironmentModel(object):
         self.manager = Manager()
         self.os_image = os_image
         self._fuel_web = FuelWebClient(self.get_admin_node_ip(), self)
+
+    @property
+    def nailgun_actions(self):
+        return FuelActions.Nailgun(self.get_admin_remote())
 
     def _get_or_create(self):
         try:
@@ -354,6 +359,8 @@ class EnvironmentModel(object):
             self.get_virtual_environment().suspend(verbose=False)
             self.get_virtual_environment().snapshot(snapshot_name, force=True)
             revert_info(snapshot_name, description)
+        if settings.FUEL_STATS_ENABLED:
+            self.get_virtual_environment().resume()
 
     def nailgun_nodes(self, devops_nodes):
         return map(
@@ -471,6 +478,15 @@ class EnvironmentModel(object):
             self.describe_second_admin_interface()
             multiple_networks_hacks.configure_second_admin_cobbler(self)
             multiple_networks_hacks.configure_second_dhcrelay(self)
+        self.nailgun_actions.set_collector_address(
+            settings.FUEL_STATS_HOST,
+            settings.FUEL_STATS_PORT,
+            settings.FUEL_STATS_SSL)
+        if settings.FUEL_STATS_ENABLED:
+            self.fuel_web.client.send_fuel_stats(enabled=True)
+            logger.info('Enabled sending of statistics to {0}:{1}'.format(
+                settings.FUEL_STATS_HOST, settings.FUEL_STATS_PORT
+            ))
 
     @upload_manifests
     def wait_for_provisioning(self):
