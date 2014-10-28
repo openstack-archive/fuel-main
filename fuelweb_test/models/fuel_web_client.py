@@ -1273,3 +1273,55 @@ class FuelWebClient(object):
 
     def get_public_vip(self, cluster_id):
         return self.client.get_networks(cluster_id)['public_vip']
+
+    def update_nailgun_settings_once(self, settings):
+        file = '/etc/nailgun/settings.yaml'
+        admin_remote = self.environment.get_admin_remote()
+        ng_settings = yaml.load(''.join(self.environment.execute_remote_cmd(
+            admin_remote,
+            'dockerctl shell nailgun cat {0}'.format(file))))
+        for setting in settings.keys():
+            ng_settings[setting] = settings[setting]
+        logger.debug('Uploading new nailgun settings')
+        logger.debug(ng_settings)
+        self.environment.execute_remote_cmd(
+            admin_remote,
+            'echo "{0}" | dockerctl shell nailgun tee {1}'.format(
+                yaml.dump(ng_settings), file))
+
+    def set_collector_address(self, host, port, ssl=False):
+        admin_remote = self.environment.get_admin_remote()
+        cmd = ("dockerctl shell nailgun awk '/COLLECTOR.*URL/' "
+               "/usr/lib/python2.6/site-packages/nailgun/settings.yaml")
+        protocol = 'http' if not ssl else 'https'
+        parameters = {}
+        for p in self.environment.execute_remote_cmd(admin_remote, cmd):
+            parameters[p.rstrip().split(': ')[0]] = re.sub(
+                r'https?://\{collector_server\}',
+                '{0}://{1}:{2}'.format(protocol, host, port),
+                p.rstrip().split(': ')[1])[1:-1]
+        logger.debug('Default collector parameters:')
+        logger.debug(parameters)
+        self.update_nailgun_settings_once(parameters)
+        if ssl:
+            # test collector server doesn't have trusted SSL cert installed,
+            # so have to use this hack in order to disable cert verification
+            cmd = ("dockerctl shell nailgun sed -i '/elf.verify/ s/True/False"
+                   "/' /usr/lib/python2.6/site-packages/requests/sessions.py")
+            self.environment.execute_remote_cmd(admin_remote, cmd)
+            self.force_fuel_stats_sending()
+
+    def force_fuel_stats_sending(self):
+        admin_remote = self.environment.get_admin_remote()
+        cmd = ('dockerctl shell nailgun mv '
+               '/var/log/nailgun/statsenderd.log{,.bak};'
+               'dockerctl shell nailgun supervisorctl restart statsenderd')
+        self.environment.execute_remote_cmd(admin_remote, cmd)
+        cmd = ('dockerctl shell nailgun grep -w "Traceback" '
+               '/var/log/nailgun/statsenderd.log')
+        try:
+            self.environment.execute_remote_cmd(admin_remote, cmd, exit_code=1)
+        except AssertionError:
+            logger.error(("Fuel stats were sent with errors! "
+                         "Check its logs for details"))
+            raise
