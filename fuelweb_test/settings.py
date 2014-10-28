@@ -253,3 +253,9 @@ LOCAL_MIRROR_CENTOS = os.environ.get('LOCAL_MIRROR_CENTOS',
                                      '/var/www/nailgun/centos/x86_64')
 
 UPDATE_TIMEOUT = os.environ.get('UPDATE_TIMEOUT', 3600)
+
+FUEL_STATS_ENABLED = os.environ.get('FUEL_STATS_ENABLED', 'false') == 'true'
+FUEL_STATS_SSL = os.environ.get('FUEL_STATS_SSL', 'false') == 'true'
+FUEL_STATS_HOST = os.environ.get('FUEL_STATS_HOST',
+                                 'fuel-collect.vm.mirantis.net')
+FUEL_STATS_PORT = os.environ.get('FUEL_STATS_PORT', '443')
