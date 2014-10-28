@@ -337,3 +337,20 @@ class NailgunClient(object):
     def run_update(self, cluster_id):
         return self.client.put(
             "/api/clusters/{0}/update/".format(str(cluster_id)))
+
+    @logwrap
+    @json_parse
+    def update_settings(self, data=None):
+        if data:
+            return self.client.put("/api/settings", data=data)
+        else:
+            return self.client.get('/api/settings')
+
+    @logwrap
+    def send_fuel_stats(self, enabled=False):
+        settings = self.update_settings()
+        settings['settings']['statistics']['send_user_info']['value'] = \
+            enabled
+        settings['settings']['statistics']['user_choice_saved']['value'] = \
+            enabled
+        self.update_settings(data=settings)
