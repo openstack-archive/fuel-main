@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #    Copyright 2013 Mirantis, Inc.
 #
@@ -20,14 +20,34 @@
 
 ssh_options='-oConnectTimeout=5 -oStrictHostKeyChecking=no -oCheckHostIP=no -oUserKnownHostsFile=/dev/null -oRSAAuthentication=no -oPubkeyAuthentication=no'
 
-is_product_vm_operational() {
+wait_for_fuel_menu() {
     ip=$1
     username=$2
     password=$3
     prompt=$4
 
-    # Log in into the VM, see if Puppet has completed its run
-    # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line 
+    echo "Waiting for Fuel Menu so it can be skipped. Please do NOT abort the script..."
+
+    # Loop until master node gets successfully installed
+    maxdelay=3000
+    while ! skip_fuel_menu $ip $username $password "$prompt"; do
+        sleep 5
+        ((waited += 5))
+        if (( waited >= maxdelay )); then
+          echo "Installation timed out! ($maxdelay seconds)" 1>&2
+          exit 1
+        fi
+    done
+}
+
+skip_fuel_menu() {
+    ip=$1
+    username=$2
+    password=$3
+    prompt=$4
+
+    # Log in into the VM, see if Fuel Setup is running or puppet already started
+    # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
     result=$(
         expect << ENDOFEXPECT
         spawn ssh $ssh_options $username@$ip
@@ -35,7 +55,43 @@ is_product_vm_operational() {
         expect "*?assword:*"
         send "$password\r"
         expect "$prompt"
-        send "grep -o 'Fuel node deployment complete' /var/log/puppet/bootstrap_admin_node.log\r"
+        send "pgrep 'fuelmenu|puppet';echo \"returns $?\"\r"
+        expect "$prompt"
+ENDOFEXPECT
+    )
+    if [[ "$result" =~ "returns 0" ]]; then
+      echo "Skipping Fuel Setup..."
+      expect << ENDOFEXPECT
+        spawn ssh $ssh_options $username@$ip
+        expect "connect to host" exit
+        expect "*?assword:*"
+        send "$password\r"
+        expect "$prompt"
+        send "killall -w -SIGUSR1 fuelmenu\r"
+        expect "$prompt"
+ENDOFEXPECT
+      return 0
+    else
+      return 1
+    fi
+}
+
+is_product_vm_operational() {
+    ip=$1
+    username=$2
+    password=$3
+    prompt=$4
+
+    # Log in into the VM, see if Puppet has completed its run
+    # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
+    result=$(
+        expect << ENDOFEXPECT
+        spawn ssh $ssh_options $username@$ip
+        expect "connect to host" exit
+        expect "*?assword:*"
+        send "$password\r"
+        expect "$prompt"
+        send "grep 'Fuel node deployment' /var/log/puppet/bootstrap_admin_node.log\r"
         expect "$prompt"
 ENDOFEXPECT
     )
@@ -51,10 +107,14 @@ ENDOFEXPECT
 
     for line in $result; do
         IFS="${OIFS}"
-        if [[ $line == Fuel* ]]; then
-	    IFS="${NIFS}"
+        if [[ "$line" == Fuel*complete* ]]; then
+            IFS="${NIFS}"
             return 0;
-        fi    
+        elif [[ "$line" == Fuel*FAILED* ]]; then
+            IFS="${NIFS}"
+            echo "$line" 1>&2
+            exit 1
+        fi
         IFS="${NIFS}"
     done
 
@@ -70,8 +130,14 @@ wait_for_product_vm_to_install() {
     echo "Waiting for product VM to install. Please do NOT abort the script..."
 
     # Loop until master node gets successfully installed
+    maxdelay=3000
     while ! is_product_vm_operational $ip $username $password "$prompt"; do
         sleep 5
+        ((waited += 5))
+        if (( waited >= maxdelay )); then
+          echo "Installation timed out! ($maxdelay seconds)" 1>&2
+          exit 1
+        fi
     done
 }
 
@@ -110,12 +176,12 @@ enable_outbound_network_for_product_vm() {
     else
       echo "OK"
     fi
-    
+
     # Enable internet access on inside the VMs
     echo -n "Enabling outbound network/internet access for the product VM... "
 
     # Log in into the VM, configure and bring up the NAT interface, set default gateway, check internet connectivity
-    # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line 
+    # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
     result=$(
         expect << ENDOFEXPECT
         spawn ssh $ssh_options $username@$ip

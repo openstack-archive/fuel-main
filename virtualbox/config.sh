@@ -14,7 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-source functions/memory.sh
+source ./functions/memory.sh
 
 # Get the first available ISO from the directory 'iso'
 iso_path=`ls -1t iso/*.iso 2>/dev/null | head -1`
@@ -22,45 +22,41 @@ iso_path=`ls -1t iso/*.iso 2>/dev/null | head -1`
 # Every Mirantis OpenStack machine name will start from this prefix
 vm_name_prefix=fuel-
 
-# Host interfaces to bridge VMs interfaces with
-# VirtualBox has different virtual NIC naming convention and index base
-# between Windows and Linux/MacOS
-idx=0
+# By default, all available network interfaces vboxnet won't be removed, 
+# if their IP addresses don't match with fuel_master_ips (10.20.0.1 172.16.0.1 
+# 172.16.1.1)
+# If you want to remove all existing vbox interfaces, then use rm_network=1
+# 0 - don't remove all vbox networks. Remove only fuel networks if they exist
+# 1 - remove all vbox networks
+rm_network=0
+
 # Please add the IPs accordingly if you going to create non-default NICs number
 # 10.20.0.1/24   - Mirantis OpenStack Admin network
 # 172.16.0.1/24  - OpenStack Public/External/Floating network
 # 172.16.1.1/24  - OpenStack Fixed/Internal/Private network
 # 192.168.0.1/24 - OpenStack Management network
 # 192.168.1.1/24 - OpenStack Storage network (for Ceph, Swift etc)
-for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
-# VirtualBox for Windows has different virtual NICs naming and indexing
-  case "$(uname)" in
-    Linux)
-      host_nic_name[$idx]=vboxnet$idx
+fuel_master_ips="10.20.0.1 172.16.0.1 172.16.1.1"
+
+# Network mask for fuel interfaces
+mask="255.255.255.0"
+
+# Determination of the type operating system
+case "$(uname)" in
+  Linux)
       os_type="linux"
     ;;
-    Darwin)
-      host_nic_name[$idx]=vboxnet$idx
+  Darwin)
       os_type="darwin"
     ;;
-    CYGWIN*)
-      if [ $idx -eq 0 ]; then
-        host_nic_name[$idx]='VirtualBox Host-Only Ethernet Adapter'
-      else
-        host_nic_name[$idx]='VirtualBox Host-Only Ethernet Adapter #'$((idx+1))
-      fi
+  CYGWIN*)
       os_type="cygwin"
     ;;
     *)
       echo "$(uname) is not supported operating system."
       exit 1
     ;;
-  esac
-  host_nic_ip[$idx]=$ip
-  host_nic_mask[$idx]=255.255.255.0
-  idx=$((idx+1))
-done
-
+esac
 
 # Master node settings
 vm_master_cpu_cores=1
@@ -76,6 +72,7 @@ vm_master_nat_gateway=192.168.200.2
 #   (i.e. if you pressed Tab in a boot loader and modified params),
 #   make sure that these values reflect that change.
 vm_master_ip=10.20.0.2
+
 vm_master_username=root
 vm_master_password=r00tme
 vm_master_prompt='root@fuel ~]#'
@@ -161,11 +158,11 @@ elif [ "$CONFIG_FOR" = "4GB" ]; then
   vm_slave_memory_mb[2]=1024
 else
   # Section for custom configuration
-  vm_slave_memory_default=1024
+   vm_slave_memory_default=1024
 
-  vm_slave_memory_mb[1]=2048
-  vm_slave_memory_mb[2]=1024
-  vm_slave_memory_mb[3]=1024
+   vm_slave_memory_mb[1]=2048
+   vm_slave_memory_mb[2]=1024
+   vm_slave_memory_mb[3]=1024
 fi
 
 # Within demo cluster created by this script, all slaves (controller
@@ -178,3 +175,7 @@ fi
 vm_slave_first_disk_mb=65535
 vm_slave_second_disk_mb=65535
 vm_slave_third_disk_mb=65535
+
+# Set to 1 to run VirtualBox in headless mode
+headless=0
+skipfuelmenu="no"

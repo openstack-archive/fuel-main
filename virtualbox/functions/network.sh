@@ -20,6 +20,16 @@ get_hostonly_interfaces() {
   echo -e `VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`
 }
 
+get_fuel_ifaces() {
+  local fuel_iface
+  local num_fuel_iface
+  fuel_ifaces=""  
+  for ip in $fuel_master_ips; do    
+    fuel_iface=`VBoxManage list hostonlyifs | grep -B5 $ip | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`    
+    fuel_ifaces+="$fuel_iface"
+  done
+}
+
 is_hostonly_interface_present() {
   name=$1
 # String comparison with IF works different in Cygwin, probably due to encoding.
@@ -97,48 +107,57 @@ check_if_iface_settings_applied() {
   return 0
 }
 
-create_hostonly_interface() {
-  name=$1
-  ip=$2
-  mask=$3
-  echo "Creating host-only interface (name ip netmask): $name  $ip  $mask"
 
-  # Exit if the interface already exists (deleting it here is not safe, as VirtualBox creates hostonly adapters sequentially)
-  if is_hostonly_interface_present "$name"; then
-    echo "Fatal error. Interface $name cannot be created because it already exists. Exiting"
-    exit 1
-  fi
+create_hostonly_interfaces() {
+  # Creating host-only interface
+  echo "Creating host-only interfaces:"
+  for i in $(eval echo {0..2}); do
+    id=`VBoxManage hostonlyif create | sed "s/'/_/g" | cut -d "_" -f2 | sed "s/^_//" | sed "s/_$//"`
+    echo "Interface" $id "was successfully created"
+    
+    # Exit if the interface already exists (deleting it here is not safe, as VirtualBox creates hostonly adapters sequentially)
+    if ! is_hostonly_interface_present "$id"; then
+      echo "Fatal error. Interface $name does not exist after creation. Exiting"
+      exit 1
+    fi
 
-  VBoxManage hostonlyif create
+    # Disable DHCP
+    echo "Disabling DHCP server on interface: $name..."
+    
+    # These magic 1 second sleeps around DHCP config are required under Windows/Cygwin
+    # due to VBoxSvc COM server accepts next request before previous one is actually finished.
+    sleep 1s
+    VBoxManage dhcpserver remove --ifname "$id" 2>/dev/null
+    sleep 1s
+    
+    # Set up IP address and network mask
+    echo "Configuring IP address $ip and network mask $mask on interface: $name..."
+    current_fuel_ip=`expr $i + 1`
+    ip=(`echo -e $fuel_master_ips | cut -d ' ' -f$current_fuel_ip`)
+    VBoxManage hostonlyif ipconfig "$id" --ip $ip --netmask $mask
 
-  # If it does not exist after creation, let's abort
-  if ! is_hostonly_interface_present "$name"; then
-    echo "Fatal error. Interface $name does not exist after creation. Exiting"
-    exit 1
-  fi
+    # Check what we have created actually.
+    # Sometimes VBox occasionally fails to apply settings to the last IFace under Windows
+    if !(check_if_iface_settings_applied "$id" $ip $mask); then
+      echo "Looks like VirtualBox failed to apply settings for interface $name"
+      echo "Sometimes such error happens under Windows."
+      echo "Please run launch.sh one more time."
+      echo "If this error remains after several attempts, then something really went wrong."
+      echo "Aborting."
+      exit 1
+    fi
+  done
+}
 
-  # Disable DHCP
-  echo "Disabling DHCP server on interface: $name..."
-  # These magic 1 second sleeps around DHCP config are required under Windows/Cygwin
-  # due to VBoxSvc COM server accepts next request before previous one is actually finished.
-  sleep 1s
-  VBoxManage dhcpserver remove --ifname "$name" 2>/dev/null
-  sleep 1s
-  set -x
-  # Set up IP address and network mask
-  echo "Configuring IP address $ip and network mask $mask on interface: $name..."
-  VBoxManage hostonlyif ipconfig "$name" --ip $ip --netmask $mask
-  set +x
-  # Check what we have created actually.
-  # Sometimes VBox occasionally fails to apply settings to the last IFace under Windows
-  if !(check_if_iface_settings_applied "$name" $ip $mask); then
-    echo "Looks like VirtualBox failed to apply settings for interface $name"
-    echo "Sometimes such error happens under Windows."
-    echo "Please run launch.sh one more time."
-    echo "If this error remains after several attempts, then something really went wrong."
-    echo "Aborting."
-    exit 1
-  fi
+delete_fuel_ifaces() {
+  get_fuel_ifaces
+  OIFS=$IFS
+  IFS=","
+  for interface in $fuel_ifaces; do
+    echo "Deleting host-only interface: $interface..."
+    VBoxManage hostonlyif remove "$interface"
+  done
+  IFS=$OIFS
 }
 
 delete_all_hostonly_interfaces() {

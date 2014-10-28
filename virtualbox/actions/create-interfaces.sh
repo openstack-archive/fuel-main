@@ -21,15 +21,16 @@
 #
 
 # Include the script with handy functions to operate VMs and VirtualBox networking
-source config.sh
-source functions/vm.sh
-source functions/network.sh
+source ./config.sh
+source ./functions/vm.sh
+source ./functions/network.sh
 
 # Delete all host-only interfaces
-delete_all_hostonly_interfaces
+if [[ "$rm_network" == 0 ]]; then
+	delete_fuel_ifaces
+else
+	delete_all_hostonly_interfaces
+fi
 
 # Create the required host-only interfaces
-# Change {0..2} to {0..4} below if you are going to create 5 interfaces instead of 3
-for idx in $(eval echo {0..2}); do
-  create_hostonly_interface "${host_nic_name[$idx]}" ${host_nic_ip[$idx]} ${host_nic_mask[$idx]}
-done
+create_hostonly_interfaces
