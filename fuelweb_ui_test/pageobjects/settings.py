@@ -117,7 +117,8 @@ class Settings(PageObject, SettingsFooter):
     @property
     def vlan_splinters(self):
         return self.parent.\
-            find_element_by_xpath(self.XPATH_CHECKBOX.format('vlan_splinters'))
+            find_element_by_xpath(self.XPATH_CHECKBOX.format(
+                                  'vlan_splinters.enabled'))
 
     @property
     def vlan_splinters_disabled(self):
@@ -147,7 +148,8 @@ class Settings(PageObject, SettingsFooter):
     def start_guests(self):
         return self.parent.\
             find_element_by_xpath(
-                self.XPATH_CHECKBOX.format('common.start_guests_on_host_boot'))
+                self.XPATH_CHECKBOX.format(
+                    'common.resume_guests_state_on_host_boot'))
 
     @property
     def auth_key(self):

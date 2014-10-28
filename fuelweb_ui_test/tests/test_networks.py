@@ -69,6 +69,8 @@ class SimpleFlatNetworks(BaseTestCase):
             n.ip_ranges[3].icon_minus.click()
             self.assertEqual(len(n.ip_ranges), 3, 'Minus icon. last row')
             n.ip_ranges[2].start.send_keys(RANGES[0][0])
+            n.ip_ranges[2].end.click()
+            n.ip_ranges[2].end.clear()
             n.ip_ranges[2].end.send_keys(RANGES[0][1])
             n.ip_ranges[1].icon_minus.click()
             self.assertEqual(len(n.ip_ranges), 2, 'Minus icon. second row')
@@ -85,6 +87,7 @@ class SimpleFlatNetworks(BaseTestCase):
             n.ip_ranges[0].end.clear()
             n.ip_ranges[0].end.send_keys(values[0][1])
             n.ip_ranges[1].start.send_keys(values[1][0])
+            n.ip_ranges[1].end.clear()
             n.ip_ranges[1].end.send_keys(values[1][1])
         self._save_settings()
         with getattr(Networks(), network) as n:
@@ -342,7 +345,6 @@ class TestSimpleVlanNetworks(SimpleFlatNetworks):
         """
         BaseTestCase.setUpClass()
         preconditions.Environment.simple_flat()
-        Environments().create_cluster_boxes[0].click()
         Tabs().networks.click()
         with Networks() as n:
             n.vlan_manager.click()
@@ -451,28 +453,6 @@ class TestRangesControls(SimpleFlatNetworks):
         """
         self._test_ranges_minus_icon('public')
 
-    def test_floating_plus_icon(self):
-        """Add new ip ranges for floating network
-
-        Scenario:
-            1. Click on '+' to add new ip range
-            2. Enter values in start and end fields
-            3. Click on '+' to add new ip range after first ip range
-            4. Verify that fields are added after first range
-        """
-        self._test_ranges_plus_icon('floating')
-
-    def test_floating_minus_icon(self):
-        """Delete ip range for floating network
-
-        Scenario:
-            1. Add three new ip ranges
-            2. Enter values in start and end fields of last ip range
-            3. Click on '-' for last but one ip range
-            4. Verify that last ip range values are saved
-        """
-        self._test_ranges_minus_icon('floating')
-
 
 class TestPublicNetwork(SimpleFlatNetworks):
 
@@ -502,19 +482,6 @@ class TestPublicNetwork(SimpleFlatNetworks):
         """
         self._test_use_vlan_tagging('public', '111', False)
 
-    def test_net_mask(self):
-        """Change netmask for public network
-
-        Scenario:
-            1. Enter new value in netmask field
-            2. Click save settings
-            3. Verify that netmask value is saved
-            4. Leave netmask field empty
-            5. Verify that Save settings and
-               Verify Networks buttons are disabled
-        """
-        self._test_text_field('public', 'netmask', '255.255.0.0')
-
     def test_gateway(self):
         """Change gateway for public network
 
@@ -526,50 +493,7 @@ class TestPublicNetwork(SimpleFlatNetworks):
             5. Verify that Save settings and
                Verify Networks buttons are disabled
         """
-        self._test_text_field('public', 'gateway', '172.16.0.2')
-
-
-class TestFloatingNetwork(SimpleFlatNetworks):
-
-    def test_ranges(self):
-        """Ip range for floating network
-
-        Scenario:
-            1. Add one new ip range
-            2. Enter values in start and end field of first and second ip range
-            3. Click save settings
-            4. Verify that values are saved
-            5. Delete values from the first range
-            6. Verify that validation messages are displayed
-        """
-        self._test_ranges('floating', RANGES[2:4])
-
-    def test_use_vlan_tagging(self):
-        """Use VLAN tagging for floating network
-
-        Scenario:
-            1. Enable public VLAN tagging
-            2. Enter value in this field
-            3. Verify that floating VLAN tagging is selected
-               and value is the same as for public VLAN
-            4. Click save settings
-            5. Verify that changes are saved
-        """
-        value = '112'
-        with Networks().public as n:
-            n.vlan_tagging.click()
-            n.vlan_id.send_keys(value)
-        with Networks().floating as n:
-            self.assertTrue(
-                n.vlan_tagging.find_element_by_tag_name('input').is_selected())
-            self.assertEqual(n.vlan_id.get_attribute('value'), value)
-        Networks().save_settings.click()
-        time.sleep(1)
-        self.refresh()
-        with Networks().floating as n:
-            self.assertTrue(
-                n.vlan_tagging.find_element_by_tag_name('input').is_selected())
-            self.assertEqual(n.vlan_id.get_attribute('value'), value)
+        self._test_text_field('public', 'gateway', '172.16.0.1')
 
 
 class TestManagementNetwork(SimpleFlatNetworks):
@@ -716,7 +640,6 @@ class TestFlatVerifyNetworks(BaseTestCase):
         BaseTestCase.clear_nailgun_database()
         BaseTestCase.setUp(self)
         preconditions.Environment.simple_flat()
-        Environments().create_cluster_boxes[0].click()
         Tabs().networks.click()
         time.sleep(1)
 

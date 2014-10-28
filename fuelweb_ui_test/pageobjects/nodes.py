@@ -6,13 +6,14 @@ from pageobjects.base import Popup
 class Nodes(PageObject):
 
     @property
-    def info_icon(self):
-        return self.parent.find_element_by_css_selector('i.icon-info-circled')
+    def env_summary(self):
+        return self.parent.\
+            find_element_by_css_selector('.cluster-summary-placeholder')
 
     @property
     def env_name(self):
         return self.parent.\
-            find_element_by_css_selector('span.btn-cluster-details')
+            find_element_by_css_selector('.cluster-name-placeholder')
 
     @property
     def deploy_changes(self):
@@ -25,10 +26,6 @@ class Nodes(PageObject):
     @property
     def progress_deployment(self):
         return self.parent.find_element_by_css_selector('.progress-deploy')
-
-    @property
-    def env_details(self):
-        return self.parent.find_element_by_css_selector('ul.cluster-details')
 
     @property
     def group_by(self):
@@ -65,25 +62,25 @@ class Nodes(PageObject):
 
     @property
     def nodes(self):
-        elements = self.parent.find_elements_by_css_selector('.node-container')
+        elements = self.parent.find_elements_by_css_selector('.node-box')
         return [NodeContainer(el) for el in elements]
 
     @property
     def nodes_discovered(self):
         elements = self.parent.\
-            find_elements_by_css_selector('.node-container.discover')
+            find_elements_by_css_selector('.node-box.discover')
         return [NodeContainer(el) for el in elements]
 
     @property
     def nodes_offline(self):
         elements = self.parent.\
-            find_elements_by_css_selector('.node-container.node-offline')
+            find_elements_by_css_selector('.node-box.node-offline')
         return [NodeContainer(el) for el in elements]
 
     @property
     def nodes_error(self):
         elements = self.parent.\
-            find_elements_by_css_selector('.node-container.error')
+            find_elements_by_css_selector('.node-box.error')
         return [NodeContainer(el) for el in elements]
 
     @property

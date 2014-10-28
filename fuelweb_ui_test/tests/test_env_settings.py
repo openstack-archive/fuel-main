@@ -79,7 +79,7 @@ class BaseClass(BaseTestCase):
                 find_element_by_tag_name('input').is_selected(), def_value,
                 "load defaults value")
 
-    def _test_radio_group(self, radios):
+    def _test_radio_group(self, radios, nodefault=None):
         radios.reverse()
         for radio in radios:
             with Settings() as s:
@@ -91,15 +91,16 @@ class BaseClass(BaseTestCase):
                 getattr(Settings(), radio).
                 find_element_by_tag_name('input').is_selected())
         # Set group to not default state
-        random_radio = radios[random.randint(0, len(radios) - 2)]
-        with Settings() as s:
-            getattr(s, random_radio).click()
-            s.load_defaults.click()
-            time.sleep(1)
-            self.assertTrue(
-                getattr(s, radios[-1]).
-                find_element_by_tag_name('input').is_selected(),
-                "load defaults value")
+        if not nodefault:
+            random_radio = radios[random.randint(0, len(radios) - 2)]
+            with Settings() as s:
+                getattr(s, random_radio).click()
+                s.load_defaults.click()
+                time.sleep(1)
+                self.assertTrue(
+                    getattr(s, radios[-1]).
+                    find_element_by_tag_name('input').is_selected(),
+                    "load defaults value")
 
 
 class TestAccess(BaseClass):
@@ -267,9 +268,9 @@ class TestCommon(BaseClass):
             4. Click Load defaults
             5. Verify that 'Disabled' is selected
         """
+        Settings().vlan_splinters.click()
         self._test_radio_group(
-            ['vlan_splinters_disabled', 'vlan_splinters_soft',
-             'vlan_splinters_hard'])
+            ['vlan_splinters_soft', 'vlan_splinters_hard'], nodefault=True)
 
     def test_use_cow_images(self):
         """Enable 'Use qcow format for images'
@@ -345,7 +346,7 @@ class TestSyslog(BaseClass):
             4. Click Load defaults
             5. Verify that 'UDP' is selected
         """
-        self._test_radio_group(['syslog_udp', 'syslog_tcp'])
+        self._test_radio_group(['syslog_tcp', 'syslog_udp'])
 
 
 class TestStorage(BaseClass):
@@ -372,6 +373,7 @@ class TestStorage(BaseClass):
             4. Click Load defaults
             5. Verify that 'Ceph for volumes' checkbox is not selected
         """
+        Settings().cinder_for_volumes.click()
         self._test_tumbler_field('ceph_for_volumes')
 
     def test_ceph_for_images(self):
