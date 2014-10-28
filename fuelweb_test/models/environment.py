@@ -13,6 +13,7 @@
 #    under the License.
 
 import time
+import traceback
 import yaml
 
 from devops.helpers.helpers import _get_file_size
@@ -329,6 +330,11 @@ class EnvironmentModel(object):
                     net_name).ip_network).netmask)
 
     def make_snapshot(self, snapshot_name, description="", is_make=False):
+        if settings.FUEL_STATS_ENABLED:
+            try:
+                self.fuel_web.force_fuel_stats_sending()
+            except Exception:
+                logger.error(traceback.format_exc())
         if settings.MAKE_SNAPSHOT or is_make:
             self.get_virtual_environment().suspend(verbose=False)
             self.get_virtual_environment().snapshot(snapshot_name, force=True)
@@ -405,6 +411,14 @@ class EnvironmentModel(object):
         self.wait_bootstrap()
         time.sleep(10)
         self.sync_time_admin_node()
+        if settings.FUEL_STATS_ENABLED:
+            self.fuel_web.set_collector_address(settings.FUEL_STATS_HOST,
+                                                settings.FUEL_STATS_PORT,
+                                                settings.FUEL_STATS_SSL)
+            self.fuel_web.client.send_fuel_stats(enabled=True)
+            logger.info('Enabled sending of statistics to {0}:{1}'.format(
+                settings.FUEL_STATS_HOST, settings.FUEL_STATS_PORT
+            ))
 
     @upload_manifests
     def wait_for_provisioning(self):
@@ -564,8 +578,8 @@ class EnvironmentModel(object):
     def execute_remote_cmd(self, remote, cmd, exit_code=0):
         result = remote.execute(cmd)
         assert_equal(result['exit_code'], exit_code,
-                     'Failed to execute "{0}" on remote host: {1}'.
-                     format(cmd, result['stderr']))
+                     'Failed to execute "{0}" on remote host: {1}; {2}'.
+                     format(cmd, result['stdout'], result['stderr']))
         return result['stdout']
 
 
