@@ -93,6 +93,26 @@ def check_cinder_status(remote):
 
 
 @logwrap
+def check_rabbitmq_crm_status(remote):
+    cmd = 'crm_resource --resource master_p_rabbitmq-server --locate'
+    result = remote.execute(cmd)
+    rabbitmq_resources = ''.join(result['stdout'])
+    for rabbitmq_res in rabbitmq_resources.splitlines():
+        logger.debug(rabbitmq_res)
+        if ('Master' in rabbitmq_res and 'is running on:' in rabbitmq_res):
+            return True
+    return False
+
+
+@logwrap
+def check_rabbitmq_ha_backend(remote):
+    cmd = ('echo show stat |'
+           'socat unix-connect:///var/lib/haproxy/stats stdio |'
+           'grep rabbitmq,BACKEND,.*,UP')
+    return (remote.execute(cmd)['exit_code'] == 0)
+
+
+@logwrap
 def check_image(image, md5, path):
     local_path = "{0}/{1}".format(path, image)
     logger.debug('Check md5 {0} of image {1}/{2}'.format(md5, path, image))
