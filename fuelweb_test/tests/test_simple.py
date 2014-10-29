@@ -21,6 +21,7 @@ from proboscis import test
 
 from fuelweb_test.helpers import checkers
 from devops.helpers.helpers import tcp_ping
+from fuelweb_test.helpers.decorators import check_fuel_statistics
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers.eb_tables import Ebtables
 from fuelweb_test.helpers import os_actions
@@ -73,6 +74,7 @@ class SimpleFlat(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["smoke", "deploy_simple_flat", "simple_nova_flat"])
     @log_snapshot_on_error
+    @check_fuel_statistics
     def deploy_simple_flat(self):
         """Deploy cluster in simple mode with flat nova-network
 
