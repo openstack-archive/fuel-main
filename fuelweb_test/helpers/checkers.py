@@ -17,10 +17,14 @@ import os
 import re
 import traceback
 
+from ipaddr import IPAddress
+from ipaddr import IPNetwork
+
 from fuelweb_test import logger
 from fuelweb_test import logwrap
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
+from fuelweb_test.settings import POOLS
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_true
@@ -475,3 +479,340 @@ def install_plugin_check_code(
 def check_kernel(kernel, expected_kernel):
     assert_equal(kernel, expected_kernel,
                  "kernel version is wrong, it is {0}".format(kernel))
+
+
+@logwrap
+def check_action_logs(scenario, postgres_actions):
+    def _check(_action, _group=False):
+        assert_true(postgres_actions.action_logs_contain(_action, _group),
+                    "Action logs are missed for '{0}'!".format(
+                        _action))
+
+    actions = [
+        {
+            'desc': [''],
+            'name': ['master_node_settings'],
+            'group': [],
+            'regex': False,
+        },
+        {
+            'desc': [r'create\s+.*(cluster|environment|cloud)'],
+            'name': ['cluster_collection'],
+            'group': ['cluster_attributes', 'network_configuration'],
+            'regex': True,
+        },
+        {
+            'desc': ['deploy'],
+            'name': ['deploy_changes', 'provision', 'deployment',
+                     'cluster_collection', 'check_before_deployment'],
+            'group': ['cluster_changes', 'cluster_checking'],
+            'regex': True,
+        },
+        {
+            'desc': [r'verif.*\s+.*network|network.*\s+.*verif'],
+            'name': ['check_networks', 'verify_networks'],
+            'group': ['network_verification'],
+            'regex': True,
+        },
+        {
+            'desc': [r'(stop|abort).*(deployment|provision)'],
+            'name': ['stop_deployment'],
+            'group': ['cluster_changes'],
+            'regex': True,
+        },
+        {
+            'desc': [r'reset.*(deployment|provision)'],
+            'name': ['reset'],
+            'group': ['cluster_changes'],
+            'regex': True,
+        },
+        {
+            'desc': [r'rename.*(cluster|environment|cloud)'],
+            'name': ['cluster_instance'],
+            'group': ['cluster_changes'],
+            'regex': True,
+        },
+        {
+            'desc': [r'upgrade'],
+            'name': ['releases_collection'],
+            'group': ['release_changes'],
+            'regex': True,
+        },
+        {
+            'desc': [r'update.*(cluster|environment|cloud)'],
+            'name': ['update'],
+            'group': ['cluster_changes'],
+            'regex': True,
+        },
+        {
+            'desc': [r'upload.*deployment'],
+            'name': ['deployment_info'],
+            'group': ['orchestrator'],
+            'regex': True,
+        },
+        {
+            'desc': [r'upload.*provisioning'],
+            'name': ['provisioning_info'],
+            'group': ['orchestrator'],
+            'regex': True,
+        },
+        # Logging of OSTF isn't implemented yet, so actions list is
+        # empty
+        {
+            'desc': ['OSTF', 'Health'],
+            'name': [],
+            'group': [],
+            'regex': False,
+        },
+    ]
+
+    # Check logs in Nailgun database
+    for action in actions:
+        if action['regex']:
+            if not any(re.search(regex, scenario, re.IGNORECASE)
+                       for regex in action['desc']):
+                continue
+        elif not any(action in scenario for action in action['desc']):
+            logger.info(action['desc'])
+            continue
+        for action_name in action['name']:
+            _check(action_name, _group=False)
+        for action_group in action['group']:
+            _check(action_group, _group=True)
+
+
+def execute_query_on_collector(collector_remote, master_uuid, query,
+                               collector_db='collector',
+                               collector_db_user='collector',
+                               collector_db_pass='collector'):
+    if master_uuid is not None:
+        query = "{0} where master_node_uid = '{1}';".format(query, master_uuid)
+    cmd = 'PGPASSWORD={0} psql -qt -h 127.0.0.1 -U {1} -d {2} -c "{3}"'.\
+        format(collector_db_pass, collector_db_user, collector_db, query)
+    return ''.join(collector_remote.execute(cmd)['stdout']).strip()
+
+
+def count_stats_on_collector(collector_remote, master_uuid):
+    return execute_query_on_collector(collector_remote, master_uuid=None,
+                                      query="select (select count(*) from "
+                                            "action_logs where master_node_uid"
+                                            " = \'{0}\') + (select count(*) "
+                                            "from installation_structures "
+                                            "where master_node_uid = \'{0}\')".
+                                      format(master_uuid))
+
+
+@logwrap
+def check_stats_on_collector(collector_remote, postgres_actions, master_uuid):
+    sent_logs_count = postgres_actions.count_sent_action_logs()
+    logger.info("Number of logs that were sent to collector: {}".format(
+        sent_logs_count
+    ))
+    logs = execute_query_on_collector(collector_remote, master_uuid,
+                                      query="select count(*) from action_logs")
+    logger.info("Number of logs that were saved on collector: {}".format(logs))
+    assert_equal(sent_logs_count, int(logs),
+                 ("Count of action logs in Nailgun DB ({0}) and on Collector "
+                  "({1}) aren't equal").format(sent_logs_count, logs))
+
+    sum_stats_count = execute_query_on_collector(
+        collector_remote, master_uuid=master_uuid,
+        query="select count(*) from installation_structures")
+    assert_equal(int(sum_stats_count), 1,
+                 "Installation structure wasn't saved on Collector side proper"
+                 "ly: found: {0}, expected: 1 record.".format(sum_stats_count))
+
+    summ_stats_raw = execute_query_on_collector(
+        collector_remote, master_uuid,
+        query="select structure from installation_structures")
+    summ_stats = json.loads(summ_stats_raw)
+    general_stats = {
+        'clusters_num': int,
+        'allocated_nodes_num': int,
+        'unallocated_nodes_num': int,
+        'fuel_release': dict,
+        'clusters': list,
+        'user_information': dict,
+    }
+
+    # Check that important data (clusters number, nodes number, nodes roles,
+    # user's email, used operation system, OpenStack stats) is saved correctly
+    for stat_type in general_stats.keys():
+        assert_true(type(summ_stats[stat_type]) == general_stats[stat_type],
+                    "Installation structure in Collector's DB doesn't contain"
+                    "the following stats: {0}".format(stat_type))
+
+    real_clusters_number = int(postgres_actions.run_query(
+        db='nailgun', query='select count(*) from clusters;'))
+    assert_equal(real_clusters_number, summ_stats['clusters_num'],
+                 'Real clusters number is {0}, but usage statistics says '
+                 'that clusters number is {1}'.format(
+                     real_clusters_number, summ_stats['clusters_num']))
+
+    real_allocated_nodes_num = int(postgres_actions.run_query(
+        db='nailgun',
+        query='select count(id) from nodes where cluster_id is not Null;'))
+    assert_equal(real_allocated_nodes_num, summ_stats['allocated_nodes_num'],
+                 'Real allocated nodes number is {0}, but usage statistics '
+                 'says that allocated nodes number is {1}'.format(
+                     real_allocated_nodes_num,
+                     summ_stats['allocated_nodes_num']))
+
+    real_user_email = json.loads(postgres_actions.run_query(
+        db='nailgun', query='select settings from master_node_settings;')
+    )['statistics']['email']['value']
+    assert_equal(real_user_email, summ_stats['user_information']['email'],
+                 "Usage statistics contains incorrect user's email address: "
+                 "'{0}', but should be {1}".format(
+                     summ_stats['user_information']['email'],
+                     real_user_email))
+
+    for cluster in summ_stats['clusters']:
+        for node in cluster['nodes']:
+            assert_true(len(node['roles']) > 0,
+                        "Usage statistics contains nodes without roles: node-"
+                        "{0} roles: {1}".format(node['id'], node['roles']))
+        assert_equal(len(cluster['nodes']), cluster['nodes_num'],
+                     "Usage statistics contains incorrect number of nodes"
+                     "assigned to cluster!")
+        real_cluster_os = postgres_actions.run_query(
+            db="nailgun", query="select operating_system from releases where "
+                                "id = (select release_id from clusters where "
+                                "id  = {0});".format(cluster['id']))
+        assert_equal(real_cluster_os, cluster['release']['os'],
+                     "Usage statistics contains incorrect operation system "
+                     "that is used for environment with ID '{0}'. Expected: "
+                     "'{1}', reported: '{2}'.".format(
+                         cluster['id'], real_cluster_os,
+                         cluster['release']['os']))
+
+    logger.info("Usage stats were properly saved to collector's database.")
+
+
+@logwrap
+def check_stats_private_info(collector_remote, postgres_actions,
+                             master_uuid, _settings):
+    def _contain_secret_data(data):
+        _has_private_data = False
+        # Check that stats doesn't contain private data (e.g.
+        # specific passwords, settings, emails)
+        for _private in private_data.keys():
+            _regex = r'(?P<key>"\S+"): (?P<value>[^:]*"{0}"[^:]*)'.format(
+                private_data[_private])
+            for _match in re.finditer(_regex, data):
+                logger.warning('Found private info in usage statistics using '
+                               'pattern: {0}'. format(_regex))
+                logger.debug('Usage statistics with private data:\n {0}'.
+                             format(data))
+                logger.error("Usage statistics contains private info: '{type}:"
+                             " {value}'. Part of the stats: {match}".format(
+                                 type=_private,
+                                 value=private_data[_private],
+                                 match=_match.group('key', 'value')))
+                _has_private_data = True
+        # Check that stats doesn't contain private types of data (e.g. any kind
+        # of passwords)
+        for _data_type in secret_data_types.keys():
+            _regex = (r'(?P<secret>"[^"]*{0}[^"]*": (\{{[^\}}]+\}}|\[[^\]+]\]|'
+                      r'"[^"]+"))').format(secret_data_types[_data_type])
+
+            for _match in re.finditer(_regex, data, re.IGNORECASE):
+                logger.warning('Found private info in usage statistics using '
+                               'pattern: {0}'. format(_regex))
+                logger.debug('Usage statistics with private data:\n {0}'.
+                             format(data))
+                logger.error("Usage statistics contains private info: '{type}:"
+                             " {value}'. Part of the stats: {match}".format(
+                                 type=_data_type,
+                                 value=secret_data_types[_data_type],
+                                 match=_match.group('secret')))
+                _has_private_data = True
+        return _has_private_data
+
+    def _contain_public_ip(data, _used_networks):
+        _has_puplic_ip = False
+        _ip_regex = (r'\b((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3}'
+                     r'(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\b')
+        _not_public_regex = [
+            r'\b10(\.\d{1,3}){3}',
+            r'\b127(\.\d{1,3}){3}',
+            r'\b169\.254(\.\d{1,3}){2}',
+            r'172\.(1[6-9]|2[0-9]|3[0-1])(\.\d{1,3}){2}',
+            r'192\.168(\.\d{1,3}){2}',
+            r'2(2[4-9]|[3-5][0-9])(\.\d{1,3}){3}'
+        ]
+        for _match in re.finditer(_ip_regex, data):
+            # If IP address isn't public and doesn't belong to defined for
+            # deployment pools (e.g. admin, public, storage), then skip it
+            if any(re.search(_r, _match.group()) for _r in _not_public_regex) \
+                    and not any(IPAddress(_match.group()) in IPNetwork(net) for
+                                net in _used_networks):
+                continue
+            logger.debug('Usage statistics with piblic IP(s):\n {0}'.
+                         format(data))
+            logger.error('Found public IP in usage statistics: "{0}"'.format(
+                _match.group()))
+            _has_puplic_ip = True
+        return _has_puplic_ip
+
+    private_data = {
+        'hostname': _settings['HOSTNAME'],
+        'dns_domain': _settings['DNS_DOMAIN'],
+        'dns_search': _settings['DNS_SEARCH'],
+        'dns_upstream': _settings['DNS_UPSTREAM'],
+        'fuel_password': _settings['FUEL_ACCESS']['password'] if
+        _settings['FUEL_ACCESS']['password'] != 'admin'
+        else 'DefaultPasswordIsNotAcceptableForSearch',
+        'nailgun_password': _settings['postgres']['nailgun_password'],
+        'keystone_password': _settings['postgres']['keystone_password'],
+        'ostf_password': _settings['postgres']['ostf_password'],
+        'cobbler_password': _settings['cobbler']['password'],
+        'astute_password': _settings['astute']['password'],
+        'mcollective_password': _settings['mcollective']['password'],
+        'keystone_admin_token': _settings['keystone']['admin_token'],
+        'keystone_nailgun_password': _settings['keystone']['nailgun_password'],
+        'kesytone_ostf_password': _settings['keystone']['ostf_password'],
+    }
+
+    secret_data_types = {
+        'some_password': 'password',
+        'some_login': 'login',
+        'some_tenant': 'tenant',
+        'some_token': 'token',
+        'some_ip': '\bip\b',
+        'some_netmask': 'netmask',
+        'some_network': 'network(?!_assignment)',
+    }
+
+    action_logs = [l.strip() for l in postgres_actions.run_query(
+        'nailgun', 'select id from action_logs;').split('\n')]
+    sent_stats = execute_query_on_collector(
+        collector_remote, master_uuid,
+        query="SELECT structure from installation_structures"
+    )
+    used_networks = [POOLS[net_name][0] for net_name in POOLS.keys()]
+    has_no_private_data = True
+
+    logger.debug("Looking for private data in the installation structure, "
+                 "that was sent to collector")
+
+    if _contain_secret_data(sent_stats) or _contain_public_ip(sent_stats,
+                                                              used_networks):
+        has_no_private_data = False
+
+    for log_id in action_logs:
+        log_data = postgres_actions.run_query(
+            'nailgun',
+            "select additional_info from action_logs where id = '{0}';".format(
+                log_id
+            ))
+        logger.debug("Looking for private data in action log with ID={0}".
+                     format(log_id))
+        if _contain_secret_data(log_data) or _contain_public_ip(log_data,
+                                                                used_networks):
+            has_no_private_data = False
+
+    assert_true(has_no_private_data, 'Found private data in stats, check test '
+                                     'output and logs for details.')
+    logger.info('Found no private data in logs')
+>>>>>>> e20ff6d... Add decorator to check Fuel statistics sending
