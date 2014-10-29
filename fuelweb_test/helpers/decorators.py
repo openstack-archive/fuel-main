@@ -13,16 +13,21 @@
 #    under the License.
 
 import functools
+import inspect
 import json
 import os
 import time
 import traceback
 import urllib2
 
+from os.path import expanduser
 from time import sleep
 
 from devops.helpers.helpers import SSHClient
 from devops.helpers import helpers
+from fuelweb_test.helpers.checkers import check_fuel_stats_on_collector
+from fuelweb_test.helpers.fuel_actions import FuelNailgunActions
+from fuelweb_test.helpers.fuel_actions import FuelPostgresActions
 from fuelweb_test.helpers.regenerate_repo import CustomRepo
 from proboscis import SkipTest
 
@@ -207,5 +212,40 @@ def custom_repo(func):
             return func(*args, **kwargs)
         except Exception:
             custom_pkgs.check_puppet_logs()
+            raise
+    return wrapper
+
+
+def check_fuel_statistics(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if not settings.FUEL_STATS_ENABLED:
+            return func(*args, **kwargs)
+        test_scenario = inspect.getdoc(func)
+        if 'Scenario' not in test_scenario:
+            logger.warning(("Can't check that fuel statistics was gathered "
+                            "and sent to collector properly because '{0}' "
+                            "test doesn't contain correct testing scenario. "
+                            "Skipping...").format(func.__name__))
+            return func(*args, **kwargs)
+        try:
+            result = func(*args, **kwargs)
+            admin_remote = args[0].env.get_admin_remote()
+            master_uuid = args[0].env.get_masternode_uuid()
+            nailgun_actions = FuelNailgunActions(admin_remote)
+            postgres_actions = FuelPostgresActions(admin_remote)
+            nailgun_actions.force_fuel_stats_sending()
+            postgres_actions.check_action_logs(scenario=test_scenario,
+                                               master_uuid=master_uuid)
+            remote_collector = args[0].env.get_ssh_to_remote_by_key(
+                settings.FUEL_STATS_HOST,
+                '{0}/.ssh/id_rsa'.format(expanduser("~")))
+            check_fuel_stats_on_collector(
+                fuel_postgres_actions=postgres_actions,
+                collector_remote=remote_collector,
+                master_uuid=master_uuid)
+            return result
+        except Exception:
+            logger.error(traceback.format_exc())
             raise
     return wrapper

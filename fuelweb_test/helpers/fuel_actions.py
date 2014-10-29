@@ -16,6 +16,7 @@ import yaml
 import re
 
 from proboscis.asserts import assert_equal
+from proboscis.asserts import assert_true
 
 from fuelweb_test import logger
 
@@ -96,3 +97,52 @@ class FuelNailgunActions(FuelActions):
             logger.error(("Fuel stats were sent with errors! Check its logs "
                          "in {0} for details.").format(log_file))
             raise
+
+
+class FuelPostgresActions(FuelActions):
+    def __init__(self, admin_remote):
+        super(FuelPostgresActions, self).__init__(admin_remote)
+        self.container = 'postgres'
+
+    def run_query(self, db, query):
+        cmd = "su - postgres -c 'psql -qt -d {0} -c \"{1};\"'".format(db,
+                                                                      query)
+        return self.execute_in_container(cmd, exit_code=0)
+
+    def action_logs_contain(self, action, group=False, table='action_logs'):
+        logger.debug("Checking that '{0}' action was logged..".format(action))
+        filter = "action_name" if not group else "action_group"
+        q = "select id from {0} where {1} = '\"'\"'{2}'\"'\"'".format(
+            table, filter, action)
+        logs = [id for id in self.run_query('nailgun', q).split('\n')
+                if re.compile("\d+").match(id)]
+        logger.debug("Found log records with ids: {0}".format(logs))
+        return True if len(logs) > 0 else False
+
+    def count_sent_action_logs(self, table='action_logs'):
+        q = "select count(id) from {0} where is_sent = True".format(table)
+        return int(self.run_query('nailgun', q))
+
+    def check_action_logs(self, scenario, master_uuid):
+        def _check(_action, _group=False):
+            assert_true(self.action_logs_contain(_action, _group),
+                        "Action logs are missed for '{0}'!".format(_action))
+
+        logger.info("Master Node UUID: '{0}'".format(master_uuid))
+        # Check logs in Nailgun database
+        if 'Create cluster' in scenario:
+            for action_name in ['cluster_collection']:
+                _check(action_name)
+        if 'Deploy' in scenario:
+            for action_name in ['deploy_changes', 'provision', 'deployment']:
+                _check(action_name)
+        if 'Verify network' in scenario:
+            for action_name in ['network_verification']:
+                _check(action_name, _group=True)
+        if 'OSTF' in scenario:
+            # Logging of OSTF isn't implemented yet, so actions list is empty
+            for action_name in []:
+                _check(action_name)
+        else:
+            for action_name in ['master_node_settings']:
+                _check(action_name)
