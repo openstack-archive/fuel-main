@@ -13,6 +13,7 @@
 #    under the License.
 
 import functools
+import inspect
 import json
 import os
 import time
@@ -207,5 +208,27 @@ def custom_repo(func):
             return func(*args, **kwargs)
         except Exception:
             custom_pkgs.check_puppet_logs()
+            raise
+    return wrapper
+
+
+def check_fuel_statistics(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if not settings.FUEL_STATS_ENABLED:
+            return func(*args, **kwargs)
+        test_scenario = inspect.getdoc(func)
+        if 'Scenario' not in test_scenario:
+            logger.warning(("Can't check that fuel statistics was gathered "
+                            "and sent to collector properly because '{0}' "
+                            "test doesn't contain correct testing scenario. "
+                            "Skipping...").format(func.__name__))
+            return func(*args, **kwargs)
+        try:
+            result = func(*args, **kwargs)
+            args[0].fuel_web.check_action_logs(scenario=test_scenario)
+            return result
+        except Exception:
+            logger.error(traceback.format_exc())
             raise
     return wrapper
