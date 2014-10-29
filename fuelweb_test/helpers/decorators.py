@@ -13,6 +13,7 @@
 #    under the License.
 
 import functools
+import inspect
 import json
 import os
 import sys
@@ -20,8 +21,14 @@ import time
 import traceback
 import urllib2
 
+from os.path import expanduser
+
 from devops.helpers import helpers
+from fuelweb_test.helpers.checkers import check_stats_on_collector
+from fuelweb_test.helpers.checkers import check_stats_private_info
+from fuelweb_test.helpers.checkers import count_stats_on_collector
 from proboscis import SkipTest
+from proboscis.asserts import assert_equal
 
 from fuelweb_test import logger
 from fuelweb_test import settings
@@ -209,5 +216,55 @@ def custom_repo(func):
             return func(*args, **kwargs)
         except Exception:
             custom_pkgs.check_puppet_logs()
+            raise
+    return wrapper
+
+
+def check_fuel_statistics(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        logger.info('Test "{0}" passed. Checking stats.'.format(func.__name__))
+        fuel_settings = args[0].env.get_fuel_settings()
+        nailgun_actions = args[0].env.nailgun_actions
+        postgres_actions = args[0].env.postgres_actions
+        remote_collector = args[0].env.get_ssh_to_remote_by_key(
+            settings.FUEL_STATS_HOST,
+            '{0}/.ssh/id_rsa'.format(expanduser("~")))
+        master_uuid = args[0].env.get_masternode_uuid()
+        logger.info("Master Node UUID: '{0}'".format(master_uuid))
+        nailgun_actions.force_fuel_stats_sending()
+
+        if not settings.FUEL_STATS_ENABLED:
+            assert_equal(0, int(count_stats_on_collector(remote_collector,
+                                                         master_uuid)),
+                         "Sending of Fuel stats is disabled, but "
+                         "action logs were sent to collector!")
+            assert_equal(args[0].env.postgres_actions.count_sent_action_logs(),
+                         0, ("Sending of Fuel stats is disabled, but action "
+                             "logs were sent to collector!"))
+            return result
+
+        test_scenario = inspect.getdoc(func)
+        if 'Scenario' not in test_scenario:
+            logger.warning(("Can't check that fuel statistics was gathered "
+                            "and sent to collector properly because '{0}' "
+                            "test doesn't contain correct testing scenario. "
+                            "Skipping...").format(func.__name__))
+            return func(*args, **kwargs)
+        try:
+            nailgun_actions.force_fuel_stats_sending()
+            postgres_actions.check_action_logs(scenario=test_scenario,
+                                               master_uuid=master_uuid)
+            check_stats_private_info(remote_collector,
+                                     postgres_actions,
+                                     master_uuid,
+                                     fuel_settings)
+            check_stats_on_collector(remote_collector,
+                                     postgres_actions,
+                                     master_uuid)
+            return result
+        except Exception:
+            logger.error(traceback.format_exc())
             raise
     return wrapper
