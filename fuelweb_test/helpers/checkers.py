@@ -451,3 +451,40 @@ def check_mysql(remote, node_name):
     _wait(lambda: assert_equal(remote.execute(check_crm_cmd)['exit_code'], 0,
                                'MySQL resource is NOT running on {0}'.format(
                                    node_name)), timeout=60)
+
+
+@logwrap
+def check_fuel_stats_on_collector(fuel_postgres_actions,
+                                  collector_remote, master_uuid,
+                                  collector_db='collector',
+                                  collector_db_user='collector',
+                                  collector_db_pass='collector'):
+    sent_logs_count = fuel_postgres_actions.count_sent_action_logs()
+    logger.debug("Number of logs that were sent to collector: {}".format(
+        sent_logs_count
+    ))
+    cmd = ('PGPASSWORD={0} psql -qt -h 127.0.0.1 -U {1} -d {2} -c '
+           '"select count(*) from action_logs where master_node_uid'
+           ' = \'{3}\';"').format(collector_db_pass,
+                                  collector_db_user,
+                                  collector_db,
+                                  master_uuid)
+    logs_count = int(''.join(collector_remote.execute(cmd)['stdout']).strip())
+    logger.debug("Number of logs that were saved on collector: {}".format(
+        logs_count
+    ))
+    assert_equal(sent_logs_count, logs_count,
+                 ("Count of action logs in Nailgun DB ({0}) and on Collector "
+                  "({1}) aren't equal").format(sent_logs_count, logs_count))
+    cmd = ('PGPASSWORD={0} psql -qt -h 127.0.0.1 -U {1} -d {2} -c '
+           '"select count(*) from installation_structures where master_node_'
+           'uid = \'{3}\';"').format(collector_db_pass,
+                                     collector_db_user,
+                                     collector_db,
+                                     master_uuid)
+    install = int(''.join(collector_remote.execute(cmd)['stdout']).strip())
+
+    assert_equal(install, 1, ("Installation structure wasn't saved on "
+                              "Collector side properly: found {0} records").
+                 format(install))
+    logger.info("Usage stats were properly saved to collector's database.")
