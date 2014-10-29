@@ -98,3 +98,29 @@ class FuelActions(object):
                 logger.error(("Fuel stats were sent with errors! Check its log"
                              "s in {0} for details.").format(log_file))
                 raise
+
+    class Postgres(BaseActions):
+        def __init__(self, admin_remote):
+            super(FuelActions.Postgres, self).__init__(admin_remote)
+            self.container = 'postgres'
+
+        def run_query(self, db, query):
+            cmd = "su - postgres -c 'psql -qt -d {0} -c \"{1};\"'".format(
+                db, query)
+            return self.execute_in_container(cmd, exit_code=0)
+
+        def action_logs_contain(self, action, group=False,
+                                table='action_logs'):
+            logger.info("Checking that '{0}' action was logged..".format(
+                action))
+            log_filter = "action_name" if not group else "action_group"
+            q = "select id from {0} where {1} = '\"'\"'{2}'\"'\"'".format(
+                table, log_filter, action)
+            logs = [i.strip() for i in self.run_query('nailgun', q).split('\n')
+                    if re.compile(r'\d+').match(i.strip())]
+            logger.info("Found log records with ids: {0}".format(logs))
+            return len(logs) > 0
+
+        def count_sent_action_logs(self, table='action_logs'):
+            q = "select count(id) from {0} where is_sent = True".format(table)
+            return int(self.run_query('nailgun', q))
