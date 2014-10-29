@@ -91,9 +91,9 @@ class CephRestart(TestBasic):
             3. Add 1 node with ceph OSD roles
             4. Add 2 nodes with compute and ceph OSD roles
             5. Deploy the cluster
-            6. Check ceph status
+            6. Check [galera, rabbitmq, cinder, ceph] status
             7. Cold retsart
-            8. Check ceph status
+            8. Check [galera, rabbitmq, cinder, ceph] status
 
         Snapshot ceph_ha
 
@@ -105,6 +105,9 @@ class CephRestart(TestBasic):
 
         # Wait until MySQL Galera is UP on some controller
         self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
+
+        # Wait until RabbitMQ cluster is up and accept connections
+        self.fuel_web.wait_rabbitmq_is_up(['slave-01', 'slave-02', 'slave-03'])
 
         # Wait until Cinder services UP on a controller
         self.fuel_web.wait_cinder_is_up(['slave-01'])
@@ -140,13 +143,18 @@ class CephRestart(TestBasic):
 
         # Cold restart
         self.fuel_web.cold_restart_nodes(self.env.nodes().slaves[:4])
-        self.fuel_web.check_ceph_status(cluster_id, offline_nodes)
 
         # Wait until MySQL Galera is UP on some controller
         self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
 
+        # Wait until RabbitMQ cluster is up and accept connections
+        self.fuel_web.wait_rabbitmq_is_up(['slave-01', 'slave-02', 'slave-03'])
+
         # Wait until Cinder services UP on a controller
         self.fuel_web.wait_cinder_is_up(['slave-01'])
+
+        self.fuel_web.check_ceph_status(cluster_id, offline_nodes)
+
 
         try:
             self.fuel_web.run_single_ostf_test(
