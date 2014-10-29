@@ -183,7 +183,7 @@ class CephHA(TestBasic):
 
         self.env.revert_snapshot("ready")
         self.env.bootstrap_nodes(self.env.nodes().slaves[:6])
-        csettings = None
+        csettings = {}
         if settings.NEUTRON_ENABLE:
             csettings = {
                 "net_provider": 'neutron',
