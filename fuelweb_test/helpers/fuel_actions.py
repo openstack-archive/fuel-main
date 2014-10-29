@@ -16,6 +16,7 @@ import yaml
 import re
 
 from proboscis.asserts import assert_equal
+from proboscis.asserts import assert_true
 
 from fuelweb_test import logger
 
@@ -98,3 +99,85 @@ class FuelActions(object):
                 logger.error(("Fuel stats were sent with errors! Check its log"
                              "s in {0} for details.").format(log_file))
                 raise
+
+    class Postgres(BaseActions):
+        def __init__(self, admin_remote):
+            super(FuelActions.Postgres, self).__init__(admin_remote)
+            self.container = 'postgres'
+
+        def run_query(self, db, query):
+            cmd = "su - postgres -c 'psql -qt -d {0} -c \"{1};\"'".format(
+                db, query)
+            return self.execute_in_container(cmd, exit_code=0)
+
+        def action_logs_contain(self, action, group=False,
+                                table='action_logs'):
+            logger.info("Checking that '{0}' action was logged..".format(
+                action))
+            log_filter = "action_name" if not group else "action_group"
+            q = "select id from {0} where {1} = '\"'\"'{2}'\"'\"'".format(
+                table, log_filter, action)
+            logs = [i.strip() for i in self.run_query('nailgun', q).split('\n')
+                    if re.compile(r'\d+').match(i.strip())]
+            logger.info("Found log records with ids: {0}".format(logs))
+            return len(logs) > 0
+
+        def count_sent_action_logs(self, table='action_logs'):
+            q = "select count(id) from {0} where is_sent = True".format(table)
+            return int(self.run_query('nailgun', q))
+
+        def check_action_logs(self, scenario, master_uuid):
+            def _check(_action, _group=False, _regex=False):
+                assert_true(self.action_logs_contain(_action, _group),
+                            "Action logs are missed for '{0}'!".format(
+                                _action))
+
+            actions = [
+                {
+                    'desc': [''],
+                    'name': ['master_node_settings'],
+                    'group': [],
+                    'regex': False,
+                },
+                {
+                    'desc': [r'\bCreate\s+.*(cluster|environment|cloud)'],
+                    'name': ['cluster_collection'],
+                    'group': ['cluster_attributes', 'network_configuration'],
+                    'regex': True,
+                },
+                {
+                    'desc': ['Deploy'],
+                    'name': ['deploy_changes', 'provision', 'deployment'],
+                    'group': ['cluster_checking'],
+                    'regex': False,
+                },
+                {
+                    'desc': [r'verif.*\s+.*network|network.*\s+.*verif'],
+                    'name': ['check_networks', 'verify_networks'],
+                    'group': ['network_verification'],
+                    'regex': True,
+                },
+                # Logging of OSTF isn't implemented yet, so actions list is
+                # empty
+                {
+                    'desc': ['OSTF', 'Health'],
+                    'name': [],
+                    'group': [],
+                    'regex': False,
+                },
+            ]
+
+            # Check logs in Nailgun database
+            for action in actions:
+                if action['regex']:
+                    if any(re.search(regex, scenario, re.IGNORECASE)
+                           for regex in action['desc']):
+                        pass
+                elif any(action in scenario for action in action['desc']):
+                    pass
+                else:
+                    continue
+                for action_name in action['name']:
+                    _check(action_name, _group=False)
+                for action_group in action['group']:
+                    _check(action_group, _group=True)
