@@ -160,7 +160,7 @@ class CephCompactWithCinder(TestBasic):
 class CephHA(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
-          groups=["ceph_ha", "ha_nova_ceph"])
+          groups=["ceph_ha", "ha_nova_ceph", "ha_neutron_ceph", "promo_bvt"])
     @log_snapshot_on_error
     def ceph_ha(self):
         """Deploy ceph with cinder in HA mode
@@ -183,18 +183,26 @@ class CephHA(TestBasic):
 
         self.env.revert_snapshot("ready")
         self.env.bootstrap_nodes(self.env.nodes().slaves[:6])
-
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
-            settings={
+        settings = None
+        
+        if NEUTRON_ENABLE:
+            settings = {
+                "net_provider": 'neutron',
+                "net_segment_type": "vlan"
+            }
+        
+        settings.update({
                 'volumes_ceph': True,
                 'images_ceph': True,
                 'volumes_lvm': False,
                 'tenant': 'cephHA',
                 'user': 'cephHA',
                 'password': 'cephHA'
-            }
+            })
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_HA,
+            settings=settings
         )
         self.fuel_web.update_nodes(
             cluster_id,
