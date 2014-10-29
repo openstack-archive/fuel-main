@@ -442,3 +442,60 @@ def check_mysql(remote, node_name):
     _wait(lambda: assert_equal(remote.execute(check_crm_cmd)['exit_code'], 0,
                                'MySQL resource is NOT running on {0}'.format(
                                    node_name)), timeout=60)
+
+
+@logwrap
+def action_logs_contains(remote, action_name, table='action_logs'):
+    logger.debug("Checking that '{0}' action was added to logs...".format(
+        action_name))
+    cmd = ("PGPASSWORD=$(awk '/nailgun_password:/{{print $2; exit}}' "
+           "/etc/fuel/astute.yaml) dockerctl shell postgres psql"
+           " -qt -h 127.0.0.1 -U nailgun nailgun -c \"select "
+           "id from {0} where action_name = '{1}';\"").format(table,
+                                                              action_name)
+    logs = [id for id in
+            ''.join(remote.execute(cmd)['stdout']).strip().split('\n')
+            if re.compile("\d+").match(id)]
+    logger.debug("Found logs with ids: {0}".format(logs))
+    if len(logs) > 0:
+        return True
+    else:
+        return False
+
+
+@logwrap
+def get_count_of_sent_action_logs(remote, table='action_logs'):
+    cmd = ("PGPASSWORD=$(awk '/nailgun_password:/{{print $2; exit}}' "
+           "/etc/fuel/astute.yaml) dockerctl shell postgres psql"
+           " -qt -h 127.0.0.1 -U nailgun nailgun -c \"select "
+           "count(id) from {0} where is_sent = True;\"").format(table)
+    return int(''.join(remote.execute(cmd)['stdout']).strip())
+
+
+@logwrap
+def check_fuel_stats_on_collector(admin_remote, collector_remote, master_uuid,
+                                  collector_db='collector',
+                                  collector_db_user='collector',
+                                  collector_db_pass='collector'):
+    sent_logs_count = get_count_of_sent_action_logs(admin_remote)
+    cmd = ('PGPASSWORD={0} psql -qt -h 127.0.0.1 -U {1} -d {2} -c '
+           '"select count(*) from action_logs where master_node_uid'
+           ' = \'{3}\';"').format(collector_db_pass,
+                                  collector_db_user,
+                                  collector_db,
+                                  master_uuid)
+    logs_count = int(''.join(collector_remote.execute(cmd)['stdout']).strip())
+    assert_equal(sent_logs_count, logs_count,
+                 ("Count of action logs in Nailgun DB ({0}) and on Collector "
+                  "({1}) aren't equal").format(sent_logs_count, logs_count))
+    cmd = ('PGPASSWORD={0} psql -qt -h 127.0.0.1 -U {1} -d {2} -c '
+           '"select count(*) from installation_structs where master_node_uid'
+           ' = \'{3}\';"').format(collector_db_pass,
+                                  collector_db_user,
+                                  collector_db,
+                                  master_uuid)
+    install = int(''.join(collector_remote.execute(cmd)['stdout']).strip())
+
+    assert_equal(install, 1, ("Installation structure wasn't saved on "
+                              "Collector side properly: found {0} records").
+                 format(install))
