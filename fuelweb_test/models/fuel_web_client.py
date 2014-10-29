@@ -1122,6 +1122,49 @@ class FuelWebClient(object):
         logger.info('Ceph cluster status is OK')
 
     @logwrap
+    def wait_rabbitmq_is_up(self, node_names):
+        for node_name in node_names:
+            remote = self.environment.get_ssh_to_remote_by_name(node_name)
+            exit_code = self.environment.remote_install_pkg(remote, 'socat')
+            assert_equal(exit_code, 0, 'Can not install package "socat".')
+
+        logger.info("Waiting for RabbitMQ service is up.")
+
+        rabbitmq_timeout = 1800
+        rabbitmq_ensure = 120
+
+        for tries in range(3, 0, -1):
+            try:
+                wait(lambda: self.get_rabbitmq_status(node_names),
+                     timeout=rabbitmq_timeout)
+            except TimeoutError:
+                logger.error("RabbitMQ failed to start in {0} sec."
+                             .format(rabbitmq_timeout))
+                raise TimeoutError("RabbitMQ failed to start.")
+
+            logger.info("RabbitMQ started, waiting for {0} sec to ensure"
+                        " it is running.".format(rabbitmq_ensure))
+
+            try:
+                wait(lambda: not self.get_rabbitmq_status(node_names),
+                     timeout=rabbitmq_ensure)
+            except TimeoutError:
+                logger.info("RabbitMQ is successfully running for {0} sec."
+                            .format(rabbitmq_ensure))
+                return True
+            assert_true(tries > 0, "RabbitMQ failed to start.")
+            logger.info("RabbitMQ has been broken, {0} tries left..."
+                        .format(tries))
+
+    def get_rabbitmq_status(self, node_names):
+        for node_name in node_names:
+            remote = self.environment.get_ssh_to_remote_by_name(node_name)
+            if not all([checkers.check_rabbitmq_crm_status(remote),
+                       checkers.check_rabbitmq_ha_backend(remote)]):
+                return False
+        return True
+
+    @logwrap
     def get_releases_list_for_os(self, release_name, release_version=None):
         full_list = self.client.get_releases()
         release_ids = []

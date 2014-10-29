@@ -18,8 +18,6 @@ from random import randrange
 
 from fuelweb_test import logwrap
 from fuelweb_test import logger
-from fuelweb_test.settings import OPENSTACK_RELEASE
-from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 
 
 class SecurityChecks(object):
@@ -33,14 +31,9 @@ class SecurityChecks(object):
     def _listen_random_port(self, ip_address, protocol, tmp_file_path):
         remote = self.environment.get_ssh_to_remote(ip_address)
         # Install socat
-        if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
-            cmd = '/usr/bin/apt-get install -y {pkg}'.format(pkg='socat')
-        else:
-            cmd = '/usr/bin/yum install -y {pkg}'.format(pkg='socat')
-        result = remote.execute(cmd)
-        if not result['exit_code'] == 0:
-            raise Exception('Could not install package: {0}\n{1}'.
-                            format(result['stdout'], result['stderr']))
+        exit_code = self.environment.remote_install_pkg(remote, 'socat')
+        assert_equal(exit_code, 0, 'Can not install package "socat".')
+
         # Get all used ports
         cmd = ('netstat -A inet -ln --{proto} | awk \'$4 ~ /^({ip}'
                '|0\.0\.0\.0):[0-9]+/ {{split($4,port,":"); print '
@@ -111,10 +104,10 @@ class SecurityChecks(object):
                 result = remote.execute(cmd)
                 if ''.join(result['stdout']).strip() == check_string:
                     raise Exception(('Firewall vulnerability detected. '
-                                    'Unused port {0}/{1} can be accessed'
-                                    ' on {2} (node-{3}) node. Check {4}.old'
-                                    ' and {4}.dump files on the node for de'
-                                    'tails').format(port, protocol,
-                                                    node['name'], node['id'],
-                                                    tmp_file_path))
+                                     'Unused port {0}/{1} can be accessed'
+                                     ' on {2} (node-{3}) node. Check {4}.old'
+                                     ' and {4}.dump files on the node for de'
+                                     'tails').format(port, protocol,
+                                                     node['name'], node['id'],
+                                                     tmp_file_path))
         logger.info('Firewall test passed')
