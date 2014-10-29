@@ -59,6 +59,10 @@ class EnvironmentModel(object):
     def nailgun_actions(self):
         return FuelActions.Nailgun(self.get_admin_remote())
 
+    @property
+    def postgres_actions(self):
+        return FuelActions.Postgres(self.get_admin_remote())
+
     def _get_or_create(self):
         try:
             return self.manager.environment_get(self.env_name)
@@ -302,6 +306,12 @@ class EnvironmentModel(object):
                          private_keys=self.get_private_keys())
 
     @logwrap
+    def get_ssh_to_remote_by_key(self, ip, keyfile):
+        with open(keyfile) as f:
+            keys = [RSAKey.from_private_key(f)]
+            return SSHClient(ip, private_keys=keys)
+
+    @logwrap
     def get_ssh_to_remote_by_name(self, node_name):
         return self.get_ssh_to_remote(
             self.fuel_web.get_nailgun_node_by_devops_node(
@@ -344,6 +354,8 @@ class EnvironmentModel(object):
             self.get_virtual_environment().suspend(verbose=False)
             self.get_virtual_environment().snapshot(snapshot_name, force=True)
             revert_info(snapshot_name, description)
+            if settings.FUEL_STATS_ENABLED:
+                self.get_virtual_environment().resume()
 
     def nailgun_nodes(self, devops_nodes):
         return map(
@@ -592,6 +604,12 @@ class EnvironmentModel(object):
                      'Failed to execute "{0}" on remote host: {1}; {2}'.
                      format(cmd, result['stdout'], result['stderr']))
         return result['stdout']
+
+    @logwrap
+    def get_masternode_uuid(self):
+        return self.postgres_actions.run_query(
+            db='nailgun',
+            query="select master_node_uid from master_node_settings limit 1;")
 
 
 class NodeRoles(object):
