@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from os.path import expanduser
 import re
 import time
 import traceback
@@ -22,6 +23,7 @@ from devops.error import TimeoutError
 from devops.helpers.helpers import _wait
 from devops.helpers.helpers import wait
 from netaddr import IPNetwork
+from proboscis.asserts import assert_not_equal
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_true
 
@@ -37,6 +39,7 @@ from fuelweb_test import ostf_test_mapping as map_ostf
 from fuelweb_test.settings import ATTEMPTS
 from fuelweb_test.settings import BONDING
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
+from fuelweb_test.settings import FUEL_STATS_HOST
 from fuelweb_test.settings import KVM_USE
 from fuelweb_test.settings import NEUTRON
 from fuelweb_test.settings import NEUTRON_SEGMENT
@@ -1298,7 +1301,7 @@ class FuelWebClient(object):
         parameters = {}
         for p in self.environment.execute_remote_cmd(admin_remote, cmd):
             parameters[p.rstrip().split(': ')[0]] = re.sub(
-                r'https?://((\d{1,3}\.){3}\d{1,3}|[a-z,0-9,\-,\.]+)(:\d+)?',
+                r'https?://\{collector_server\}',
                 '{0}://{1}:{2}'.format(protocol, host, port),
                 p.rstrip().split(': ')[1])[1:-1]
         logger.debug('Default collector parameters:')
@@ -1318,11 +1321,44 @@ class FuelWebClient(object):
                '/var/log/nailgun/statsenderd.log{,.bak};'
                'dockerctl shell nailgun supervisorctl restart statsenderd')
         self.environment.execute_remote_cmd(admin_remote, cmd)
-        cmd = ('dockerctl shell nailgun grep -w "Traceback" '
+        cmd = ('dockerctl shell nailgun grep -sw "ERROR" '
                '/var/log/nailgun/statsenderd.log')
-        try:
-            self.environment.execute_remote_cmd(admin_remote, cmd, exit_code=1)
-        except AssertionError:
-            logger.error(("Fuel stats were sent with errors! "
-                         "Check its logs for details"))
-            raise
+        result = admin_remote.execute(cmd)
+        assert_not_equal(0, result['exit_code'],
+                         ("Fuel stats were sent with errors! "
+                          "Check its logs for details. {0}").format(result))
+
+    def check_action_logs(self, scenario):
+        master_uuid = self.environment.get_masternode_uuid()
+        logger.info("Master Node UUID: '{0}'".format(master_uuid))
+        remote = self.environment.get_admin_remote()
+
+        # Check logs in Nailgun database
+        if 'Create cluster' in scenario:
+            for action_name in ['cluster_collection']:
+                assert_true(checkers.action_logs_contains(
+                    remote, action_name=action_name),
+                    "Action logs are missed for '{0}'!".format(action_name))
+        if 'Deploy' in scenario:
+            for action_name in ['deploy_changes', 'provision', 'deployment']:
+                assert_true(checkers.action_logs_contains(
+                    remote, action_name=action_name),
+                    "Action logs are missed for '{0}'!".format(action_name))
+        if 'OSTF' in scenario:
+            # Logging of OSTF run isn't implemented yet
+            for action_name in []:
+                assert_true(checkers.action_logs_contains(
+                    remote, action_name=action_name),
+                    "Action logs are missed for '{0}'!".format(action_name))
+
+        # Check logs on collector side
+        home_dir = expanduser("~")
+        remote_collector = self.environment.get_ssh_to_remote_by_key(
+            FUEL_STATS_HOST, '{0}/.ssh/id_rsa'.format(home_dir))
+        checkers.check_fuel_stats_on_collector(
+            admin_remote=remote,
+            collector_remote=remote_collector,
+            master_uuid=master_uuid
+        )
+        logger.info(('Fuel usage statistics was successfully sent to Mirantis'
+                     ' (collector server is {0}).').format(FUEL_STATS_HOST))
