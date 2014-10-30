@@ -1,4 +1,4 @@
-.PHONY: mirror clean clean-mirror
+.PHONY: mirror clean clean-mirror make-changelog
 
 mirror: $(BUILD_DIR)/mirror/build.done
 
@@ -15,4 +15,8 @@ $(BUILD_DIR)/mirror/build.done: \
 		$(BUILD_DIR)/mirror/centos/build.done \
 		$(BUILD_DIR)/mirror/ubuntu/build.done \
 		$(BUILD_DIR)/mirror/docker/build.done
+	$(ACTION.TOUCH)
+
+make-changelog: mirror
+		bash -e $(TOP_DIR)/report-changelog.sh
 	$(ACTION.TOUCH)
