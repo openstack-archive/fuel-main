@@ -55,11 +55,13 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 else
 $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/mirror/make-changelog.done \
 		$(BUILD_DIR)/packages/build.done \
 		$(BUILD_DIR)/openstack/build.done \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)
 	rsync -rp $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(ISOROOT)
+	rsync -rp $(LOCAL_MIRROR)/centos-packages.changelog $(ISOROOT)
 	createrepo -g $(ISOROOT)/comps.xml \
 		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	rpm -qi -p $(ISOROOT)/Packages/*.rpm | $(SOURCE_DIR)/iso/pkg-versions.awk > $(ISOROOT)/centos-versions.yaml
@@ -87,10 +89,12 @@ $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 else
 $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/mirror/make-changelog.done \
 		$(BUILD_DIR)/packages/build.done \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)/ubuntu
 	rsync -rp $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ $(ISOROOT)/ubuntu/
+	rsync -rp $(LOCAL_MIRROR)/ubuntu-packages.changelog $(ISOROOT)
 	rsync -p $(BUILD_DIR)/packages/deb/debian-boot/initrd.gz $(ISOROOT)/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz
 	cat $(ISOROOT)/ubuntu/dists/$(UBUNTU_RELEASE)/main/binary-amd64/Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $(ISOROOT)/ubuntu/ubuntu-versions.yaml
 	$(ACTION.TOUCH)
