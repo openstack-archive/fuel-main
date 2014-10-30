@@ -13,10 +13,10 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc
 	cp $(SOURCE_DIR)/mirror/ubuntu/multistrap.conf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/
 	if [ "$(USE_MIRROR)" = "none" ]; then \
-	echo "[Security]" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "source=@@MIRROR_UBUNTU@@" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "suite=@@UBUNTU_RELEASE@@-security" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "omitdebsrc=true" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
+	echo "[Security]" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL_SECURITY)/multistrap.conf; \
+	echo "source=@@MIRROR_UBUNTU@@" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL_SECURITY)/multistrap.conf; \
+	echo "suite=@@UBUNTU_RELEASE@@-security" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL_SECURITY)/multistrap.conf; \
+	echo "omitdebsrc=true" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL_SECURITY)/multistrap.conf; \
 	echo "[Ubuntu]" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
 	echo "source=@@MIRROR_UBUNTU@@" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
 	echo "suite=@@UBUNTU_RELEASE@@" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
@@ -39,7 +39,7 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	if [ "$(USE_MIRROR)" = "none" ]; then \
 	echo deb $(MIRROR_UBUNTU) $(UBUNTU_RELEASE) universe multiverse restricted | sudo tee -a $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list.d/ubuntu.list; \
 	echo deb $(MIRROR_UBUNTU) $(UBUNTU_RELEASE)-updates main universe multiverse restricted | sudo tee -a $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list.d/ubuntu.list; \
-	echo deb $(MIRROR_UBUNTU) $(UBUNTU_RELEASE)-security main universe multiverse restricted | sudo tee -a $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list.d/ubuntu.list; \
+	echo deb $(MIRROR_UBUNTU_SECURITY) $(UBUNTU_RELEASE)-security main universe multiverse restricted | sudo tee -a $(LOCAL_MIRROR_UBUNTU_OS_BASEURL_SECURITY)/chroot/etc/apt/sources.list.d/ubuntu.list; \
 	echo deb $(MIRROR_FUEL_UBUNTU) $(UBUNTU_RELEASE) main | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list.d/mirantis.list; \
 	fi
 	echo 'APT::Get::AllowUnauthenticated 1;' | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/apt.conf.d/02mirantis-unauthenticated
