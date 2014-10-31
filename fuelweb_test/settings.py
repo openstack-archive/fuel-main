@@ -255,3 +255,7 @@ LOCAL_MIRROR_CENTOS = os.environ.get('LOCAL_MIRROR_CENTOS',
 UPDATE_TIMEOUT = os.environ.get('UPDATE_TIMEOUT', 3600)
 
 IMAGE_PROVISIONING = os.environ.get('IMAGE_PROVISIONING', 'false') == 'true'
+
+KEYSTONE_CREDS = {'username': os.environ.get('KEYSTONE_USERNAME', 'admin'),
+                  'password': os.environ.get('KEYSTONE_PASSWORD', 'admin'),
+                  'tenant_name': os.environ.get('KEYSTONE_TENANT', 'admin')}

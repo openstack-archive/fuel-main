@@ -58,7 +58,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
                                         TARBALL_PATH), '/var')
-        checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh')
+        checkers.run_script(self.env.get_admin_remote(), '/var',
+                            'upgrade.sh', password=
+                            hlp_data.KEYSTONE_CREDS['password'])
         checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY')
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
@@ -115,7 +117,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
                                         TARBALL_PATH), '/var')
-        checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh')
+        checkers.run_script(self.env.get_admin_remote(), '/var',
+                            'upgrade.sh', password=
+                            hlp_data.KEYSTONE_CREDS['password'])
         checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY')
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
@@ -196,7 +200,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.TARBALL_PATH),
                        '/var')
-        checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh')
+        checkers.run_script(self.env.get_admin_remote(), '/var',
+                            'upgrade.sh', password=
+                            hlp_data.KEYSTONE_CREDS['password'])
         checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY')
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
@@ -280,6 +286,8 @@ class RollbackFuelMaster(base_test_data.TestBasic):
                                          'fuel_upgrade/engines/'
                                          'openstack.py')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
+                            password=
+                            hlp_data.KEYSTONE_CREDS['password'],
                             rollback=True, exit_code=255)
         checkers.wait_rollback_is_done(self.env.get_admin_remote(), 3000)
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
@@ -339,6 +347,8 @@ class RollbackFuelMaster(base_test_data.TestBasic):
         #we expect 255 exit code here because upgrade failed
         # and exit status is 255
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
+                            password=
+                            hlp_data.KEYSTONE_CREDS['password'],
                             rollback=True, exit_code=255)
         checkers.wait_rollback_is_done(self.env.get_admin_remote(), 3000)
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
