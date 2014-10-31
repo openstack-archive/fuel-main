@@ -93,7 +93,7 @@ class SaharaSimple(TestBasic):
         os_conn = os_actions.OpenStackActions(
             controller['ip'], data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            os_conn, smiles_count=5, networks_count=1, timeout=300)
+            os_conn, smiles_count=5, networks_count=2, timeout=300)
 
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
@@ -197,7 +197,7 @@ class SaharaHA(TestBasic):
             cluster_vip, data['user'], data['password'], data['tenant'])
 
         self.fuel_web.assert_cluster_ready(
-            os_conn, smiles_count=13, networks_count=1, timeout=300)
+            os_conn, smiles_count=13, networks_count=2, timeout=300)
 
         for slave in ["slave-01", "slave-02", "slave-03"]:
             checkers.verify_service(
@@ -298,7 +298,7 @@ class MuranoSimple(TestBasic):
         os_conn = os_actions.OpenStackActions(
             controller['ip'], data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            os_conn, smiles_count=5, networks_count=1, timeout=300)
+            os_conn, smiles_count=5, networks_count=2, timeout=300)
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='murano-api')
@@ -420,7 +420,7 @@ class MuranoHA(TestBasic):
         os_conn = os_actions.OpenStackActions(
             cluster_vip, data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            os_conn, smiles_count=13, networks_count=1, timeout=300)
+            os_conn, smiles_count=13, networks_count=2, timeout=300)
         for slave in ["slave-01", "slave-02", "slave-03"]:
             checkers.verify_service(
                 self.env.get_ssh_to_remote_by_name(slave),
@@ -793,7 +793,7 @@ class HeatSimple(TestBasic):
         os_conn = os_actions.OpenStackActions(
             controller['ip'], data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            os_conn, smiles_count=5, networks_count=1, timeout=300)
+            os_conn, smiles_count=5, networks_count=2, timeout=300)
 
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
@@ -987,7 +987,7 @@ class HeatHA(TestBasic):
         os_conn = os_actions.OpenStackActions(
             cluster_vip, data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            os_conn, smiles_count=13, networks_count=1, timeout=300)
+            os_conn, smiles_count=13, networks_count=2, timeout=300)
 
         for slave in ["slave-01", "slave-02", "slave-03"]:
             checkers.verify_service(
