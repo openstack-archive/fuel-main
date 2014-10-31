@@ -18,6 +18,7 @@ from proboscis import asserts
 from proboscis import test
 
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers import os_actions
 from fuelweb_test import settings as hlp_data
 from fuelweb_test import logger
 from fuelweb_test.tests import base_test_case
@@ -181,8 +182,10 @@ class EnvironmentAction(base_test_case.TestBasic):
         )
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=1, timeout=300)
+            os_conn, smiles_count=6, networks_count=1, timeout=300)
 
         self.fuel_web.stop_reset_env_wait(cluster_id)
         self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:2])
@@ -191,7 +194,7 @@ class EnvironmentAction(base_test_case.TestBasic):
             cluster_id, amount=8, network_size=32)
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=6, networks_count=8, timeout=300)
+            os_conn, smiles_count=6, networks_count=8, timeout=300)
 
         self.fuel_web.verify_network(cluster_id)
 
@@ -251,8 +254,10 @@ class EnvironmentActionOnHA(base_test_case.TestBasic):
         )
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_public_vip(cluster_id))
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=16, networks_count=1, timeout=300)
+            os_conn, smiles_count=16, networks_count=1, timeout=300)
 
         self.fuel_web.verify_network(cluster_id)
 

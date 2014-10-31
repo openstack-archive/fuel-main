@@ -21,6 +21,7 @@ from proboscis import SkipTest
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers.decorators import create_diagnostic_snapshot
+from fuelweb_test.helpers import os_actions
 from fuelweb_test import settings as hlp_data
 from fuelweb_test.tests import base_test_case as base_test_data
 
@@ -72,8 +73,11 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
             True, False
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'],
+            user='ceph1', tenant='ceph1', passwd='ceph1')
         self.fuel_web.assert_cluster_ready(
-            'slave-01', smiles_count=10, networks_count=1, timeout=300)
+            os_conn, smiles_count=10, networks_count=1, timeout=300)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
         create_diagnostic_snapshot(self.env, "pass", "upgrade_simple_env")
 
@@ -128,14 +132,15 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         added_release = [id for id in available_releases_after
                          if id not in available_releases_before]
         self.env.bootstrap_nodes(self.env.nodes().slaves[5:7])
+        data = {
+            'tenant': 'novaSimpleVlan',
+            'user': 'novaSimpleVlan',
+            'password': 'novaSimpleVlan'
+        }
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=hlp_data.DEPLOYMENT_MODE_SIMPLE,
-            settings={
-                'tenant': 'novaSimpleVlan',
-                'user': 'novaSimpleVlan',
-                'password': 'novaSimpleVlan'
-            },
+            settings=data,
             release_id=added_release[0]
         )
         self.fuel_web.update_nodes(
@@ -147,9 +152,14 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         )
         self.fuel_web.update_vlan_network_fixed(
             cluster_id, amount=8, network_size=32)
+
         self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_public_vip(cluster_id),
+            data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
-            'slave-06', smiles_count=6, networks_count=8, timeout=300)
+            os_conn, smiles_count=6, networks_count=8, timeout=300)
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(

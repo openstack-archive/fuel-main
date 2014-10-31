@@ -24,6 +24,7 @@ from proboscis import SkipTest
 
 from fuelweb_test.helpers.checkers import check_mysql
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers import os_actions
 from fuelweb_test import logger
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
@@ -82,12 +83,14 @@ class TestHaFailover(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        public_vip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(public_vip)
         if NEUTRON_ENABLE:
             self.fuel_web.assert_cluster_ready(
-                'slave-01', smiles_count=14, networks_count=1, timeout=300)
+                os_conn, smiles_count=14, networks_count=1, timeout=300)
         else:
             self.fuel_web.assert_cluster_ready(
-                'slave-01', smiles_count=16, networks_count=1, timeout=300)
+                os_conn, smiles_count=16, networks_count=1, timeout=300)
         self.fuel_web.verify_network(cluster_id)
 
         # Bug #1289297. Pause 5 min to make sure that all remain activity

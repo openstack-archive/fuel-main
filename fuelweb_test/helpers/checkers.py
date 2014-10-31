@@ -124,14 +124,6 @@ def get_interface_description(ctrl_ssh, interface_short_name):
     )
 
 
-@logwrap
-def verify_glance_image_list(remote):
-    ret = remote.check_call('. /root/openrc; glance image-list')['stdout']
-    logger.info("glance image-list output: \\n{}" .format(ret))
-    assert_equal(1, ''.join(ret).count("TestVM"),
-                 "TestVM not found in glance image-list")
-
-
 def verify_network_configuration(remote, node):
     for interface in node['network_data']:
         if interface.get('vlan') is None:
@@ -157,15 +149,6 @@ def verify_network_configuration(remote, node):
 
 
 @logwrap
-def verify_network_list(networks_count, remote):
-    ret = remote.check_call('/usr/bin/nova-manage network list')
-    logger.debug("network list: \\n: {}".format(ret['stdout']))
-    assert_equal(len(ret['stdout'][1:]), networks_count,
-                 "Actual network list {} not equal to expected {}".format(
-                     len(ret['stdout'][1:]), networks_count))
-
-
-@logwrap
 def verify_service(remote, service_name, count=1):
     ps_output = remote.execute('ps ax')['stdout']
     api = filter(lambda x: service_name in x, ps_output)
@@ -175,15 +158,22 @@ def verify_service(remote, service_name, count=1):
 
 
 @logwrap
-def verify_service_list(remote, smiles_count):
+def verify_service_list_api(os_conn, service_count):
     def _verify():
-        ret = remote.check_call('/usr/bin/nova-manage service list')
-        logger.debug("Service list: {}".format(ret['stdout']))
-        assert_equal(
-            smiles_count, ''.join(ret['stdout']).count(":-)"), "Smiles count")
-        assert_equal(
-            0, ''.join(ret['stdout']).count("XXX"), "Broken services count")
-
+        ret = os_conn.get_nova_service_list()
+        logger.debug('Service list {0}'.format(ret))
+        assert_equal(service_count, len(ret),
+                     'Expected service count is {0},'
+                     ' but get {1} count, actual list {2}'.format(
+                         service_count, len(ret), ret))
+        for service in ret:
+            logger.debug('service is {0}'.format(service))
+            assert_equal(
+                service.state, 'up',
+                'Service {0} on host {1} has next '
+                'state {2}'.format(service.binary,
+                                   service.host,
+                                   service.state))
     try:
         _verify()
     except AssertionError:
@@ -191,6 +181,22 @@ def verify_service_list(remote, smiles_count):
             "Services still not read. Sleeping for 60 seconds and retrying")
         sleep(60)
         _verify()
+
+
+@logwrap
+def verify_glance_image_api(os_conn):
+    ret = os_conn.get_image_list()
+    assert_equal(1, len([i for i in ret if i.name == 'TestVM']),
+                 "TestVM not found in glance image-list")
+
+
+@logwrap
+def verify_network_list_api(os_conn, net_count=None):
+    ret = os_conn.get_nova_network_list()
+    assert_equal(net_count, len(ret),
+                 'Unexpected count of networks detected, '
+                 'expected: {0}, current {1} count,'
+                 ' full list {2}'.format(net_count, len(ret), ret))
 
 
 @logwrap
