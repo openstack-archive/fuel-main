@@ -159,8 +159,11 @@ start_vm() {
     name=$1
 
     # Just start it
-    #VBoxManage startvm $name --type headless
-    VBoxManage startvm $name
+    if [[ $headless == 1 ]]; then
+        VBoxManage startvm $name --type headless
+    else
+        VBoxManage startvm $name
+    fi
 }
 
 mount_iso_to_vm() {
