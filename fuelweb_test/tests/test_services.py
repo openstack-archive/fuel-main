@@ -88,9 +88,9 @@ class SaharaSimple(TestBasic):
             }
         )
         controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
+        self.fuel_web.deploy_cluster_wait(cluster_id)
         os_conn = os_actions.OpenStackActions(
             controller['ip'], data['user'], data['password'], data['tenant'])
-        self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=5, networks_count=1, timeout=300)
 
