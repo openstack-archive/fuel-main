@@ -87,7 +87,7 @@ class TestHaFailover(TestBasic):
         os_conn = os_actions.OpenStackActions(public_vip)
         if NEUTRON_ENABLE:
             self.fuel_web.assert_cluster_ready(
-                os_conn, smiles_count=14, networks_count=1, timeout=300)
+                os_conn, smiles_count=14, networks_count=2, timeout=300)
         else:
             self.fuel_web.assert_cluster_ready(
                 os_conn, smiles_count=16, networks_count=1, timeout=300)
