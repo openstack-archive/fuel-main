@@ -97,7 +97,7 @@ class SaharaSimple(TestBasic):
 
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
-            service_name='sahara-api')
+            service_name='sahara-all')
 
         common_func = Common(controller['ip'], data['user'], data['password'],
                              data['tenant'])
@@ -202,7 +202,7 @@ class SaharaHA(TestBasic):
         for slave in ["slave-01", "slave-02", "slave-03"]:
             checkers.verify_service(
                 self.env.get_ssh_to_remote_by_name(slave),
-                service_name='sahara-api')
+                service_name='sahara-all')
 
         common_func = Common(cluster_vip, data['user'], data['password'],
                              data['tenant'])
