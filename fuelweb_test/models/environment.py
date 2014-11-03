@@ -402,7 +402,7 @@ class EnvironmentModel(object):
             self.setup_customisation()
         # wait while installation complete
         admin.await(self.admin_net, timeout=10 * 60)
-        self.wait_bootstrap()
+        self.wait_bootstrap(custom=custom)
         time.sleep(10)
         self.sync_time_admin_node()
 
@@ -468,18 +468,29 @@ class EnvironmentModel(object):
             remote=self.get_ssh_to_remote_by_name(node_name)
         )
 
-    def wait_bootstrap(self):
+    def wait_bootstrap(self, custom=None):
         logger.info("Waiting while bootstrapping is in progress")
         log_path = "/var/log/puppet/bootstrap_admin_node.log"
         logger.info("Puppet timeout set in {0}".format(
             float(settings.PUPPET_TIMEOUT)))
-        wait(
-            lambda: not
-            self.get_admin_remote().execute(
-                "grep 'Fuel node deployment complete' '%s'" % log_path
-            )['exit_code'],
-            timeout=(float(settings.PUPPET_TIMEOUT))
-        )
+        if not custom:
+            wait(
+                lambda: not
+                self.get_admin_remote().execute(
+                    "grep 'Fuel node deployment complete' '%s'" % log_path
+                )['exit_code'],
+                timeout=(float(settings.PUPPET_TIMEOUT))
+            )
+        else:
+            wait(
+                lambda: not
+                self.get_admin_remote().execute(
+                    "grep 'Fuel node deployment complete' '%s'" % log_path
+                )['exit_code'],
+                timeout=(float(settings.PUPPET_TIMEOUT)),
+                custom=lambda: self.get_admin_remote().execute(
+                    "grep \"ERROR: .*failed to start\" '%s'" % log_path
+                )['exit_code'])
 
     def dhcrelay_check(self):
         admin_remote = self.get_admin_remote()
