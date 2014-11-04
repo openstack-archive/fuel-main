@@ -12,3 +12,7 @@ $(BUILD_DIR)/mirror/ubuntu/build.done: \
 		$(BUILD_DIR)/mirror/ubuntu/boot.done \
 		$(BUILD_DIR)/mirror/ubuntu/createchroot.done
 	$(ACTION.TOUCH)
+
+
+# XXX: createchroot needs to know the d-i kernel version
+$(BUILD_DIR)/mirror/ubuntu/createchroot.done: $(BUILD_DIR)/mirror/ubuntu/boot.done

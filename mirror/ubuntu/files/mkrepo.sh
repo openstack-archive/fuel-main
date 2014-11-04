@@ -17,6 +17,11 @@ fi
 
 mkdir -p /repo/download/
 
+cat >> /requirements-deb.txt << EOF
+linux-image-${UBUNTU_INSTALLER_KERNEL_VERSION}
+linux-headers-${UBUNTU_INSTALLER_KERNEL_VERSION}
+EOF
+
 has_apt_errors=''
 rm -f /apt-errors.log
 while read pkg; do
