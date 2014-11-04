@@ -423,7 +423,7 @@ class EnvironmentModel(object):
             logger.error("Could not kill pid of fuelmenu")
             raise
 
-    @retry(count=10, delay=60)
+    @retry()
     @logwrap
     def sync_node_time(self, remote):
         self.execute_remote_cmd(remote, 'hwclock -s')
@@ -435,7 +435,7 @@ class EnvironmentModel(object):
         remote_date = remote.execute('date')['stdout']
         logger.info("Node time: %s" % remote_date)
 
-    @retry(count=10, delay=60)
+    @retry()
     @logwrap
     def sync_time_admin_node(self):
         logger.info("Sync time on revert for admin")
