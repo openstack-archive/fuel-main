@@ -301,8 +301,6 @@ class SimpleFlat(TestBasic):
 
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=8, networks_count=1, timeout=300)
-        self.env.verify_node_service_list("slave-02", 8)
-        self.env.verify_node_service_list("slave-03", 8)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)

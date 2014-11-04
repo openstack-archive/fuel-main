@@ -460,10 +460,6 @@ class EnvironmentModel(object):
         remote_date = remote.execute('date')['stdout']
         logger.info("Master node time: {0}".format(remote_date))
 
-    def verify_node_service_list(self, node_name, smiles_count):
-        remote = self.get_ssh_to_remote_by_name(node_name)
-        checkers.verify_service_list(remote, smiles_count)
-
     def verify_network_configuration(self, node_name):
         checkers.verify_network_configuration(
             node=self.fuel_web.get_nailgun_node_by_name(node_name),
