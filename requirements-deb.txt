@@ -107,6 +107,8 @@ libvte9
 libxen-4.1
 linux-firmware
 linux-firmware-nonfree
+linux-headers-3.11.0-18
+linux-image-3.11.0-18
 linux-server
 lksctp-tools
 lockfile-progs
