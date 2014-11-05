@@ -34,14 +34,21 @@ function prepare_upgrade_files {
 }
 
 
+function run_fuel_upgrade {
+  PYTHONPATH="$UPGRADE_PATH/site-packages" python "$UPGRADE_PATH/bin/fuel-upgrade" --src "$UPGRADE_PATH" $UPGRADERS "$@"
+}
+
 function run_upgrade {
+  # run pre-upgrade checks (Fuel version, disk space, etc.)
+  run_fuel_upgrade --check-only "$@" || error "Checks not satisfied" $?
+
   # decompress images iff the docker upgrader is used
   if [[ $UPGRADERS == *docker* ]]; then
     prepare_upgrade_files
   fi
 
   # run fuel_upgrade script
-  PYTHONPATH="$UPGRADE_PATH/site-packages" python "$UPGRADE_PATH/bin/fuel-upgrade" --src "$UPGRADE_PATH" $UPGRADERS "$@" || error "Upgrade failed" $?
+  run_fuel_upgrade "$@" || error "Upgrade failed" $?
 }
 
 
