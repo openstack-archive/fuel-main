@@ -35,6 +35,9 @@ function prepare_upgrade_files {
 
 
 function run_upgrade {
+  # run pre-upgrade checks (Fuel version, disk space, etc.)
+  PYTHONPATH="$UPGRADE_PATH/site-packages" python "$UPGRADE_PATH/bin/fuel-upgrade" --check-only --src "$UPGRADE_PATH" $UPGRADERS "$@" || error "Checks not satisfied" $?
+
   # decompress images iff the docker upgrader is used
   if [[ $UPGRADERS == *docker* ]]; then
     prepare_upgrade_files
