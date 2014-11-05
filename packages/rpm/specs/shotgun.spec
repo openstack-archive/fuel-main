@@ -16,7 +16,7 @@ BuildRequires:  python-setuptools
 BuildArch: noarch
 
 Requires:    postgresql
-Requires:    python-fabric == 1.7.0
+Requires:    python-fabric >= 1.10.0
 Requires:    python-argparse
 Requires:    tar
 Requires:    gzip
