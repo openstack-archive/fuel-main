@@ -36,7 +36,7 @@ $(BUILD_DIR)/mirror/centos_repo_current.done: \
 
 endif
 $(BUILD_DIR)/mirror/$(DIFF_CENTOS_REPO_ART_NAME): BASEDIR=$(BUILD_DIR)/mirror/$(BASE_VERSION)/centos-repo/Packages
-$(BUILD_DIR)/mirror/$(DIFF_CENTOS_REPO_ART_NAME): DIFFDIR=$(DIFF_MIRROR_CENTOS_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)/os/$(CENTOS_ARCH)/Packages
+$(BUILD_DIR)/mirror/$(DIFF_CENTOS_REPO_ART_NAME): DIFFDIR=$(DIFF_MIRROR_CENTOS_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)/Packages
 $(BUILD_DIR)/mirror/$(DIFF_CENTOS_REPO_ART_NAME): | $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml
 #	unpacking old version centos mirror
 	mkdir -p $(BUILD_DIR)/mirror/$(BASE_VERSION)
