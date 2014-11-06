@@ -20,6 +20,22 @@
 # - We need not try to install rubygems on trusty, because it doesn't exists
 # - We also should use multistrap version 2.1.6 from devops mirror
 
+# install yum and yum-utils from trusty, so it can handle the meta-data
+# of OSCI rpm repositories. Works around ISO build failure (LP #1381535).
+update_yum_utils ()
+{
+    local pkgs="yum_3.4.3-2ubuntu1_all.deb yum-utils_1.1.31-2_all.deb"
+    # required for new yum-utils
+    local deps="python-iniparse"
+    local mirror="https://launchpad.net/ubuntu/+archive/primary/+files"
+    sudo apt-get install $deps
+    for pkg in $pkgs; do
+	    rm -f $pkg >/dev/null 2>&1
+	    wget "${mirror}/${pkg}"
+	    sudo dpkg -i $pkg
+    done
+}
+
 DISTRO=$(lsb_release -c -s)
 
 case "${DISTRO}" in
@@ -118,6 +134,12 @@ else
   echo "Required /etc/sudoers record not found, adding it..."
   echo "`whoami` ALL=(ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers
 fi
+
+case "${DISTRO}" in
+	precise)
+		update_yum_utils
+		;;
+esac
 
 # Fix tmp folder ownership
 [ -d ~/tmp ] && sudo chown -R `whoami`.`id -gn` ~/tmp || mkdir ~/tmp
