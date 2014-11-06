@@ -1,0 +1,3 @@
+# Use this file to manually override values.
+# For example:
+# licenses["netcat"]="BSD"
