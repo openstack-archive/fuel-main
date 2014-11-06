@@ -15,7 +15,19 @@ if [ -z "$UBUNTU_INSTALLER_KERNEL_VERSION" ]; then
 	exit 1
 fi
 
+if [ -z "$UBUNTU_KERNEL_FLAVOR" ]; then
+	echo 'mkrepo.sh UBUNTU_KERNEL_FLAVOR is not defined'
+	exit 1
+fi
+
 mkdir -p /repo/download/
+
+cat >> /requirements-deb.txt << EOF
+linux-image-${UBUNTU_INSTALLER_KERNEL_VERSION}
+linux-headers-${UBUNTU_INSTALLER_KERNEL_VERSION}
+linux-image-generic-${UBUNTU_KERNEL_FLAVOR}
+linux-headers-generic-${UBUNTU_KERNEL_FLAVOR}
+EOF
 
 has_apt_errors=''
 rm -f /apt-errors.log
