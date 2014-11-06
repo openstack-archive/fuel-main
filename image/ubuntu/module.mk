@@ -67,6 +67,8 @@ wget
 PKGS_APTGET:=\
 acl\
 anacron\
+bridge-utils\
+bsdmainutils\
 cloud-init\
 debconf-utils\
 libaugeas-ruby\
