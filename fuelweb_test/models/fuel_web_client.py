@@ -915,15 +915,15 @@ class FuelWebClient(object):
                     ' {1}'.format(node.name, e))
 
     @logwrap
-    def ip_address_show(self, node_name, namespace, interface, pipe_str=''):
+    def ip_address_show(self, node_name, namespace, interface):
         try:
             remote = self.get_ssh_for_node(node_name)
             ret = remote.check_call(
-                'ip netns exec {0} ip address show {1} {2}'.format(
-                    namespace, interface, pipe_str))
+                'ip netns exec {0} ip -4 -o address show {1}'.format(
+                    namespace, interface))
             return ' '.join(ret['stdout'])
         except DevopsCalledProcessError as err:
-            logger.error(err.message)
+            logger.error(err)
         return ''
 
     @logwrap
