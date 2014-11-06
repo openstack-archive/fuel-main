@@ -139,6 +139,7 @@ fuse
 fuse-utils
 fence-agents
 fencing-agent
+fping
 g++
 g++-4.6
 galera
@@ -183,6 +184,7 @@ insserv
 install-info
 installation-report
 intel-microcode
+iperf
 iproute
 iptables
 iptables-persistent
@@ -601,6 +603,7 @@ neutron-server
 neutron-vpn-agent
 nfs-common
 nginx
+nmap
 node-less
 nodejs
 nova-api
@@ -840,6 +843,7 @@ tasksel
 tasksel-data
 tcpd
 tcpdump
+tcptraceroute
 telnet
 tgt
 time
