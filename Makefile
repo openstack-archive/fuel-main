@@ -84,6 +84,7 @@ include $(SOURCE_DIR)/rules.mk
 include $(SOURCE_DIR)/sandbox.mk
 
 # Modules
+include $(SOURCE_DIR)/license.mk
 include $(SOURCE_DIR)/repos.mk
 include $(SOURCE_DIR)/image/module.mk
 include $(SOURCE_DIR)/mirror/module.mk
