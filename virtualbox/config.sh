@@ -178,3 +178,6 @@ fi
 vm_slave_first_disk_mb=65535
 vm_slave_second_disk_mb=65535
 vm_slave_third_disk_mb=65535
+
+# Set to 1 to run VirtualBox in headless mode
+headless=0
