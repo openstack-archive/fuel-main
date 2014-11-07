@@ -100,9 +100,9 @@ $(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME):
 	mkdir -p $(DIFFDIR)
 	/bin/bash $(SOURCE_DIR)/mirror/create_diff_mirrors.sh $(CURDIR) $(BASEDIR) $(DIFFDIR)
 #	creating diff mirror
-	dpkg-scanpackages -m $(DIFFDIR) > $(DIFFDIR)/../Packages
-	gzip -9c $(DIFFDIR)/../Packages > $(DIFFDIR)/../Packages.gz
-	cat $(DIFFDIR)/../Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)/ubuntu-versions.yaml
+	cp -r $(CURDIR)/../../dists $(DIFFDIR)/../../
+	$(SOURCE_DIR)/regenerate_ubuntu_repo.sh $(DIFFDIR) $(UBUNTU_RELEASE)
+	cat $(DIFFDIR)/dists/$(UBUNTU_RELEASE)/main/binary-amd64/Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)/ubuntu-versions.yaml
 	tar cf $@ -C $(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION) --xform s:^:ubuntu_updates-$(CURRENT_VERSION)-$(BASE_VERSION)/: .
 endif # ifneq ($(DIFF_UBUNTU_REPO_DEP_FILE),)
 endif # ifneq ($(BASE_VERSION),)
