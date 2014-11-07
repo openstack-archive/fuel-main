@@ -221,10 +221,9 @@ class TestHaFailover(TestBasic):
             for interface in interfaces:
                 # Look for management and public ip in namespace and remove it
                 logger.debug("Start to looking for ip of Vips")
-                addresses = self.fuel_web.ip_address_show(
-                    devops_node.name, interface=interface,
-                    namespace='haproxy',
-                    pipe_str='| grep {0}$'.format(interface))
+                addresses = self.fuel_web.ip_address_show(devops_node.name,
+                                                          interface=interface,
+                                                          namespace='haproxy')
                 logger.debug("Vip addresses is {0} for node {1} and interface"
                              " {2}".format(addresses, devops_node.name,
                                            interface))
@@ -249,8 +248,7 @@ class TestHaFailover(TestBasic):
                 # The ip should be restored
                 ip_assigned = lambda nodes: \
                     any([ip in self.fuel_web.ip_address_show(
-                        n.name, 'haproxy',
-                        interface, '| grep {0}$'.format(interface))
+                        n.name, 'haproxy', interface)
                         for n in nodes])
                 logger.debug("Waiting while deleted ip restores ...")
                 wait(lambda: ip_assigned(slaves), timeout=30)
@@ -268,7 +266,8 @@ class TestHaFailover(TestBasic):
                 # Revert initial state. VIP could be moved to other controller
                 self.env.revert_snapshot("deploy_ha")
         assert_equal(ips_amount, 2,
-                     'Not all vips were recovered after fail in 10s')
+                     'Not all VIPs were found: expect - 2, found {0}'.format(
+                         ips_amount))
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_mysql_termination"])
