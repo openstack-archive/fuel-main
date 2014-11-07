@@ -24,6 +24,7 @@ Requires:    python-keystoneclient >= 0.11
 Requires:    python-novaclient >= 1:2.15.0
 Requires:    python-heatclient >= 0.2.5
 Requires:    python-muranoclient >= 0.2.11
+Requires:    python-neutronclient >= 2.3.6
 Requires:    python-saharaclient >= 0.6
 Requires:    python-paramiko >= 1.10.1
 Requires:    python-requests >= 1.1
