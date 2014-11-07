@@ -35,7 +35,9 @@ SPARSE_FILE_INITIAL_SIZE=2G
 SPARSE_IMG_FILE_SUFFIX=sparse_img
 IMG_ENDING=img
 IMG_PREFIX=${IMG_PREFIX:-ubuntu}
-IMG_SUFFIX=${IMG_SUFFIX:-1204_amd64}
+if [ -z "$IMG_SUFFIX" ]; then
+	IMG_SUFFIX="${UBUNTU_MAJOR}${UBUNTU_MINOR}_${UBUNTU_ARCH}"
+fi
 LOOP_DEVICES_MAJOR=7
 LOOP_DEVICES_MINOR_INITIAL=10
 LOCAL_MIRROR=${LOCAL_MIRROR:-'/tmp/mirror'}
@@ -128,7 +130,7 @@ echo 'APT::Get::AllowUnauthenticated 1;' | sudo tee ${TMP_CHROOT_DIR}/etc/apt/ap
 #local mirror
 sudo mkdir -p ${TMP_CHROOT_DIR}/tmp/mirror
 sudo mount --bind ${LOCAL_MIRROR} ${TMP_CHROOT_DIR}/tmp/mirror
-echo "deb file:///tmp/mirror/ubuntu precise main" | sudo tee ${TMP_CHROOT_DIR}/etc/apt/sources.list
+sudo /bin/sh -c "echo deb file:///tmp/mirror/ubuntu ${UBUNTU_RELEASE} main > ${TMP_CHROOT_DIR}/etc/apt/sources.list"
 sudo chroot ${TMP_CHROOT_DIR} apt-get update
 sudo chroot ${TMP_CHROOT_DIR} apt-get -y install ${INSTALL_PACKAGES}
 sudo umount ${TMP_CHROOT_DIR}/tmp/mirror
