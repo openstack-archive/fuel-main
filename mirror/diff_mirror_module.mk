@@ -74,14 +74,14 @@ else
 .DELETE_ON_ERROR: $(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME)
 CURRENT_UBUNTU_REPO_DEP_FILE:=$(call find-files,$(DEPS_DIR_CURRENT)/$(UBUNTU_REPO_ART_NAME))
 ifneq ($(CURRENT_UBUNTU_REPO_DEP_FILE),)
-$(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): CURDIR=$(BUILD_DIR)/mirror/$(CURRENT_VERSION)/ubuntu-repo/pool/main
+$(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): CURDIR=$(BUILD_DIR)/mirror/$(CURRENT_VERSION)/ubuntu-repo
 $(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): $(BUILD_DIR)/mirror/ubuntu_repo_current.done
 $(BUILD_DIR)/mirror/ubuntu_repo_current.done: $(CURRENT_UBUNTU_REPO_DEP_FILE)
 	mkdir -p $(BUILD_DIR)/mirror/$(CURRENT_VERSION)
 	tar xf $(CURRENT_UBUNTU_REPO_DEP_FILE) -C $(BUILD_DIR)/mirror/$(CURRENT_VERSION)
 	$(ACTION.TOUCH)
 else
-$(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): CURDIR=$(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/pool/main
+$(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): CURDIR=$(LOCAL_MIRROR_UBUNTU_OS_BASEURL)
 $(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): $(BUILD_DIR)/mirror/ubuntu_repo_current.done
 $(BUILD_DIR)/mirror/ubuntu_repo_current.done: \
 		$(BUILD_DIR)/mirror/build.done \
@@ -90,19 +90,21 @@ $(BUILD_DIR)/mirror/ubuntu_repo_current.done: \
 	$(ACTION.TOUCH)
 
 endif
-$(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): BASEDIR=$(BUILD_DIR)/mirror/$(BASE_VERSION)/ubuntu-repo/pool/main
-$(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): DIFFDIR=$(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)/pool/main
+$(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): BASEDIR=$(BUILD_DIR)/mirror/$(BASE_VERSION)/ubuntu-repo
+$(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): DIFFDIR=$(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)
 $(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME):
 #	unpacking old version ubuntu mirror
 	mkdir -p $(BUILD_DIR)/mirror/$(BASE_VERSION)
 	tar xf $(DEPS_DIR)/$(BASE_VERSION)/$(UBUNTU_REPO_ART_NAME) -C $(BUILD_DIR)/mirror/$(BASE_VERSION)
 #	copying packages which differ from those in old version
-	mkdir -p $(DIFFDIR)
-	/bin/bash $(SOURCE_DIR)/mirror/create_diff_mirrors.sh $(CURDIR) $(BASEDIR) $(DIFFDIR)
+	mkdir -p $(DIFFDIR)/pool/main
+	/bin/bash $(SOURCE_DIR)/mirror/create_diff_mirrors.sh $(CURDIR)/pool/main $(BASEDIR)/pool/main $(DIFFDIR)/pool/main
 #	creating diff mirror
-	dpkg-scanpackages -m $(DIFFDIR) > $(DIFFDIR)/../Packages
-	gzip -9c $(DIFFDIR)/../Packages > $(DIFFDIR)/../Packages.gz
-	cat $(DIFFDIR)/../Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)/ubuntu-versions.yaml
+	rsync -av --include='*/' --exclude='*' $(CURDIR)/dists $(DIFFDIR)
+	cp $(CURDIR)/dists/$(UBUNTU_RELEASE)/Release $(DIFFDIR)/dists/$(UBUNTU_RELEASE)
+	cp -r $(CURDIR)/indices $(DIFFDIR)
+	$(SOURCE_DIR)/regenerate_ubuntu_repo.sh $(DIFFDIR) $(UBUNTU_RELEASE)
+	cat $(DIFFDIR)/dists/$(UBUNTU_RELEASE)/main/binary-amd64/Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)/ubuntu-versions.yaml
 	tar cf $@ -C $(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION) --xform s:^:ubuntu_updates-$(CURRENT_VERSION)-$(BASE_VERSION)/: .
 endif # ifneq ($(DIFF_UBUNTU_REPO_DEP_FILE),)
 endif # ifneq ($(BASE_VERSION),)
