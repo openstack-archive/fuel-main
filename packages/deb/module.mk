@@ -57,7 +57,7 @@ $(BUILD_DIR)/packages/deb/repo.done:
 	sudo find $(BUILD_DIR)/packages/deb/packages -name '*.deb' -exec cp -u {} $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/pool/main \;
 	echo "Applying fix for upstream bug in dpkg..."
 	-sudo patch -N /usr/bin/dpkg-scanpackages < $(SOURCE_DIR)/packages/dpkg.patch
-	sudo $(SOURCE_DIR)/packages/regenerate_ubuntu_repo $(LOCAL_MIRROR_UBUNTU_OS_BASEURL) $(UBUNTU_RELEASE)
+	sudo $(SOURCE_DIR)/regenerate_ubuntu_repo.sh $(LOCAL_MIRROR_UBUNTU_OS_BASEURL) $(UBUNTU_RELEASE)
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/repo.done \
