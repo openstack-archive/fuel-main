@@ -1273,3 +1273,12 @@ class FuelWebClient(object):
 
     def get_public_vip(self, cluster_id):
         return self.client.get_networks(cluster_id)['public_vip']
+
+
+
+"""
+        cmd = ". openrc; ip netns exec {0} ssh -i /root/.ssh/webserver_rsa -o " \
+              "'StrictHostKeyChecking no'" \
+              " cirros@{1} \"ping -c 1 8.8.8.8\"; echo $? > /root/result.txt".format(
+                  dhcp_namespace, instance_ip)
+"""
