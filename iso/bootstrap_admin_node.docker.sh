@@ -9,6 +9,11 @@ function countdown() {
   done
 }
 
+function fail() {
+  echo "Fuel node deployment FAILED! Check /var/log/puppet/bootstrap_admin_node.log for details" 1>&2
+  exit 1
+}
+# LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 export LANG=en_US.UTF8
 showmenu="no"
 if [ -f /root/.showfuelmenu ]; then
@@ -46,8 +51,6 @@ fi
 . /etc/sysconfig/network
 hostname "$HOSTNAME"
 
-# ruby21-hiera RPM does not include /var/lib/hiera/ directory which may cause errors
-
 ### docker stuff
 images_dir="/var/www/nailgun/docker/images"
 
@@ -69,14 +72,13 @@ for image in $images_dir/*tar ; do
     rm -f "$image"
 done
 
-#TODO(mattymo,LP#1313288) Write astute.yaml to /etc/fuel from fuelmenu
-cp -a /etc/astute.yaml /etc/fuel/astute.yaml
-
 # apply puppet
-# LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
-puppet apply -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
+puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
+if [ $? -ge 4 ];then 
+  fail
+fi
 rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
 
-dockerctl check
+dockerctl check || fail
 bash /etc/rc.local
 echo "Fuel node deployment complete!"
