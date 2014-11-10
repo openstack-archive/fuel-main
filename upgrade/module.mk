@@ -19,11 +19,13 @@ upgrade-lrzip: $(UPGRADE_TARBALL_PATH).lrz
 $(UPGRADE_TARBALL_PATH): \
 		$(BUILD_DIR)/upgrade/openstack-part.done \
 		$(BUILD_DIR)/upgrade/fuel-part.tar \
-		$(BUILD_DIR)/upgrade/common-part.tar
+		$(BUILD_DIR)/upgrade/common-part.tar \
+		$(BUILD_DIR)/upgrade/image-part.tar
 	mkdir -p $(@D)
 	tar Af $@ $(BUILD_DIR)/upgrade/fuel-part.tar
 	tar Af $@ $(BUILD_DIR)/upgrade/openstack-part.tar
 	tar Af $@ $(BUILD_DIR)/upgrade/common-part.tar
+	tar Af $@ $(BUILD_DIR)/upgrade/image-part.tar
 
 ########################
 # UPGRADE LRZIP ARTIFACT
@@ -31,12 +33,14 @@ $(UPGRADE_TARBALL_PATH): \
 $(UPGRADE_TARBALL_PATH).lrz: \
 		$(BUILD_DIR)/upgrade/openstack-part.done \
 		$(BUILD_DIR)/upgrade/fuel-lrzip-part.tar \
-		$(BUILD_DIR)/upgrade/common-part.tar
+		$(BUILD_DIR)/upgrade/common-part.tar \
+		$(BUILD_DIR)/upgrade/image-part.tar
 	mkdir -p $(@D)
 	rm -f $(BUILD_DIR)/upgrade/upgrade-lrzip.tar
 	tar Af $(BUILD_DIR)/upgrade/upgrade-lrzip.tar $(BUILD_DIR)/upgrade/fuel-lrzip-part.tar
 	tar Af $(BUILD_DIR)/upgrade/upgrade-lrzip.tar $(BUILD_DIR)/upgrade/openstack-part.tar
 	tar Af $(BUILD_DIR)/upgrade/upgrade-lrzip.tar $(BUILD_DIR)/upgrade/common-part.tar
+	tar Af $(BUILD_DIR)/upgrade/upgrade-lrzip.tar $(BUILD_DIR)/upgrade/image-part.tar
 	lrzip -L2 -U -D -f $(BUILD_DIR)/upgrade/upgrade-lrzip.tar -o $@
 
 ########################
@@ -104,6 +108,16 @@ $(BUILD_DIR)/upgrade/fuel-lrzip-part.tar: \
 	tar cf $@ -C $(BUILD_DIR) upgrade/images
 	tar rf $@ -C $(BUILD_DIR)/iso/isoroot --xform s:^:upgrade/config/: version.yaml
 	tar rf $@ -C $(BUILD_DIR)/bootstrap --xform s:^:upgrade/bootstrap/: initramfs.img linux
+
+########################
+# IMAGE PART
+########################
+$(BUILD_DIR)/upgrade/image-part.tar: \
+		$(BUILD_DIR)/image/build.done
+	mkdir -p $(@D)
+	rm -f $@
+	tar Af $@ -C $(ARTS_DIR) $(TARGET_CENTOS_IMG_ART_NAME) --xform s:^:upgrade/targetimages/:
+	tar Af $@ -C $(ARTS_DIR) $(TARGET_UBUNTU_IMG_ART_NAME) --xform s:^:upgrade/targetimages/:
 
 ########################
 # OPENSTACK PART
