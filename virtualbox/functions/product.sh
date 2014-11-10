@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #    Copyright 2013 Mirantis, Inc.
 #
@@ -27,7 +27,7 @@ is_product_vm_operational() {
     prompt=$4
 
     # Log in into the VM, see if Puppet has completed its run
-    # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line 
+    # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
     result=$(
         expect << ENDOFEXPECT
         spawn ssh $ssh_options $username@$ip
@@ -35,7 +35,7 @@ is_product_vm_operational() {
         expect "*?assword:*"
         send "$password\r"
         expect "$prompt"
-        send "grep -o 'Fuel node deployment complete' /var/log/puppet/bootstrap_admin_node.log\r"
+        send "grep 'Fuel node deployment' /var/log/puppet/bootstrap_admin_node.log\r"
         expect "$prompt"
 ENDOFEXPECT
     )
@@ -51,10 +51,10 @@ ENDOFEXPECT
 
     for line in $result; do
         IFS="${OIFS}"
-        if [[ $line == Fuel* ]]; then
-	    IFS="${NIFS}"
+        if [[ "$line" == Fuel*complete* ]]; then
+            IFS="${NIFS}"
             return 0;
-        fi    
+        fi
         IFS="${NIFS}"
     done
 
@@ -110,12 +110,12 @@ enable_outbound_network_for_product_vm() {
     else
       echo "OK"
     fi
-    
+
     # Enable internet access on inside the VMs
     echo -n "Enabling outbound network/internet access for the product VM... "
 
     # Log in into the VM, configure and bring up the NAT interface, set default gateway, check internet connectivity
-    # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line 
+    # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
     result=$(
         expect << ENDOFEXPECT
         spawn ssh $ssh_options $username@$ip
