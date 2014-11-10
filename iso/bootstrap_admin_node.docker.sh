@@ -78,5 +78,10 @@ puppet apply -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
 rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
 
 dockerctl check
+rc=$?
 bash /etc/rc.local
-echo "Fuel node deployment complete!"
+if [ "$rc" == "0" ] ; then
+  echo "Fuel node deployment complete!"
+else
+  echo "ERROR: One or more containers failed to pass tests! Please check logs."
+fi
