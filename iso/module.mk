@@ -198,8 +198,8 @@ $(ISOROOT)/bootstrap/bootstrap.rsa: $(SOURCE_DIR)/bootstrap/ssh/id_rsa ;
 ########################
 $(BUILD_DIR)/iso/isoroot-image.done: $(BUILD_DIR)/image/build.done
 	mkdir -p $(ISOROOT)/targetimages
-	tar xf $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME) -C $(ISOROOT)/targetimages
-	tar xf $(BUILD_DIR)/images/$(TARGET_UBUNTU_IMG_ART_NAME) -C $(ISOROOT)/targetimages
+	tar xf $(ARTS_DIR)/$(TARGET_CENTOS_IMG_ART_NAME) -C $(ISOROOT)/targetimages
+	tar xf $(ARTS_DIR)/$(TARGET_UBUNTU_IMG_ART_NAME) -C $(ISOROOT)/targetimages
 	$(ACTION.TOUCH)
 
 ########################
