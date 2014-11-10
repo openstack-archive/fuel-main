@@ -12,20 +12,15 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot
 	mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc
 	cp $(SOURCE_DIR)/mirror/ubuntu/multistrap.conf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/
-	if [ "$(USE_MIRROR)" = "none" ]; then \
-	echo "[Security]" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "source=@@MIRROR_UBUNTU@@" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "suite=@@UBUNTU_RELEASE@@-security" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "omitdebsrc=true" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "[Ubuntu]" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "source=@@MIRROR_UBUNTU@@" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "suite=@@UBUNTU_RELEASE@@" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "omitdebsrc=true" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "[Updates]" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "source=@@MIRROR_UBUNTU@@" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "suite=@@UBUNTU_RELEASE@@-updates" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "omitdebsrc=true" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	fi
+	sed -i $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf \
+		-e 's|@@MIRROR_UBUNTU@@|$(MIRROR_UBUNTU)|g' \
+		-e 's|@@MIRROR_FUEL_UBUNTU@@|$(MIRROR_FUEL_UBUNTU)|g' \
+		-e 's|@@UBUNTU_RELEASE@@|$(UBUNTU_RELEASE)|g' \
+		-e 's|@@UBUNTU_RELEASE_NUMBER@@|$(UBUNTU_RELEASE_NUMBER)|g'
+ifneq (none,$(strip $(USE_MIRROR)))
+	sed -i $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf \
+		-e '/#ifdef USE_MIRROR_NONE/,/#endif/ { d }'
+endif
 	if [ -n "$(EXTRA_DEB_REPOS)" ]; then \
 		extra_count=0; \
 		extra_repos=""; \
@@ -41,8 +36,6 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 		done >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
 		sed -i -e "s/\(bootstrap\|aptsources\)=.*/\0 $$extra_repos/g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
 	fi
-	sed -i -e "s/@@UBUNTU_RELEASE@@/$(UBUNTU_RELEASE)/g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf
-	sed -i -e "s]@@MIRROR_UBUNTU@@]$(MIRROR_UBUNTU)]g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf
 	mount | grep -q $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc || sudo mount -t proc none $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc
 	sudo multistrap -a amd64  -f $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf -d $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "dpkg --configure -a || exit 0"
