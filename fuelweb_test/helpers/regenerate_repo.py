@@ -86,7 +86,7 @@ class CustomRepo(object):
             master_tools = ['dpkg', 'dpkg-devel']
             self.install_tools(master_tools)
             self.get_pkgs_list_ubuntu()
-            pkgs_local_path = ('{0}/pool/main/'
+            pkgs_local_path = ('{0}/pool/'
                                .format(self.local_mirror_ubuntu))
             self.download_pkgs(pkgs_local_path)
             self.update_yaml(self.ubuntu_yaml_versions)
@@ -226,8 +226,17 @@ class CustomRepo(object):
                         .format(npkg + 1, total_pkgs,
                                 self.custom_pkgs_mirror,
                                 pkg["filename:"]))
+
+            pkg_ext = pkg["filename:"].split('.')[-1]
+            if pkg_ext == 'deb':
+                path_suff = 'main/'
+            elif pkg_ext == 'udeb':
+                path_suff = 'debian-installer/'
+            else:
+                path_suff = ''
+
             wget_cmd = "wget --no-verbose --directory-prefix {0} {1}/{2}"\
-                       .format(pkgs_local_path,
+                       .format(pkgs_local_path + path_suff,
                                self.custom_pkgs_mirror,
                                pkg["filename:"])
             wget_result = remote.execute(wget_cmd)
@@ -333,12 +342,12 @@ class CustomRepo(object):
                     err_deps_key = ''.join(str0.split()[-1:])
                     if err_deps_key not in err_deps:
                         err_deps[err_deps_key] = set()
-                    if 'but it is not' in str2:
+                    if 'but it is not' in str2 or 'is to be installed' in str2:
                         err_deps[err_deps_key].add('Depends:{0}'
                                                    .format(str2))
                 elif 'Depends:' in res_str and err_deps_key:
                     str0, str1, str2 = res_str.partition('Depends:')
-                    if 'but it is not' in str2:
+                    if 'but it is not' in str2 or 'is to be installed' in str2:
                         err_deps[err_deps_key].add(str1 + str2)
                 else:
                     err_deps_key = ''

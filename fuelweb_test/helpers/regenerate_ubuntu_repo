@@ -9,9 +9,11 @@ REPONAME=precise
 BINDIR=${REPO_PATH}/dists/${REPONAME}/main
 
 binoverride=indices/override.${REPONAME}.main
+binoverride_udeb=indices/override.${REPONAME}.main.debian-installer
 extraoverride=indices/override.${REPONAME}.extra.main
 
 package_deb=${BINDIR}/binary-amd64/Packages
+package_udeb=${BINDIR}/debian-installer/binary-amd64/Packages
 
 cd ${REPO_PATH}
 
@@ -19,6 +21,11 @@ cd ${REPO_PATH}
 dpkg-scanpackages  -m --extra-override ${extraoverride} -a ${ARCH} pool/main ${binoverride}  > $package_deb 2>/dev/null
 
 gzip -9c $package_deb > ${package_deb}.gz
+
+# Scan *.udeb packages
+dpkg-scanpackages --udeb -m -a ${ARCH} pool/debian-installer ${binoverride_udeb}  > $package_udeb 2>/dev/null
+
+gzip -9c $package_udeb > ${package_udeb}.gz
 
 # Generate release file
 cd ${REPO_PATH}/dists/${REPONAME}
