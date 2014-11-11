@@ -259,3 +259,6 @@ IMAGE_PROVISIONING = os.environ.get('IMAGE_PROVISIONING', 'false') == 'true'
 KEYSTONE_CREDS = {'username': os.environ.get('KEYSTONE_USERNAME', 'admin'),
                   'password': os.environ.get('KEYSTONE_PASSWORD', 'admin'),
                   'tenant_name': os.environ.get('KEYSTONE_TENANT', 'admin')}
+
+EXTERNAL_DNS = os.environ.get('EXTERNAL_DNS', '208.67.220.220')
+EXTERNAL_NTP = os.environ.get('EXTERNAL_NTP', 'ua.pool.ntp.org')
