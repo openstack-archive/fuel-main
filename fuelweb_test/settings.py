@@ -263,3 +263,8 @@ KEYSTONE_CREDS = {'username': os.environ.get('KEYSTONE_USERNAME', 'admin'),
 SSH_CREDENTIALS = {
     'login': os.environ.get('ENV_FUEL_LOGIN', 'root'),
     'password': os.environ.get('ENV_FUEL_PASSWORD', 'r00tme')}
+
+# Plugin path for plugins tests
+
+PLUGIN_PATH = os.environ.get('PLUGIN_PATH')
+GLUSTER_CLUSTER_ENDPOINT = os.environ.get('GLUSTER_CLUSTER_ENDPOINT')
