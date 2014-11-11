@@ -23,10 +23,13 @@ from proboscis import test
 from proboscis import SkipTest
 
 from fuelweb_test.helpers.checkers import check_mysql
+from fuelweb_test.helpers.checkers import external_dns_check
+from fuelweb_test.helpers.checkers import external_ntp_check
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
-from fuelweb_test.helpers import os_actions
 from fuelweb_test import logger
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
+from fuelweb_test.settings import EXTERNAL_DNS
+from fuelweb_test.settings import EXTERNAL_NTP
 from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
 from fuelweb_test.settings import NEUTRON_ENABLE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -83,14 +86,12 @@ class TestHaFailover(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        public_vip = self.fuel_web.get_public_vip(cluster_id)
-        os_conn = os_actions.OpenStackActions(public_vip)
         if NEUTRON_ENABLE:
             self.fuel_web.assert_cluster_ready(
-                os_conn, smiles_count=14, networks_count=2, timeout=300)
+                'slave-01', smiles_count=14, networks_count=1, timeout=300)
         else:
             self.fuel_web.assert_cluster_ready(
-                os_conn, smiles_count=16, networks_count=1, timeout=300)
+                'slave-01', smiles_count=16, networks_count=1, timeout=300)
         self.fuel_web.verify_network(cluster_id)
 
         # Bug #1289297. Pause 5 min to make sure that all remain activity
@@ -221,9 +222,10 @@ class TestHaFailover(TestBasic):
             for interface in interfaces:
                 # Look for management and public ip in namespace and remove it
                 logger.debug("Start to looking for ip of Vips")
-                addresses = self.fuel_web.ip_address_show(devops_node.name,
-                                                          interface=interface,
-                                                          namespace='haproxy')
+                addresses = self.fuel_web.ip_address_show(
+                    devops_node.name, interface=interface,
+                    namespace='haproxy',
+                    pipe_str='| grep {0}$'.format(interface))
                 logger.debug("Vip addresses is {0} for node {1} and interface"
                              " {2}".format(addresses, devops_node.name,
                                            interface))
@@ -248,7 +250,8 @@ class TestHaFailover(TestBasic):
                 # The ip should be restored
                 ip_assigned = lambda nodes: \
                     any([ip in self.fuel_web.ip_address_show(
-                        n.name, 'haproxy', interface)
+                        n.name, 'haproxy',
+                        interface, '| grep {0}$'.format(interface))
                         for n in nodes])
                 logger.debug("Waiting while deleted ip restores ...")
                 wait(lambda: ip_assigned(slaves), timeout=30)
@@ -266,8 +269,7 @@ class TestHaFailover(TestBasic):
                 # Revert initial state. VIP could be moved to other controller
                 self.env.revert_snapshot("deploy_ha")
         assert_equal(ips_amount, 2,
-                     'Not all VIPs were found: expect - 2, found {0}'.format(
-                         ips_amount))
+                     'Not all vips were recovered after fail in 10s')
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_mysql_termination"])
@@ -378,3 +380,94 @@ class TestHaFailover(TestBasic):
                 'primitive vip__management' in config, 'vip management')
             assert_true(
                 'primitive vip__public' in config, 'vip public')
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["external_dns_ha_flat"])
+    @log_snapshot_on_error
+    def external_dns_ha_flat(self):
+        """Use external dns in ha mode
+
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with controller roles
+            3. Add 2 nodes with compute roles
+            4. Deploy the cluster
+            5. Shutdown management interface on master
+            6. Check dns resolution
+
+        """
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_HA,
+            settings={
+                'dns_list': EXTERNAL_DNS
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['controller'],
+                'slave-03': ['controller'],
+                'slave-04': ['compute'],
+                'slave-05': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=16, networks_count=1, timeout=300)
+        node_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        remote = self.env.get_admin_remote()
+        remote_slave = self.env.get_ssh_to_remote(node_ip)
+        remote.execute_async("ifdown eth0")
+        external_dns_check(remote_slave)
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["external_ntp_ha_flat"])
+    @log_snapshot_on_error
+    def external_ntp_ha_flat(self):
+        """Use external dns in ha mode
+
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with controller roles
+            3. Add 2 nodes with compute roles
+            4. Deploy the cluster
+            5. Shutdown management interface on master
+            6. Check ntp update
+
+        """
+
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_HA,
+            settings={
+                'ntp_list': EXTERNAL_NTP,
+                'dns_list': EXTERNAL_DNS
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['controller'],
+                'slave-03': ['controller'],
+                'slave-04': ['compute'],
+                'slave-05': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=16, networks_count=1, timeout=300)
+        remote = self.env.get_admin_remote()
+        node_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        remote_slave = self.env.get_ssh_to_remote(node_ip)
+        vip = self.fuel_web.get_public_vip(cluster_id)
+        remote.execute_async("ifdown eth0")
+        external_ntp_check(remote_slave, vip)
