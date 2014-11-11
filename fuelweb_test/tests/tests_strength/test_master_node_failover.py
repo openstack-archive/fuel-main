@@ -16,7 +16,9 @@ from proboscis.asserts import assert_equal
 from proboscis import test
 
 from fuelweb_test.helpers import common
+from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers import os_actions
+from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import settings
 from fuelweb_test import logger
 from fuelweb_test.tests import base_test_case
@@ -92,3 +94,92 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
 
         # delete instance
         common_func.delete_instance(server)
+
+    @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_5],
+          groups=["deploy_ha_flat_dns_ntp"])
+    @log_snapshot_on_error
+    def deploy_ha_flat_dns_ntp(self):
+        """Use external ntp in ha mode
+
+        Scenario:
+            1. Create cluster
+            2  Configure external NTP,DNS settings
+            3. Add 3 nodes with controller roles
+            4. Add 2 nodes with compute roles
+            5. Deploy the cluster
+
+        """
+
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_HA,
+            settings={
+                'ntp_list': settings.EXTERNAL_NTP,
+                'dns_list': settings.EXTERNAL_DNS
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['controller'],
+                'slave-03': ['controller'],
+                'slave-04': ['compute'],
+                'slave-05': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(self.fuel_web.
+                                              get_public_vip(cluster_id))
+        self.fuel_web.assert_cluster_ready(
+            os_conn, smiles_count=16, networks_count=1, timeout=300)
+        self.env.make_snapshot("deploy_ha_flat_dns_ntp", is_make=True)
+
+    @test(depends_on=[deploy_ha_flat_dns_ntp],
+          groups=["external_dns_ha_flat"])
+    @log_snapshot_on_error
+    def external_dns_ha_flat(self):
+        """Use external dns in ha mode
+
+        Scenario:
+            1. Revert cluster
+            2. Shutdown dnsmasq
+            3. Check dns resolution
+
+        """
+
+        self.env.revert_snapshot("deploy_ha_flat_dns_ntp")
+
+        node_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        remote = self.env.get_admin_remote()
+        remote_slave = self.env.get_ssh_to_remote(node_ip)
+        remote.execute("dockerctl shell cobbler killall dnsmasq")
+        checkers.external_dns_check(remote_slave)
+
+    @test(depends_on=[deploy_ha_flat_dns_ntp],
+          groups=["external_ntp_ha_flat"])
+    @log_snapshot_on_error
+    def external_ntp_ha_flat(self):
+        """Use external ntp in ha mode
+
+        Scenario:
+            1. Create cluster
+            2. Shutdown ntpd
+            3. Check ntp update
+
+        """
+
+        self.env.revert_snapshot("deploy_ha_flat_dns_ntp")
+
+        cluster_id = self.fuel_web.client.get_cluster_id(
+            self.__class__.__name__)
+        remote = self.env.get_admin_remote()
+        node_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        remote_slave = self.env.get_ssh_to_remote(node_ip)
+        vip = self.fuel_web.get_public_vip(cluster_id)
+        remote.execute("pkill -9 ntpd")
+        checkers.external_ntp_check(remote_slave, vip)
