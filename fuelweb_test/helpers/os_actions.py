@@ -298,3 +298,36 @@ class OpenStackActions(common.Common):
 
     def get_nova_network_list(self):
         return self.nova.networks.list()
+
+    def get_neutron_agent_list(self):
+        return self.neutron.list_agents()
+
+    def create_pool(self, pool_name):
+        sub_net = self.neutron.list_subnets()
+        body = {"pool": {"name": pool_name,
+                         "lb_method": "ROUND_ROBIN",
+                         "protocol": "HTTP",
+                         "subnet_id": sub_net['subnets'][0]['id']}}
+        return self.neutron.create_pool(body=body)
+
+    def get_vips(self):
+        return self.neutron.list_vips()
+
+    def create_vip(self, name, protocol, port, pool):
+        sub_net = self.neutron.list_subnets()
+        logger.debug("subnet list is {0}".format(sub_net))
+        logger.debug("pool is {0}".format(pool))
+        body = {"vip": {
+            "name": name,
+            "protocol": protocol,
+            "protocol_port": port,
+            "subnet_id": sub_net['subnets'][0]['id'],
+            "pool_id": pool['pool']['id']
+        }}
+        return self.neutron.create_vip(body=body)
+
+    def delete_vip(self, vip):
+        return self.neutron.delete_vip(vip)
+
+    def get_vip(self, vip):
+        return self.neutron.show_vip(vip)

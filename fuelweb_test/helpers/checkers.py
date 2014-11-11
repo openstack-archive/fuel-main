@@ -278,7 +278,7 @@ def upload_tarball(node_ssh, tar_path, tar_target):
 
 @logwrap
 def check_archive_type(tar_path):
-    if os.path.splitext(tar_path)[1] not in [".tar", ".lrz"]:
+    if os.path.splitext(tar_path)[1] not in [".tar", ".lrz", ".fp"]:
         raise Exception("Wrong archive type!")
 
 
@@ -451,3 +451,14 @@ def check_mysql(remote, node_name):
     _wait(lambda: assert_equal(remote.execute(check_crm_cmd)['exit_code'], 0,
                                'MySQL resource is NOT running on {0}'.format(
                                    node_name)), timeout=60)
+
+
+@logwrap
+def install_plugin_check_code(
+        remote, plugin, exit_code=0):
+    cmd = "cd /var && fuel plugins --install {0} ".format(plugin)
+    chan, stdin, stderr, stdout = remote.execute_async(cmd)
+    logger.debug('Try to read status code from chain...')
+    assert_equal(chan.recv_exit_status(), exit_code,
+                'Install script fails with next message {0}'.format(
+                ''.join(stderr)))
