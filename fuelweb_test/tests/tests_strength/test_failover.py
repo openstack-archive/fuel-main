@@ -23,7 +23,7 @@ from proboscis.asserts import assert_true
 from proboscis import test
 from proboscis import SkipTest
 
-from fuelweb_test.helpers.checkers import check_mysql
+from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers import os_actions
 from fuelweb_test import logger
@@ -301,7 +301,7 @@ class TestHaFailover(TestBasic):
                              format(devops_node.name))
                 raise
 
-            check_mysql(remote, devops_node.name)
+            checkers.check_mysql(remote, devops_node.name)
 
         cluster_id = self.fuel_web.client.get_cluster_id(
             self.__class__.__name__)
