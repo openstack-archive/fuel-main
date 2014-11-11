@@ -131,8 +131,8 @@ echo 'APT::Get::AllowUnauthenticated 1;' | sudo tee ${TMP_CHROOT_DIR}/etc/apt/ap
 sudo mkdir -p ${TMP_CHROOT_DIR}/tmp/mirror
 sudo mount --bind ${LOCAL_MIRROR} ${TMP_CHROOT_DIR}/tmp/mirror
 sudo /bin/sh -c "echo deb file:///tmp/mirror/ubuntu ${UBUNTU_RELEASE} main > ${TMP_CHROOT_DIR}/etc/apt/sources.list"
-sudo chroot ${TMP_CHROOT_DIR} apt-get update
-sudo chroot ${TMP_CHROOT_DIR} apt-get -y install ${INSTALL_PACKAGES}
+sudo chroot ${TMP_CHROOT_DIR} apt-get update || die "Couldn't update packages list from sources"
+sudo chroot ${TMP_CHROOT_DIR} apt-get -y install ${INSTALL_PACKAGES} || die "Couldn't install the rest of packages successfully"
 sudo umount ${TMP_CHROOT_DIR}/tmp/mirror
 
 #cloud-init reconfigure to use NoCloud data source
