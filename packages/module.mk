@@ -12,3 +12,6 @@ $(BUILD_DIR)/packages/build.done:
 	$(ACTION.TOUCH)
 
 packages: $(BUILD_DIR)/packages/build.done
+
+packages-deb: $(BUILD_DIR)/packages/deb/build.done
+packages-rpm: $(BUILD_DIR)/packages/rpm/build.done

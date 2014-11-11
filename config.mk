@@ -116,6 +116,10 @@ SEPARATE_IMAGES?=/boot,ext2 /,ext4
 # This option is depricated, because there are no upstream versions
 # of nailgun packages any more
 BUILD_PACKAGES?=1
+BUILD_DEB_PACKAGES?=1
+ifeq (0,$(strip BUILD_PACKAGES))
+BUILD_DEB_PACKAGES?=0
+endif
 
 # Build OpenStack packages from external sources (do not use prepackaged versions)
 # Enter the comma-separated list of OpenStack packages to build, or '0' otherwise.

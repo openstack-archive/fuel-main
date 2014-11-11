@@ -11,8 +11,11 @@ RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
 
 # Usage:
 # (eval (call prepare_file_source,package_name,file_name,source_path))
+# Note: dependencies for deb targets are also specified here to make
+# sure the source is ready before the build is started.
 define prepare_file_source
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/sources/$1/$2
+$(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/sources/$1/$2
 $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
 	cp $3 $(BUILD_DIR)/packages/sources/$1/$2
@@ -20,8 +23,11 @@ endef
 
 # Usage:
 # (eval (call prepare_python_source,package_name,file_name,source_path))
+# Note: dependencies for deb targets are also specified here to make
+# sure the source is ready before the build is started.
 define prepare_python_source
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/sources/$1/$2
+$(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/sources/$1/$2
 $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
 ifeq ($1,nailgun)
@@ -34,8 +40,11 @@ endef
 
 # Usage:
 # (eval (call prepare_tgz_source,package_name,file_name,source_path))
+# Note: dependencies for deb targets are also specified here to make
+# sure the source is ready before the build is started.
 define prepare_tgz_source
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/sources/$1/$2
+$(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/sources/$1/$2
 $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
 	cd $3 && tar zcf $(BUILD_DIR)/packages/sources/$1/$2 *
@@ -43,8 +52,11 @@ endef
 
 # Usage:
 # (eval (call prepare_ruby21_source,package_name,file_name,source_path))
+# Note: dependencies for deb targets are also specified here to make
+# sure the source is ready before the build is started.
 define prepare_ruby21_source
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/sources/$1/$2
+$(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/sources/$1/$2
 $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
 	cd $3 && gem build *.gemspec && cp $2 $(BUILD_DIR)/packages/sources/$1/$2
