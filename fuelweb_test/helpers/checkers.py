@@ -22,6 +22,8 @@ from ipaddr import IPNetwork
 
 from fuelweb_test import logger
 from fuelweb_test import logwrap
+from fuelweb_test.settings import EXTERNAL_DNS
+from fuelweb_test.settings import EXTERNAL_NTP
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from fuelweb_test.settings import POOLS
@@ -817,3 +819,40 @@ def check_stats_private_info(collector_remote, postgres_actions,
 def check_kernel(kernel, expected_kernel):
     assert_equal(kernel, expected_kernel,
                  "kernel version is wrong, it is {0}".format(kernel))
+
+
+@logwrap
+def external_dns_check(remote_slave):
+    logger.info("External dns check")
+    ext_dns_ip = ''.join(
+        remote_slave.execute("grep {0} /etc/resolv.dnsmasq.conf | "
+                             "awk {{'print $2'}}".
+                             format(EXTERNAL_DNS))["stdout"]).rstrip()
+    assert_equal(ext_dns_ip, EXTERNAL_DNS,
+                 "/etc/resolv.dnsmasq.conf does not contain external dns ip")
+    command_hostname = ''.join(
+        remote_slave.execute("host 8.8.8.8 | awk {'print $5'}")
+        ["stdout"]).rstrip()
+    hostname = 'google-public-dns-a.google.com.'
+    assert_equal(command_hostname, hostname,
+                 "Can't resolve hostname")
+
+
+@logwrap
+def external_ntp_check(remote_slave, vip):
+    logger.info("External ntp check")
+    ext_ntp_ip = ''.join(
+        remote_slave.execute("awk '/^server +{0}/{{print $2}}' "
+                             "/etc/ntp.conf".
+                             format(EXTERNAL_NTP))["stdout"]).rstrip()
+    assert_equal(ext_ntp_ip, EXTERNAL_NTP,
+                 "/etc/ntp.conf does not contain external ntp ip")
+    status = "ntpdate -s {0}".format(vip)
+    try:
+        wait(
+            lambda: not remote_slave.execute(status)['exit_code'], timeout=120)
+    except Exception as e:
+        logger.error(e)
+        a = remote_slave.execute(status)
+        assert_equal(a['exit_code'], 0,
+                     "Failed update ntp")
