@@ -348,3 +348,6 @@ FUEL_STATS_SSL = os.environ.get('FUEL_STATS_SSL', 'true') == 'true'
 FUEL_STATS_HOST = os.environ.get('FUEL_STATS_HOST',
                                  '172.18.2.169')
 FUEL_STATS_PORT = os.environ.get('FUEL_STATS_PORT', '443')
+
+EXTERNAL_DNS = os.environ.get('EXTERNAL_DNS', '208.67.220.220')
+EXTERNAL_NTP = os.environ.get('EXTERNAL_NTP', 'ua.pool.ntp.org')
