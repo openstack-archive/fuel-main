@@ -1,6 +1,7 @@
-.PHONY: mirror clean clean-mirror
+.PHONY: mirror clean clean-mirror make-changelog
 
 mirror: $(BUILD_DIR)/mirror/build.done
+make-changelog: $(BUILD_DIR)/mirror/make-changelog.done
 
 clean: clean-mirror
 
@@ -16,4 +17,9 @@ $(BUILD_DIR)/mirror/build.done: \
 		$(BUILD_DIR)/mirror/centos/build.done \
 		$(BUILD_DIR)/mirror/ubuntu/build.done \
 		$(BUILD_DIR)/mirror/docker/build.done
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/mirror/make-changelog.done: $(BUILD_DIR)/mirror/build.done
+		sudo bash -c "export LOCAL_MIRROR=$(LOCAL_MIRROR); \
+		$(SOURCE_DIR)/report-changelog.sh"
 	$(ACTION.TOUCH)
