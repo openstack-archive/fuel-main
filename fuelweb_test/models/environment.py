@@ -539,10 +539,14 @@ class EnvironmentModel(object):
     @logwrap
     def sync_node_time(self, remote):
         self.execute_remote_cmd(remote, 'hwclock -s')
-        self.execute_remote_cmd(remote, 'NTPD=$(find /etc/init.d/ -regex \''
-                                        '/etc/init.d/\(ntp.?\|ntp-dev\)\');'
-                                        ' $NTPD stop; killall ntpd; '
-                                        'ntpd -qg && $NTPD start')
+        self.execute_remote_cmd(remote,
+                                'crm_resource --list | grep -q "p_ntp" '
+                                '&& { crm resource stop p_ntp;'
+                                ' ntpd -qg && crm resource start p_ntp; }'
+                                ' || { NTPD=$(find /etc/init.d/ -regex \''
+                                '/etc/init.d/\(ntp.?\|ntp-dev\)\');'
+                                ' $NTPD stop; killall ntpd; '
+                                'ntpd -qg && $NTPD start; }')
         self.execute_remote_cmd(remote, 'hwclock -w')
         remote_date = remote.execute('date')['stdout']
         logger.info("Node time: %s" % remote_date)
