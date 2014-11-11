@@ -33,6 +33,18 @@ function prepare_upgrade_files {
   fi
 }
 
+function prepare_virtualenv {
+  VIRTUALENV_PATH=$UPGRADE_PATH/.fuel-upgrade-venv
+
+  if ! which virtualenv >/dev/null; then
+    yum -y install python-virtualenv
+  fi
+
+  rm -rf $VIRTUALENV_PATH
+  virtualenv $VIRTUALENV_PATH
+  $VIRTUALENV_PATH/bin/pip install fuel_upgrade --no-index --find-links file://$UPGRADE_PATH/deps
+}
+
 
 function run_upgrade {
   # decompress images iff the docker upgrader is used
@@ -40,8 +52,11 @@ function run_upgrade {
     prepare_upgrade_files
   fi
 
+  # prepare virtualenv for fuel_upgrade script
+  prepare_virtualenv
+
   # run fuel_upgrade script
-  PYTHONPATH="$UPGRADE_PATH/site-packages" python "$UPGRADE_PATH/bin/fuel-upgrade" --src "$UPGRADE_PATH" $UPGRADERS "$@" || error "Upgrade failed" $?
+  $UPGRADE_PATH/.fuel-upgrade-venv/bin/python "$UPGRADE_PATH/.fuel-upgrade-venv/bin/fuel-upgrade" --src "$UPGRADE_PATH" $UPGRADERS "$@" || error "Upgrade failed" $?
 }
 
 
