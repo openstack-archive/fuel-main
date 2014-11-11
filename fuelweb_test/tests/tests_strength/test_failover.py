@@ -378,3 +378,94 @@ class TestHaFailover(TestBasic):
                 'primitive vip__management' in config, 'vip management')
             assert_true(
                 'primitive vip__public' in config, 'vip public')
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["external_dns_ha_flat"])
+    @log_snapshot_on_error
+    def external_dns_ha_flat(self):
+        """Use external dns in ha mode
+
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with controller roles
+            3. Add 2 nodes with compute roles
+            4. Deploy the cluster
+            5. Shutdown management interface on master
+            6. Check dns resolution
+
+        """
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_HA,
+            settings={
+                'dns_list': EXTERNAL_DNS
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['controller'],
+                'slave-03': ['controller'],
+                'slave-04': ['compute'],
+                'slave-05': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=16, networks_count=1, timeout=300)
+        node_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        remote = self.env.get_admin_remote()
+        remote_slave = self.env.get_ssh_to_remote(node_ip)
+        remote.execute_async("ifdown eth0")
+        external_dns_check(remote_slave)
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["external_ntp_ha_flat"])
+    @log_snapshot_on_error
+    def external_ntp_ha_flat(self):
+        """Use external dns in ha mode
+
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with controller roles
+            3. Add 2 nodes with compute roles
+            4. Deploy the cluster
+            5. Shutdown management interface on master
+            6. Check ntp update
+
+        """
+
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_HA,
+            settings={
+                'ntp_list': EXTERNAL_NTP,
+                'dns_list': EXTERNAL_DNS
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['controller'],
+                'slave-03': ['controller'],
+                'slave-04': ['compute'],
+                'slave-05': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.assert_cluster_ready(
+            'slave-01', smiles_count=16, networks_count=1, timeout=300)
+        remote = self.env.get_admin_remote()
+        node_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        remote_slave = self.env.get_ssh_to_remote(node_ip)
+        vip = self.fuel_web.get_public_vip(cluster_id)
+        remote.execute_async("ifdown eth0")
+        external_ntp_check(remote_slave, vip)

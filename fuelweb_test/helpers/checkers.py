@@ -451,3 +451,36 @@ def check_mysql(remote, node_name):
     _wait(lambda: assert_equal(remote.execute(check_crm_cmd)['exit_code'], 0,
                                'MySQL resource is NOT running on {0}'.format(
                                    node_name)), timeout=60)
+
+
+@logwrap
+def external_dns_check(remote_slave):
+    logger.info("External dns check")
+    ext_dns_ip = ''.join(
+        remote_slave.execute("grep {0} /etc/resolv.dnsmasq.conf | "
+                             "awk {{'print $2'}}".
+                             format(EXTERNAL_DNS))["stdout"]).rstrip()
+    assert_equal(ext_dns_ip, EXTERNAL_DNS,
+                 "/etc/resolv.dnsmasq.conf does not contain external dns ip")
+    command_hostname = ''.join(
+        remote_slave.execute("host 8.8.8.8 | awk {'print $5'}")
+        ["stdout"]).rstrip()
+    hostname = 'google-public-dns-a.google.com.'
+    assert_equal(command_hostname, hostname,
+                 "Can't resolve hostname")
+
+
+@logwrap
+def external_ntp_check(remote_slave, vip):
+    logger.info("External ntp check")
+    ext_ntp_ip = ''.join(
+        remote_slave.execute("grep {0} /etc/ntp.conf | "
+                             "awk {{'print $2'}}".
+                             format(EXTERNAL_NTP))["stdout"]).rstrip()
+    assert_equal(ext_ntp_ip, EXTERNAL_NTP,
+                 "/etc/ntp.conf does not contain external ntp ip")
+    status = ''.join(
+        remote_slave.execute("ntpdate -s {0}; echo $?".format(vip))
+        ["stdout"]).rstrip()
+    assert_equal(int(status), 0,
+                 "Failed update ntp")
