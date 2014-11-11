@@ -357,6 +357,10 @@ class FuelWebClient(object):
                     section = 'vcenter'
                 if option == 'assign_to_all_nodes':
                     section = 'public_network_assignment'
+                if option in ('dns_list'):
+                    section = 'external_dns'
+                if option in ('ntp_list'):
+                    section = 'external_ntp'
                 if section:
                     attributes['editable'][section][option]['value'] =\
                         settings[option]
