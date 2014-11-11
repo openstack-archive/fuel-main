@@ -278,7 +278,7 @@ def upload_tarball(node_ssh, tar_path, tar_target):
 
 @logwrap
 def check_archive_type(tar_path):
-    if os.path.splitext(tar_path)[1] not in [".tar", ".lrz"]:
+    if os.path.splitext(tar_path)[1] not in [".tar", ".lrz", ".fp"]:
         raise Exception("Wrong archive type!")
 
 
@@ -459,3 +459,14 @@ def check_mysql(remote, node_name):
         logger.error('galera status is {0}'.format(''.join(remote.execute(
             check_galera_cmd)['stdout']).rstrip()))
         raise
+
+
+@logwrap
+def install_plugin_check_code(
+        remote, plugin, exit_code=0):
+    cmd = "cd /var && fuel plugins --install {0} ".format(plugin)
+    chan, stdin, stderr, stdout = remote.execute_async(cmd)
+    logger.debug('Try to read status code from chain...')
+    assert_equal(
+        chan.recv_exit_status(), exit_code,
+        'Install script fails with next message {0}'.format(''.join(stderr)))
