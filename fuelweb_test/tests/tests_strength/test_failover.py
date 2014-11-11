@@ -23,11 +23,13 @@ from proboscis.asserts import assert_true
 from proboscis import test
 from proboscis import SkipTest
 
-from fuelweb_test.helpers.checkers import check_mysql
+from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers import os_actions
 from fuelweb_test import logger
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
+from fuelweb_test.settings import EXTERNAL_DNS
+from fuelweb_test.settings import EXTERNAL_NTP
 from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
 from fuelweb_test.settings import NEUTRON_ENABLE
 from fuelweb_test.settings import OPENSTACK_RELEASE
@@ -301,7 +303,7 @@ class TestHaFailover(TestBasic):
                              format(devops_node.name))
                 raise
 
-            check_mysql(remote, devops_node.name)
+            checkers.check_mysql(remote, devops_node.name)
 
         cluster_id = self.fuel_web.client.get_cluster_id(
             self.__class__.__name__)
@@ -518,3 +520,98 @@ class TestHaFailover(TestBasic):
                 "grep \"nova-compute.*trying to restart\" "
                 "/var/log/monit.log")['stdout']) > 0,
                 'Nova service was not restarted')
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["external_dns_ha_flat"])
+    @log_snapshot_on_error
+    def external_dns_ha_flat(self):
+        """Use external dns in ha mode
+
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with controller roles
+            3. Add 2 nodes with compute roles
+            4. Deploy the cluster
+            5. Shutdown admin interface on master
+            6. Check dns resolution
+
+        """
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_HA,
+            settings={
+                'dns_list': EXTERNAL_DNS
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['controller'],
+                'slave-03': ['controller'],
+                'slave-04': ['compute'],
+                'slave-05': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(self.fuel_web.
+                                              get_public_vip(cluster_id))
+        self.fuel_web.assert_cluster_ready(
+            os_conn, smiles_count=16, networks_count=1, timeout=300)
+        node_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        remote = self.env.get_admin_remote()
+        remote_slave = self.env.get_ssh_to_remote(node_ip)
+        remote.execute_async("ifdown eth0")
+        checkers.external_dns_check(remote_slave)
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["external_ntp_ha_flat"])
+    @log_snapshot_on_error
+    def external_ntp_ha_flat(self):
+        """Use external dns in ha mode
+
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with controller roles
+            3. Add 2 nodes with compute roles
+            4. Deploy the cluster
+            5. Shutdown admin interface on master
+            6. Check ntp update
+
+        """
+
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_HA,
+            settings={
+                'ntp_list': EXTERNAL_NTP,
+                'dns_list': EXTERNAL_DNS
+            }
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['controller'],
+                'slave-03': ['controller'],
+                'slave-04': ['compute'],
+                'slave-05': ['compute']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(self.fuel_web.
+                                              get_public_vip(cluster_id))
+        self.fuel_web.assert_cluster_ready(
+            os_conn, smiles_count=16, networks_count=1, timeout=300)
+        remote = self.env.get_admin_remote()
+        node_ip = self.fuel_web.get_nailgun_node_by_name(
+            'slave-01')['ip']
+        remote_slave = self.env.get_ssh_to_remote(node_ip)
+        vip = self.fuel_web.get_public_vip(cluster_id)
+        remote.execute_async("ifdown eth0")
+        checkers.external_ntp_check(remote_slave, vip)
