@@ -2,6 +2,7 @@
 
 SCRIPT_PATH=$(dirname $(readlink -e $0))
 UPGRADE_PATH=$SCRIPT_PATH/upgrade
+VIRTUALENV_PATH=$UPGRADE_PATH/.fuel-upgrade-venv
 UPGRADERS=${UPGRADERS:-{{UPGRADERS}}}
 LOCK_FILE=/var/lock/fuel_upgarde.lock
 
@@ -33,6 +34,17 @@ function prepare_upgrade_files {
   fi
 }
 
+function prepare_virtualenv {
+
+  if ! which virtualenv >/dev/null; then
+    yum -y install python-virtualenv || error "Failed to install python-virtualenv"
+  fi
+
+  rm -rf $VIRTUALENV_PATH
+  virtualenv $VIRTUALENV_PATH
+  $VIRTUALENV_PATH/bin/pip install fuel_upgrade --no-index --find-links file://$UPGRADE_PATH/deps || error "Failed to install fuel_upgrade script"
+}
+
 
 function run_upgrade {
   # decompress images iff the docker upgrader is used
@@ -40,8 +52,11 @@ function run_upgrade {
     prepare_upgrade_files
   fi
 
+  # prepare virtualenv for fuel_upgrade script
+  prepare_virtualenv
+
   # run fuel_upgrade script
-  PYTHONPATH="$UPGRADE_PATH/site-packages" python "$UPGRADE_PATH/bin/fuel-upgrade" --src "$UPGRADE_PATH" $UPGRADERS "$@" || error "Upgrade failed" $?
+  $VIRTUALENV_PATH/bin/python "$VIRTUALENV_PATH/bin/fuel-upgrade" --src "$UPGRADE_PATH" $UPGRADERS "$@" || error "Upgrade failed" $?
 }
 
 
