@@ -31,6 +31,8 @@ crda
 curl
 daemonize
 debconf-utils
+devscripts
+debhelper
 dhcp-checker
 diffutils
 discover

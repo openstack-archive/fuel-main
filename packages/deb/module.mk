@@ -22,11 +22,13 @@ $(BUILD_DIR)/packages/deb/$1.done: export SANDBOX_UBUNTU_UP:=$$(SANDBOX_UBUNTU_U
 $(BUILD_DIR)/packages/deb/$1.done: export SANDBOX_UBUNTU_DOWN:=$$(SANDBOX_UBUNTU_DOWN)
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/repos/repos.done
 	mkdir -p $(BUILD_DIR)/packages/deb/packages $(BUILD_DIR)/packages/deb/sources
-	mkdir -p $$(SANDBOX_UBUNTU)
-	mkdir -p $$(SANDBOX_UBUNTU)/proc
-	sed -e "s/@@UBUNTU_RELEASE@@/$(UBUNTU_RELEASE)/g" $$(SOURCE_DIR)/packages/multistrap.conf | sudo tee $$(SANDBOX_UBUNTU)/multistrap.conf
-	sudo sh -c "$$$${SANDBOX_UBUNTU_UP}"
-	sudo chroot $$(SANDBOX_UBUNTU) /bin/bash -c "apt-get update"
+	env \
+		SANDBOX_UBUNTU=$$(SANDBOX_UBUNTU) \
+		UBUNTU_RELEASE=$$(UBUNTU_RELEASE) \
+		UBUNTU_ARCH=$$(UBUNTU_ARCH) \
+		LOCAL_MIRROR=$$(LOCAL_MIRROR) \
+		SANDBOX_DEB_PKGS='$$(SANDBOX_DEB_PKGS)' \
+		$$(SOURCE_DIR)/packages/deb/sandbox-ubuntu.sh
 	sudo mkdir -p $$(SANDBOX_UBUNTU)/tmp/$1
 ifeq ($1,$(filter $1,nailgun-net-check python-tasklib))
 	tar zxf $(BUILD_DIR)/packages/sources/$1/$(subst python-,,$1)*.tar.gz -C $(BUILD_DIR)/packages/deb/sources

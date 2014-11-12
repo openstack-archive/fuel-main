@@ -51,18 +51,7 @@ umount $(SANDBOX)/proc
 umount $(SANDBOX)/dev
 endef
 
-define SANDBOX_UBUNTU_UP
-mount | grep -q $(SANDBOX_UBUNTU)/proc || sudo mount -t proc none $(SANDBOX_UBUNTU)/proc
-[ -f $(SANDBOX_UBUNTU)/etc/debian_version ]  || sudo multistrap -a amd64 -f $(SANDBOX_UBUNTU)/multistrap.conf -d $(SANDBOX_UBUNTU)/
-sudo chroot $(SANDBOX_UBUNTU) /bin/bash -c "locale-gen en_US.UTF-8 ; dpkg-reconfigure locales"
-sudo chroot $(SANDBOX_UBUNTU) /bin/bash -c "dpkg --configure -a || exit 0"
-sudo chroot $(SANDBOX_UBUNTU) /bin/bash -c "rm -rf /var/run/*"
-sudo chroot $(SANDBOX_UBUNTU) /bin/bash -c "dpkg --configure -a || exit 0"
-echo 'APT::Get::AllowUnauthenticated 1;' | sudo tee $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
-[ -n "$(EXTRA_DEB_REPOS)" ] && echo "$(EXTRA_DEB_REPOS)" | tr '|' '\n' | while read repo; do echo deb $$repo; done  | sudo tee $(SANDBOX_UBUNTU)/etc/apt/sources.list.d/extra.list || exit 0
-sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
-mount | grep -q $(SANDBOX_UBUNTU)/proc || sudo mount -t proc none $(SANDBOX_UBUNTU)/proc
-endef
+SANDBOX_DEB_PKGS?=apt wget bzip2 apt-utils build-essential python-setuptools devscripts debhelper fakeroot
 
 define SANDBOX_UBUNTU_DOWN
 sync
