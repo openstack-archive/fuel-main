@@ -51,17 +51,22 @@ umount $(SANDBOX)/proc
 umount $(SANDBOX)/dev
 endef
 
-define SANDBOX_UBUNTU_UP
-mount | grep -q $(SANDBOX_UBUNTU)/proc || sudo mount -t proc none $(SANDBOX_UBUNTU)/proc
-[ -f $(SANDBOX_UBUNTU)/etc/debian_version ]  || sudo multistrap -a amd64 -f $(SANDBOX_UBUNTU)/multistrap.conf -d $(SANDBOX_UBUNTU)/
-sudo chroot $(SANDBOX_UBUNTU) /bin/bash -c "locale-gen en_US.UTF-8 ; dpkg-reconfigure locales"
-sudo chroot $(SANDBOX_UBUNTU) /bin/bash -c "dpkg --configure -a || exit 0"
-sudo chroot $(SANDBOX_UBUNTU) /bin/bash -c "rm -rf /var/run/*"
-sudo chroot $(SANDBOX_UBUNTU) /bin/bash -c "dpkg --configure -a || exit 0"
-echo 'APT::Get::AllowUnauthenticated 1;' | sudo tee $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
-[ -n "$(EXTRA_DEB_REPOS)" ] && echo "$(EXTRA_DEB_REPOS)" | tr '|' '\n' | while read repo; do echo deb $$repo; done  | sudo tee $(SANDBOX_UBUNTU)/etc/apt/sources.list.d/extra.list || exit 0
+define SANDBOX_UBUNTU
+mkdir -p $(SANDBOX_UBUNTU)
+sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) file://$(LOCAL_MIRROR)/ubuntu
 sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
-mount | grep -q $(SANDBOX_UBUNTU)/proc || sudo mount -t proc none $(SANDBOX_UBUNTU)/proc
+# generate utf8 locale
+sudo chroot $(SANDBOX_UBUNTU) /bin/sh -c 'locale-gen en_US.UTF-8; dpkg-reconfigure locales'
+# setup apt
+test -e $(SANDBOX_UBUNTU)/tmp/apt && rm -rf $(SANDBOX_UBUNTU)/tmp/apt
+mkdir -p $(SANDBOX_UBUNTU)/tmp/apt
+sudo cp -al $(LOCAL_MIRROR)/ubuntu/dists $(LOCAL_MIRROR)/ubuntu/pool $(SANDBOX_UBUNTU)/tmp/apt
+echo "deb file:///tmp/apt $(UBUNTU_RELEASE) main" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/sources.list
+echo "APT::Get::AllowUnauthenticated 1;" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
+sudo chroot $(SANDBOX_UBUNTU) apt-get update
+# install more packages
+sudo chroot $(SANDBOX_UBUNTU) apt-get update
+sudo chroot $(SANDBOX_UBUNTU) apt-get install --yes $(SANDBOX_DEB_PKGS)
 endef
 
 define SANDBOX_UBUNTU_DOWN
