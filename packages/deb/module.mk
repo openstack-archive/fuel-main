@@ -14,20 +14,18 @@ clean-deb:
 define build_deb
 $(BUILD_DIR)/packages/deb/repo.done: $(BUILD_DIR)/packages/deb/$1.done
 $(BUILD_DIR)/packages/deb/repo.done: $(BUILD_DIR)/packages/deb/$1-repocleanup.done
-
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/mirror/ubuntu/build.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/source_$1.done
-
 $(BUILD_DIR)/packages/deb/$1.done: SANDBOX_UBUNTU:=$(BUILD_DIR)/packages/deb/SANDBOX
+$(BUILD_DIR)/packages/deb/$1.done: SANDBOX_DEB_PKGS:=apt wget bzip2 apt-utils build-essential python-setuptools devscripts debhelper fakeroot
 $(BUILD_DIR)/packages/deb/$1.done: export SANDBOX_UBUNTU_UP:=$$(SANDBOX_UBUNTU_UP)
 $(BUILD_DIR)/packages/deb/$1.done: export SANDBOX_UBUNTU_DOWN:=$$(SANDBOX_UBUNTU_DOWN)
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/repos/repos.done
 	mkdir -p $(BUILD_DIR)/packages/deb/packages $(BUILD_DIR)/packages/deb/sources
-	mkdir -p $$(SANDBOX_UBUNTU)
-	mkdir -p $$(SANDBOX_UBUNTU)/proc
-	sed -e "s/@@UBUNTU_RELEASE@@/$(UBUNTU_RELEASE)/g" $$(SOURCE_DIR)/packages/multistrap.conf | sudo tee $$(SANDBOX_UBUNTU)/multistrap.conf
-	sudo sh -c "$$$${SANDBOX_UBUNTU_UP}"
-	sudo chroot $$(SANDBOX_UBUNTU) /bin/bash -c "apt-get update"
+#	create sandbox if does not exist
+	test -e $$(SANDBOX_UBUNTU)/etc/debian_version || sudo sh -c "$$$${SANDBOX_UBUNTU_UP}"
+#	mount proc if not mounted
+	mountpoint -q $$(SANDBOX_UBUNTU)/proc || sudo mount -t proc sandbox_ubuntu_proc $$(SANDBOX_UBUNTU)/proc
 	sudo mkdir -p $$(SANDBOX_UBUNTU)/tmp/$1
 ifeq ($1,$(filter $1,nailgun-net-check python-tasklib))
 	tar zxf $(BUILD_DIR)/packages/sources/$1/$(subst python-,,$1)*.tar.gz -C $(BUILD_DIR)/packages/deb/sources
