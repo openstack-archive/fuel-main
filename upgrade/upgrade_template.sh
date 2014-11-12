@@ -17,23 +17,6 @@ function error {
 }
 
 
-function prepare_upgrade_files {
-  DOCKER_IMAGES_DIR_PATH=$UPGRADE_PATH/images
-  DOCKER_IMAGES_ARCHIVE_PATH=$DOCKER_IMAGES_DIR_PATH/fuel-images.tar.lrz
-
-  if [ -r $DOCKER_IMAGES_ARCHIVE_PATH ]; then
-    pushd $DOCKER_IMAGES_DIR_PATH >> /dev/null
-
-    local err_msg="Failed to uncompress docker "
-    err_msg+="images ${DOCKER_IMAGES_ARCHIVE_PATH}, "
-    err_msg+="check if you have enough free space"
-
-    lrzuntar -f $DOCKER_IMAGES_ARCHIVE_PATH || error "$err_msg"
-
-    popd >> /dev/null
-  fi
-}
-
 function prepare_virtualenv {
 
   if ! which virtualenv >/dev/null; then
@@ -47,11 +30,6 @@ function prepare_virtualenv {
 
 
 function run_upgrade {
-  # decompress images iff the docker upgrader is used
-  if [[ $UPGRADERS == *docker* ]]; then
-    prepare_upgrade_files
-  fi
-
   # prepare virtualenv for fuel_upgrade script
   prepare_virtualenv
 
