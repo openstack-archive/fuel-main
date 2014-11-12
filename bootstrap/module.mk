@@ -195,10 +195,20 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/modules/*' './boot/vmlinuz*' )
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/firmware/*' )
-	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'libmlx4*' | xargs rpm2cpio | \
-		( cd $(INITRAMROOT); sudo cpio -idm './etc/*' './usr/lib64/*' )
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'kernel-ib*' | xargs rpm2cpio | \
+		( cd $(INITRAMROOT); sudo cpio -idm -f './etc/infiniband/openib.conf' \
+		'./etc/init.d/openibd' './etc/modprobe.d/mlnx.conf')
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'libibverbs*' | xargs rpm2cpio | \
+		( cd $(INITRAMROOT); sudo cpio -idm './*')
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'libmlx4*OFED*' | xargs rpm2cpio | \
+		( cd $(INITRAMROOT); sudo cpio -idm './*' )
+
+	# /etc/depmod.d conf for bootstrap is managed by fuel-main git, in order
+	# to include missing ubuntu modules directories for CentOS based images.
+	# For more info: http://ubuntuforums.org/showthread.php?t=1960892
 	for version in `ls -1 $(INITRAMROOT)/lib/modules`; do \
-		sudo depmod -b $(INITRAMROOT) $$version; \
+		sudo depmod -b $(INITRAMROOT) $$version \
+		-C $(SOURCE_DIR)/bootstrap/bootstrap_depmod.conf; \
 	done
 
 	# Some extra actions
