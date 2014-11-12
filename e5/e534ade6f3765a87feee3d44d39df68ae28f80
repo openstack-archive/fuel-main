@@ -1,0 +1,12 @@
+Verified+2: Jenkins
+Code-Review+2: Roman Vyalov <rvyalov@mirantis.com>
+Workflow+1: Roman Vyalov <rvyalov@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+1: Dmitry Burmistrov <dburmistrov@mirantis.com>
+Code-Review+1: Sergey Kulanov <skulanov@mirantis.com>
+Code-Review+1: Dmitry Kaigarodsev <dkaiharodsev@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 12 Nov 2014 14:42:53 +0000
+Reviewed-on: https://review.openstack.org/133963
+Project: stackforge/fuel-main
+Branch: refs/heads/stable/5.1
