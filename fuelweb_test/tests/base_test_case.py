@@ -138,3 +138,11 @@ class SetupEnvironment(TestBasic):
         self.env.revert_snapshot("ready")
         self.env.bootstrap_nodes(self.env.nodes().slaves[:5])
         self.env.make_snapshot("ready_with_5_slaves", is_make=True)
+
+    @test(depends_on=[prepare_release])
+    def prepare_slaves(self, slaves_number):
+        self.check_run("ready_with_{0}_slaves".format(slaves_number))
+        self.env.revert_snapshot("ready")
+        self.env.bootstrap_nodes(self.env.nodes().slaves[:slaves_number])
+        self.env.make_snapshot("ready_with_{0}_slaves".format(slaves_number),
+                               is_make=True)
