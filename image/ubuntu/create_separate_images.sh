@@ -56,7 +56,8 @@ if [ ! -d "$TMP_CHROOT_DIR" ]; then
     mkdir -p "$TMP_CHROOT_DIR" || die "Couldn't create directory"
 fi
 
-# try to remove stale files
+# try to remove stale files and mount points
+sudo umount ${TMP_CHROOT_DIR}/tmp/mirror
 for idx in $(seq $((${#MOUNTPOINTS[@]} - 1)) -1 0); do
     MOUNT_POINT=${MOUNTPOINTS[$idx]}
 
@@ -68,14 +69,15 @@ for idx in $(seq $((${#MOUNTPOINTS[@]} - 1)) -1 0); do
     SPARSE_FILE_NAME=${IMG_FILE_NAME}.${SPARSE_IMG_FILE_SUFFIX}
     LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${idx}
     if mount | grep -q "${TMP_CHROOT_DIR}${MOUNT_POINT}"; then
-        sudo umount ${TMP_CHROOT_DIR}${MOUNT_POINT} || echo "Couldn't umnount old loop-device file, trying to perform lazy umnount"
+        sudo umount ${TMP_CHROOT_DIR}${MOUNT_POINT}
         if [ $? -ne 0 ]; then
+            echo "Couldn't umnount old loop-device file, trying to perform lazy umnount"
             sudo umount -l ${TMP_CHROOT_DIR}${MOUNT_POINT} || echo "Couldn't unmount old loop-device file"
         fi
     fi
     if [ -e "$LOOP_DEV" ]; then
-        # try to remove if it exists
-        sudo losetup -d $LOOP_DEV || die "Couldn't dissociate old loop-device file"
+        # try to remove if it exists, just dissociate first, ignore the errors.
+        sudo losetup -d $LOOP_DEV
         sudo rm -f $LOOP_DEV || die "Couldn't remove old loop-device file"
         sudo rm -f ${SPARSE_FILE_NAME} || die "Could remove old sparce image"
     fi
