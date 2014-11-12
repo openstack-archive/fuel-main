@@ -213,7 +213,6 @@ python-keystone
 python-ldap
 python-libxml2
 python-memcache
-python-mlnxvif
 python-muranoclient
 python-mysqldb
 python-netifaces

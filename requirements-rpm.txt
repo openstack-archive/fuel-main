@@ -202,7 +202,6 @@ mcollective-common
 mc
 memcached-1.4.4-3.el6
 mlocate-0.22.2-4.el6
-mlnxvif
 mlnx-ofed-light
 mod_fastcgi
 mod_ssl-2.2.15-15.el6.1
