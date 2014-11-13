@@ -373,7 +373,8 @@ class TestHaFailover(TestBasic):
                 re.search('primitive p_(openstack-)?heat-engine', config),
                 None, 'heat engine')
             assert_true('primitive p_haproxy' in config, 'haproxy')
-            assert_true('primitive p_mysql' in config, 'mysql')
+            assert_true(re.search('(master|clone)_p_mysql p_mysql', config),
+                        'mysql')
             assert_true(
                 'primitive vip__management' in config, 'vip management')
             assert_true(
