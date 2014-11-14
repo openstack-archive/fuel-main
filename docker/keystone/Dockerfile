@@ -10,7 +10,7 @@ RUN yum clean all
 
 ADD etc /etc
 
-RUN puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/keystone-only.pp; [ $? -lt 4 ]
+RUN puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/keystone-only.pp; [[ $? == 0 || $? == 2 ]]
 
 ADD start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh

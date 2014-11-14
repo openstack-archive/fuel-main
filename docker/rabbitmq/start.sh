@@ -10,7 +10,7 @@ chown -R rabbitmq:rabbitmq /var/log/rabbitmq
 
 exitcode=0
 puppet apply --detailed-exitcodes -v /etc/puppet/modules/nailgun/examples/rabbitmq-only.pp || exitcode=$?
-if [ $exitcode -ge 4 ]; then
+if [[ $exitcode != 0 && $exitcode != 2 ]]; then
   echo Puppet apply failed with exit code: $exitcode
   exit $exitcode
 fi
