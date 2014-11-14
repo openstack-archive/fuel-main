@@ -1073,7 +1073,7 @@ class FuelWebClient(object):
             remote = self.environment.get_ssh_to_remote(node['ip'])
             try:
                 wait(lambda: checkers.check_ceph_ready(remote) is True,
-                     interval=20, timeout=120)
+                     interval=20, timeout=600)
             except TimeoutError:
                 logger.error('Ceph service is down on {0}'.format(
                     node['name']))
