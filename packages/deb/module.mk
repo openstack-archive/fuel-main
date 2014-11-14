@@ -15,7 +15,8 @@ define build_deb
 $(BUILD_DIR)/packages/deb/repo.done: $(BUILD_DIR)/packages/deb/$1.done
 $(BUILD_DIR)/packages/deb/repo.done: $(BUILD_DIR)/packages/deb/$1-repocleanup.done
 
-$(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/mirror/build.done
+$(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/mirror/ubuntu/build.done
+$(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/source_$1.done
 
 $(BUILD_DIR)/packages/deb/$1.done: SANDBOX_UBUNTU:=$(BUILD_DIR)/packages/deb/SANDBOX
 $(BUILD_DIR)/packages/deb/$1.done: export SANDBOX_UBUNTU_UP:=$$(SANDBOX_UBUNTU_UP)
@@ -42,7 +43,7 @@ endif
 	sudo sh -c "$$$${SANDBOX_UBUNTU_DOWN}"
 	$$(ACTION.TOUCH)
 
-$(BUILD_DIR)/packages/deb/$1-repocleanup.done: $(BUILD_DIR)/mirror/build.done
+$(BUILD_DIR)/packages/deb/$1-repocleanup.done: $(BUILD_DIR)/mirror/ubuntu/build.done
 	sudo find $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/pool/main -regex '.*$1_[^-]+-[^-]+.*' -delete
 	$$(ACTION.TOUCH)
 endef
@@ -60,6 +61,9 @@ $(BUILD_DIR)/packages/deb/repo.done:
 	sudo $(SOURCE_DIR)/regenerate_ubuntu_repo.sh $(LOCAL_MIRROR_UBUNTU_OS_BASEURL) $(UBUNTU_RELEASE)
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/repo.done \
-	$(BUILD_DIR)/packages/deb/debian-boot/build.done
+ifneq (0,$(strip $(BUILD_DEB_PACKAGES)))
+$(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/repo.done
+endif
+
+$(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/debian-boot/build.done
 	$(ACTION.TOUCH)
