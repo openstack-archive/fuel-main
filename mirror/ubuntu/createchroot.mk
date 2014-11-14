@@ -8,6 +8,10 @@ define insert_ubuntu_version
 	$(empty_line)
 endef
 
+ifeq (,$(findstring clean,$(MAKECMDGOALS)))
+include $(BUILD_DIR)/ubuntu_installer_kernel_version.mk
+endif
+
 $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot
 	mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc
@@ -59,6 +63,10 @@ endif
 	sudo rsync -a $(SOURCE_DIR)/mirror/ubuntu/files/ $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/
 	$(foreach f,$(APT_CONF_TEMPLATES),$(call insert_ubuntu_version,$(f)))
 	sudo chmod +x $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/mkrepo.sh
-	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "export UBUNTU_RELEASE='$(UBUNTU_RELEASE)' UBUNTU_INSTALLER_KERNEL_VERSION='$(UBUNTU_INSTALLER_KERNEL_VERSION)'; /repo/mkrepo.sh"
+	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot env \
+		UBUNTU_RELEASE='$(UBUNTU_RELEASE)' \
+		UBUNTU_INSTALLER_KERNEL_VERSION='$(UBUNTU_INSTALLER_KERNEL_VERSION)' \
+		UBUNTU_KERNEL_FLAVOR='$(UBUNTU_KERNEL_FLAVOR)' \
+		/repo/mkrepo.sh
 	sudo rsync -a --delete $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/* $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ && sudo rm -rf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/
 	$(ACTION.TOUCH)

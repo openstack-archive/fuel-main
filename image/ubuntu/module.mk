@@ -44,8 +44,8 @@ grub-pc-bin\
 iptables\
 linux-firmware\
 linux-firmware-nonfree\
-linux-headers-$(UBUNTU_INSTALLER_KERNEL_VERSION)\
-linux-image-$(UBUNTU_INSTALLER_KERNEL_VERSION)-generic\
+linux-image-generic-$(UBUNTU_KERNEL_FLAVOR)\
+linux-headers-generic-$(UBUNTU_KERNEL_FLAVOR)\
 lvm2\
 make\
 mdadm\
