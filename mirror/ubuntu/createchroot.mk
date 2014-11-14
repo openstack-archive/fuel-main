@@ -34,7 +34,26 @@ endif
 		for repo; do \
 			[ -z "$$repo" ] && continue; \
 			extra_repo=Extra$$extra_count; \
-			echo "[$$extra_repo]\nsource=$$repo/\nomitdebsrc=true\n"; \
+			echo "[$$extra_repo]"; \
+			echo "omitdebsrc=true"; \
+			case $$repo in \
+			    */) repo=$$repo/; \
+				echo "source=$$repo"; \
+				;; \
+			    *)  set -- $$repo; \
+				if [ $$# -lt 3 ]; then \
+				    echo Incorrect repo \"$$repo\" >&2; \
+				    exit 1; \
+				fi; \
+				url=$$1; \
+				suite=$$2; \
+				shift; shift; \
+				components="$$@"; \
+				echo "source=$$url"; \
+				echo "suite=$$suite"; \
+				echo "components=$$components"; \
+			    ;; \
+			esac; \
 			extra_count=$$(($$extra_count + 1)); \
 			extra_repos="$$extra_repos $$extra_repo"; \
 		done >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
