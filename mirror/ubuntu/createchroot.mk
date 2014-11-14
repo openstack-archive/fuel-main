@@ -4,7 +4,7 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	cp $(SOURCE_DIR)/mirror/ubuntu/multistrap.conf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/
 	if [ "$(USE_MIRROR)" = "none" ]; then \
 	echo "[Security]" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
-	echo "source=@@MIRROR_UBUNTU@@" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
+	echo "source=http://ru.archive.ubuntu.com/ubuntu/" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
 	echo "suite=@@UBUNTU_RELEASE@@-security" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
 	echo "omitdebsrc=true" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
 	echo "[Ubuntu]" >> $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
