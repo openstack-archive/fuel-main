@@ -139,6 +139,7 @@ fuse
 fuse-utils
 fence-agents
 fencing-agent
+fping
 g++
 g++-4.6
 galera
@@ -183,6 +184,7 @@ insserv
 install-info
 installation-report
 intel-microcode
+iperf
 iproute
 iptables
 iptables-persistent
@@ -515,6 +517,7 @@ linux-image-3.11.0-18
 linux-libc-dev
 linux-server
 lksctp-tools
+lldpad
 locales
 lockfile-progs
 login
@@ -601,6 +604,7 @@ neutron-server
 neutron-vpn-agent
 nfs-common
 nginx
+nmap
 node-less
 nodejs
 nova-api
@@ -646,6 +650,7 @@ ppp
 pppconfig
 pppoeconf
 procps
+pssh
 psmisc
 puppet
 puppet-common
@@ -831,6 +836,7 @@ swift-container
 swift-object
 swift-plugin-s3
 swift-proxy
+sysstat
 sysv-rc
 sysvinit-utils
 sheepdog
@@ -840,6 +846,7 @@ tasksel
 tasksel-data
 tcpd
 tcpdump
+tcptraceroute
 telnet
 tgt
 time
