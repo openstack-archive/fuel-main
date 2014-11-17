@@ -52,3 +52,5 @@ enable_outbound_network_for_product_vm $vm_master_ip $vm_master_username $vm_mas
 echo
 echo "Master node has been installed."
 
+#Sleep 10s to wait for Cobbler to settle
+sleep 10
