@@ -164,7 +164,6 @@ class BondingSimple(TestBasic):
                 {'name': 'eth4'},
                 {'name': 'eth3'},
                 {'name': 'eth2'},
-                {'name': 'eth1'}
             ],
             'state': None,
             'type': 'bond',
@@ -173,8 +172,8 @@ class BondingSimple(TestBasic):
 
         interfaces = {
             'eth0': ['fuelweb_admin'],
+            'eth1': ['public'],
             'ovs-bond0': [
-                'public',
                 'management',
                 'storage',
                 'private'
@@ -349,7 +348,6 @@ class BondingHA(TestBasic):
                 {'name': 'eth4'},
                 {'name': 'eth3'},
                 {'name': 'eth2'},
-                {'name': 'eth1'}
             ],
             'state': None,
             'type': 'bond',
@@ -358,8 +356,8 @@ class BondingHA(TestBasic):
 
         interfaces = {
             'eth0': ['fuelweb_admin'],
+            'eth1': ['public'],
             'ovs-bond0': [
-                'public',
                 'management',
                 'storage'
             ]

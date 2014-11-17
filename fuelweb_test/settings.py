@@ -131,7 +131,8 @@ BONDING = os.environ.get("BONDING", 'false') == 'true'
 
 BONDING_INTERFACES = {
     'admin': ['eth0'],
-    'public': ['eth1', 'eth2', 'eth3', 'eth4']
+    'public': ['eth1'],
+    'management': ['eth2', 'eth3', 'eth4']
 }
 
 NETWORK_MANAGERS = {
