@@ -136,6 +136,8 @@ class TestHaFlat(TestBasic):
 
         self.fuel_web.verify_network(cluster_id)
 
+        self.fuel_web.security.verify_firewall(cluster_id)
+
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             test_sets=['ha', 'smoke', 'sanity'])
@@ -264,6 +266,9 @@ class TestHaFlatScalability(TestBasic):
             assert_true(
                 re.search('vip__public_old\s+\(ocf::mirantis:ns_IPaddr2\):'
                           '\s+Started node', ret), 'vip public started')
+
+        self.fuel_web.security.verify_firewall(cluster_id)
+
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             test_sets=['ha', 'sanity'])

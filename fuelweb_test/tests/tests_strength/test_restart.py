@@ -224,5 +224,7 @@ class SimpleFlatRestart(TestBasic):
                 test_name=map_ostf.OSTF_TEST_MAPPING.get(
                     'Check that required services are running'))
 
+        self.fuel_web.security.verify_firewall(cluster_id)
+
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
