@@ -46,6 +46,7 @@ ceph-deploy
 ceph-mds
 cinder-api
 cinder-common
+cinder-backup
 cinder-scheduler
 cinder-volume
 cirros-testvm
