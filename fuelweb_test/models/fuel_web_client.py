@@ -806,27 +806,19 @@ class FuelWebClient(object):
         nc = network_configuration["networking_parameters"]
         public = IPNetwork(self.environment.get_network("public"))
 
-        float_range = public if not BONDING else list(public.subnet(27))[0]
+        float_range = public
         nc["floating_ranges"] = self.get_range(float_range, 1)
 
     def set_network(self, net_config, net_name):
-        nets_wo_floating = ['public', 'management', 'storage']
-
         if not BONDING:
-            if 'floating' == net_name:
-                self.net_settings(net_config, 'public', floating=True)
-            elif net_name in nets_wo_floating:
-                self.net_settings(net_config, net_name)
+            nets_wo_floating = ['public', 'management', 'storage']
         else:
-            pub_subnets = list(IPNetwork(
-                self.environment.get_network("public")).subnet(27))
+            nets_wo_floating = ['public']
 
-            if "floating" == net_name:
-                self.net_settings(net_config, pub_subnets[0], floating=True,
-                                  jbond=True)
-            elif net_name in nets_wo_floating:
-                i = nets_wo_floating.index(net_name)
-                self.net_settings(net_config, pub_subnets[i], jbond=True)
+        if "floating" == net_name:
+            self.net_settings(net_config, 'public', floating=True)
+        elif net_name in nets_wo_floating:
+            self.net_settings(net_config, net_name)
 
     def net_settings(self, net_config, net_name, floating=False, jbond=False):
         if jbond:
