@@ -14,7 +14,7 @@ RUN mkdir -p /root/.ssh;chmod 700 /root/.ssh;touch /root/.ssh/id_rsa.pub;chmod 6
 ADD etc /etc
 ADD start.sh /usr/local/bin/start.sh
 
-RUN puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/nailgun-only.pp; [ $? -lt 4 ]
+RUN puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/nailgun-only.pp; [[ $? == 0 || $? == 2 ]]
 RUN mkdir -p /var/log/remote /var/www/nailgun
 
 #clean everything up

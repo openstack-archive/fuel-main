@@ -9,8 +9,7 @@ ADD etc /etc
 ADD start.sh /usr/local/bin/start.sh
 
 RUN mkdir -p /var/www/nailgun;chmod 755 /var/www/nailgun
-RUN puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/nginx-only.pp; [ $? -lt 4 ]
-
+RUN puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/nginx-only.pp; [[ $? == 0 || $? == 2 ]]
 
 RUN echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean all; chmod +x /usr/local/bin/start.sh
 
