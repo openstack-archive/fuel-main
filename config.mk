@@ -187,6 +187,7 @@ MIRROR_BASE?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 endif
 ifeq ($(USE_MIRROR),srt)
 YUM_REPOS?=proprietary
@@ -194,6 +195,7 @@ MIRROR_BASE?=http://osci-mirror-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 endif
 ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
@@ -201,6 +203,7 @@ MIRROR_BASE?=http://osci-mirror-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 endif
 ifeq ($(USE_MIRROR),hrk)
 YUM_REPOS?=proprietary
@@ -208,12 +211,15 @@ MIRROR_BASE?=http://osci-mirror-kha.kha.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 endif
 
 YUM_DOWNLOAD_SRC?=
 
 MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+MIRROR_CENTOS_KERNEL?=http://mirror.centos.org/centos-6/6.6/
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
+MIRROR_CENTOS_KERNEL_BASEURL?=$(MIRROR_CENTOS_KERNEL)/os/$(CENTOS_ARCH)
 MIRROR_UBUNTU?=http://mirrors-local-msk.msk.mirantis.net/ubuntu-$(PRODUCT_VERSION)/
 MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
