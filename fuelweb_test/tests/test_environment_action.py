@@ -30,7 +30,7 @@ class EnvironmentAction(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
           groups=["smoke", "deploy_flat_stop_reset_on_deploying",
-                  "image-based"])
+                  "image_based"])
     @log_snapshot_on_error
     @check_fuel_statistics
     def deploy_flat_stop_on_deploying(self):
