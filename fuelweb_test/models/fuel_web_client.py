@@ -1283,3 +1283,24 @@ class FuelWebClient(object):
         devops_node = self.find_devops_node_by_nailgun_fqdn(
             fqdn, self.environment.nodes().slaves)
         return devops_node
+
+    def get_instance_ip(self, srv):
+        return srv.networks['novanetwork'][0]
+
+    def get_ssh_to_remote_by_instance(self, os_conn, srv):
+        devops_node = self.find_devops_node_by_nailgun_fqdn(
+            os_conn.get_srv_hypervisor_name(srv),
+            self.environment.nodes().slaves[:3])
+        return self.environment.get_ssh_to_remote_by_name(devops_node.name)
+
+    def get_instance_mac(self, os_conn, srv):
+        remote = self.get_ssh_to_remote_by_instance(os_conn, srv)
+        res = ''.join(remote.execute('virsh dumpxml {0} | grep "mac address="'
+                      .format(os_conn.get_srv_instance_name(srv)))['stdout'])
+        return res.split('\'')[1]
+
+    # For nova-network flat-dhcp
+    def get_node_dhcp_ip(self, os_conn, srv):
+        remote = self.get_ssh_to_remote_by_instance(os_conn, srv)
+        res = ''.join(remote.execute('ip r | grep "br100"')['stdout'])
+        return res.split()[-1]
