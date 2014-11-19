@@ -12,15 +12,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import time
-import re
-
 from devops.helpers.helpers import wait
-from proboscis import asserts
+from devops.error import TimeoutError
+from proboscis.asserts import assert_equal
 from proboscis import test
+
 from fuelweb_test import logger
 from fuelweb_test import settings
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers import os_actions
 from fuelweb_test.tests import base_test_case
 
 
@@ -31,7 +31,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
           groups=["deploy_ha_neutron"])
     @log_snapshot_on_error
     def deploy_ha_neutron(self):
-        """Deploy cluster in HA mode, Neutron with GRE segmentation
+        """Check l3-agent rescheduling after l3-agent dies
 
         Scenario:
             1. Create cluster. HA, Neutron with GRE segmentation
@@ -39,9 +39,13 @@ class TestNeutronFailover(base_test_case.TestBasic):
             3. Add 2 nodes with compute roles
             4. Add 1 node with cinder role
             5. Deploy the cluster
-            6. Destroy controller with running l3 agent
-            7. Wait for OFFLINE of the controller at fuel UI
-            8. Run instance connectivity OSTF tests
+            6. Manually reschedule router from primary controller
+               to another one
+            7. Stop l3-agent on new node with pcs
+            8. Check l3-agent was rescheduled
+            9. Check network connectivity from instance via
+               dhcp namespace
+            10. Run OSTF
 
         Snapshot deploy_ha_neutron
 
@@ -70,52 +74,83 @@ class TestNeutronFailover(base_test_case.TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        # Look for controller with l3 agent
-        ret = self.fuel_web.get_pacemaker_status(
-            self.env.nodes().slaves[0].name)
-        logger.debug('pacemaker state before fail is {0}'.format(ret))
-        fqdn = re.search(
-            'p_neutron-l3-agent\s+\(ocf::mirantis:neutron-agent-l3\):\s+'
-            'Started (node-\d+)', ret).group(1)
-        logger.debug('fdqn before fail is {0}'.format(fqdn))
-        devops_node = self.fuel_web.find_devops_node_by_nailgun_fqdn(
-            fqdn, self.env.nodes().slaves)
-        logger.debug('devops node name before fail is {0}'.format(
-            devops_node.name))
-        # Destroy it and wait for OFFLINE status at fuel UI
-        devops_node.destroy()
-        # sleep max(op monitor interval)
-        time.sleep(60 * 2)
-        wait(lambda: not self.fuel_web.get_nailgun_node_by_devops_node(
-            devops_node)['online'], timeout=60 * 10)
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_public_vip(cluster_id))
 
-        remains_online_nodes = \
-            [node for node in self.env.nodes().slaves[0:3]
-             if self.fuel_web.get_nailgun_node_by_devops_node(node)['online']]
-        logger.debug('Online nodes are {0}'.format(
-            [node.name for node in remains_online_nodes]))
-        # Look for controller with l3 agent one more time
-        ret = self.fuel_web.get_pacemaker_status(remains_online_nodes[0].name)
-        fqdn = re.search(
-            'p_neutron-l3-agent\s+\(ocf::mirantis:neutron-agent-l3\):\s+'
-            'Started (node-\d+)', ret).group(1)
-
-        logger.debug('fqdn with l3 after fail is {0}'.format(fqdn))
+        net_id = os_conn.get_network('net04')['id']
+        node = os_conn.get_node_with_dhcp_for_network(net_id)[0]
+        node_fqdn = node.split('.')[0]
+        logger.debug('node name with dhcp is {0}'.format(node_fqdn))
 
         devops_node = self.fuel_web.find_devops_node_by_nailgun_fqdn(
-            fqdn, self.env.nodes().slaves)
+            node_fqdn, self.env.nodes().slaves[0:6])
+        remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
 
-        logger.debug('Devops node with recovered l3 is {0}'.format(
-            devops_node.name))
+        dhcp_namespace = ''.join(remote.execute('ip netns | grep {0}'.format(
+            net_id))['stdout']).rstrip()
+        logger.debug('dhcp namespace is {0}'.format(dhcp_namespace))
 
-        asserts.assert_true(
-            devops_node.name in [node.name for node in remains_online_nodes])
+        remote.execute(
+            '. openrc;'
+            ' nova keypair-add instancekey > /root/.ssh/webserver_rsa')
+        remote.execute('chmod 400 /root/.ssh/webserver_rsa')
 
-        cluster_id = self.fuel_web.client.get_cluster_id(
-            self.__class__.__name__)
+        instance = os_conn.create_server_for_migration(
+            neutron=True, key_name='instancekey')
+        instance_ip = instance.addresses['net04'][0]['addr']
+        logger.debug('instance internal ip is {0}'.format(instance_ip))
+
+        router_id = os_conn.get_routers_ids()[0]
+        l3_agent_id = os_conn.get_l3_agent_ids(router_id)[0]
+        logger.debug("l3 agent id is {0}".format(l3_agent_id))
+
+        another_l3_agent = os_conn.get_available_l3_agents_ids(
+            l3_agent_id)[0]
+        logger.debug("another l3 agent is {0}".format(another_l3_agent))
+
+        os_conn.remove_l3_from_router(l3_agent_id, router_id)
+        os_conn.add_l3_to_router(another_l3_agent, router_id)
+        wait(lambda: os_conn.get_l3_agent_ids(router_id), timeout=60 * 5)
+
+        cmd = ". openrc; ip netns exec {0} ssh -i /root/.ssh/webserver_rsa" \
+              " -o 'StrictHostKeyChecking no'" \
+              " cirros@{1} \"ping -c 1 8.8.8.8\"".format(dhcp_namespace,
+                                                         instance_ip)
+        wait(lambda: remote.execute(cmd)['exit_code'] == 0, timeout=60)
+        res = remote.execute(cmd)
+
+        assert_equal(0, res['exit_code'],
+                     'instance has no connectivity, exit code {0}'.format(
+                         res['exit_code']))
+
+        node_with_l3 = os_conn.get_l3_agent_hosts(router_id)[0]
+        node_with_l3_fqdn = node_with_l3.split('.')[0]
+        logger.debug("new node with l3 is {0}".format(node_with_l3_fqdn))
+
+        new_devops = self.fuel_web.find_devops_node_by_nailgun_fqdn(
+            node_with_l3_fqdn, self.env.nodes().slaves[0:6])
+        new_remote = self.env.get_ssh_to_remote_by_name(new_devops.name)
+
+        new_remote.execute("pcs resource ban p_neutron-l3-agent {0}".format(
+            node_with_l3))
+
+        try:
+            wait(lambda: not node_with_l3 == os_conn.get_l3_agent_hosts(
+                router_id)[0], timeout=60 * 3)
+        except TimeoutError:
+            raise TimeoutError(
+                "l3 agent wasn't banned, it is still {0}".format(
+                    os_conn.get_l3_agent_hosts(router_id)[0]))
+        wait(lambda: os_conn.get_l3_agent_ids(router_id), timeout=60)
+
+        res = remote.execute(cmd)
+        assert_equal(0, res['exit_code'],
+                     'instance has no connectivity, exit code is {0}'.format(
+                         res['exit_code']))
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=1,
-            failed_test_name=['Check that required services are running'])
+            test_sets=['ha', 'smoke', 'sanity'])
+
+        new_remote.execute("pcs resource clear p_neutron-l3-agent {0}".
+                           format(node_with_l3))
