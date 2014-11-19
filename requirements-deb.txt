@@ -69,6 +69,8 @@ htop
 ifenslave-2.6
 installation-report
 intel-microcode
+iperf
+iperf3
 iptables-persistent
 iputils-arping
 ipmitool
@@ -109,6 +111,7 @@ linux-firmware
 linux-firmware-nonfree
 linux-server
 lksctp-tools
+lldpad
 lockfile-progs
 login
 manpages-dev
@@ -166,6 +169,7 @@ neutron-server
 neutron-vpn-agent
 nfs-common
 nginx
+nmap
 node-less
 nodejs
 nova-api
@@ -191,6 +195,7 @@ os-prober
 pacemaker
 percona-toolkit
 powermgmt-base
+pssh
 puppet
 python-carrot
 python-ceilometer
@@ -269,12 +274,14 @@ swift-container
 swift-object
 swift-plugin-s3
 swift-proxy
+sysstat
 sheepdog
 snmp
 tasksel
 tcpd
 tmux
 traceroute
+tcptraceroute
 ubuntu-minimal
 ubuntu-standard
 unzip
