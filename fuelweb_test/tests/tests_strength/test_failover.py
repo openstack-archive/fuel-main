@@ -32,6 +32,7 @@ from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
 from fuelweb_test.settings import NEUTRON_ENABLE
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_CENTOS
+from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
@@ -368,7 +369,10 @@ class TestHaFailover(TestBasic):
         for devops_node in devops_ctrls:
             config = self.fuel_web.get_pacemaker_config(devops_node.name)
             for n in devops_ctrls:
-                fqdn = self.fuel_web.fqdn(n)
+                if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
+                    fqdn = self.fuel_web.fqdn(n).split('.')[0]
+                else:
+                    fqdn = self.fuel_web.fqdn(n)
                 assert_true(
                     'node {0}'.format(fqdn) in config,
                     'node {0} exists'.format(fqdn))
