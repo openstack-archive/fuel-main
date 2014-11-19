@@ -75,7 +75,6 @@ class NeutronGre(TestBasic):
             cluster_id, self.env.get_ssh_to_remote_by_name('slave-01'))
 
         self.fuel_web.verify_network(cluster_id)
-        self.fuel_web.security.verify_firewall(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
@@ -253,6 +252,8 @@ class NeutronGreHaPublicNetwork(TestBasic):
 
         self.fuel_web.verify_network(cluster_id)
 
+        self.fuel_web.security.verify_firewall(cluster_id)
+
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
@@ -375,6 +376,8 @@ class NeutronVlanHaPublicNetwork(TestBasic):
             cluster_id, self.env.get_ssh_to_remote_by_name('slave-01'))
 
         self.fuel_web.verify_network(cluster_id)
+
+        self.fuel_web.security.verify_firewall(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)

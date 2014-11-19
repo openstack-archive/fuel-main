@@ -632,6 +632,8 @@ class NodeDiskSizes(TestBasic):
         self.fuel_web.assert_cluster_ready(
             'slave-01', smiles_count=6, networks_count=1, timeout=300)
 
+        self.fuel_web.security.verify_firewall(cluster_id)
+
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
         nodes_dict = {
