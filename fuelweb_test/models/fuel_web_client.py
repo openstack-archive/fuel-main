@@ -1283,3 +1283,8 @@ class FuelWebClient(object):
         devops_node = self.find_devops_node_by_nailgun_fqdn(
             fqdn, self.environment.nodes().slaves)
         return devops_node
+
+    # For nova-network flat-dhcp
+    def get_node_dhcp_ip(self, remote):
+        res = ''.join(remote.execute('ip r | fgrep br100')['stdout'])
+        return res.split()[-1]

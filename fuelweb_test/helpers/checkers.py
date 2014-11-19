@@ -451,3 +451,26 @@ def check_mysql(remote, node_name):
     _wait(lambda: assert_equal(remote.execute(check_crm_cmd)['exit_code'], 0,
                                'MySQL resource is NOT running on {0}'.format(
                                    node_name)), timeout=60)
+
+
+@logwrap
+def check_nova_dhcp_lease(remote, instance_ip, instance_mac, node_dhcp_ip):
+    logger.debug("Checking DHCP server {0} for lease {1} with MAC address {2}"
+                 .format(node_dhcp_ip, instance_ip, instance_mac))
+    res = remote.execute('ip link add dhcptest0 type veth peer name dhcptest1;'
+                         'brctl addif br100 dhcptest0;'
+                         'ifconfig dhcptest0 up;'
+                         'ifconfig dhcptest1 hw ether {1};'
+                         'ifconfig dhcptest1 up;'
+                         'dhcpcheck request dhcptest1 {2} --range_start {0} '
+                         '--range_end 255.255.255.255 | fgrep \" {2} \";'
+                         'ifconfig dhcptest1 down;'
+                         'ifconfig dhcptest0 down;'
+                         'brctl delif br100 dhcptest0;'
+                         'ip link delete dhcptest0;'
+                         .format(instance_ip, instance_mac, node_dhcp_ip))
+    res_str = ''.join(res['stdout'])
+    logger.debug("DHCP server answer: {}".format(res_str))
+    if ' ack ' in res_str:
+        return True
+    return False
