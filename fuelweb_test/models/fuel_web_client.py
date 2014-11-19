@@ -1291,3 +1291,8 @@ class FuelWebClient(object):
             return hostname
         else:
             return hostname
+
+    # For nova-network flat-dhcp
+    def get_node_dhcp_ip(self, remote):
+        res = ''.join(remote.execute('ip r | fgrep br100')['stdout'])
+        return res.split()[-1]
