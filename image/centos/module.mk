@@ -8,8 +8,6 @@ clean_centos_image:
 	-sudo umount $(BUILD_DIR)/image/centos/SANDBOX/mirror
 	-sudo umount $(BUILD_DIR)/image/centos/SANDBOX/proc
 	-sudo umount $(BUILD_DIR)/image/centos/SANDBOX/dev
-	-sudo umount $(BUILD_DIR)/image/centos/image_boot
-	-sudo umount $(BUILD_DIR)/image/centos/image_root
 	sudo rm -rf $(BUILD_DIR)/image/centos
 
 $(ARTS_DIR)/$(TARGET_CENTOS_IMG_ART_NAME): $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME)
@@ -37,6 +35,7 @@ $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME):
 	sudo mkdir -p $(SANDBOX)/mirror
 	sudo mount -o bind $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(SANDBOX)/mirror
 	sudo chroot $(SANDBOX) python build_centos_image.py -k centos.ks -n centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH) -s "$(SEPARATE_IMAGES)"
+	sudo umount $(SANDBOX)/mirror
 	sudo mv $(SANDBOX)/profile.yaml $(BUILD_DIR)/image/centos/
 	sudo mv $(SANDBOX)/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)*.img $(BUILD_DIR)/image/centos/
 	gzip -f $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)*.img

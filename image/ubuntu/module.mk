@@ -5,6 +5,7 @@ target_ubuntu_image: $(ARTS_DIR)/$(TARGET_UBUNTU_IMG_ART_NAME)
 clean: clean_ubuntu_image
 
 clean_ubuntu_image:
+	-sudo umount $(TMP_CHROOT)/tmp/mirror
 	-sudo umount $(TMP_CHROOT)/proc
 	-sudo umount $(TMP_CHROOT)/dev
 	-sudo umount $(TMP_CHROOT)/sys
