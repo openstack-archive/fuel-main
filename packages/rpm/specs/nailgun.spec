@@ -36,6 +36,7 @@ Requires:    python-oslo-config >= 1:1.2.1
 Requires:    python-paste >= 1.7.5.1
 Requires:    python-ply >= 3.4
 Requires:    python-psycopg2 >= 2.5.1
+Requires:    python-requests >= 1.2.3
 Requires:    python-simplejson >= 3.3.0
 Requires:    python-six >= 1.5.2
 Requires:    python-sqlalchemy >= 0.7.9
