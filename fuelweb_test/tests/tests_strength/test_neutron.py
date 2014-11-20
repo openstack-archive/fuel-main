@@ -79,11 +79,10 @@ class TestNeutronFailover(base_test_case.TestBasic):
 
         net_id = os_conn.get_network('net04')['id']
         node = os_conn.get_node_with_dhcp_for_network(net_id)[0]
-        node_fqdn = node.split('.')[0]
-        logger.debug('node name with dhcp is {0}'.format(node_fqdn))
+        logger.debug('node name with dhcp is {0}'.format(node))
 
         devops_node = self.fuel_web.find_devops_node_by_nailgun_fqdn(
-            node_fqdn, self.env.nodes().slaves[0:6])
+            node, self.env.nodes().slaves[0:6])
         remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
 
         dhcp_namespace = ''.join(remote.execute('ip netns | grep {0}'.format(
@@ -124,11 +123,10 @@ class TestNeutronFailover(base_test_case.TestBasic):
                          res['exit_code']))
 
         node_with_l3 = os_conn.get_l3_agent_hosts(router_id)[0]
-        node_with_l3_fqdn = node_with_l3.split('.')[0]
-        logger.debug("new node with l3 is {0}".format(node_with_l3_fqdn))
+        logger.debug("new node with l3 is {0}".format(node_with_l3))
 
         new_devops = self.fuel_web.find_devops_node_by_nailgun_fqdn(
-            node_with_l3_fqdn, self.env.nodes().slaves[0:6])
+            node_with_l3, self.env.nodes().slaves[0:6])
         new_remote = self.env.get_ssh_to_remote_by_name(new_devops.name)
 
         new_remote.execute("pcs resource ban p_neutron-l3-agent {0}".format(
