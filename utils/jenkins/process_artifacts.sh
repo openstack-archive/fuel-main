@@ -34,7 +34,8 @@ mkdir -p $LOCAL_STORAGE
 mv $ARTIFACT $LOCAL_STORAGE
 
 MAGNET_LINK=`seedclient.py -v -u -f "$LOCAL_STORAGE"/"$ARTIFACT" --tracker-url="${TRACKER_URL}" --http-root="${HTTP_ROOT}" || true`
-HTTP_LINK="$HTTP_ROOT/$ARTIFACT"
+STORAGES=$(echo "${HTTP_ROOT}" | tr ',' '\n')
+HTTP_LINK="$(echo ${STORAGES} | head -n1)/${ARTIFACT}"
 HTTP_TORRENT="${HTTP_LINK}.torrent"
 
 # Generate txt
