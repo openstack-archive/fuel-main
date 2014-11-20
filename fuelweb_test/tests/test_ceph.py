@@ -156,7 +156,7 @@ class CephCompactWithCinder(TestBasic):
         self.env.make_snapshot("ceph_multinode_with_cinder", is_make=True)
 
 
-@test(groups=["thread_3", "ceph"])
+@test(groups=["thread_3", "ceph", "image-based"])
 class CephHA(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],

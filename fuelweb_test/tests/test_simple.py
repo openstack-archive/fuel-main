@@ -73,7 +73,8 @@ class OneNodeDeploy(TestBasic):
 @test(groups=["thread_2"])
 class SimpleFlat(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["smoke", "deploy_simple_flat", "simple_nova_flat"])
+          groups=["smoke", "deploy_simple_flat",
+                  "simple_nova_flat", "image-based"])
     @log_snapshot_on_error
     def deploy_simple_flat(self):
         """Deploy cluster in simple mode with flat nova-network
