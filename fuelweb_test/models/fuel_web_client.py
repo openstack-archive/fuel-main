@@ -1283,3 +1283,11 @@ class FuelWebClient(object):
         devops_node = self.find_devops_node_by_nailgun_fqdn(
             fqdn, self.environment.nodes().slaves)
         return devops_node
+
+    @logwrap
+    def get_fqdn_by_hostname(self, hostname):
+        if not self.environment.domain in hostname:
+            hostname += self.environment.domain
+            return hostname
+        else:
+            return hostname
