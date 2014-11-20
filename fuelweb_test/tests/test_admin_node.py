@@ -123,4 +123,4 @@ class TestAdminNodeCustomManifests(TestBasic):
         3. Upload custom manifests
         4. Kill "fuelmenu" pid
         """
-        self.env.setup_environment(custom=True)
+        self.env.setup_environment(custom=True, build_images=True)
