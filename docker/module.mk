@@ -74,8 +74,11 @@ $(BUILD_DIR)/docker/nsenter.done: \
 
 $(BUILD_DIR)/docker/sources.done: \
 		$(find-files $(SOURCE_DIR)/docker)
-	mkdir -p $(BUILD_DIR)/docker/sources
-	cp -r $(SOURCE_DIR)/docker/storage-* $(BUILD_DIR)/docker/sources/
+	mkdir -p $(BUILD_DIR)/docker/sources $(BUILD_DIR)/docker/utils
+	find $(SOURCE_DIR)/docker -mindepth 1 -type d | xargs -I{} cp -r "{}" $(BUILD_DIR)/docker/sources/
+	cp $(LOCAL_MIRROR_DOCKER_BASEURL)/fuel-centos.tar.xz $(BUILD_DIR)/docker/
+	cp $(LOCAL_MIRROR_DOCKER_BASEURL)/busybox.tar.xz $(BUILD_DIR)/docker/
+	cp -r $(SOURCE_DIR)/utils/simple_http_daemon.py $(BUILD_DIR)/docker/utils
 	$(ACTION.TOUCH)
 
 $(eval $(call build_container,astute))

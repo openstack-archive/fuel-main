@@ -249,6 +249,7 @@ nmap-ncat
 ntp
 openssh-clients
 policycoreutils
+python-daemon
 rsync
 ruby21-puppet
 ruby21-rubygem-netaddr
@@ -340,6 +341,7 @@ function save_cfg {
     else
         echo GATEWAY=$gw >> /etc/sysconfig/network
     fi
+    [ -n "$build_images" ] && touch /root/.build_images
 }
 
 # Default FQDN
@@ -354,6 +356,7 @@ gw=$gw
 device="eth0"
 hwaddr=`ifconfig $device | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
 dhcp_interface=$dhcp_interface
+build_images=$build_images
 save_cfg
 
 # Mounting installation source
