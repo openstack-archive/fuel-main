@@ -75,7 +75,7 @@ $(BUILD_DIR)/docker/nsenter.done: \
 $(BUILD_DIR)/docker/sources.done: \
 		$(find-files $(SOURCE_DIR)/docker)
 	mkdir -p $(BUILD_DIR)/docker/sources
-	cp -r $(SOURCE_DIR)/docker/storage-* $(BUILD_DIR)/docker/sources/
+	cp -r $(SOURCE_DIR)/docker/* $(BUILD_DIR)/docker/sources/
 	$(ACTION.TOUCH)
 
 $(eval $(call build_container,astute))

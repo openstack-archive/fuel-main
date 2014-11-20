@@ -47,30 +47,45 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
     esac
   fi
 fi
+
 #Reread /etc/sysconfig/network to inform puppet of changes
 . /etc/sysconfig/network
 hostname "$HOSTNAME"
 
-### docker stuff
-images_dir="/var/www/nailgun/docker/images"
+if [ -f /root/.build_images ]; then
+  echo "Building Fuel Docker images..."
+  RANDOM_PORT=$(shuf -i 9000-65000 -n 1)
+  WORKDIR=$(mktemp /tmp/docker-buildXXX)
+  SOURCE=/var/www/nailgun/docker
+  (cd /var/www/nailgun/centos/fuelweb/x86_64 && /var/www/nailgun/utils/simple_http_daemon.py ${RANDOM_PORT} /tmp/simple_http_daemon_${RANDOM_PORT}.pid)
+  for image in /var/www/nailgun/docker/sources*; do
+    mkdir -p $WORKDIR/$image $WORKDIR/$image/etc
+    cp -R $SOURCE/$image/ $WORKDIR/$image
+    cp -R /etc/puppet /etc/fuel $WORKDIR $WORKDIR/$image/etc
+    docker build -t fuel/${image}_6.0 $WORKDIR/$image
+  done
+  kill `cat /tmp/simple_http_daemon_$(RANDOM_PORT).pid`
+else
+  images_dir="/var/www/nailgun/docker/images"
 
-# extract docker images
-mkdir -p $images_dir $sources_dir
-rm -f $images_dir/*tar
-pushd $images_dir &>/dev/null
+  # extract docker images
+  mkdir -p $images_dir $sources_dir
+  rm -f $images_dir/*tar
+  pushd $images_dir &>/dev/null
 
-echo "Extracting and loading docker images. (This may take a while)"
-lrzip -d -o fuel-images.tar fuel-images.tar.lrz && tar -xf fuel-images.tar && rm -f fuel-images.tar
-popd &>/dev/null
-service docker start
+  echo "Extracting and loading docker images. (This may take a while)"
+  lrzip -d -o fuel-images.tar fuel-images.tar.lrz && tar -xf fuel-images.tar && rm -f fuel-images.tar
+  popd &>/dev/null
+  service docker start
 
-# load docker images
-for image in $images_dir/*tar ; do
-    echo "Loading docker image ${image}..."
-    docker load -i "$image"
-    # clean up extracted image
-    rm -f "$image"
-done
+  # load docker images
+  for image in $images_dir/*tar ; do
+      echo "Loading docker image ${image}..."
+      docker load -i "$image"
+      # clean up extracted image
+      rm -f "$image"
+  done
+fi
 
 # apply puppet
 puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
