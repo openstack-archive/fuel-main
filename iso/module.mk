@@ -118,7 +118,10 @@ $(ISOROOT)/puppet-slave.tgz: $(BUILD_DIR)/puppet/$(PUPPET_ART_NAME)
 $(ISOROOT)/docker.done: $(BUILD_DIR)/docker/build.done
 	mkdir -p $(ISOROOT)/docker/images
 	cp $(BUILD_DIR)/docker/$(DOCKER_ART_NAME) $(ISOROOT)/docker/images/$(DOCKER_ART_NAME)
+	cp $(BUILD_DIR)/docker/fuel-centos.tar.xz $(ISOROOT)/docker/images/fuel-centos.tar.xz
+	cp $(BUILD_DIR)/docker/busybox.tar.xz $(ISOROOT)/docker/images/busybox.tar.xz
 	cp -a $(BUILD_DIR)/docker/sources $(ISOROOT)/docker/sources
+	cp -a $(BUILD_DIR)/docker/utils $(ISOROOT)/docker/utils
 	$(ACTION.TOUCH)
 
 ########################
