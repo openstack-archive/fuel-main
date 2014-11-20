@@ -31,7 +31,6 @@ from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
 from fuelweb_test.settings import NEUTRON_ENABLE
 from fuelweb_test.settings import OPENSTACK_RELEASE
-from fuelweb_test.settings import OPENSTACK_RELEASE_CENTOS
 from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
@@ -397,17 +396,13 @@ class TestHaFailover(TestBasic):
          by pacemaker on amqp connection loss
 
         Scenario:
-            1. SSH to controller with running heat-engine
+            1. SSH to any controller
             2. Check heat-engine status
             3. Block heat-engine amqp connections
-            4. Check if heat-engine was moved to another controller
-            or stopped on current controller
-            5. If moved - ssh to node with running heat-engine
-            5.1 Check heat-engine is running
-            5.2 Check heat-engine has some amqp connections
-            6. If stopped - check heat-engine process is running with new pid
-            6.1 Unblock heat-engine amqp connections
-            6.2 Check amqp connection re-appears for heat-engine
+            4. Check heat-engine was stopped on current controller
+            5. Unblock heat-engine amqp connections
+            6. Check heat-engine process is running with new pid
+            7. Check amqp connection re-appears for heat-engine
 
         Snapshot ha_pacemaker_restart_heat_engine
 
@@ -415,27 +410,18 @@ class TestHaFailover(TestBasic):
         self.env.revert_snapshot("deploy_ha")
         ocf_success = "DEBUG: OpenStack Orchestration Engine" \
                       " (heat-engine) monitor succeeded"
-        ocf_not_running = "INFO: OpenStack Heat Engine is not running"
         ocf_error = "ERROR: OpenStack Heat Engine is not connected to the" \
                     " AMQP server: AMQP connection test returned 1"
 
-        if OPENSTACK_RELEASE_CENTOS in OPENSTACK_RELEASE:
-            heat_name = 'openstack-heat-engine'
-        else:
-            heat_name = 'heat-engine'
+        heat_name = 'heat-engine'
 
         ocf_status = \
             'script -q -c "OCF_ROOT=/usr/lib/ocf' \
             ' /usr/lib/ocf/resource.d/mirantis/{0}' \
             ' monitor 2>&1"'.format(heat_name)
-        controller_with_heat = self.fuel_web.\
-            get_controller_with_running_service(
-                self.env.nodes().slaves[0],
-                'p_{0}\s+'
-                '\(ocf::mirantis:{1}\):\s+'
-                'Started (node-\d+)'.format(heat_name, heat_name))
 
-        remote = self.fuel_web.get_ssh_for_node(controller_with_heat.name)
+        remote = self.fuel_web.get_ssh_for_node(
+            self.env.nodes().slaves[0].name)
         pid = ''.join(remote.execute('pgrep heat-engine')['stdout'])
         get_ocf_status = ''.join(
             remote.execute(ocf_status)['stdout']).rstrip()
@@ -450,51 +436,32 @@ class TestHaFailover(TestBasic):
 
         wait(lambda: len(remote.execute
             ("netstat -nap | grep {0} | grep :5673".
-             format(pid))['stdout']) == 0, 300)
+             format(pid))['stdout']) == 0, timeout=300)
+
         get_ocf_status = ''.join(
             remote.execute(ocf_status)['stdout']).rstrip()
         logger.info('ocf status after blocking is {0}'.format(
             get_ocf_status))
+        assert_true(ocf_error in get_ocf_status,
+                    "heat engine is running, status is {0}".format(
+                        get_ocf_status))
 
-        if ocf_not_running in get_ocf_status:
-            controller_with_heat = self.fuel_web.\
-                get_controller_with_running_service(
-                    self.env.nodes().slaves[0],
-                    'p_{0}\s+'
-                    '\(ocf::mirantis:{1}\):\s+'
-                    'Started (node-\d+)'.format(heat_name, heat_name))
-            logger.info('new node with heat is {0}'.format(
-                controller_with_heat.name))
-            remote = self.fuel_web.get_ssh_for_node(
-                controller_with_heat.name)
-            pid = ''.join(remote.execute('pgrep heat-engine')['stdout'])
-            get_ocf_status = ''.join(
-                remote.execute(ocf_status)['stdout']).rstrip()
-            assert_true(len(pid) > 0, "heat-engine is not running")
-            assert_true(ocf_success in get_ocf_status,
-                        "heat engine is not succeeded, status is {0}".format(
-                            get_ocf_status))
-            assert_true(len(
-                remote.execute("netstat -nap | grep {0} | grep :5673".
-                               format(pid))['stdout']) > 0)
-        elif ocf_error in get_ocf_status:
-            remote.execute("iptables -D OUTPUT 1 -m owner --uid-owner heat -m"
-                           " state --state NEW,ESTABLISHED,RELATED")
-            _wait(lambda: assert_true(ocf_success in ''.join(
-                remote.execute(ocf_status)['stdout']).rstrip()), timeout=240)
-            newpid = ''.join(remote.execute('pgrep heat-engine')['stdout'])
-            assert_true(pid != newpid, "heat pid is still the same")
-            get_ocf_status = ''.join(remote.execute(
-                ocf_status)['stdout']).rstrip()
-            assert_true(ocf_success in get_ocf_status,
-                        "heat engine is not succeeded, status is {0}".format(
-                            get_ocf_status))
-            assert_true(len(
-                remote.execute("netstat -nap | grep {0} | grep :5673".
-                               format(newpid))['stdout']) > 0)
-            assert_true(''.join(remote.execute(
-                'pgrep heat-engine')['stdout']) == newpid,
-                "pid after amqp re-connect is different")
+        remote.execute("iptables -D OUTPUT 1 -m owner --uid-owner heat -m"
+                       " state --state NEW,ESTABLISHED,RELATED")
+        _wait(lambda: assert_true(ocf_success in ''.join(
+            remote.execute(ocf_status)['stdout']).rstrip()), timeout=240)
+        newpid = ''.join(remote.execute('pgrep heat-engine')['stdout'])
+        assert_true(pid != newpid, "heat pid is still the same")
+        get_ocf_status = ''.join(remote.execute(
+            ocf_status)['stdout']).rstrip()
+        assert_true(ocf_success in get_ocf_status,
+                    "heat engine is not succeeded, status is {0}".format(
+                        get_ocf_status))
+        assert_true(len(
+            remote.execute("netstat -nap | grep {0} | grep :5673".format(
+                newpid))['stdout']) > 0)
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        self.fuel_web.run_ostf(cluster_id=cluster_id)
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_check_monit"])
