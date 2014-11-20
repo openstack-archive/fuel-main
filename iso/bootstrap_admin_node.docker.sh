@@ -47,30 +47,57 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
     esac
   fi
 fi
+
 #Reread /etc/sysconfig/network to inform puppet of changes
 . /etc/sysconfig/network
 hostname "$HOSTNAME"
 
-### docker stuff
-images_dir="/var/www/nailgun/docker/images"
-
-# extract docker images
-mkdir -p $images_dir $sources_dir
-rm -f $images_dir/*tar
-pushd $images_dir &>/dev/null
-
-echo "Extracting and loading docker images. (This may take a while)"
-lrzip -d -o fuel-images.tar fuel-images.tar.lrz && tar -xf fuel-images.tar && rm -f fuel-images.tar
-popd &>/dev/null
 service docker start
 
-# load docker images
-for image in $images_dir/*tar ; do
-    echo "Loading docker image ${image}..."
-    docker load -i "$image"
-    # clean up extracted image
-    rm -f "$image"
-done
+if [ -f /root/.build_images ]; then
+  echo "Loading Fuel base image for Docker..."
+  docker load -i /var/www/nailgun/docker/images/fuel-centos.tar.xz
+  docker load -i /var/www/nailgun/docker/images/busybox.tar.xz
+
+  echo "Building Fuel Docker images..."
+  RANDOM_PORT=$(shuf -i 9000-65000 -n 1)
+  WORKDIR=$(mktemp -d /tmp/docker-buildXXX)
+  SOURCE=/var/www/nailgun/docker
+  REPODIR="$WORKDIR/repo"
+  mkdir -p $REPODIR/os
+  ln -s /var/www/nailgun/centos/x86_64 $REPODIR/os/x86_64
+  (cd $REPODIR && /var/www/nailgun/docker/utils/simple_http_daemon.py ${RANDOM_PORT} /tmp/simple_http_daemon_${RANDOM_PORT}.pid 5000)
+  for imagesource in /var/www/nailgun/docker/sources/*; do
+    image=$(basename "$imagesource")
+    cp -R "$imagesource" $WORKDIR/$image
+    mkdir -p $WORKDIR/$image/etc
+    cp -R /etc/puppet /etc/fuel $WORKDIR/$image/etc
+    sed -e "s/_PORT_/${RANDOM_PORT}/" -i $WORKDIR/$image/Dockerfile
+    sed -e 's/production:.*/production: "docker-build"/' -i $WORKDIR/$image/etc/fuel/version.yaml
+    docker build -t fuel/${image}_6.0 $WORKDIR/$image
+  done
+  kill `cat /tmp/simple_http_daemon_${RANDOM_PORT}.pid`
+  rm -rf "$WORKDIR"
+else
+  images_dir="/var/www/nailgun/docker/images"
+
+  # extract docker images
+  mkdir -p $images_dir $sources_dir
+  rm -f $images_dir/*tar
+  pushd $images_dir &>/dev/null
+
+  echo "Extracting and loading docker images. (This may take a while)"
+  lrzip -d -o fuel-images.tar fuel-images.tar.lrz && tar -xf fuel-images.tar && rm -f fuel-images.tar
+  popd &>/dev/null
+
+  # load docker images
+  for image in $images_dir/*tar ; do
+      echo "Loading docker image ${image}..."
+      docker load -i "$image"
+      # clean up extracted image
+      rm -f "$image"
+  done
+fi
 
 # apply puppet
 puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/host-only.pp

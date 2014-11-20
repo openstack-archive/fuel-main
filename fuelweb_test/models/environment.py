@@ -259,7 +259,8 @@ class EnvironmentModel(object):
             'hostname': '.'.join((self.hostname, self.domain)),
             'nat_interface': self.nat_interface,
             'dns1': settings.DNS,
-            'showmenu': 'yes' if custom else 'no'
+            'showmenu': 'yes' if custom else 'no',
+            'build_images': '1' if custom else '0'
 
         }
         keys = (
@@ -274,6 +275,7 @@ class EnvironmentModel(object):
             " hostname=%(hostname)s\n"
             " dhcp_interface=%(nat_interface)s\n"
             " showmenu=%(showmenu)s\n"
+            " build_images=%(build_images)s\n"
             " <Enter>\n"
         ) % params
         return keys
