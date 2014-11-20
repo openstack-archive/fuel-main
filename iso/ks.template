@@ -340,6 +340,7 @@ function save_cfg {
     else
         echo GATEWAY=$gw >> /etc/sysconfig/network
     fi
+    [ -n "$build_images" ] && touch /root/.build_images
 }
 
 # Default FQDN

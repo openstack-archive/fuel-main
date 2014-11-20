@@ -120,6 +120,7 @@ $(ISOROOT)/docker.done: $(BUILD_DIR)/docker/build.done
 	mkdir -p $(ISOROOT)/docker/images
 	cp $(BUILD_DIR)/docker/$(DOCKER_ART_NAME) $(ISOROOT)/docker/images/$(DOCKER_ART_NAME)
 	cp -a $(BUILD_DIR)/docker/sources $(ISOROOT)/docker/sources
+	cp -a $(BUILD_DIR)/docker/utils $(ISOROOT)/docker/utils
 	$(ACTION.TOUCH)
 
 ########################

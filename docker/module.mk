@@ -74,8 +74,9 @@ $(BUILD_DIR)/docker/nsenter.done: \
 
 $(BUILD_DIR)/docker/sources.done: \
 		$(find-files $(SOURCE_DIR)/docker)
-	mkdir -p $(BUILD_DIR)/docker/sources
-	cp -r $(SOURCE_DIR)/docker/storage-* $(BUILD_DIR)/docker/sources/
+	mkdir -p $(BUILD_DIR)/docker/sources $(BUILD_DIR)/docker/utils
+	cp -r $(SOURCE_DIR)/docker/* $(BUILD_DIR)/docker/sources/
+	cp -r $(SOURCE_DIR)/utils/simple_http_daemon.py $(BUILD_DIR)/docker/utils
 	$(ACTION.TOUCH)
 
 $(eval $(call build_container,astute))
