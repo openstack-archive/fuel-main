@@ -19,15 +19,13 @@ import time
 import traceback
 import urllib2
 
-from time import sleep
-
-from devops.helpers.helpers import SSHClient
 from devops.helpers import helpers
-from fuelweb_test.helpers.regenerate_repo import CustomRepo
 from proboscis import SkipTest
 
-from fuelweb_test import settings
 from fuelweb_test import logger
+from fuelweb_test import settings
+from fuelweb_test.helpers.regenerate_repo import CustomRepo
+from fuelweb_test.helpers.utils import pull_out_logs_via_ssh
 
 
 def save_logs(url, filename):
@@ -53,7 +51,7 @@ def log_snapshot_on_error(func):
             return func(*args, **kwagrs)
         except SkipTest:
             raise SkipTest()
-        except Exception:
+        except Exception as test_exception:
             if args and 'snapshot' in args[0].__dict__:
                 name = 'error_%s' % args[0].snapshot
                 description = "Failed in method '%s'." % args[0].snapshot
@@ -65,14 +63,20 @@ def log_snapshot_on_error(func):
                     create_diagnostic_snapshot(args[0].env,
                                                "fail", name)
                 except:
-                    logger.error(traceback.format_exc())
-                    raise
+                    logger.error("Fetching of diagnostic snapshot failed: {0}".
+                                 format(traceback.format_exc()))
+                    try:
+                        admin_remote = args[0].env.get_admin_remote()
+                        pull_out_logs_via_ssh(admin_remote, name)
+                    except:
+                        logger.error("Fetching of raw logs failed: {0}".
+                                     format(traceback.format_exc()))
                 finally:
                     logger.debug(args)
                     args[0].env.make_snapshot(snapshot_name=name[-50:],
                                               description=description,
                                               is_make=True)
-            raise
+            raise test_exception
     return wrapper
 
 
@@ -92,9 +96,9 @@ def upload_manifests(func):
             if settings.UPLOAD_MANIFESTS:
                 logger.info("Uploading new manifests from %s" %
                             settings.UPLOAD_MANIFESTS_PATH)
-                remote = SSHClient(args[0].admin_node_ip,
-                                   username='root',
-                                   password='r00tme')
+                remote = helpers.SSHClient(args[0].admin_node_ip,
+                                           username='root',
+                                           password='r00tme')
                 remote.execute('rm -rf /etc/puppet/modules/*')
                 remote.upload(settings.UPLOAD_MANIFESTS_PATH,
                               '/etc/puppet/modules/')
@@ -138,9 +142,9 @@ def update_ostf(func):
                     raise ValueError('REFSPEC should be set for CI tests.')
                 logger.info("Uploading new patchset from {0}"
                             .format(settings.GERRIT_REFSPEC))
-                remote = SSHClient(args[0].admin_node_ip,
-                                   username='root',
-                                   password='r00tme')
+                remote = helpers.SSHClient(args[0].admin_node_ip,
+                                           username='root',
+                                           password='r00tme')
                 remote.upload(settings.PATCH_PATH.rstrip('/'),
                               '/tmp/fuel-ostf')
                 remote.execute('source /opt/fuel_plugins/ostf/bin/activate; '
@@ -184,7 +188,7 @@ def retry(count=3, delay=30):
                     i += 1
                     if i >= count:
                         raise
-                    sleep(delay)
+                    time.sleep(delay)
         return wrapper
     return wrapped
 
