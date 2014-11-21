@@ -17,11 +17,13 @@ import os
 from proboscis.asserts import assert_equal
 from proboscis import test
 from proboscis import SkipTest
+from devops.helpers.helpers import _wait
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers.decorators import create_diagnostic_snapshot
 from fuelweb_test.helpers import os_actions
+from fuelweb_test import logger
 from fuelweb_test import settings as hlp_data
 from fuelweb_test.tests import base_test_case as base_test_data
 
@@ -293,6 +295,10 @@ class RollbackFuelMaster(base_test_data.TestBasic):
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_TO,
                                            hlp_data.UPGRADE_FUEL_FROM)
+        logger.debug("all containers are ok")
+        _wait(lambda: self.fuel_web.get_nailgun_node_by_devops_node(
+            self.env.nodes().slaves[0]), timeout=120)
+        logger.debug("all services are up now")
         self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:5])
         self.fuel_web.assert_nodes_in_ready_state(cluster_id)
         self.fuel_web.assert_fuel_version(hlp_data.UPGRADE_FUEL_FROM)
@@ -354,6 +360,10 @@ class RollbackFuelMaster(base_test_data.TestBasic):
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_TO,
                                            hlp_data.UPGRADE_FUEL_FROM)
+        logger.debug("all containers are ok")
+        _wait(lambda: self.fuel_web.get_nailgun_node_by_devops_node(
+            self.env.nodes().slaves[0]), timeout=120)
+        logger.debug("all services are up now")
         self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:3])
         self.fuel_web.assert_nodes_in_ready_state(cluster_id)
         self.fuel_web.assert_fuel_version(hlp_data.UPGRADE_FUEL_FROM)
