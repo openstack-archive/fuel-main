@@ -431,8 +431,10 @@ cp /etc/puppet/${OPENSTACK_VERSION}/modules/osnailyfacter/examples/site.pp /etc/
 cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/${OPENSTACK_VERSION}/manifests/
 
 # make links for backward compatibility
-ln -s /etc/puppet/${OPENSTACK_VERSION}/manifests/ /etc/puppet/manifests
-ln -s /etc/puppet/${OPENSTACK_VERSION}/modules/ /etc/puppet/modules
+pushd /etc/puppet
+ln -s ${OPENSTACK_VERSION}/manifests/ /etc/puppet/manifests
+ln -s ${OPENSTACK_VERSION}/modules/ /etc/puppet/modules
+popd
 
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 mkdir -p /var/lib/hiera
