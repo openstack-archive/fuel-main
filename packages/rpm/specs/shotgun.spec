@@ -22,6 +22,7 @@ Requires:    tar
 Requires:    gzip
 Requires:    bzip2
 Requires:    openssh-clients
+Requires:    xz
 
 %description
 Shotgun package
@@ -40,4 +41,3 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root)
-
