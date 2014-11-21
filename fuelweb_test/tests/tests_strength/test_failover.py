@@ -165,7 +165,10 @@ class TestHaFailover(TestBasic):
             self.env.revert_snapshot("deploy_ha")
 
             remote = self.fuel_web.get_ssh_for_node(devops_node.name)
-            remote.check_call('ifconfig eth2 down')
+            cmd = "iptables -I INPUT 1 -i eth2 -j DROP && " \
+                  "iptables -I OUTPUT 1 -o eth2 -j DROP"
+
+            remote.check_call(cmd)
             self.fuel_web.assert_pacemaker(
                 self.env.nodes().slaves[2].name,
                 set(self.env.nodes().slaves[:3]) - {devops_node},
