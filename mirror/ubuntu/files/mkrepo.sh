@@ -77,7 +77,7 @@ apt-get -dy install linux-image-3.11.0-18 || exit 1
 packages=`cat ${wrkdir}/UPackages.tmp | sort -u | egrep -v "generic|virtual"`
 
 # Find modules for 3.11.0-18 kernel (installer runs with this version)
-for package in `cat ${wrkdir}/UPackages.tmp | egrep "generic|virtual" | grep 3.11.0-18`; do
+for package in `cat ${wrkdir}/UPackages.tmp | egrep "generic|virtual" | grep 3.11.0-26`; do
   packages="$packages $package"
 done
 
