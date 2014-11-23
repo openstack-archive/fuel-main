@@ -63,8 +63,8 @@ for list in /etc/apt/sources.list.d/*.list; do
   done
 done
 
-# linux-image-3.11.0-18 used for installer
-apt-get -dy install linux-image-3.11.0-18 || exit 1
+# linux-image-3.11.0-26 used for installer
+apt-get -dy install linux-image-3.11.0-26 || exit 1
 
 ## Get latest kernel version
 ## Exact kernel version specified in requirements-deb.txt
