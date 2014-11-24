@@ -18,6 +18,7 @@ from proboscis.asserts import assert_true
 from proboscis import test
 from devops.helpers.helpers import wait
 from fuelweb_test import settings
+from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers import os_actions
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -276,3 +277,74 @@ class VcenterDeploy(TestBasic):
             should_fail=1,
             failed_test_name=[('Launch instance, create snapshot,'
                                ' launch instance from snapshot')])
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
+          groups=["vcenter_ceilometer"])
+    @log_snapshot_on_error
+    def vcenter_ceilometer(self):
+        """Deploy cluster with 3 controller nodes and run osft
+
+        Scenario:
+            1. Create cluster. Set install Ceilometer option
+            2. Add 1 node with controller and mongo roles
+            3. Deploy the cluster
+            4. Verify ceilometer api is running
+            5. Run OSTF
+        """
+        self.env.revert_snapshot("ready_with_1_slaves")
+
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_HA,
+            settings={
+                'use_vcenter': True,
+                'host_ip': settings.VCENTER_IP,
+                'vc_user': settings.VCENTER_USERNAME,
+                'vc_password': settings.VCENTER_PASSWORD,
+                'cluster': settings.VCENTER_CLUSTERS,
+                'tenant': 'vcenter',
+                'user': 'vcenter',
+                'password': 'vcenter',
+                'ceilometer': True
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Add controller and mongo roles to node
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller', 'mongo']}
+        )
+        # Deploy cluster
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        # Wait until nova-compute get information about clusters
+        # Fix me. Later need to change sleep with wait function.
+        time.sleep(60)
+
+        # Verify ceilometer API
+        checkers.verify_service(
+            self.env.get_ssh_to_remote_by_name("slave-01"),
+            service_name='ceilometer-api')
+
+        # Create list with ceilometer tests: test_classes
+        test_class_main = ('fuel_health.tests.platform_tests.'
+                           'test_ceilometer.'
+                           'CeilometerApiPlatformTests')
+        tests_names = ['test_check_alarm_state',
+                       'test_create_sample',
+                       'test_check_glance_notifications',
+                       'test_create_alarm']
+
+        test_classes = []
+
+        for test_name in tests_names:
+            test_classes.append('{0}.{1}'.format(test_class_main,
+                                                 test_name))
+
+        # Run OSTF
+        for test_name in test_classes:
+            self.fuel_web.run_single_ostf_test(
+                cluster_id=cluster_id, test_sets=['platform_tests'],
+                test_name=test_name, timeout=60 * 20)
