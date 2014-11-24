@@ -5,5 +5,4 @@
 rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
-puppet apply -v /etc/puppet/modules/nailgun/examples/puppetsync-only.pp
 /usr/sbin/xinetd -dontfork
