@@ -2,7 +2,7 @@
 Name:      ruby21-nailgun-mcagents
 Summary:   MCollective Agents
 Version:   0.1.0
-Release:   3
+Release:   4
 License:   GPLv2
 Source0:   %{srcname}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}
