@@ -28,7 +28,8 @@ from fuelweb_test.tests import base_test_case
 class EnvironmentAction(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
-          groups=["smoke", "deploy_flat_stop_reset_on_deploying"])
+          groups=["smoke", "deploy_flat_stop_reset_on_deploying",
+                  "image-based"])
     @log_snapshot_on_error
     def deploy_flat_stop_on_deploying(self):
         """Stop reset cluster in simple mode with flat nova-network
