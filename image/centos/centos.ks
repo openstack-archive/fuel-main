@@ -143,7 +143,7 @@ dracut
 make
 mlocate
 nailgun-net-check
-ntp
+ntp-dev
 openssh
 openssh-clients
 openssh-server

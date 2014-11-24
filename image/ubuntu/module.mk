@@ -53,7 +53,6 @@ mlocate\
 nailgun-agent\
 nailgun-mcagents\
 nailgun-net-check\
-ntp\
 openssh-client\
 openssh-server\
 perl\
@@ -77,6 +76,7 @@ libshadow-ruby1.8\
 libjson-ruby1.8\
 mcollective\
 mlnx-ofed-light\
+ntp-dev\
 puppet\
 python-amqp\
 ruby-ipaddress\
