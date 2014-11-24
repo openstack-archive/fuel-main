@@ -13,16 +13,15 @@
 #    under the License.
 
 
-rpm = {'python-oslo-messaging': '1.3.0-fuel5.0.2.mira5.noarch.rpm',
-       'python-paste-deploy': '1.5.0-10.mira2.noarch.rpm',
-       'python-routes': '1.13-2.mira2.noarch.rpm',
-       'python-six': '1.6.1-1.mira1.noarch.rpm',
-       'python-sqlalchemy': '0.7.9-1.3.mira2.x86_64.rpm'}
+rpm = {'murano-apps': '0.5-1.mira7.noarch.rpm',
+       'python-django-openstack-auth': '1.1.7-1.mira1.noarch.rpm',
+       'python-memcached': '1.53-1.mira1.noarch.rpm',
+       'python-six': '1.7.0-1.mira1.noarch.rpm',
+       'python-sqlalchemy': '0.7.9-1.4.mira4.x86_64.rpm'}
 
 dep = {
-    'python-oslo.messaging': '1.3.0-fuel5.0.2~mira2_all.deb',
-    'python-pastedeploy': '1.5.0-2build1_all.deb',
-    'python-routes': '1.12.3-1ubuntu1_all.deb',
-    'python-sqlalchemy-ext': '0.8.2-1~cloud1_amd64.deb',
-    'python-sqlalchemy': '0.8.2-1~cloud1_all.deb',
-    'python-testtools': '0.9.35-0ubuntu1_all.deb'}
+    'murano-apps': '0.5-ubuntu5_all.deb',
+    'ieee-data': '20131224.1_all.deb',
+    'python-openstack-auth': '1.1.7-ubuntu1_all.deb',
+    'python-memcache': '1.53-ubuntu2_all',
+    'python-netaddr': '0.7.12-ubuntu1_all.deb'}

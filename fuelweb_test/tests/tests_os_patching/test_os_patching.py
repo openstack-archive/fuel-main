@@ -113,7 +113,8 @@ class TestPatch(TestBasic):
         # 6. Run upgrade script
 
         checkers.run_script(node_ssh, '/var/tmp', 'upgrade.sh', password=
-                            hlp_data.KEYSTONE_CREDS['password'])
+                            hlp_data.KEYSTONE_CREDS['password'],
+                            patching=True)
         logger.info('Check if the upgrade complete..')
 
         checkers.wait_upgrade_is_done(node_ssh=node_ssh,
