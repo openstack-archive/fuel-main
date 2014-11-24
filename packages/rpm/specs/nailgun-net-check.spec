@@ -1,6 +1,6 @@
 %define name nailgun-net-check
-%define version 0.2
-%define release 3
+%define version 5.1.1
+%define release 1
 
 Name:      %{name}
 Summary:   Network checking package for CentOS6.2
