@@ -18,6 +18,7 @@ from devops.helpers.helpers import wait
 from proboscis.asserts import assert_true
 from proboscis import test
 
+from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers import os_actions
 from fuelweb_test import logger
@@ -275,6 +276,81 @@ class VcenterDeploy(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["vcenter_ceilometer", "vcenter_ha"])
+    @log_snapshot_on_error
+    def vcenter_ceilometer(self):
+        """Deploy cluster with 3 controller nodes and run osft
+
+        Scenario:
+            1. Create cluster. Set install Ceilometer option
+            2. Add 3 nodes with controller and mongo roles
+            3. Deploy the cluster
+            4. Verify ceilometer api is running
+            5. Run OSTF
+        """
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_HA,
+            settings={
+                'use_vcenter': True,
+                'host_ip': VCENTER_IP,
+                'vc_user': VCENTER_USERNAME,
+                'vc_password': VCENTER_PASSWORD,
+                'cluster': VCENTER_CLUSTERS,
+                'tenant': 'vcenter',
+                'user': 'vcenter',
+                'password': 'vcenter',
+                'ceilometer': True
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Add controller and mongo roles to nodes
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller', 'mongo'],
+             'slave-02': ['controller', 'mongo'],
+             'slave-03': ['controller', 'mongo']}
+        )
+        # Deploy cluster
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        # Verify ceilometer API
+        for slave in ["slave-01", "slave-02", "slave-03"]:
+            checkers.verify_service(
+                self.env.get_ssh_to_remote_by_name(slave),
+                service_name='ceilometer-api')
+
+        # Create list with ceilometer tests: test_classes
+        test_class_main = ('fuel_health.tests.platform_tests.'
+                           'test_ceilometer.'
+                           'CeilometerApiPlatformTests')
+        tests_names = ['test_check_alarm_state',
+                       'test_create_sample',
+                       'test_check_glance_notifications']
+
+        test_classes = []
+
+        for test_name in tests_names:
+            test_classes.append('{0}.{1}'.format(test_class_main,
+                                                 test_name))
+
+        # Run OSTF 	344
+
+        all_tests = [test['id'] for test
+                     in self.fuel_web.client.get_ostf_tests(cluster_id)]
+
+        for test_name in test_classes:
+            # Checking that test is in this configuration
+            if test_name in all_tests:
+                self.fuel_web.run_single_ostf_test(
+                    cluster_id=cluster_id, test_sets=['platform_tests'],
+                    test_name=test_name, timeout=60 * 20)
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_simple_add_cinder"])
