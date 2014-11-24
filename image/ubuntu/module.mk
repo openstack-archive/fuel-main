@@ -77,6 +77,7 @@ libshadow-ruby1.8\
 libjson-ruby1.8\
 mcollective\
 mlnx-ofed-light\
+ntp-dev\
 puppet\
 python-amqp\
 ruby-ipaddress\
