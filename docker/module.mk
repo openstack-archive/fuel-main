@@ -34,6 +34,10 @@ define build_container
 ifndef DOCKER_DEP_FILE
 $(BUILD_DIR)/docker/build.done: $(BUILD_DIR)/docker/$1.done
 endif
+
+$(BUILD_DIR)/docker/$1/%: $(BUILD_DIR)/docker/$1.done
+$(BUILD_DIR)/docker/build.done: $(BUILD_DIR)/docker/$1.done
+
 $(BUILD_DIR)/docker/$1.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/repos/repos.done \
@@ -41,7 +45,6 @@ $(BUILD_DIR)/docker/$1.done: \
 		$(BUILD_DIR)/docker/base-images.done
 	(cd $(LOCAL_MIRROR_CENTOS) && python $(SOURCE_DIR)/utils/simple_http_daemon.py $(RANDOM_PORT) /tmp/simple_http_daemon_$(RANDOM_PORT).pid)
 	mkdir -p "$(BUILD_DIR)/docker/containers"
-	rm -rf $(BUILD_DIR)/docker/$1
 	cp -a $(SOURCE_DIR)/docker/$1 $(BUILD_DIR)/docker/$1
 	sed -e "s/_PORT_/$(RANDOM_PORT)/" -i $(BUILD_DIR)/docker/$1/Dockerfile
 	mkdir -p $(BUILD_DIR)/docker/$1/etc/puppet/modules/
