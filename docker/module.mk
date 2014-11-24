@@ -34,6 +34,10 @@ define build_container
 ifndef DOCKER_DEP_FILE
 $(BUILD_DIR)/docker/build.done: $(BUILD_DIR)/docker/$1.done
 endif
+
+$(BUILD_DIR)/docker/$1/%: $(BUILD_DIR)/docker/$1.done
+$(BUILD_DIR)/docker/build.done: $(BUILD_DIR)/docker/$1.done
+
 $(BUILD_DIR)/docker/$1.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/repos/repos.done \
