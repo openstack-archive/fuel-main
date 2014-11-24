@@ -1,3 +1,9 @@
+nailgun-mcagents (0.0.1-1) unstable; urgency=low
+
+  * Add new version code
+
+ -- Igor Kalnitsky <ikalnitsky@ikalnitsky-pc>  Mon, 24 Nov 2014 18:36:03 +0200
+
 nailgun-mcagents (0.0.1) unstable; urgency=low
 
   * Initial release.

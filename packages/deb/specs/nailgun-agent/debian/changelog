@@ -1,3 +1,9 @@
+nailgun-agent (3.9.2-2ubuntu10) precise; urgency=low
+
+  * Add new version code
+
+ -- Igor Kalnitsky <ikalnitsky@ikalnitsky-pc>  Mon, 24 Nov 2014 18:36:03 +0200
+
 nailgun-agent (3.9.2-1ubuntu10) precise; urgency=low
 
   * Add new version code 

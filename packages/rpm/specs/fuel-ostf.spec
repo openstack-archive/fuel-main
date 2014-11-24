@@ -2,7 +2,7 @@
 %define version 0.1
 %define unmangled_version 0.1
 %define unmangled_version 0.1
-%define release 3
+%define release 4
 
 Summary: cloud computing testing
 Name: %{name}
