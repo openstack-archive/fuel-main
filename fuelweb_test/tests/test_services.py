@@ -159,8 +159,8 @@ class SaharaHA(TestBasic):
 
         LOGGER.debug('Check MD5 of image')
         check_image = checkers.check_image(
-            settings.SERVTEST_SAVANNA_IMAGE,
-            settings.SERVTEST_SAVANNA_IMAGE_MD5,
+            settings.SERVTEST_SAHARA_IMAGE,
+            settings.SERVTEST_SAHARA_IMAGE_MD5,
             settings.SERVTEST_LOCAL_PATH)
         asserts.assert_true(check_image)
 
@@ -217,9 +217,9 @@ class SaharaHA(TestBasic):
         LOGGER.debug('Import image')
         common_func.image_import(
             settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_SAVANNA_IMAGE,
-            settings.SERVTEST_SAVANNA_IMAGE_NAME,
-            settings.SERVTEST_SAVANNA_IMAGE_META)
+            settings.SERVTEST_SAHARA_IMAGE,
+            settings.SERVTEST_SAHARA_IMAGE_NAME,
+            settings.SERVTEST_SAHARA_IMAGE_META)
 
         common_func.goodbye_security()
 
