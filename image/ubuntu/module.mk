@@ -52,7 +52,7 @@ mdadm\
 nailgun-agent\
 nailgun-mcagents\
 nailgun-net-check\
-ntp\
+ntp-dev\
 openssh-client\
 openssh-server\
 telnet\
