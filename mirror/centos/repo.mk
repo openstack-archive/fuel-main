@@ -44,15 +44,16 @@ $(BUILD_DIR)/mirror/centos/yum.done: \
 		$(SOURCE_DIR)/requirements-rpm.txt
 	yum -c $(BUILD_DIR)/mirror/centos/etc/yum.conf clean all
 	# sudo is required because we use 'sudo yum' in several places
-	sudo yum -c $(BUILD_DIR)/mirror/centos/etc/yum.conf clean all
+	sudo yum -c $(BUILD_DIR)/mirror/centos/etc/yum.conf --installroot=$(LOCAL_MIRROR_CENTOS_OS_BASEURL) clean all
 	rm -rf /var/tmp/yum-$$USER-*/
 	yumdownloader --resolve --archlist=$(CENTOS_ARCH) \
 		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
 		--destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \
-		$(REQUIRED_RPMS) 2>&1 | grep -v '^looking for' | tee $(BUILD_DIR)/mirror/centos/yumdownloader.log
+		$(REQUIRED_RPMS) --installroot=$(LOCAL_MIRROR_CENTOS_OS_BASEURL) 2>&1 | \
+		grep -v '^looking for' | tee $(BUILD_DIR)/mirror/centos/yumdownloader.log
 	[ -z "$(YUM_DOWNLOAD_SRC)" ] || \
 	 yumdownloader --archlist=src --source -c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
-	 --destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Sources $(REQUIRED_RPMS) 2>&1 | \
+	 --destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Sources $(REQUIRED_RPMS) --installroot=$(LOCAL_MIRROR_CENTOS_OS_BASEURL) 2>&1 | \
 	 grep -v '^looking for' | tee $(BUILD_DIR)/mirror/centos/yumdownloader_src.log
 	# Yumdownloader/repotrack workaround number one:
 	# i686 packages are downloaded by mistake. Remove them
