@@ -63,7 +63,9 @@ $(BUILD_DIR)/mirror/centos/yum.done: \
 	test `grep "No Match" $(BUILD_DIR)/mirror/centos/yumdownloader.log | wc -l` = 0
 	# Yumdownloader workaround number three:
 	# We have exactly four downloading conflicts: django, mysql, kernel-headers and kernel-lt-firmware
-	test `grep "conflicts with" $(BUILD_DIR)/mirror/centos/yumdownloader.log | grep -v '^[[:space:]]' | wc -l` -le 9
+	sed -ne "/conflicts with/ {p}" $(BUILD_DIR)/mirror/centos/yumdownloader.log > $(BUILD_DIR)/mirror/centos/conflicts.list.tmp
+	sort -u  $(BUILD_DIR)/mirror/centos/conflicts.list.tmp > $(BUILD_DIR)/mirror/centos/conflicts.list
+	test `cat $(BUILD_DIR)/mirror/centos/conflicts.list | wc -l` -le 9
 	# Yumdownloader workaround number four:
 	# yumdownloader should fail if some errors appears
 	test `grep "Errno" $(BUILD_DIR)/mirror/centos/yumdownloader.log | wc -l` = 0
