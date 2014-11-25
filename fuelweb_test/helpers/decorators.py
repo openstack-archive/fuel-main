@@ -15,6 +15,7 @@
 import functools
 import json
 import os
+import sys
 import time
 import traceback
 import urllib2
@@ -52,6 +53,7 @@ def log_snapshot_on_error(func):
         except SkipTest:
             raise SkipTest()
         except Exception as test_exception:
+            exc_trace = sys.exc_traceback
             if args and 'snapshot' in args[0].__dict__:
                 name = 'error_%s' % args[0].snapshot
                 description = "Failed in method '%s'." % args[0].snapshot
@@ -76,7 +78,7 @@ def log_snapshot_on_error(func):
                     args[0].env.make_snapshot(snapshot_name=name[-50:],
                                               description=description,
                                               is_make=True)
-            raise test_exception
+            raise test_exception, None, exc_trace
     return wrapper
 
 
