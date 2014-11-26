@@ -69,7 +69,6 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 	$(ACTION.TOUCH)
 endif
 
-
 ########################
 # UBUNTU MIRROR ARTIFACT
 ########################
@@ -131,8 +130,8 @@ $(BUILD_DIR)/iso/isoroot-dotfiles.done: \
 		$(ISOROOT)/.treeinfo
 	$(ACTION.TOUCH)
 
-$(ISOROOT)/openstack_version: $(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME)
-	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $@
+$(ISOROOT)/openstack_version: $(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)
+	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $@
 
 $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done \
@@ -172,8 +171,11 @@ $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/nailgun.done
 
 $(ISOROOT)/centos-versions.yaml: $(BUILD_DIR)/iso/isoroot-centos.done
 #	here we don't need to do anything because we unpack centos repo in $(ISOROOT) and it already contains centos-versions.yaml
+	$(ACTION.TOUCH)
+
 $(ISOROOT)/ubuntu-versions.yaml: $(BUILD_DIR)/iso/isoroot-ubuntu.done
 	cp $(ISOROOT)/ubuntu/ubuntu-versions.yaml $@
+	$(ACTION.TOUCH)
 
 ifeq ($(PRODUCTION),docker)
 $(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/docker.done
