@@ -96,9 +96,7 @@ def upload_manifests(func):
             if settings.UPLOAD_MANIFESTS:
                 logger.info("Uploading new manifests from %s" %
                             settings.UPLOAD_MANIFESTS_PATH)
-                remote = helpers.SSHClient(args[0].admin_node_ip,
-                                           username='root',
-                                           password='r00tme')
+                remote = args[0].environment.get_admin_remote()
                 remote.execute('rm -rf /etc/puppet/modules/*')
                 remote.upload(settings.UPLOAD_MANIFESTS_PATH,
                               '/etc/puppet/modules/')
@@ -142,9 +140,7 @@ def update_ostf(func):
                     raise ValueError('REFSPEC should be set for CI tests.')
                 logger.info("Uploading new patchset from {0}"
                             .format(settings.GERRIT_REFSPEC))
-                remote = helpers.SSHClient(args[0].admin_node_ip,
-                                           username='root',
-                                           password='r00tme')
+                remote = args[0].environment.get_admin_remote()
                 remote.upload(settings.PATCH_PATH.rstrip('/'),
                               '/tmp/fuel-ostf')
                 remote.execute('source /opt/fuel_plugins/ostf/bin/activate; '

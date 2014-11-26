@@ -230,13 +230,14 @@ class EnvironmentModel(object):
         return node
 
     @logwrap
-    def get_admin_remote(self):
+    def get_admin_remote(self, login=settings.SSH_CREDENTIALS['login'],
+                         password=settings.SSH_CREDENTIALS['password']):
         """SSH to admin node
         :rtype : SSHClient
         """
         return self.nodes().admin.remote(self.admin_net,
-                                         login='root',
-                                         password='r00tme')
+                                         login=login,
+                                         password=password)
 
     @logwrap
     def get_admin_node_ip(self):
@@ -291,8 +292,8 @@ class EnvironmentModel(object):
     @logwrap
     def get_ssh_to_remote(self, ip):
         return SSHClient(ip,
-                         username='root',
-                         password='r00tme',
+                         username=settings.SSH_CREDENTIALS['login'],
+                         password=settings.SSH_CREDENTIALS['password'],
                          private_keys=self.get_private_keys())
 
     @logwrap
@@ -388,6 +389,24 @@ class EnvironmentModel(object):
             return True
         return False
 
+    def set_admin_ssh_password(self):
+        remote = self.get_admin_remote(login='root', password='r00tme')
+        self.execute_remote_cmd(remote, 'echo -e "{1}\\n{1}" | passwd {0}'
+                                .format(settings.SSH_CREDENTIALS['login'],
+                                        settings.SSH_CREDENTIALS['password']))
+        logger.info("Master node login name: '{0}' , password: '{1}'".
+                    format(settings.SSH_CREDENTIALS['login'],
+                           settings.SSH_CREDENTIALS['password']))
+
+    def set_admin_keystone_password(self):
+        remote = self.get_admin_remote()
+        self.execute_remote_cmd(remote,
+                                'fuel user --newpass {0} --change-password'
+                                .format(settings.KEYSTONE_CREDS['password']))
+        logger.info("Set Fuel UI (keystone) username: '{0}' , password: '{1}'".
+                    format(settings.KEYSTONE_CREDS['username'],
+                           settings.KEYSTONE_CREDS['password']))
+
     def setup_environment(self, custom=False):
         # start admin node
         admin = self.nodes().admin
@@ -402,8 +421,10 @@ class EnvironmentModel(object):
             self.setup_customisation()
         # wait while installation complete
         admin.await(self.admin_net, timeout=10 * 60)
+        self.set_admin_ssh_password()
         self.wait_bootstrap()
         time.sleep(10)
+        self.set_admin_keystone_password()
         self.sync_time_admin_node()
 
     @upload_manifests
