@@ -65,6 +65,7 @@ $(BUILD_DIR)/upgrade/deps.done: \
 #	Requires virtualenv, pip, python-dev packages
 	$(BUILD_DIR)/upgrade/venv/bin/pip install -r $(BUILD_DIR)/repos/nailgun/fuel_upgrade_system/fuel_upgrade/requirements.txt --download $(BUILD_DIR)/upgrade/deps --no-use-wheel
 	cd $(BUILD_DIR)/repos/nailgun/fuel_upgrade_system/fuel_upgrade && $(BUILD_DIR)/upgrade/venv/bin/python setup.py sdist --dist-dir $(BUILD_DIR)/upgrade/deps
+	$(ACTION.TOUCH)
 
 ########################
 # COMMON PART

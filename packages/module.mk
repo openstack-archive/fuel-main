@@ -48,6 +48,9 @@ $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 endef
 
 PACKAGE_VERSION=6.0.0
+$(BUILD_DIR)/packages/source_%.done:
+	$(ACTION.TOUCH)
+
 $(eval $(call prepare_file_source,fencing-agent,fencing-agent.rb,$(BUILD_DIR)/repos/nailgun/bin/fencing-agent.rb))
 $(eval $(call prepare_file_source,fencing-agent,fencing-agent.cron,$(BUILD_DIR)/repos/nailgun/bin/fencing-agent.cron))
 $(eval $(call prepare_python_source,fuel-agent,fuel-agent-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/fuel_agent))
