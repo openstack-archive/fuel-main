@@ -259,3 +259,7 @@ IMAGE_PROVISIONING = os.environ.get('IMAGE_PROVISIONING', 'false') == 'true'
 KEYSTONE_CREDS = {'username': os.environ.get('KEYSTONE_USERNAME', 'admin'),
                   'password': os.environ.get('KEYSTONE_PASSWORD', 'admin'),
                   'tenant_name': os.environ.get('KEYSTONE_TENANT', 'admin')}
+
+SSH_CREDENTIALS = {
+    'login': os.environ.get('ENV_FUEL_LOGIN', 'root'),
+    'password': os.environ.get('ENV_FUEL_PASSWORD', 'r00tme')}
