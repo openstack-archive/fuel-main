@@ -69,7 +69,6 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 	$(ACTION.TOUCH)
 endif
 
-
 ########################
 # UBUNTU MIRROR ARTIFACT
 ########################
@@ -172,8 +171,11 @@ $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/nailgun.done
 
 $(ISOROOT)/centos-versions.yaml: $(BUILD_DIR)/iso/isoroot-centos.done
 #	here we don't need to do anything because we unpack centos repo in $(ISOROOT) and it already contains centos-versions.yaml
+	$(ACTION.TOUCH)
+
 $(ISOROOT)/ubuntu-versions.yaml: $(BUILD_DIR)/iso/isoroot-ubuntu.done
 	cp $(ISOROOT)/ubuntu/ubuntu-versions.yaml $@
+	$(ACTION.TOUCH)
 
 ifeq ($(PRODUCTION),docker)
 $(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/docker.done

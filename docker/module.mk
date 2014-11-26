@@ -56,7 +56,8 @@ $(BUILD_DIR)/docker/$1.done: \
 	$$(ACTION.TOUCH)
 endef
 
-$(BUILD_DIR)/docker/base-images.done:
+$(BUILD_DIR)/docker/base-images.done: \
+		$(BUILD_DIR)/mirror/docker/build.done
 	find $(LOCAL_MIRROR_DOCKER_BASEURL)/ -regex '.*xz' | xargs -n1 sudo docker load -i
 	$(ACTION.TOUCH)
 

@@ -20,6 +20,6 @@ $(BUILD_DIR)/mirror/build.done: \
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/make-changelog.done: $(BUILD_DIR)/mirror/build.done
-		sudo bash -c "export LOCAL_MIRROR=$(LOCAL_MIRROR); \
+	sudo bash -c "export LOCAL_MIRROR=$(LOCAL_MIRROR); \
 		$(SOURCE_DIR)/report-changelog.sh"
 	$(ACTION.TOUCH)
