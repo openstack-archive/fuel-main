@@ -1,7 +1,7 @@
 Name:      fencing-agent
 Summary:   Fencing agent
-Version:   0.1.0
-Release:   3
+Version:   6.0.0
+Release:   1
 License:   GPLv2
 BuildRoot: %{_tmppath}/%{name}-%{version}
 Source0:   fencing-agent.rb
