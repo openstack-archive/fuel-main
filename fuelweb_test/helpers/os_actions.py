@@ -58,7 +58,7 @@ class OpenStackActions(common.Common):
             return servers
 
     def create_server_for_migration(self, neutron=False, scenario='',
-                                    timeout=100):
+                                    timeout=100, key_name=None):
         name = "test-serv" + str(random.randint(1, 0x7fffffff))
         security_group = {}
         try:
@@ -87,6 +87,7 @@ class OpenStackActions(common.Common):
                                        image=image_id,
                                        flavor=1,
                                        userdata=scenario,
+                                       key_name=key_name,
                                        **kwargs)
         try:
             helpers.wait(
@@ -285,3 +286,49 @@ class OpenStackActions(common.Common):
             if img.name == image_name:
                 return img
         return None
+
+    def get_neutron_router(self):
+        return self.neutron.list_routers()
+
+    def get_routers_ids(self):
+        result = self.get_neutron_router()
+        ids = [i['id'] for i in result['routers']]
+        return ids
+
+    def get_l3_for_router(self, router_id):
+        return self.neutron.list_l3_agent_hosting_routers(router_id)
+
+    def get_l3_agent_ids(self, router_id):
+        result = self.get_l3_for_router(router_id)
+        ids = [i['id'] for i in result['agents']]
+        return ids
+
+    def get_l3_agent_hosts(self, router_id):
+        result = self.get_l3_for_router(router_id)
+        hosts = [i['host'] for i in result['agents']]
+        return hosts
+
+    def remove_l3_from_router(self, l3_agent, router_id):
+        return self.neutron.remove_router_from_l3_agent(l3_agent, router_id)
+
+    def add_l3_to_router(self, l3_agent, router_id):
+        return self.neutron.add_router_to_l3_agent(
+            l3_agent, {"router_id": router_id})
+
+    def list_agents(self):
+        return self.neutron.list_agents()
+
+    def get_available_l3_agents_ids(self, hosted_l3_agent_id):
+        result = self.list_agents()
+        ids = [i['id'] for i in result['agents']
+               if i['binary'] == 'neutron-l3-agent']
+        ids.remove(hosted_l3_agent_id)
+        return ids
+
+    def list_dhcp_agents_for_network(self, net_id):
+        return self.neutron.list_dhcp_agent_hosting_networks(net_id)
+
+    def get_node_with_dhcp_for_network(self, net_id):
+        result = self.list_dhcp_agents_for_network(net_id)
+        nodes = [i['host'] for i in result['agents']]
+        return nodes
