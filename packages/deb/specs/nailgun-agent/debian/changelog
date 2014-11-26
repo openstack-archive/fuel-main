@@ -1,3 +1,9 @@
+nailgun-agent (6.0.0-1) precise; urgency=low
+
+  * Update code from upstream
+
+ -- Igor Kalnitsky <ikalnitsky@mirantis.com>  Wed, 26 Nov 2014 19:49:00 +0200
+
 nailgun-agent (3.9.2-ubuntu6) precise; urgency=low
 
   * Update code from upstream
