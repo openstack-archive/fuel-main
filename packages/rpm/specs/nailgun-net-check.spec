@@ -1,6 +1,6 @@
 %define name nailgun-net-check
-%define version 0.2
-%define release 3
+%define version 6.0.0
+%define release 1
 
 Name:      %{name}
 Summary:   Network checking package for CentOS6.2
@@ -17,11 +17,11 @@ Requires:  vconfig
 Requires:  scapy
 Requires:  python-argparse
 Requires:  python-pypcap
-Requires: python-cliff-tablib
-Requires: python-stevedore
-Requires: python-daemonize
-Requires: python-yaml
-Requires: tcpdump
+Requires:  python-cliff-tablib
+Requires:  python-stevedore
+Requires:  python-daemonize
+Requires:  python-yaml
+Requires:  tcpdump
 
 
 %description
