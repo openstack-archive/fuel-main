@@ -1,7 +1,6 @@
-# Generated from astute-0.0.1.gem by gem2rpm -*- rpm-spec -*-
 %define rbname astute
-%define version 0.0.2
-%define release 10
+%define version 6.0.0
+%define release 1
 %global gemdir %(ruby -rubygems -e 'puts Gem::dir' 2>/dev/null)
 %global geminstdir %{gemdir}/gems/%{gemname}-%{version}
 %define gembuilddir %{buildroot}%{gemdir}
@@ -77,8 +76,8 @@ install -d -m 755 %{buildroot}%{_localstatedir}/log/astute
 %dir %attr(0755, naily, naily) %{_localstatedir}/log/%{rbname}
 %config(noreplace) %{_bindir}/astuted
 
-%doc %{gemdir}/doc/astute-0.0.2
-%{gemdir}/cache/astute-0.0.2.gem
-%{gemdir}/specifications/astute-0.0.2.gemspec
+%doc %{gemdir}/doc/astute-6.0.0
+%{gemdir}/cache/astute-6.0.0.gem
+%{gemdir}/specifications/astute-6.0.0.gemspec
 
 %changelog
