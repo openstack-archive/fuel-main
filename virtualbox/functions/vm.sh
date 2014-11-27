@@ -33,22 +33,24 @@ is_vm_running() {
     list=$(get_vms_running)
 
     # Check that the list of running VMs contains the given VM
-    if [[ $list = *$name* ]]; then
-        return 0
-    else
-        return 1
-    fi
+    for name_in_list in $list; do
+        if [[ $name_in_list == $name ]]; then
+            return 0
+        fi
+    done
+    return 1
 }
 
 is_vm_present() {
     name=$1
     list=$(get_vms_present)
 
-    if [[ $list = *$name* ]]; then
-        return 0
-    else
-        return 1
-    fi
+    for name_in_list in $list; do
+        if [[ $name_in_list == $name ]]; then
+            return 0
+        fi
+    done
+    return 1
 }
 
 create_vm() {
@@ -129,9 +131,10 @@ delete_vm() {
     vm_path="$vm_base_path/$name/"
 
     # Power off VM, if it's running
-    if is_vm_running $name; then
+    while is_vm_running $name; do
+        echo "The virtual machine $name is going to be stopped..."
         VBoxManage controlvm $name poweroff
-    fi
+    done
 
     echo "Deleting existing virtual machine $name..."
     while is_vm_present $name
