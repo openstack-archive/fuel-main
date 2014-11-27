@@ -95,6 +95,7 @@ libfence4
 libfribidi0
 libgtk2.0-0
 libgtk2.0-bin
+libguestfs-tools
 libhtml-template-perl
 libi18n-ruby1.8
 libjson-ruby1.8
@@ -212,6 +213,7 @@ python-ethtool
 python-feedparser
 python-gflags
 python-glance
+python-guestfs
 python-heatclient
 python-keyring
 python-keystone
