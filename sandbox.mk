@@ -50,32 +50,3 @@ sync
 umount $(SANDBOX)/proc
 umount $(SANDBOX)/dev
 endef
-
-define SANDBOX_UBUNTU_UP
-echo "SANDBOX_UBUNTU_UP: start"
-mkdir -p $(SANDBOX_UBUNTU)
-echo "Running debootstrap"
-sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) file://$(LOCAL_MIRROR)/ubuntu
-sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
-echo "Generating utf8 locale"
-sudo chroot $(SANDBOX_UBUNTU) /bin/sh -c 'locale-gen en_US.UTF-8; dpkg-reconfigure locales'
-echo "Preparing directory for chroot local mirror"
-test -e $(SANDBOX_UBUNTU)/tmp/apt && sudo rm -rf $(SANDBOX_UBUNTU)/tmp/apt
-sudo mkdir -p $(SANDBOX_UBUNTU)/tmp/apt
-echo "Copying local ubuntu mirror into $(SANDBOX_UBUNTU)/tmp/apt"
-sudo cp -al $(LOCAL_MIRROR)/ubuntu/dists $(LOCAL_MIRROR)/ubuntu/pool $(SANDBOX_UBUNTU)/tmp/apt
-echo "Configuring apt sources.list: deb file:///tmp/apt $(UBUNTU_RELEASE) main"
-echo "deb file:///tmp/apt $(UBUNTU_RELEASE) main" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/sources.list
-echo "Allowing using unsigned repos"
-echo "APT::Get::AllowUnauthenticated 1;" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
-echo "Updating apt package database"
-sudo chroot $(SANDBOX_UBUNTU) apt-get update
-echo "Installing additional packages: $(SANDBOX_DEB_PKGS)"
-test -n "$(SANDBOX_DEB_PKGS)" && sudo chroot $(SANDBOX_UBUNTU) apt-get install --yes $(SANDBOX_DEB_PKGS)
-echo "SANDBOX_UBUNTU_UP: done"
-endef
-
-define SANDBOX_UBUNTU_DOWN
-sync
-sudo umount $(SANDBOX_UBUNTU)/proc
-endef

@@ -1,0 +1,66 @@
+#!/bin/bash -x
+
+#aptly mirror list -raw | xargs -n 1 aptly mirror drop
+#aptly snapshot list -raw | xargs -n 1 aptly snapshot drop
+#aptly publish list -raw | xargs -n 1 aptly publish drop
+
+UBUNTU_RELEASE=@UBUNTU_RELEASE@
+UBUNTU_INSTALLER_KERNEL_VERSION=@UBUNTU_INSTALLER_KERNEL_VERSION@
+UBUNTU_KERNEL_FLAVOR=@UBUNTU_KERNEL_FLAVOR@
+
+
+if [ -z "$UBUNTU_RELEASE" ]; then
+	echo 'mkrepo.sh: UBUNTU_RELEASE is not defined'
+	exit 1
+fi
+
+if [ -z "$UBUNTU_INSTALLER_KERNEL_VERSION" ]; then
+	echo 'mkrepo.sh: UBUNTU_INSTALLER_KERNEL_VERSION is not defined'
+	exit 1
+fi
+
+if [ -z "$UBUNTU_KERNEL_FLAVOR" ]; then
+	echo 'mkrepo.sh UBUNTU_KERNEL_FLAVOR is not defined'
+	exit 1
+fi
+
+#echo "deb http://repo.aptly.info/ squeeze main" >> /etc/apt/sources.list
+echo "deb http://repo.aptly.info/ nightly main" >> /etc/apt/sources.list
+gpg --keyserver keys.gnupg.net --recv-keys 2A194991
+gpg -a --export 2A194991 | apt-key add -
+apt-get update
+apt-get install aptly -y
+
+
+cp /requirements-deb.txt /tmp/requirements-deb.txt
+cat >> /tmp/requirements-deb << EOF
+linux-image-${UBUNTU_INSTALLER_KERNEL_VERSION}
+linux-headers-${UBUNTU_INSTALLER_KERNEL_VERSION}
+linux-image-generic-${UBUNTU_KERNEL_FLAVOR}
+linux-headers-generic-${UBUNTU_KERNEL_FLAVOR}
+EOF
+
+FILTERS="$(cat /tmp/requirements-deb.txt | tr "\n" "|")"
+#FILTERS="${FILTERS::-1}"
+FILTERS="${FILTERS}\$PackageType (udeb)"
+aptly mirror create -architectures=amd64 -filter="${FILTERS}" -ignore-signatures -filter-with-deps -with-udebs Base @MIRROR_UBUNTU@ @UBUNTU_RELEASE@ main
+if [ "@USE_MIRROR@" = "none" ]; then
+    aptly mirror create -architectures=amd64 -filter="${FILTERS}" -ignore-signatures -filter-with-deps -with-udebs Ubuntu @MIRROR_UBUNTU@ @UBUNTU_RELEASE@ universe multiverse restricted
+    aptly mirror create -architectures=amd64 -filter="${FILTERS}" -ignore-signatures -filter-with-deps -with-udebs Updates @MIRROR_UBUNTU@ @UBUNTU_RELEASE@-updates main universe multiverse restricted
+    aptly mirror create -architectures=amd64 -filter="${FILTERS}" -ignore-signatures -filter-with-deps -with-udebs Security @MIRROR_UBUNTU@ @UBUNTU_RELEASE@-security main universe multiverse restricted
+    aptly mirror create -architectures=amd64 -filter="${FILTERS}" -ignore-signatures -filter-with-deps -with-udebs Fuel @MIRROR_FUEL_UBUNTU@ @UBUNTU_RELEASE@ main
+fi
+
+aptly mirror list -raw | xargs -n 1 aptly mirror update -ignore-signatures
+
+DATE=`date "+%d%m%Y"`
+aptly mirror list -raw | while read line; do
+    aptly snapshot create "${line}-${DATE}" from mirror ${line}
+done
+
+aptly snapshot list -raw | xargs aptly snapshot merge -latest final-${DATE}
+
+aptly publish snapshot -skip-signing -component=main -distribution=@UBUNTU_RELEASE@ final-${DATE} upstream
+if [ $? -ne 0 ]; then
+    exit 1
+fi
