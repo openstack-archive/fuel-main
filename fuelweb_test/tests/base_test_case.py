@@ -55,6 +55,7 @@ class SetupEnvironment(TestBasic):
         """
         self.check_run("empty")
         self.env.setup_environment()
+        self.env.change_default_network_settings()
         self.env.make_snapshot("empty", is_make=True)
 
     @test(depends_on=[setup_master])
