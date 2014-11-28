@@ -1,6 +1,6 @@
 %define name python-tasklib
 %define unmangled_name tasklib
-%define version 6.0.0
+%define version 0.1.0
 %define release 1
 
 Name:      %{name}
