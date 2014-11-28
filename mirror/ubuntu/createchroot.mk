@@ -8,10 +8,8 @@ define insert_ubuntu_version
 	$(empty_line)
 endef
 
-ifeq (,$(findstring clean,$(MAKECMDGOALS)))
-include $(BUILD_DIR)/ubuntu_installer_kernel_version.mk
-endif
-
+$(BUILD_DIR)/mirror/ubuntu/createchroot.done: $(BUILD_DIR)/mirror/ubuntu/boot.done
+$(BUILD_DIR)/mirror/ubuntu/createchroot.done: export UBUNTU_INSTALLER_KERNEL_VERSION=$(strip $(patsubst lib/modules/%/kernel,%,$(shell zcat $(LOCAL_NETBOOT_DIR)/ubuntu-installer/amd64/initrd.gz | cpio --list 'lib/modules/*/kernel')))
 $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot
 	mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc
