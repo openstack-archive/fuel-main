@@ -1,6 +1,8 @@
 %define name fuel-ostf
-%define version 6.0.0
-%define release 1
+%define version 0.1
+%define unmangled_version 0.1
+%define unmangled_version 0.1
+%define release 3
 
 Summary: cloud computing testing
 Name: %{name}
@@ -89,7 +91,7 @@ Requires:    python-stevedore >= 0.10
 fuel-ostf-tests
 
 %prep
-%setup -n %{name}-%{version} -n %{name}-%{version}
+%setup -n %{name}-%{unmangled_version} -n %{name}-%{unmangled_version}
 
 %build
 python setup.py build
@@ -102,3 +104,5 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root)
+
+

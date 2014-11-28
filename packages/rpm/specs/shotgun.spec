@@ -1,13 +1,14 @@
 %define name shotgun
-%define version 6.0.0
-%define release 1
+%define unmangled_name Shotgun
+%define version 0.1.0
+%define release 3
 
 Summary: Shotgun package
 Name: %{name}
 Version: %{version}
 Release: %{release}
 URL:     http://mirantis.com
-Source0: %{name}-%{version}.tar.gz
+Source0: %{unmangled_name}-%{version}.tar.gz
 License: Apache
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
@@ -17,7 +18,6 @@ BuildArch: noarch
 
 Requires:    postgresql
 Requires:    python-fabric == 1.7.0
-Requires:    python-argparse
 Requires:    tar
 Requires:    gzip
 Requires:    bzip2
@@ -27,7 +27,7 @@ Requires:    openssh-clients
 Shotgun package
 
 %prep
-%setup -n %{name}-%{version}
+%setup -n %{unmangled_name}-%{version}
 
 %build
 python setup.py build
@@ -40,3 +40,4 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root)
+
