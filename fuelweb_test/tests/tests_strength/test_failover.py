@@ -108,39 +108,44 @@ class TestHaFailover(TestBasic):
           groups=["ha_destroy_controllers"])
     @log_snapshot_on_error
     def ha_destroy_controllers(self):
-        """Destory two controllers and check pacemaker status is correct
+        """Destroy two controllers and check pacemaker status is correct
 
         Scenario:
             1. Destroy first controller
             2. Check pacemaker status
-            3. Revert environment
-            4. Destroy second controller
-            5. Check pacemaker status
-            6. Run OSTF
-
-        Snapshot deploy_ha
+            3. Run OSTF
+            4. Revert environment
+            5. Destroy second controller
+            6. Check pacemaker status
+            7. Run OSTF
 
         """
 
         for devops_node in self.env.nodes().slaves[:2]:
             self.env.revert_snapshot("deploy_ha")
-
             devops_node.suspend(False)
             self.fuel_web.assert_pacemaker(
                 self.env.nodes().slaves[2].name,
                 set(self.env.nodes().slaves[:3]) - {devops_node},
                 [devops_node])
 
-        cluster_id = self.fuel_web.client.get_cluster_id(
-            self.__class__.__name__)
+            cluster_id = self.fuel_web.client.get_cluster_id(
+                self.__class__.__name__)
 
-        # Wait until MySQL Galera is UP on some controller
-        self.fuel_web.wait_mysql_galera_is_up(['slave-01'])
+            # Wait until Nailgun marked suspended controller as offline
+            wait(lambda: not self.fuel_web.get_nailgun_node_by_devops_node(
+                devops_node)['online'],
+                timeout=60 * 5)
 
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            test_sets=['ha', 'smoke', 'sanity'],
-            should_fail=1)
+            # Wait until MySQL Galera is UP on online controllers
+            self.fuel_web.wait_mysql_galera_is_up(
+                [n.name for n in
+                 set(self.env.nodes().slaves[:3]) - {devops_node}])
+
+            self.fuel_web.run_ostf(
+                cluster_id=cluster_id,
+                test_sets=['ha', 'smoke', 'sanity'],
+                should_fail=1)
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_disconnect_controllers"])
