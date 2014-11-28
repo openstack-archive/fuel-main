@@ -1,12 +1,13 @@
 %define name fuelmenu
-%define version 6.0.0
-%define release 1
+%define version 0.1
+%define unmangled_version 0.1
+%define release 3
 
 Summary: Console utility for pre-configuration of Fuel server
 Name: %{name}
 Version: %{version}
 Release: %{release}
-Source0: %{name}-%{version}.tar.gz
+Source0: %{name}-%{unmangled_version}.tar.gz
 License: Apache
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
@@ -28,7 +29,7 @@ Requires: python-ordereddict
 Summary: Console utility for pre-configuration of Fuel server
 
 %prep
-%setup -n %{name}-%{version} -n %{name}-%{version}
+%setup -n %{name}-%{unmangled_version} -n %{name}-%{unmangled_version}
 
 %build
 python setup.py build
