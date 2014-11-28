@@ -406,6 +406,61 @@ class EnvironmentModel(object):
         time.sleep(10)
         self.sync_time_admin_node()
 
+    def change_default_network_settings(self):
+
+        def get_ip_base(ip):
+            res = '{}.'.format(ip.rsplit('.', 1)[0])
+            return res
+
+        public_net = '{}.'.format(
+            get_ip_base(
+                self.get_virtual_environmen().network_by_name(
+                    'public').ip_pool_start))
+        manage_net = '{}.'.format(
+            get_ip_base(
+                self.get_virtual_environment().network_by_name(
+                    'management').ip_pool_start))
+        storage_net = '{}.'.format(
+            get_ip_base(
+                self.get_virtual_environment().network_by_name(
+                    'storage').ip_pool_start))
+        _PUBLIC_NET = 0
+        _MANAGE_NET = 1
+        _STORAGE_NET = 2
+        api_version = self.fuel_web.client.get_api_version()
+        if int(api_version["release"][0]) >= 6:
+            logger.info("Applying default network settings")
+            for _release in self.fuel_web.client.get_releases():
+                logger.info(
+                    'Applying changes for release: {}'.format(
+                        _release['name']))
+                net_settings = \
+                    self.fuel_web.client.get_release_default_net_settings(
+                        _release['id'])
+                for net_provider in net_settings:
+                    for net in range(3):
+                        if net == _PUBLIC_NET:
+                            p = net_settings[
+                                net_provider]['networks'][_PUBLIC_NET]
+                            p['cidr'] = '{}0/24'.format(public_net)
+                            p['gateway'] = '{}1'.format(public_net)
+                            p['ip_range'] = \
+                                ['{}2'.format(public_net),
+                                 '{}127'.format(public_net)]
+                        elif net == _MANAGE_NET:
+                            m = net_settings[
+                                net_provider]['networks'][_MANAGE_NET]
+                            m['cidr'] = '{}0/24'.format(manage_net)
+                        elif net == _STORAGE_NET:
+                            s = net_settings[
+                                net_provider]['networks'][_STORAGE_NET]
+                            s['cidr'] = '{}0/24'.format(storage_net)
+                    net_settings[net_provider]['config']['floating_ranges'] = \
+                        [['{}128'.format(public_net),
+                          '{}254'.format(public_net)]]
+                self.fuel_web.client.put_release_default_net_settings(
+                    _release['id'], net_settings)
+
     @upload_manifests
     def wait_for_provisioning(self):
         _wait(lambda: _tcp_ping(

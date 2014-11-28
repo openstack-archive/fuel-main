@@ -162,6 +162,18 @@ class NailgunClient(object):
 
     @logwrap
     @json_parse
+    def get_release_default_net_settings(self, release_id):
+        return self.client.get("/api/v1/releases/{}/networks".format(
+            release_id))
+
+    @logwrap
+    @json_parse
+    def put_release_default_net_settings(self, release_id, data):
+        return self.client.put(
+            "/api/v1/releases/{}/networks".format(release_id), data)
+
+    @logwrap
+    @json_parse
     def get_node_interfaces(self, node_id):
         return self.client.get("/api/nodes/{}/interfaces".format(node_id))
 
