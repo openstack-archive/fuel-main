@@ -340,8 +340,7 @@ class MuranoSimple(TestBasic):
         test_class_main = ('fuel_health.tests.platform_tests'
                            '.test_platform_murano_linux.'
                            'MuranoDeployLinuxServicesTests')
-        tests_names = ['test_deploy_telnet_service',
-                       'test_deploy_apache_service']
+        tests_names = ['test_deploy_apache_service', ]
 
         test_classes = []
 
@@ -463,8 +462,7 @@ class MuranoHA(TestBasic):
         test_class_main = ('fuel_health.tests.platform_tests'
                            '.test_platform_murano_linux.'
                            'MuranoDeployLinuxServicesTests')
-        tests_names = ['test_deploy_telnet_service',
-                       'test_deploy_apache_service']
+        tests_names = ['test_deploy_apache_service', ]
 
         test_classes = []
 
