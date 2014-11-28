@@ -1,4 +1,4 @@
-NETBOOT_PATH=$(LOCAL_MIRROR)/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64
+NETBOOT_PATH=$(LOCAL_MIRROR)/ubuntu/public/upstream/installer-amd64/current/images/netboot/ubuntu-installer/amd64
 
 # script which mounts /proc in /target. linux-image* preinst script uses
 # /proc without checking if its mounted, hence this work around:
