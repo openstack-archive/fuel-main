@@ -1,7 +1,5 @@
 .PHONY: clean clean-deb
 
-include $(SOURCE_DIR)/packages/deb/debian-boot/module.mk
-
 clean: clean-deb
 
 clean-deb:
@@ -63,5 +61,3 @@ ifneq (0,$(strip $(BUILD_DEB_PACKAGES)))
 $(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/repo.done
 endif
 
-$(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/debian-boot/build.done
-	$(ACTION.TOUCH)
