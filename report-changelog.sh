@@ -16,6 +16,7 @@ for packagename in `find ${LOCAL_MIRROR} -name \*.deb | sort -u`; do
         bz2) ZFLAG='--bzip2' ;;
          gz) ZFLAG='-z' ;;
          xz) ZFLAG='-J' ;;
+       lzma) ZFLAG='--lzma' ;;
           *) echo "Unknown data tarball format for package $packagename"; continue ;;
     esac
     CHANGELOGFILE=`ar p $packagename $DATAFILE | tar $ZFLAG -tvf - | grep '/usr/share/doc/' | grep "/changelog\.Debian\.gz" || :`
