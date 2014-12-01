@@ -42,7 +42,7 @@ cd ${REPO_PATH}/dists/${REPONAME}
 echo "$release_header" > Release
 
 # Generate hashes
-c1=(MD5Sum: SHA1: SHA256: SHA512:)
+c1=(MD5sum: SHA1: SHA256: SHA512:)
 c2=(md5 sha1 sha256 sha512)
 
 i=0
