@@ -83,6 +83,19 @@ EOF
       sudo apt-get update && sudo apt-get -y install nodejs
       ;;
 
+  Heisenbug)
+    sudo yum -y install \
+        docker-io wget tar createrepo binutils bzip2 yum-utils \
+        python-setuptools python-pbr npm nodejs-grunt-cli rubygems \
+        patch PyYAML python-jinja2 debootstrap devscripts
+    sudo systemctl start docker
+    sudo mknod -m660 /dev/loop8 b 7 8
+    sudo mknod -m660 /dev/loop9 b 7 9
+    sudo mknod -m660 /dev/loop10 b 7 10
+    sudo mknod -m660 /dev/loop11 b 7 11
+    exit 0
+    ;;
+
   *)
     echo "We currently doesn't support building on your distribution ${DISTRO}"
     exit 1;
