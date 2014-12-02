@@ -83,6 +83,11 @@ EOF
       sudo apt-get update && sudo apt-get -y install nodejs
       ;;
 
+  Heisenbug)
+    sudo yum install docker-io
+    sudo systemctl start docker
+    ;;
+
   *)
     echo "We currently doesn't support building on your distribution ${DISTRO}"
     exit 1;
