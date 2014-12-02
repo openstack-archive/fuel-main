@@ -56,7 +56,7 @@ $(BUILD_DIR)/docker/$1.done: \
 endef
 
 $(BUILD_DIR)/docker/base-images.done:
-	find $(LOCAL_MIRROR_DOCKER_BASEURL)/ -regex '.*xz' | xargs -n1 sudo docker load -i
+	for container in $(LOCAL_MIRROR_DOCKER_BASEURL)/*.xz; do xz -dkc -T0 $$container | sudo docker load; done
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/docker/busybox.done: \
