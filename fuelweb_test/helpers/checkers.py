@@ -810,3 +810,8 @@ def check_stats_private_info(collector_remote, postgres_actions,
     assert_true(has_no_private_data, 'Found private data in stats, check test '
                                      'output and logs for details.')
     logger.info('Found no private data in logs')
+
+
+def check_kernel(kernel, expected_kernel):
+    assert_equal(kernel, expected_kernel,
+                 "kernel version is wrong, it is {0}".format(kernel))
