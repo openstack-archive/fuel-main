@@ -30,6 +30,31 @@ from fuelweb_test.tests import base_test_case as base_test_data
 
 @test(groups=["upgrade"])
 class UpgradeFuelMaster(base_test_data.TestBasic):
+    @classmethod
+    def check_upgraded_kernel(cls, admin_remote, slave_remote):
+        #the archive contains several versions of the kernel
+        #regular expression will pick the newer one
+        #that is actually gets installed
+        cmd = r"find /var/upgrade/repos/*/ubuntu/ -type f -name" \
+              r" 'linux-image-*.deb' -printf '%f\n' | sed -rn " \
+              r"'s/^linux-image-([0-9, \.]+(\-[0-9]+)?)-.*/\1/p' |" \
+              r" sort -rV | " \
+              r"head -1"
+        expected_kernel = ''.join(admin_remote.execute(
+            cmd)['stdout']).rstrip()
+        logger.debug("kernel version from repos is {0}".format(
+            expected_kernel))
+        kernel = UpgradeFuelMaster.get_slave_kernel(slave_remote)
+        checkers.check_kernel(kernel, expected_kernel)
+
+    @classmethod
+    def get_slave_kernel(cls, slave_remote):
+        kernel = ''.join(slave_remote.execute(
+            r"uname -r | sed -rn"
+            r" 's/^([0-9, \.]+(\-[0-9]+)?)-.*/\1/p'")['stdout']).rstrip()
+        logger.debug("slave kernel is {0}".format(kernel))
+        return kernel
+
     @test(groups=["upgrade_simple"])
     @log_snapshot_on_error
     def upgrade_simple_env(self):
@@ -51,6 +76,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
 
         self.env.revert_snapshot("ceph_multinode_compact")
         cluster_id = self.fuel_web.get_last_created_cluster()
+        remote = self.env.get_ssh_to_remote_by_name('slave-01')
+        expected_kernel = self.get_slave_kernel(remote)
+
         checkers.upload_tarball(self.env.get_admin_remote(),
                                 hlp_data.TARBALL_PATH, '/var')
         checkers.check_tarball_exists(self.env.get_admin_remote(),
@@ -83,6 +111,10 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=10, networks_count=1, timeout=300)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
+        if hlp_data.OPENSTACK_RELEASE_UBUNTU in hlp_data.OPENSTACK_RELEASE:
+            remote = self.env.get_ssh_to_remote_by_name('slave-04')
+            kernel = self.get_slave_kernel(remote)
+            checkers.check_kernel(kernel, expected_kernel)
         create_diagnostic_snapshot(self.env, "pass", "upgrade_simple_env")
 
         self.env.make_snapshot("upgrade_simple")
@@ -166,6 +198,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
             data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=8, timeout=300)
+        if hlp_data.OPENSTACK_RELEASE_UBUNTU in hlp_data.OPENSTACK_RELEASE:
+            remote = self.env.get_ssh_to_remote_by_name('slave-06')
+            self.check_upgraded_kernel(self.env.get_admin_remote(), remote)
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
@@ -243,13 +278,16 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
+        if hlp_data.OPENSTACK_RELEASE_UBUNTU in hlp_data.OPENSTACK_RELEASE:
+            remote = self.env.get_ssh_to_remote_by_name('slave-04')
+            self.check_upgraded_kernel(self.env.get_admin_remote(), remote)
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
         self.env.make_snapshot("deploy_ha_after_upgrade")
 
 
 @test(groups=["rollback"])
-class RollbackFuelMaster(base_test_data.TestBasic):
+class RollbackFuelMaster(UpgradeFuelMaster):
     @test(groups=["rollback_automatic_ha"])
     @log_snapshot_on_error
     def rollback_automatically_ha_env(self):
@@ -334,6 +372,9 @@ class RollbackFuelMaster(base_test_data.TestBasic):
 
         self.env.revert_snapshot("deploy_neutron_gre")
         cluster_id = self.fuel_web.get_last_created_cluster()
+        remote = self.env.get_ssh_to_remote_by_name('slave-01')
+        expected_kernel = self.get_slave_kernel(remote)
+
         checkers.upload_tarball(self.env.get_admin_remote(),
                                 hlp_data.TARBALL_PATH, '/var')
         checkers.check_tarball_exists(self.env.get_admin_remote(),
@@ -374,6 +415,10 @@ class RollbackFuelMaster(base_test_data.TestBasic):
             True, False
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        if hlp_data.OPENSTACK_RELEASE_UBUNTU in hlp_data.OPENSTACK_RELEASE:
+            remote = self.env.get_ssh_to_remote_by_name('slave-04')
+            kernel = self.get_slave_kernel(remote)
+            checkers.check_kernel(kernel, expected_kernel)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
         self.env.make_snapshot("rollback_automatic_simple")
