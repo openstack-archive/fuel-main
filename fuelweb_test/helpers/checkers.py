@@ -451,3 +451,9 @@ def check_mysql(remote, node_name):
     _wait(lambda: assert_equal(remote.execute(check_crm_cmd)['exit_code'], 0,
                                'MySQL resource is NOT running on {0}'.format(
                                    node_name)), timeout=60)
+
+
+@logwrap
+def check_kernel(kernel, expected_kernel):
+    assert_equal(kernel, expected_kernel,
+                 "kernel version is wrong, it is {0}".format(kernel))

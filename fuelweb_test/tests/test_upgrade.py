@@ -83,6 +83,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=10, networks_count=1, timeout=300)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
+        remote = self.env.get_ssh_to_remote_by_name('slave-04')
+        kernel = ''.join(remote.execute("uname -r")['stdout']).rstrip()
+        checkers.check_kernel(kernel, "2.6.32-431.20.3.el6.x86_64")
         create_diagnostic_snapshot(self.env, "pass", "upgrade_simple_env")
 
         self.env.make_snapshot("upgrade_simple")
@@ -166,6 +169,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
             data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=8, timeout=300)
+        remote = self.env.get_ssh_to_remote_by_name('slave-06')
+        kernel = ''.join(remote.execute("uname -r")['stdout']).rstrip()
+        checkers.check_kernel(kernel, "2.6.32-504.el6.x86_64")
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
@@ -243,6 +249,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
+        remote = self.env.get_ssh_to_remote_by_name('slave-04')
+        kernel = ''.join(remote.execute("uname -r")['stdout']).rstrip()
+        checkers.check_kernel(kernel, "2.6.32-504.el6.x86_64")
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
         self.env.make_snapshot("deploy_ha_after_upgrade")
@@ -374,6 +383,9 @@ class RollbackFuelMaster(base_test_data.TestBasic):
             True, False
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        remote = self.env.get_ssh_to_remote_by_name('slave-04')
+        kernel = ''.join(remote.execute("uname -r")['stdout']).rstrip()
+        checkers.check_kernel(kernel, "2.6.32-431.20.3.el6.x86_64")
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
         self.env.make_snapshot("rollback_automatic_simple")
