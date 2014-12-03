@@ -470,3 +470,8 @@ def install_plugin_check_code(
     assert_equal(
         chan.recv_exit_status(), exit_code,
         'Install script fails with next message {0}'.format(''.join(stderr)))
+
+
+def check_kernel(kernel, expected_kernel):
+    assert_equal(kernel, expected_kernel,
+                 "kernel version is wrong, it is {0}".format(kernel))
