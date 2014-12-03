@@ -83,6 +83,20 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=10, networks_count=1, timeout=300)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
+        if hlp_data.OPENSTACK_RELEASE_UBUNTU in hlp_data.OPENSTACK_RELEASE:
+            cmd = "ls /var/www/nailgun/ubuntu/x86_64/pool/main | sed -rn" \
+                  " 's/^linux-image-([0-9, \.]+)-.*/\1/p' | sort -rV |" \
+                  " head -1"
+            expected_kernel = ''.join(self.env.get_admin_remote().execute(
+                cmd)['stdout']).rstrip()
+            logger.debug("kernel version from repos is {0}".format(
+                expected_kernel))
+            remote = self.env.get_ssh_to_remote_by_name('slave-04')
+            kernel = ''.join(remote.execute(
+                "uname -r | sed -rn 's/^([0-9, \.]+)-.*/\1/p'")['stdout']
+            ).rstrip()
+            logger.debug("actual kernel is {0}".format(kernel))
+            checkers.check_kernel(kernel, expected_kernel)
         create_diagnostic_snapshot(self.env, "pass", "upgrade_simple_env")
 
         self.env.make_snapshot("upgrade_simple")
@@ -166,6 +180,21 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
             data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=8, timeout=300)
+        if hlp_data.OPENSTACK_RELEASE_UBUNTU in hlp_data.OPENSTACK_RELEASE:
+            cmd = "ls /var/upgrade/repos/*/ubuntu/x86_64/pool/main/ |" \
+                  " sed -rn" \
+                  " 's/^linux-image-([0-9, \.]+)-.*/\1/p' | sort -rV |" \
+                  " head -1"
+            expected_kernel = ''.join(self.env.get_admin_remote().execute(
+                cmd)['stdout']).rstrip()
+            logger.debug("kernel version from repos is {0}".format(
+                expected_kernel))
+            remote = self.env.get_ssh_to_remote_by_name('slave-06')
+            kernel = ''.join(remote.execute(
+                "uname -r | sed -rn 's/^([0-9, \.]+)-.*/\1/p'")['stdout']
+            ).rstrip()
+            logger.debug("actual kernel is {0}".format(kernel))
+            checkers.check_kernel(kernel, expected_kernel)
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
@@ -243,6 +272,21 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
+        if hlp_data.OPENSTACK_RELEASE_UBUNTU in hlp_data.OPENSTACK_RELEASE:
+            cmd = "ls /var/upgrade/repos/*/ubuntu/x86_64/pool/main/ |" \
+                  " sed -rn" \
+                  " 's/^linux-image-([0-9, \.]+)-.*/\1/p' | sort -rV |" \
+                  " head -1"
+            expected_kernel = ''.join(self.env.get_admin_remote().execute(
+                cmd)['stdout']).rstrip()
+            logger.debug("kernel version from repos is {0}".format(
+                expected_kernel))
+            remote = self.env.get_ssh_to_remote_by_name('slave-04')
+            kernel = ''.join(remote.execute(
+                "uname -r | sed -rn 's/^([0-9, \.]+)-.*/\1/p'")['stdout']
+            ).rstrip()
+            logger.debug("actual kernel is {0}".format(kernel))
+            checkers.check_kernel(kernel, expected_kernel)
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
         self.env.make_snapshot("deploy_ha_after_upgrade")
@@ -374,6 +418,20 @@ class RollbackFuelMaster(base_test_data.TestBasic):
             True, False
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+        if hlp_data.OPENSTACK_RELEASE_UBUNTU in hlp_data.OPENSTACK_RELEASE:
+            cmd = "ls /var/www/nailgun/ubuntu/x86_64/pool/main | sed -rn" \
+                  " 's/^linux-image-([0-9, \.]+)-.*/\1/p' | sort -rV |" \
+                  " head -1"
+            expected_kernel = ''.join(self.env.get_admin_remote().execute(
+                cmd)['stdout']).rstrip()
+            logger.debug("kernel version from repos is {0}".format(
+                expected_kernel))
+            remote = self.env.get_ssh_to_remote_by_name('slave-04')
+            kernel = ''.join(remote.execute(
+                "uname -r | sed -rn 's/^([0-9, \.]+)-.*/\1/p'")['stdout']
+            ).rstrip()
+            logger.debug("actual kernel is {0}".format(kernel))
+            checkers.check_kernel(kernel, expected_kernel)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
         self.env.make_snapshot("rollback_automatic_simple")
