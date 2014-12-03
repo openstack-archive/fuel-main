@@ -459,3 +459,9 @@ def check_mysql(remote, node_name):
         logger.error('galera status is {0}'.format(''.join(remote.execute(
             check_galera_cmd)['stdout']).rstrip()))
         raise
+
+
+@logwrap
+def check_kernel(kernel, expected_kernel):
+    assert_equal(kernel, expected_kernel,
+                 "kernel version is wrong, it is {0}".format(kernel))
