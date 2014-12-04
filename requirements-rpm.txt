@@ -195,6 +195,8 @@ linux-firmware
 lrzip
 lzop-1.02-0.9.rc1.el6
 lxc
+mistral
+python-mistralclient
 mailcap-2.1.31-2.el6
 mailx
 make-3.81-20.el6

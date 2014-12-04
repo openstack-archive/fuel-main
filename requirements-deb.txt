@@ -114,6 +114,8 @@ mlnx-ofed-light
 mongodb-clients
 mongodb-server
 monit
+mistral
+python-mistralclient
 murano-api
 murano-dashboard
 murano-apps
