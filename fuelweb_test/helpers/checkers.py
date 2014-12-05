@@ -434,11 +434,7 @@ def iptables_check(remote):
 
 @logwrap
 def check_mysql(remote, node_name):
-    if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
-        mysql_pidfile = '/var/run/mysqld/mysqld.pid'
-    else:
-        mysql_pidfile = '/var/run/mysql/mysqld.pid'
-    check_cmd = '[ -r {0} ] && pkill -0 -F {0}'.format(mysql_pidfile)
+    check_cmd = 'pkill -0 -x mysqld'
     check_crm_cmd = ('crm resource status clone_p_mysql |'
                      ' grep -q "is running on: $HOSTNAME"')
     try:
