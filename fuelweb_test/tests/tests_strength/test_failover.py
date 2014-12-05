@@ -302,7 +302,7 @@ class TestHaFailover(TestBasic):
             logger.info('Terminating MySQL on {0}'.format(devops_node.name))
 
             try:
-                remote.check_call('pkill -9 "mysqld_safe|mysqld"')
+                remote.check_call('pkill -9 -x "mysqld"')
             except:
                 logger.error('MySQL on {0} is down after snapshot revert'.
                              format(devops_node.name))
