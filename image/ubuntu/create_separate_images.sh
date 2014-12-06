@@ -163,6 +163,11 @@ sudo umount ${TMP_CHROOT_DIR}/tmp/mirror
 echo "cloud-init cloud-init/datasources multiselect NoCloud, None" | sudo chroot ${TMP_CHROOT_DIR} debconf-set-selections -v
 sudo chroot ${TMP_CHROOT_DIR} dpkg-reconfigure -f noninteractive cloud-init
 
+# puppet agents get automatically started in recent Ubuntu versions.
+# This confuses astute so it aborts the deployment (see 
+# https://bugs.launchpad.net/mos/+bug/1385079)
+sudo chroot ${TMP_CHROOT_DIR} update-rc.d puppet disable
+
 # re-enable services
 sudo rm ${TMP_CHROOT_DIR}/usr/sbin/policy-rc.d
 
