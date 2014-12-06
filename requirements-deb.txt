@@ -89,9 +89,6 @@ libalgorithm-diff-xs-perl
 libalgorithm-merge-perl
 libapache2-mod-fastcgi
 libapache2-mod-wsgi
-libfribidi0
-libgtk2.0-0
-libgtk2.0-bin
 libhtml-template-perl
 libi18n-ruby1.8
 libjson-ruby1.8
@@ -100,7 +97,6 @@ libparse-debianchangelog-perl
 libsasl2-modules
 libssl0.9.8
 libstomp-ruby1.8
-libvte9
 linux-firmware
 linux-firmware-nonfree
 lksctp-tools
