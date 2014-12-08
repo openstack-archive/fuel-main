@@ -266,28 +266,38 @@ class FuelWebClient(object):
 
     @logwrap
     def assert_pacemaker(self, ctrl_node, online_nodes, offline_nodes):
+        def compare_pcm_nodes(ctrl_node, nodes, online_status):
+            for line in self.get_pacemaker_status(ctrl_node).splitlines():
+                if online_status in line:
+                    pcm_nodes = line[line.find('[') + 1:line.find(']')].split()
+                    fqdn_nodes = [self.get_fqdn_by_hostname(x)
+                                  for x in pcm_nodes]
+                    logger.debug("Expected nodes {0} {1}"
+                                 .format(online_status, nodes))
+                    logger.debug("Actual nodes {0} {1}"
+                                 .format(online_status, fqdn_nodes))
+                    return (fqdn_nodes == nodes)
+            return False
+
         logger.info('Assert pacemaker status at devops node %s', ctrl_node)
         fqdn_names = lambda nodes: sorted([self.fqdn(n) for n in nodes])
 
         # Assert online nodes list
-        online = \
-            'Online: [ {0} ]'.format(' '.join(fqdn_names(online_nodes)))
-        wait(lambda: online in self.get_pacemaker_status(
-            ctrl_node), timeout=30)
+        online = [x for x in fqdn_names(online_nodes)]
+        wait(lambda: compare_pcm_nodes(ctrl_node, online, 'Online: '),
+             timeout=30)
         assert_true(
-            online in self.get_pacemaker_status(ctrl_node),
+            compare_pcm_nodes(ctrl_node, online, 'Online: '),
             'Online nodes {0}'.format(online))
 
         # Assert offline nodes list
         if len(offline_nodes) > 0:
-            offline = \
-                'OFFLINE: [ {0} ]'.format(
-                    ' '.join(fqdn_names(offline_nodes)))
-            wait(lambda: offline in self.get_pacemaker_status(
-                ctrl_node), timeout=30)
+            offline = [x for x in fqdn_names(offline_nodes)]
+            wait(lambda: compare_pcm_nodes(ctrl_node, offline, 'OFFLINE: '),
+                 timeout=30)
             assert_true(
-                offline in self.get_pacemaker_status(ctrl_node),
-                'Offline nodes {0}'.format(offline_nodes))
+                compare_pcm_nodes(ctrl_node, offline, 'OFFLINE: '),
+                'Offline nodes {0}'.format(offline))
 
     @logwrap
     @upload_manifests
@@ -1286,7 +1296,7 @@ class FuelWebClient(object):
 
     @logwrap
     def get_fqdn_by_hostname(self, hostname):
-        if not self.environment.domain in hostname:
+        if self.environment.domain not in hostname:
             hostname += "." + self.environment.domain
             return hostname
         else:
