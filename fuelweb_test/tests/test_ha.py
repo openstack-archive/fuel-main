@@ -274,6 +274,8 @@ class TestHaFlatScalability(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
         for devops_node in self.env.nodes().slaves[:5]:
+            self.fuel_web.assert_pacemaker(
+                devops_node.name, self.env.nodes().slaves[:5], [])
             ret = self.fuel_web.get_pacemaker_status(devops_node.name)
             assert_true(
                 re.search('vip__management\s+\(ocf::mirantis:ns_IPaddr2\):'
