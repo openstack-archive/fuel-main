@@ -13,6 +13,7 @@
 #    under the License.
 
 import time
+import re
 
 from proboscis.asserts import assert_true
 from proboscis import test
@@ -220,11 +221,8 @@ class VcenterDeploy(TestBasic):
         # Fix me. Later need to change sleep with wait function.
         time.sleep(60)
 
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
-            should_fail=1,
-            failed_test_name=[('Launch instance, create snapshot,'
-                               ' launch instance from snapshot')])
+        self.fuel_web.run_ostf(cluster_id=cluster_id,
+                               test_sets=['smoke', 'sanity'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_ha"])
