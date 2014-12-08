@@ -265,29 +265,41 @@ class FuelWebClient(object):
         return nailgun_node['fqdn']
 
     @logwrap
+    def get_pcm_nodes(self, ctrl_node):
+        nodes = {'online':[], 'offline':[]}
+        for line in self.get_pacemaker_status(ctrl_node).splitlines():
+            if 'Online: ' in line:
+                status = 'online'
+            elif 'OFFLINE: ' in line:
+                status = 'offline'
+            else:
+                continue
+            pcm_nodes = line[line.find('[') + 1:line.find(']')].split()
+            fqdn_pcm_nodes = [self.get_fqdn_by_hostname(x) for x in pcm_nodes]
+            nodes[status] = fqdn_pcm_nodes
+
+        # return a dict of two FQDN lists for ['online'] and ['offline'] nodes
+        return nodes
+
+    @logwrap
     def assert_pacemaker(self, ctrl_node, online_nodes, offline_nodes):
         logger.info('Assert pacemaker status at devops node %s', ctrl_node)
         fqdn_names = lambda nodes: sorted([self.fqdn(n) for n in nodes])
 
-        # Assert online nodes list
-        online = \
-            'Online: [ {0} ]'.format(' '.join(fqdn_names(online_nodes)))
-        wait(lambda: online in self.get_pacemaker_status(
-            ctrl_node), timeout=30)
-        assert_true(
-            online in self.get_pacemaker_status(ctrl_node),
-            'Online nodes {0}'.format(online))
-
-        # Assert offline nodes list
-        if len(offline_nodes) > 0:
-            offline = \
-                'OFFLINE: [ {0} ]'.format(
-                    ' '.join(fqdn_names(offline_nodes)))
-            wait(lambda: offline in self.get_pacemaker_status(
-                ctrl_node), timeout=30)
-            assert_true(
-                offline in self.get_pacemaker_status(ctrl_node),
-                'Offline nodes {0}'.format(offline_nodes))
+        online = [x for x in fqdn_names(online_nodes)]
+        offline = [x for x in fqdn_names(offline_nodes)]
+        try:
+            wait(lambda: self.get_pcm_nodes(ctrl_node)['online'] == online and
+                         self.get_pcm_nodes(ctrl_node)['offline'] == offline,
+                 timeout=60)
+        except TimeoutError:
+            nodes = self.get_pcm_nodes(ctrl_node)
+            assert_true(nodes['online'] == online,
+                        'Online nodes: {0} ; should be online: {1}'
+                        .format(nodes['online'], online))
+            assert_true(nodes['offline'] == offline,
+                        'Offline nodes: {0} ; should be offline: {1}'
+                        .format(nodes['offline'], offline))
 
     @logwrap
     @upload_manifests
@@ -1286,7 +1298,7 @@ class FuelWebClient(object):
 
     @logwrap
     def get_fqdn_by_hostname(self, hostname):
-        if not self.environment.domain in hostname:
+        if self.environment.domain not in hostname:
             hostname += "." + self.environment.domain
             return hostname
         else:
