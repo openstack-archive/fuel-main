@@ -437,6 +437,11 @@ def check_mysql(remote, node_name):
     check_cmd = 'pkill -0 -x mysqld'
     check_crm_cmd = ('crm resource status clone_p_mysql |'
                      ' grep -q "is running on: $HOSTNAME"')
+    check_galera_cmd = ("mysql --connect_timeout=5 -sse \"SELECT"
+                        " VARIABLE_VALUE FROM"
+                        " information_schema.GLOBAL_STATUS"
+                        " WHERE VARIABLE_NAME"
+                        " = 'wsrep_local_state_comment';\"")
     try:
         wait(lambda: remote.execute(check_cmd)['exit_code'] == 0,
              timeout=300)
@@ -447,3 +452,10 @@ def check_mysql(remote, node_name):
     _wait(lambda: assert_equal(remote.execute(check_crm_cmd)['exit_code'], 0,
                                'MySQL resource is NOT running on {0}'.format(
                                    node_name)), timeout=60)
+    try:   
+        wait(lambda: ''.join(remote.execute(
+            check_galera_cmd)['stdout']).rstrip() == 'Synced', timeout=600)
+    except TimeoutError:
+        logger.error('galera status is {0}'.format(''.join(remote.execute(
+            check_galera_cmd)['stdout']).rstrip()))
+        raise
