@@ -22,9 +22,9 @@
 # Typically, you would use this script after time after rebooting VirtualBox VM with the master node.
 
 # Include the handy functions to operate VMs and track ISO installation progress
-source config.sh
-source functions/vm.sh
-source functions/product.sh
+source ./config.sh
+source ./functions/vm.sh
+source ./functions/product.sh
 
 # Master node name
 name="${vm_name_prefix}master"

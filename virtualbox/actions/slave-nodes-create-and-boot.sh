@@ -20,8 +20,8 @@
 #
 
 # Include the handy functions to operate VMs
-source config.sh
-source functions/vm.sh
+source ./config.sh
+source ./functions/vm.sh
 
 # Create and start slave nodes
 for idx in $(eval echo {1..$cluster_size}); do

@@ -14,7 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-source functions/memory.sh
+source ./functions/memory.sh
 
 # Get the first available ISO from the directory 'iso'
 iso_path=`ls -1t iso/*.iso 2>/dev/null | head -1`

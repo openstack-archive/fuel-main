@@ -21,9 +21,9 @@
 #
 
 # Include the script with handy functions to operate VMs and VirtualBox networking
-source config.sh
-source functions/vm.sh
-source functions/network.sh
+source ./config.sh
+source ./functions/vm.sh
+source ./functions/network.sh
 
 # Delete all host-only interfaces
 delete_all_hostonly_interfaces

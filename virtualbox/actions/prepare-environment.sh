@@ -23,9 +23,9 @@
 #
 
 # Include the script with handy functions to operate VMs and VirtualBox networking
-source config.sh 
-source functions/vm.sh
-source functions/network.sh
+source ./config.sh 
+source ./functions/vm.sh
+source ./functions/network.sh
 
 # Check for procps package
 if [ "$(uname -s | cut -c1-6)" = "CYGWIN" ]; then
