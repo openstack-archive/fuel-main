@@ -20,9 +20,9 @@
 #
 
 # Include the handy functions to operate VMs and track ISO installation progress
-source config.sh
-source functions/vm.sh
-source functions/product.sh
+source ./config.sh
+source ./functions/vm.sh
+source ./functions/product.sh
 
 # Create master node for the product
 name="${vm_name_prefix}master"
