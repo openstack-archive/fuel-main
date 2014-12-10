@@ -6,3 +6,370 @@ Package: *
 Pin: origin *.mirantis.com
 Pin-Priority: 1001
 
+Package: bash
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: init-system-helpers
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libdevmapper*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: lvm2
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: cryptsetup
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: dmsetup
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python2.7*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libpython2.7*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: librabbitmq1*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-httplib2
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-urllib3
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-warlock
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-warlock
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-webob
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-wsme
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: librados*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: radosgw
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: librbd*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: ceph*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-ceph
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: pacemaker*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: crmsh
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: fence-agents
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: cluster-glue
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libceph*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: qemu
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: qemu
+Pin: origin *.mirantis.com
+Pin-Priority: -10
+
+Package: qemu-system*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: qemu-system*
+Pin: origin *.mirantis.com
+Pin-Priority: -10
+
+Package: qemu-user*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: qemu-user*
+Pin: origin *.mirantis.com
+Pin-Priority: -10
+
+Package: qemu-utils
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: qemu-utils
+Pin: origin *.mirantis.com
+Pin-Priority: -10
+
+Package: qemu-kvm
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: qemu-kvm
+Pin: origin *.mirantis.com
+Pin-Priority: -10
+
+Package: libxen*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libxen*
+Pin: origin *.mirantis.com
+Pin-Priority: -10
+
+Package: libseccomp2*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libfdt*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libusbredirparser*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: smitools
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libsmi2*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: seabios
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: liblrmd*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libstonith*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libcrm*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libcib*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libqb0*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libpe-rules2
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libpe-status4
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libpengine4
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libv8*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: atop
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: dnsmasq-*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: nmap
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: logrotate
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libmemcached*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: puppet*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libvirt*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-libvirt*
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-openssl
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-crypto
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-bson
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-bson-ext
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-librabbitmq
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-memcache
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-networkx
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-mock
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-prettytable
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-pylibmc
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-pymongo
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-pymongo-ext
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-pysnmp4
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-setuptools-git
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-singledispatch
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-testtools
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-thrift
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: python-zope.interface
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: libapache2-mod-fastcgi
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: openvswitch-switch
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+Package: openvswitch-common
+Pin: release o=ubuntu
+Pin-Priority: 1100
+
+#Package: python-sqlalchemy*
+#Pin: release o=ubuntu
+#Pin-Priority: 1100
+
+Package: nova-compute-libvirt
+Pin: origin osci-obs.vm.mirantis.net
+Pin-Priority: 1101
+
+Package: mcollective*
+Pin: release o=Alexei Sheplyakov*
+Pin-Priority: 1100
+
+Package: *keystone*
+Pin: origin osci-obs.vm.mirantis.net
+Pin-Priority: 1100
+
+Package: *nova*
+Pin: origin osci-obs.vm.mirantis.net
+Pin-Priority: 1100
+
+Package: *neutron*
+Pin: origin osci-obs.vm.mirantis.net
+Pin-Priority: 1100
+
+Package: *cinder*
+Pin: origin osci-obs.vm.mirantis.net
+Pin-Priority: 1100
+
+Package: *glance*
+Pin: origin osci-obs.vm.mirantis.net
+Pin-Priority: 1100
+
+Package: *ceilometer*
+Pin: origin osci-obs.vm.mirantis.net
+Pin-Priority: 1100
+
+Package: *heat*
+Pin: origin osci-obs.vm.mirantis.net
+Pin-Priority: 1100
+
+Package: *sahara*
+Pin: origin osci-obs.vm.mirantis.net
+Pin-Priority: 1100
