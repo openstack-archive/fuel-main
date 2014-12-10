@@ -82,10 +82,17 @@ endif
 	sudo rsync -a $(SOURCE_DIR)/mirror/ubuntu/files/ $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/
 	$(foreach f,$(APT_CONF_TEMPLATES),$(call insert_ubuntu_version,$(f)))
 	sudo chmod +x $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/mkrepo.sh
+	extra_env=""; \
+	if [ -n "$$HTTP_PROXY" ] || [ -n "$$http_proxy" ]; then \
+		HTTP_PROXY="$${HTTP_PROXY:-$${http_proxy}}"; \
+		echo "Acquire::http { Proxy \"$$HTTP_PROXY\"; };" | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/apt.conf.d/03-use-proxy; \
+		extra_env="HTTP_PROXY=$${HTTP_PROXY} http_proxy=$${HTTP_PROXY}"; \
+	fi; \
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot env \
 		UBUNTU_RELEASE='$(UBUNTU_RELEASE)' \
 		UBUNTU_INSTALLER_KERNEL_VERSION='$(UBUNTU_INSTALLER_KERNEL_VERSION)' \
 		UBUNTU_KERNEL_FLAVOR='$(UBUNTU_KERNEL_FLAVOR)' \
+		$$extra_env \
 		/repo/mkrepo.sh
 	sudo rsync -a --delete $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/* $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ && sudo rm -rf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/
 	$(ACTION.TOUCH)
