@@ -236,7 +236,11 @@ MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
 MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-stable/centos/
+ifeq (precise,$(strip $(UBUNTU_RELEASE)))
 MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-stable/reprepro
+else
+MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/$(UBUNTU_RELEASE)-fuel-$(PRODUCT_VERSION)-stable/reprepro
+endif
 
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
 REQUIRED_DEBS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-deb.txt)
@@ -260,6 +264,15 @@ EXTRA_RPM_REPOS?=
 # Example:
 # EXTRA_DEB_REPOS="http://mrr.lcl raring main|http://mirror.yandex.ru/ubuntu precise main"'
 EXTRA_DEB_REPOS?=
+# XXX: hack to get packages which haven't been rebuilt for trusty yet
+ifeq (trusty,$(strip $(UBUNTU_RELEASE)))
+MIRROR_FUEL_UBUNTU_PRECISE?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-stable/ubuntu ./
+ifeq (,$(strip $(EXTRA_DEB_REPOS)))
+EXTRA_DEB_REPOS+=$(MIRROR_FUEL_UBUNTU_PRECISE)
+else
+EXTRA_DEB_REPOS+=|$(MIRROR_FUEL_UBUNTU_PRECISE)
+endif
+endif
 
 # Comma or space separated list. Available feature groups:
 #   experimental - allow experimental options
