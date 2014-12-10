@@ -60,12 +60,11 @@ deb $(MIRROR_UBUNTU) $(UBUNTU_RELEASE) main main/debian-installer,
 deb $(MIRROR_UBUNTU) $(UBUNTU_RELEASE) main universe multiverse restricted
 deb $(MIRROR_UBUNTU) $(UBUNTU_RELEASE)-updates main universe multiverse restricted
 deb $(MIRROR_UBUNTU) $(UBUNTU_RELEASE)-security main universe multiverse restricted
-deb $(MIRROR_FUEL_UBUNTU) $(UBUNTU_RELEASE) main
+deb $(MIRROR_FUEL_UBUNTU) ./
 deb $(MIRROR_UBUNTU_SECURITY) $(UBUNTU_RELEASE)-security main universe multiverse restricted
 deb $(MIRROR_UBUNTU) $(UBUNTU_RELEASE) main/debian-installer universe/debian-installer multiverse/debian-installer restricted/debian-installer
 deb $(MIRROR_UBUNTU) $(UBUNTU_RELEASE)-updates main/debian-installer universe/debian-installer multiverse/debian-installer restricted/debian-installer
 deb $(MIRROR_UBUNTU) $(UBUNTU_RELEASE)-security main/debian-installer universe/debian-installer multiverse/debian-installer restricted/debian-installer
-deb $(MIRROR_FUEL_UBUNTU) $(UBUNTU_RELEASE) main/debian-installer
 deb $(MIRROR_UBUNTU_SECURITY) $(UBUNTU_RELEASE)-security main/debian-installer universe/debian-installer multiverse/debian-installer restricted/debian-installer
 )
 $(if $(EXTRA_DEB_REPOS),$(subst |,$(newline)deb ,deb $(EXTRA_DEB_REPOS)))
