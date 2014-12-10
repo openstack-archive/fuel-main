@@ -100,6 +100,7 @@ manpages-dev
 mc
 mcelog
 mcollective
+mcollective-client
 mdadm
 memcached
 mlnx-ofed-light
@@ -110,7 +111,7 @@ murano
 murano-dashboard
 murano-apps
 mysql-client
-mysql-server
+mysql-server-wsrep-5.6
 nailgun-agent
 nailgun-mcagents
 nailgun-net-check
@@ -238,7 +239,6 @@ ruby-httpclient
 ruby-i18n
 ruby-ipaddress
 ruby-json
-ruby-mcollective-client
 ruby-netaddr
 ruby-ohai
 ruby-openstack
