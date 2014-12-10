@@ -77,6 +77,8 @@ $(BUILD_DIR)/upgrade_versions: $(call depv,UPGRADE_VERSIONS)
 	echo -n > $@
 	$(foreach diff,$(UPGRADE_VERSIONS),echo $(diff) >> $@;)
 
+ifneq ($(MAKECMDGOALS),help)
+
 # Macroses for make
 include $(SOURCE_DIR)/rules.mk
 
@@ -96,3 +98,5 @@ include $(SOURCE_DIR)/iso/module.mk
 include $(SOURCE_DIR)/upgrade/module.mk
 include $(SOURCE_DIR)/virtualbox.mk
 include $(SOURCE_DIR)/fuelweb_test/module.mk
+
+endif
