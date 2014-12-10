@@ -412,6 +412,7 @@ class TestHaFailover(TestBasic):
         Snapshot ha_pacemaker_restart_heat_engine
 
         """
+        raise SkipTest("feature isn't implemented in this iso version")
         self.env.revert_snapshot("deploy_ha")
         ocf_success = "DEBUG: OpenStack Orchestration Engine" \
                       " (heat-engine) monitor succeeded"
@@ -483,6 +484,7 @@ class TestHaFailover(TestBasic):
         Snapshot ha_check_monit
 
         """
+        raise SkipTest("feature isn't implemented in this iso version")
         self.env.revert_snapshot("deploy_ha")
         for devops_node in self.env.nodes().slaves[3:5]:
             remote = self.fuel_web.get_ssh_for_node(devops_node.name)
