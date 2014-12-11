@@ -339,7 +339,8 @@ class RollbackFuelMaster(base_test_data.TestBasic):
                                          "61i \ \ \ \ \ \ \ \ raise errors."
                                          "ExecutedErrorNonZeroExitCode('{0}')"
                                          .format('Some bad error'),
-                                         '/var/upgrade/site-packages/'
+                                         '/var/upgrade/.fuel-upgrade-venv/lib/'
+                                         'python2.6/site-packages/'
                                          'fuel_upgrade/engines/'
                                          'openstack.py')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
@@ -402,7 +403,8 @@ class RollbackFuelMaster(base_test_data.TestBasic):
                                          "98i \ \ \ \ \ \ \ \ raise errors."
                                          "ExecutedErrorNonZeroExitCode('{0}')"
                                          .format('Some bad error'),
-                                         '/var/upgrade/site-packages/'
+                                         '/var/upgrade/.fuel-upgrade-venv/lib/'
+                                         'python2.6/site-packages/'
                                          'fuel_upgrade/engines/'
                                          'docker_engine.py')
         #we expect 255 exit code here because upgrade failed
