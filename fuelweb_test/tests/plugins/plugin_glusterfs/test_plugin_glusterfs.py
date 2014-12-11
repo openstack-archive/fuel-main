@@ -22,9 +22,9 @@ from fuelweb_test.helpers import checkers
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.settings import GLUSTER_CLUSTER_ENDPOINT
+from fuelweb_test.settings import GLUSTER_PLUGIN_PATH
 from fuelweb_test.settings import NEUTRON_ENABLE
 from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
-from fuelweb_test.settings import PLUGIN_PATH
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
@@ -69,13 +69,13 @@ class GlusterfsPlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), PLUGIN_PATH, '/var')
+            self.env.get_admin_remote(), GLUSTER_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
             self.env.get_admin_remote(),
-            plugin=os.path.basename(PLUGIN_PATH))
+            plugin=os.path.basename(GLUSTER_PLUGIN_PATH))
 
         settings = None
 
@@ -153,13 +153,13 @@ class GlusterfsPlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), PLUGIN_PATH, '/var')
+            self.env.get_admin_remote(), GLUSTER_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
             self.env.get_admin_remote(),
-            plugin=os.path.basename(PLUGIN_PATH))
+            plugin=os.path.basename(GLUSTER_PLUGIN_PATH))
 
         settings = None
 

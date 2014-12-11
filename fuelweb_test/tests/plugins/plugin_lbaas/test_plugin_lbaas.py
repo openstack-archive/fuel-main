@@ -23,8 +23,8 @@ from fuelweb_test.helpers import os_actions
 from fuelweb_test.helpers import checkers
 from fuelweb_test import logger
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
+from fuelweb_test.settings import LBAAS_PLUGIN_PATH
 from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
-from fuelweb_test.settings import PLUGIN_PATH
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
@@ -113,13 +113,13 @@ class LbaasPlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), PLUGIN_PATH, '/var')
+            self.env.get_admin_remote(), LBAAS_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
             self.env.get_admin_remote(),
-            plugin=os.path.basename(PLUGIN_PATH))
+            plugin=os.path.basename(LBAAS_PLUGIN_PATH))
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -196,13 +196,13 @@ class LbaasPlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), PLUGIN_PATH, '/var')
+            self.env.get_admin_remote(), LBAAS_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
             self.env.get_admin_remote(),
-            plugin=os.path.basename(PLUGIN_PATH))
+            plugin=os.path.basename(LBAAS_PLUGIN_PATH))
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
