@@ -266,5 +266,7 @@ SSH_CREDENTIALS = {
 
 # Plugin path for plugins tests
 
-PLUGIN_PATH = os.environ.get('PLUGIN_PATH')
+GLUSTER_PLUGIN_PATH = os.environ.get('GLUSTER_PLUGIN_PATH')
 GLUSTER_CLUSTER_ENDPOINT = os.environ.get('GLUSTER_CLUSTER_ENDPOINT')
+EXAMPLE_PLUGIN_PATH = os.environ.get('EXAMPLE_PLUGIN_PATH')
+LBAAS_PLUGIN_PATH = os.environ.get('LBAAS_PLUGIN_PATH')

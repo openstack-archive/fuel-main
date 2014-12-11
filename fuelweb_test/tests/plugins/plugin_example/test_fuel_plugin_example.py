@@ -21,7 +21,7 @@ from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers import checkers
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
-from fuelweb_test.settings import PLUGIN_PATH
+from fuelweb_test.settings import EXAMPLE_PLUGIN_PATH
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
@@ -54,13 +54,14 @@ class ExamplePlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), PLUGIN_PATH, '/var')
+            self.env.get_admin_remote(),
+            EXAMPLE_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
             self.env.get_admin_remote(),
-            plugin=os.path.basename(PLUGIN_PATH))
+            plugin=os.path.basename(EXAMPLE_PLUGIN_PATH))
 
         segment_type = 'vlan'
         cluster_id = self.fuel_web.create_cluster(
@@ -139,13 +140,13 @@ class ExamplePlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), PLUGIN_PATH, '/var')
+            self.env.get_admin_remote(), EXAMPLE_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
             self.env.get_admin_remote(),
-            plugin=os.path.basename(PLUGIN_PATH))
+            plugin=os.path.basename(EXAMPLE_PLUGIN_PATH))
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -226,13 +227,13 @@ class ExamplePlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), PLUGIN_PATH, '/var')
+            self.env.get_admin_remote(), EXAMPLE_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
             self.env.get_admin_remote(),
-            plugin=os.path.basename(PLUGIN_PATH))
+            plugin=os.path.basename(EXAMPLE_PLUGIN_PATH))
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
