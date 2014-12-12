@@ -423,6 +423,7 @@ python-migrate
 python-muranoclient
 python-netaddr-0.7.5-4.el6
 python-netifaces
+python-networkx
 python-neutron
 python-neutronclient
 python-nose-cover3
