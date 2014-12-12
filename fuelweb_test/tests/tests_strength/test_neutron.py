@@ -143,6 +143,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
                     os_conn.get_l3_agent_hosts(router_id)[0]))
         wait(lambda: os_conn.get_l3_agent_ids(router_id), timeout=60)
 
+        wait(lambda: remote.execute(cmd)['exit_code'] == 0, timeout=120)
         res = remote.execute(cmd)
         assert_equal(0, res['exit_code'],
                      'instance has no connectivity, exit code is {0}'.format(
