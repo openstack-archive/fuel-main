@@ -20,9 +20,9 @@
 #   - check that there is no previous installation of Mirantis OpenStack (if there is one, the script deletes it)
 
 # Include the script with handy functions to operate VMs and VirtualBox networking
-source config.sh
-source functions/vm.sh
-source functions/network.sh
+source ./config.sh
+source ./functions/vm.sh
+source ./functions/network.sh
 
 # Delete all VMs from the previous Mirantis OpenStack installation
 delete_vms_multiple $vm_name_prefix
