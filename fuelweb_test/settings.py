@@ -309,8 +309,8 @@ UPGRADE_FUEL_FROM = os.environ.get('UPGRADE_FUEL_FROM', '5.0')
 UPGRADE_FUEL_TO = os.environ.get('UPGRADE_FUEL_TO', '6.0')
 
 SNAPSHOT = os.environ.get('SNAPSHOT', '')
-# For 5.1 we have 2 releases in tarball and should specify what we need
-RELEASE_VERSION = os.environ.get('RELEASE_VERSION', '')
+# For 5.1.1 we have 2 releases in tarball and should specify what we need
+RELEASE_VERSION = os.environ.get('RELEASE_VERSION', "2014.1.3-5.1.1")
 
 # URL to custom mirror with new OSCI packages wich should be tested,
 # for example:
