@@ -88,7 +88,7 @@ class TestPatch(TestBasic):
             hlp_data.TARBALL_PATH), '/var/tmp')
 
         logger.info("Get release ids for deployed operation"
-                    " system before upgrade..")
+                    " system before upgrade.")
 
         # Get cluster nodes
         nailgun_nodes = [
@@ -114,7 +114,7 @@ class TestPatch(TestBasic):
 
         checkers.run_script(node_ssh, '/var/tmp', 'upgrade.sh', password=
                             hlp_data.KEYSTONE_CREDS['password'])
-        logger.info('Check if the upgrade complete..')
+        logger.info('Check if the upgrade complete.')
 
         checkers.wait_upgrade_is_done(node_ssh=node_ssh,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY',
@@ -132,11 +132,14 @@ class TestPatch(TestBasic):
             " release ids after {1}". format(
                 available_releases_before, available_releases_after))
 
+        release_version = hlp_data.RELEASE_VERSION
+        logger.debug("Release version is {0}".format(release_version))
+
         if 'Ubuntu' in hlp_data.OPENSTACK_RELEASE:
             res = utils.get_yaml_to_json(
                 node_ssh,
                 '/etc/puppet/{0}/manifests/ubuntu-versions.yaml'.format(
-                    hlp_data.RELEASE_VERSION))
+                    release_version))
             res_packages = json.loads(res[0])
             logger.debug('what we have in res_packages {0}'.format(
                 res_packages))
@@ -144,16 +147,13 @@ class TestPatch(TestBasic):
             res = utils.get_yaml_to_json(
                 node_ssh,
                 '/etc/puppet/{0}/manifests/centos-versions.yaml'.format(
-                    hlp_data.RELEASE_VERSION))
+                    release_version))
             res_packages = json.loads(res[0])
             logger.debug('what we have in res_packages {0}'.format(
                 res_packages))
 
         cluster_id = self.fuel_web.get_last_created_cluster()
         logger.debug("Cluster id is {0}".format(cluster_id))
-
-        release_version = hlp_data.RELEASE_VERSION
-        logger.debug("Release version is {0}".format(release_version))
 
         # 8. Put new release into cluster
         if release_version:
@@ -190,7 +190,7 @@ class TestPatch(TestBasic):
                     cluster_id)})
 
         logger.info('Huh all preparation for update are done.'
-                    ' It is time to update cluster ...')
+                    'It is time to update cluster.')
 
         self.fuel_web.run_update(cluster_id=cluster_id,
                                  timeout=hlp_data.UPDATE_TIMEOUT, interval=20)
@@ -237,8 +237,8 @@ class TestPatch(TestBasic):
         if 'Ubuntu' in hlp_data.OPENSTACK_RELEASE:
             for package in packages_fixture.dep:
                 packages_fixture.dep[package] = res_packages[package]
-                logger.debug("Current state of dict is {0}".format(
-                    packages_fixture.dep))
+            logger.debug("Current state of dict is {0}".format(
+                packages_fixture.dep))
             for key in packages_fixture.dep:
                 res = checkers.get_package_versions_from_node(
                     ssh_to_controller, name=key, os_type='Ubuntu')
@@ -251,7 +251,8 @@ class TestPatch(TestBasic):
         else:
             for package in packages_fixture.rpm:
                 packages_fixture.rpm[package] = res_packages[package]
-                logger.debug("Current state of dict is")
+            logger.debug("Current state of dict is {0}".format(
+                packages_fixture.rpm))
             for key in packages_fixture.rpm:
                 res = checkers.get_package_versions_from_node(
                     ssh_to_controller, name=key,
@@ -269,9 +270,8 @@ class TestPatch(TestBasic):
                 os_type=hlp_data.OPENSTACK_RELEASE)
             p_version_after[node["devops_name"]] = res
 
-        logger.info("packages after {0}".format(p_version_after))
         logger.info("packages before {0}".format(p_version_before))
-
+        logger.info("packages after {0}".format(p_version_after))
         assert_true(p_version_before != p_version_after)
 
         # 13. Run OSTF
