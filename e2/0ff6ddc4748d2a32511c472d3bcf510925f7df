@@ -1,0 +1,11 @@
+Verified+2: Jenkins
+Code-Review+2: Nastya Urlapova <aurlapova@mirantis.com>
+Workflow+1: Nastya Urlapova <aurlapova@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+1: Andrey Sledzinskiy <asledzinskiy@mirantis.com>
+Code-Review+1: Alexander Kislitsky <akislitsky@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 15 Dec 2014 14:10:03 +0000
+Reviewed-on: https://review.openstack.org/131895
+Project: stackforge/fuel-main
+Branch: refs/heads/master
