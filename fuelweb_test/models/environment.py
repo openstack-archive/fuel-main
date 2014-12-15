@@ -22,6 +22,7 @@ from devops.helpers.helpers import SSHClient
 from devops.helpers.helpers import wait
 from devops.manager import Manager
 from ipaddr import IPNetwork
+from paramiko import Agent
 from paramiko import RSAKey
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_true
@@ -49,6 +50,7 @@ class EnvironmentModel(object):
     admin_net = 'admin'
     admin_net2 = 'admin2'
     multiple_cluster_networks = settings.MULTIPLE_NETWORKS
+    __wrapped__ = None
 
     def __init__(self, os_image=None):
         self._virtual_environment = None
@@ -327,8 +329,14 @@ class EnvironmentModel(object):
 
     @logwrap
     def get_ssh_to_remote_by_key(self, ip, keyfile):
-        with open(keyfile) as f:
-            keys = [RSAKey.from_private_key(f)]
+        try:
+            with open(keyfile) as f:
+                keys = [RSAKey.from_private_key(f)]
+                return SSHClient(ip, private_keys=keys)
+        except IOError:
+            logger.warning('Loading of SSH key from file failed. Trying to use'
+                           ' SSH agent ...')
+            keys = Agent().get_keys()
             return SSHClient(ip, private_keys=keys)
 
     @logwrap
@@ -369,8 +377,14 @@ class EnvironmentModel(object):
             self.get_virtual_environment().suspend(verbose=False)
             self.get_virtual_environment().snapshot(snapshot_name, force=True)
             revert_info(snapshot_name, description)
-        if settings.FUEL_STATS_ENABLED:
+        if self.__wrapped__ == 'check_fuel_statistics':
             self.get_virtual_environment().resume()
+            try:
+                self.nodes().admin.await(self.admin_net, timeout=60)
+            except Exception:
+                logger.error('Admin node is unavailable via SSH after '
+                             'environment resume ')
+                raise
 
     def nailgun_nodes(self, devops_nodes):
         return map(

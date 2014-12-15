@@ -611,9 +611,10 @@ def check_stats_on_collector(collector_remote, postgres_actions, master_uuid):
     logs = execute_query_on_collector(collector_remote, master_uuid,
                                       query="select count(*) from action_logs")
     logger.info("Number of logs that were saved on collector: {}".format(logs))
-    assert_equal(sent_logs_count, int(logs),
-                 ("Count of action logs in Nailgun DB ({0}) and on Collector "
-                  "({1}) aren't equal").format(sent_logs_count, logs))
+    assert_true(sent_logs_count <= int(logs),
+                ("Count of action logs in Nailgun DB ({0}) is bigger than on "
+                 "Collector ({1}), but should be less or equal").format(
+                    sent_logs_count, logs))
 
     sum_stats_count = execute_query_on_collector(
         collector_remote, master_uuid=master_uuid,

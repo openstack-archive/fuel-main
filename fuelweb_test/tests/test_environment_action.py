@@ -17,6 +17,7 @@ import traceback
 from proboscis import asserts
 from proboscis import test
 
+from fuelweb_test.helpers.decorators import check_fuel_statistics
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers import os_actions
 from fuelweb_test import settings as hlp_data
@@ -31,6 +32,7 @@ class EnvironmentAction(base_test_case.TestBasic):
           groups=["smoke", "deploy_flat_stop_reset_on_deploying",
                   "image-based"])
     @log_snapshot_on_error
+    @check_fuel_statistics
     def deploy_flat_stop_on_deploying(self):
         """Stop reset cluster in simple mode with flat nova-network
 
@@ -152,6 +154,7 @@ class EnvironmentAction(base_test_case.TestBasic):
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
           groups=["smoke", "deploy_reset_on_ready"])
     @log_snapshot_on_error
+    @check_fuel_statistics
     def deploy_reset_on_ready(self):
         """Stop reset cluster in simple mode
 
@@ -163,7 +166,8 @@ class EnvironmentAction(base_test_case.TestBasic):
             5. Reset settings
             6. Update net
             7. Re-deploy cluster
-            8. Run OSTF
+            8. Verify network
+            9. Run OSTF
 
         Snapshot: deploy_reset_on_ready
 
