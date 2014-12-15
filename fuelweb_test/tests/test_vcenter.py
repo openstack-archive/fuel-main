@@ -220,6 +220,79 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.run_ostf(cluster_id=cluster_id,
                                test_sets=['smoke', 'sanity'])
 
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["vcenter_vlan_simple", "vcenter_vlan"])
+    @log_snapshot_on_error
+    def vcenter_vlan_simple(self):
+        """Deploy cluster with 1 controller node and 2 cinder nodes and test
+           vlan driver support feature
+
+        Scenario:
+            1. Create cluster
+            2. Add 3 nodes with controller and cinder roles
+            3. Deploy the cluster
+            4. Run network verification
+            5. Run osft
+        """
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'use_vcenter': True,
+                'volumes_vmdk': True,
+                'volumes_lvm': False,
+                'host_ip': settings.VCENTER_IP,
+                'vc_user': settings.VCENTER_USERNAME,
+                'vc_password': settings.VCENTER_PASSWORD,
+                'cluster': settings.VCENTER_CLUSTERS,
+                'tenant': 'vcenter',
+                'user': 'vcenter',
+                'password': 'vcenter'
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Add nodes to roles
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['cinder'],
+             'slave-03': ['cinder'],
+             }
+        )
+
+        #Configure network interfaces
+        interfaces = {
+            'eth0': ["fuelweb_admin"],
+            'eth1': ["public", "fixed"],
+            'eth2': ["management", ],
+            'eth3': [],
+            'eth4': ["storage"],
+        }
+
+        nailgun_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
+        for node in nailgun_nodes:
+            self.fuel_web.update_node_networks(node['id'], interfaces)
+
+        #Configure VLan
+        self.fuel_web.update_vlan_network_fixed(
+            cluster_id, amount=8, network_size=32)
+
+        # Deploy cluster
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        # Wait until nova-compute get information about clusters
+        # Fix me. Later need to change sleep with wait function.
+        time.sleep(60)
+
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'],)
+
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_ha"])
     @log_snapshot_on_error
