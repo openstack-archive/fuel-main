@@ -30,7 +30,9 @@ TARGET_UBUNTU_DEP_FILE:=$(call find-files,$(DEPS_DIR_CURRENT)/$(TARGET_UBUNTU_IM
 comma:=,
 space:=
 space+=
-PKGS_INCLUDE:=\
+
+PKGS_APTGET:=\
+wget\
 bash-completion\
 bind9-host\
 cron\
@@ -63,9 +65,6 @@ telnet\
 ubuntu-minimal\
 util-linux\
 virt-what\
-wget
-
-PKGS_APTGET:=\
 acl\
 anacron\
 bridge-utils\
@@ -101,7 +100,7 @@ $(BUILD_DIR)/images/$(TARGET_UBUNTU_IMG_ART_NAME): export TMP_BUILD_DIR=$(BUILD_
 $(BUILD_DIR)/images/$(TARGET_UBUNTU_IMG_ART_NAME): export TMP_BUILD_IMG_DIR=$(BUILD_DIR)/image/ubuntu
 $(BUILD_DIR)/images/$(TARGET_UBUNTU_IMG_ART_NAME): export TMP_CHROOT_DIR=$(TMP_CHROOT)
 $(BUILD_DIR)/images/$(TARGET_UBUNTU_IMG_ART_NAME): export IMG_SUFFIX=$(UBUNTU_IMAGE_RELEASE)_$(UBUNTU_ARCH)
-$(BUILD_DIR)/images/$(TARGET_UBUNTU_IMG_ART_NAME): export DEBOOTSTRAP_PARAMS=--no-check-gpg --arch=$(UBUNTU_ARCH) --include=$(subst $(space),$(comma),$(PKGS_INCLUDE)) $(UBUNTU_RELEASE) $(TMP_CHROOT) file://$(LOCAL_MIRROR)/ubuntu
+$(BUILD_DIR)/images/$(TARGET_UBUNTU_IMG_ART_NAME): export DEBOOTSTRAP_PARAMS=--no-check-gpg --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(TMP_CHROOT) file://$(LOCAL_MIRROR)/ubuntu
 $(BUILD_DIR)/images/$(TARGET_UBUNTU_IMG_ART_NAME): export INSTALL_PACKAGES=$(PKGS_APTGET)
 $(BUILD_DIR)/images/$(TARGET_UBUNTU_IMG_ART_NAME):
 	@mkdir -p $(@D)
