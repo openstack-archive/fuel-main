@@ -217,7 +217,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_public_vip(cluster_id),
+            self.fuel_web.get_nailgun_node_by_name('slave-06')['ip'],
             data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=8, timeout=300)
