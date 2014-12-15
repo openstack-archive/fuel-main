@@ -126,6 +126,15 @@ done
 # install base system
 sudo debootstrap $DEBOOTSTRAP_PARAMS || die "Couldn't finish debootstrap successfully"
 
+# inhibit service startup in the chroot
+cat > policy-rc.d << EOF
+#!/bin/sh
+# prevent any service from being started
+exit 101
+EOF
+chmod 755 policy-rc.d
+sudo cp policy-rc.d ${TMP_CHROOT_DIR}/usr/sbin
+
 #inject hardcoded root password `r00tme`
 sudo sed -i 's%root:[\*,\!]%root:$6$IInX3Cqo$5xytL1VZbZTusOewFnG6couuF0Ia61yS3rbC6P5YbZP2TYclwHqMq9e3Tg8rvQxhxSlBXP1DZhdUamxdOBXK0.%' ${TMP_CHROOT_DIR}/etc/shadow
 
@@ -142,6 +151,9 @@ sudo umount ${TMP_CHROOT_DIR}/tmp/mirror
 #cloud-init reconfigure to use NoCloud data source
 echo "cloud-init cloud-init/datasources multiselect NoCloud, None" | sudo chroot ${TMP_CHROOT_DIR} debconf-set-selections -v
 sudo chroot ${TMP_CHROOT_DIR} dpkg-reconfigure -f noninteractive cloud-init
+
+# re-enable services
+sudo rm ${TMP_CHROOT_DIR}/usr/sbin/policy-rc.d
 
 for idx in $(seq $((${#MOUNTPOINTS[@]} - 1)) -1 0); do
     MOUNT_POINT=${MOUNTPOINTS[$idx]}
