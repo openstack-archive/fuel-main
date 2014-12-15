@@ -16,6 +16,7 @@ from proboscis import SkipTest
 from proboscis import test
 from proboscis.asserts import assert_equal
 
+from fuelweb_test.helpers.decorators import check_fuel_statistics
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import MULTIPLE_NETWORKS
@@ -61,6 +62,7 @@ class TestMultipleClusterNets(TestBasic):
           groups=["multiple_cluster_networks",
                   "multiple_cluster_net_neutron_gre_ha", "thread_7"])
     @log_snapshot_on_error
+    @check_fuel_statistics
     def deploy_neutron_gre_ha_nodegroups(self):
         """Deploy HA environment with NeutronGRE and 2 nodegroups
 
