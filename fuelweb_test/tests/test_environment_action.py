@@ -24,7 +24,7 @@ from fuelweb_test import logger
 from fuelweb_test.tests import base_test_case
 
 
-@test(groups=["thread_2", "cluster_actions"])
+@test(groups=["cluster_actions"])
 class EnvironmentAction(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
@@ -207,7 +207,7 @@ class EnvironmentAction(base_test_case.TestBasic):
         self.env.make_snapshot("deploy_reset_on_ready")
 
 
-@test(groups=["thread_3", "cluster_actions"])
+@test(groups=["cluster_actions"])
 class EnvironmentActionOnHA(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_5],
