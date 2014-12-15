@@ -224,7 +224,9 @@ def custom_repo(func):
 def check_fuel_statistics(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
+        args[0].env.__wrapped__ = 'check_fuel_statistics'
         result = func(*args, **kwargs)
+        args[0].env.__wrapped__ = None
         logger.info('Test "{0}" passed. Checking stats.'.format(func.__name__))
         fuel_settings = args[0].env.get_fuel_settings()
         nailgun_actions = args[0].env.nailgun_actions
