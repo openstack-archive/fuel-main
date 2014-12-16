@@ -46,6 +46,9 @@ for idx in $(eval echo {1..$cluster_size}); do
   add_disk_to_vm $name 2 $vm_slave_third_disk_mb
 
   enable_network_boot_for_vm $name
+
+  # The delay required for downloading tftp boot image
+  sleep 10
   start_vm $name
 done
 
