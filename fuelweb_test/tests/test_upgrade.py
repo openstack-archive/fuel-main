@@ -342,7 +342,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
 
 
 @test(groups=["rollback"])
-class RollbackFuelMaster(UpgradeFuelMaster):
+class RollbackFuelMaster(base_test_data.TestBasic):
     @test(groups=["rollback_automatic_ha"])
     @log_snapshot_on_error
     def rollback_automatically_ha_env(self):
@@ -429,7 +429,7 @@ class RollbackFuelMaster(UpgradeFuelMaster):
         self.env.revert_snapshot("deploy_neutron_gre")
         cluster_id = self.fuel_web.get_last_created_cluster()
         remote = self.env.get_ssh_to_remote_by_name('slave-01')
-        expected_kernel = self.get_slave_kernel(remote)
+        expected_kernel = UpgradeFuelMaster.get_slave_kernel(remote)
 
         checkers.upload_tarball(self.env.get_admin_remote(),
                                 hlp_data.TARBALL_PATH, '/var')
@@ -474,7 +474,7 @@ class RollbackFuelMaster(UpgradeFuelMaster):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         if hlp_data.OPENSTACK_RELEASE_UBUNTU in hlp_data.OPENSTACK_RELEASE:
             remote = self.env.get_ssh_to_remote_by_name('slave-04')
-            kernel = self.get_slave_kernel(remote)
+            kernel = UpgradeFuelMaster.get_slave_kernel(remote)
             checkers.check_kernel(kernel, expected_kernel)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
