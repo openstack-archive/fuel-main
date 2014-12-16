@@ -21,7 +21,7 @@ from devops.error import TimeoutError
 from devops.helpers import helpers
 from fuelweb_test.helpers import common
 from fuelweb_test import logger
-
+from fuelweb_test.helpers.decorators import retry
 
 class OpenStackActions(common.Common):
     def __init__(self, controller_ip, user='admin',
@@ -155,6 +155,11 @@ class OpenStackActions(common.Common):
         srv = self.nova.servers.get(srv.id)
         return getattr(srv, "OS-EXT-SRV-ATTR:host")
 
+    def get_srv_instance_name(self, srv):
+        # Get instance name of the server
+        srv = self.nova.servers.get(srv.id)
+        return getattr(srv, "OS-EXT-SRV-ATTR:instance_name")
+
     def migrate_server(self, server, host, timeout):
         curr_host = self.get_srv_host_name(server)
         logger.debug("Current compute host is {0}".format(curr_host))
@@ -204,32 +209,36 @@ class OpenStackActions(common.Common):
             controller_ssh, vm_ip, "md5sum %s" % file_path, creds)
         return out
 
+    @retry(count=6, delay=10)
+    def _execute_through_host_retry(self, ssh, vm_host, cmd, creds):
+        logger.debug("Making intermediate transport")
+        interm_transp = ssh._ssh.get_transport()
+        logger.debug("Opening channel to VM")
+        interm_chan = interm_transp.open_channel('direct-tcpip',
+                                                 (vm_host, 22),
+                                                 (ssh.host, 0))
+        logger.debug("Opening paramiko transport")
+        transport = paramiko.Transport(interm_chan)
+        logger.debug("Starting client")
+        transport.start_client()
+        logger.info("Passing authentication to VM: {}".format(creds))
+        if not creds:
+            creds = ('cirros', 'cubswin:)')
+        transport.auth_password(creds[0], creds[1])
+
+        logger.debug("Opening session")
+        channel = transport.open_session()
+        logger.info("Executing command: {}".format(cmd))
+        channel.exec_command(cmd)
+        logger.debug("Getting exit status")
+        output = channel.recv(1024)
+        logger.debug("Sending shutdown write signal")
+        channel.shutdown_write()
+        return output
+
     def execute_through_host(self, ssh, vm_host, cmd, creds=()):
         try:
-            logger.info("Making intermediate transport")
-            interm_transp = ssh._ssh.get_transport()
-            logger.info("Opening channel to VM")
-            interm_chan = interm_transp.open_channel('direct-tcpip',
-                                                     (vm_host, 22),
-                                                     (ssh.host, 0))
-            logger.info("Opening paramiko transport")
-            transport = paramiko.Transport(interm_chan)
-            logger.info("Starting client")
-            transport.start_client()
-            logger.info("Passing authentication to VM")
-            if not creds:
-                creds = ('cirros', 'cubswin:)')
-            transport.auth_password(creds[0], creds[1])
-
-            logger.info("Opening session")
-            channel = transport.open_session()
-            logger.info("Executing command")
-            channel.exec_command(cmd)
-            logger.info("Getting exit status")
-            output = channel.recv(1024)
-            logger.info("Sending shutdown write signal")
-            channel.shutdown_write()
-            return output
+            return self._execute_through_host_retry(ssh, vm_host, cmd, creds)
         except Exception as exc:
             logger.error("An exception occurred: %s" % exc)
             return ''
@@ -375,3 +384,11 @@ class OpenStackActions(common.Common):
 
     def get_vip(self, vip):
         return self.neutron.show_vip(vip)
+
+    def get_nova_instance_ip(self, srv):
+        return srv.networks['novanetwork'][0]
+
+    def get_instance_mac(self, remote, srv):
+        res = ''.join(remote.execute('virsh dumpxml {0} | grep "mac address="'
+                      .format(self.get_srv_instance_name(srv)))['stdout'])
+        return res.split('\'')[1]
