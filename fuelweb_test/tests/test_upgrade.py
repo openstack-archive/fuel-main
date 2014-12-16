@@ -374,13 +374,9 @@ class RollbackFuelMaster(UpgradeFuelMaster):
                        os.path.basename(hlp_data.
                                         TARBALL_PATH), '/var')
         self.fuel_web.modify_python_file(self.env.get_admin_remote(),
-                                         "61i \ \ \ \ \ \ \ \ raise errors."
-                                         "ExecutedErrorNonZeroExitCode('{0}')"
-                                         .format('Some bad error'),
-                                         '/var/upgrade/.fuel-upgrade-venv/lib/'
-                                         'python2.6/site-packages/'
-                                         'fuel_upgrade/engines/'
-                                         'openstack.py')
+                                         "2i \ \ \ \ 2014.2-6.0: blah-blah",
+                                         '/var/upgrade/releases/'
+                                         'metadata.yaml')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
                             password=
                             hlp_data.KEYSTONE_CREDS['password'],
@@ -441,13 +437,9 @@ class RollbackFuelMaster(UpgradeFuelMaster):
                        os.path.basename(hlp_data.
                                         TARBALL_PATH), '/var')
         self.fuel_web.modify_python_file(self.env.get_admin_remote(),
-                                         "98i \ \ \ \ \ \ \ \ raise errors."
-                                         "ExecutedErrorNonZeroExitCode('{0}')"
-                                         .format('Some bad error'),
-                                         '/var/upgrade/.fuel-upgrade-venv/lib/'
-                                         'python2.6/site-packages/'
-                                         'fuel_upgrade/engines/'
-                                         'docker_engine.py')
+                                         "2i \ \ \ \ 2014.2-6.0: blah-blah",
+                                         '/var/upgrade/releases/'
+                                         'metadata.yaml')
         #we expect 255 exit code here because upgrade failed
         # and exit status is 255
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
