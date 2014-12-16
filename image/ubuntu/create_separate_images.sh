@@ -155,6 +155,24 @@ sudo chroot ${TMP_CHROOT_DIR} dpkg-reconfigure -f noninteractive cloud-init
 # re-enable services
 sudo rm ${TMP_CHROOT_DIR}/usr/sbin/policy-rc.d
 
+# kill any stray process in chroot (just in a case some sloppy postinst
+# script still hanging around)
+signal_chrooted_processes() {
+	local chroot_dir="$1"
+	local signal="$2"
+	local proc_root
+	for p in `sudo fuser -v "$chroot_dir"`; do
+		proc_root="`readlink -f /proc/$p/root || true`"
+		if [ "$proc_root" = "$chroot_dir" ]; then
+			sudo kill -s "$signal" $p
+		fi
+	done
+}
+
+signal_chrooted_processes $TMP_CHROOT_DIR TERM 
+sleep 1
+signal_chrooted_processes $TMP_CHROOT_DIR KILL
+
 for idx in $(seq $((${#MOUNTPOINTS[@]} - 1)) -1 0); do
     MOUNT_POINT=${MOUNTPOINTS[$idx]}
     if [ "$MOUNT_POINT" == "/" ]; then
