@@ -162,6 +162,40 @@ sudo chroot ${TMP_CHROOT_DIR} dpkg-reconfigure -f noninteractive cloud-init
 # re-enable services
 sudo rm ${TMP_CHROOT_DIR}/usr/sbin/policy-rc.d
 
+# kill any stray process in chroot (just in a case some sloppy postinst
+# script still hanging around)
+signal_chrooted_processes() {
+	local chroot_dir="$1"
+	local signal="$2"
+	local proc_root
+	for p in `sudo fuser -v "$chroot_dir" 2>/dev/null`; do
+		proc_root="`readlink -f /proc/$p/root || true`"
+		if [ "$proc_root" = "$chroot_dir" ]; then
+			sudo kill -s "$signal" $p
+		fi
+	done
+}
+
+signal_chrooted_processes $TMP_CHROOT_DIR TERM 
+sleep 1
+signal_chrooted_processes $TMP_CHROOT_DIR KILL
+
+umount_try_harder () {
+	local abs_mount_point="$1"
+	local umount_attempt=0
+	local max_umount_attempts=10
+
+	while ! sudo umount "$abs_mount_point"; do
+		if [ $umount_attempt -ge $max_umount_attempts ]; then
+			return 1
+		fi
+		signal_chrooted_processes "$abs_mount_point" KILL
+		sleep 1
+		umount_attempt=$((umount_attempt+1))
+	done
+	return 0
+}
+
 for idx in $(seq $((${#MOUNTPOINTS[@]} - 1)) -1 0); do
     MOUNT_POINT=${MOUNTPOINTS[$idx]}
     if [ "$MOUNT_POINT" == "/" ]; then
@@ -173,7 +207,9 @@ for idx in $(seq $((${#MOUNTPOINTS[@]} - 1)) -1 0); do
     LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${idx}
     FS_TYPE=${MOUNT_DICT[$MOUNT_POINT]}
 
-    sudo umount ${LOOP_DEV} || die "Couldn't unmount mountpoint"
+    if ! umount_try_harder "${TMP_CHROOT_DIR}${MOUNT_POINT}"; then
+	    die "Failed to umount $LOOP_DEV (${TMP_CHROOT_DIR}${MOUNT_POINT})"
+    fi
 
     if [ "$FS_TYPE" == "ext2" ] || [ "$FS_TYPE" == "ext3" ] || [ "$FS_TYPE" == "ext4" ]; then
         sudo e2fsck -yf ${LOOP_DEV} || die "Couldn't check filesystem"
