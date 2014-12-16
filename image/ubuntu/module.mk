@@ -5,6 +5,11 @@ target_ubuntu_image: $(ARTS_DIR)/$(TARGET_UBUNTU_IMG_ART_NAME)
 clean: clean_ubuntu_image
 
 clean_ubuntu_image:
+	-for p in `sudo fuser -v $(TMP_CHROOT) 2>/dev/null`; do \
+		if [ "`sudo readlink -f /proc/$$p/root`" = "$(TMP_CHROOT)" ]; then \
+			sudo kill -s KILL $$p; \
+		fi; \
+	done
 	-sudo umount $(TMP_CHROOT)/tmp/mirror
 	-sudo umount $(TMP_CHROOT)/proc
 	-sudo umount $(TMP_CHROOT)/dev
