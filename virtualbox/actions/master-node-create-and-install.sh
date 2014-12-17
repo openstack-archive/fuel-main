@@ -42,6 +42,10 @@ mount_iso_to_vm $name $iso_path
 echo
 start_vm $name
 
+if [ "$skipfuelmenu" = "yes" ]; then
+  wait_for_fuel_menu $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
+fi
+
 # Wait until the machine gets installed and Puppet completes its run
 wait_for_product_vm_to_install $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
 
