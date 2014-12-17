@@ -149,6 +149,9 @@ sudo mkdir -p ${TMP_CHROOT_DIR}/tmp/mirror
 sudo mount --bind ${LOCAL_MIRROR} ${TMP_CHROOT_DIR}/tmp/mirror
 sudo /bin/sh -c "echo deb file:///tmp/mirror/ubuntu ${UBUNTU_RELEASE} main > ${TMP_CHROOT_DIR}/etc/apt/sources.list"
 sudo chroot ${TMP_CHROOT_DIR} apt-get update || die "Couldn't update packages list from sources"
+if ! mountpoint -q ${TMP_CHROOT_DIR}/proc; then
+	sudo mount -t proc proc ${TMP_CHROOT_DIR}/proc
+fi
 sudo chroot ${TMP_CHROOT_DIR} \
 	env DEBIAN_FRONTEND=noninteractive \
 	DEBCONF_NONINTERACTIVE_SEEN=true \
@@ -179,6 +182,10 @@ signal_chrooted_processes() {
 signal_chrooted_processes $TMP_CHROOT_DIR TERM 
 sleep 1
 signal_chrooted_processes $TMP_CHROOT_DIR KILL
+
+if mountpoint -q ${TMP_CHROOT_DIR}/proc; then
+	sudo umount -l ${TMP_CHROOT_DIR}/proc || true
+fi
 
 umount_try_harder () {
 	local abs_mount_point="$1"
