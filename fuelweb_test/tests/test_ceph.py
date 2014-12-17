@@ -53,6 +53,12 @@ class CephCompact(TestBasic):
 
         self.env.revert_snapshot("ready_with_3_slaves")
 
+        if settings.NEUTRON_ENABLE:
+            settings = {
+                "net_provider": 'neutron',
+                "net_segment_type": "vlan"
+            }
+
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=settings.DEPLOYMENT_MODE_SIMPLE,
