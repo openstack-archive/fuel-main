@@ -244,6 +244,7 @@ class NailgunClient(object):
             nc["networks"] = networks
 
         net_provider = self.get_cluster(cluster_id)['net_provider']
+        logger.debug("Update network with new settings: {}".format(nc))
         return self.client.put(
             "/api/clusters/{}/network_configuration/{}".format(
                 cluster_id, net_provider
