@@ -18,6 +18,7 @@ from proboscis.asserts import assert_equal
 from proboscis import test
 from proboscis import SkipTest
 from devops.helpers.helpers import _wait
+from devops.helpers.helpers import wait
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
@@ -82,6 +83,60 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         create_diagnostic_snapshot(self.env, "pass", "upgrade_simple_env")
 
         self.env.make_snapshot("upgrade_simple")
+
+    @test(groups=["upgrade_simple_delete_node"])
+    @log_snapshot_on_error
+    def upgrade_simple_delete_node(self):
+        """Upgrade simple deployed cluster with ceph and
+           delete node from old cluster
+
+        Scenario:
+            1. Revert snapshot with simple ceph env
+            2. Run upgrade on master
+            3. Check that upgrade was successful
+            4. Delete one compute+ceph node
+            5. Re-deploy cluster
+            6. Run OSTF
+
+        """
+
+        if not self.env.get_virtual_environment().has_snapshot(
+                'ceph_multinode_compact'):
+            raise SkipTest()
+
+        self.env.revert_snapshot("ceph_multinode_compact")
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        checkers.upload_tarball(self.env.get_admin_remote(),
+                                hlp_data.TARBALL_PATH, '/var')
+        checkers.check_tarball_exists(self.env.get_admin_remote(),
+                                      os.path.basename(hlp_data.
+                                                       TARBALL_PATH),
+                                      '/var')
+        checkers.untar(self.env.get_admin_remote(),
+                       os.path.basename(hlp_data.
+                                        TARBALL_PATH), '/var')
+        checkers.run_script(self.env.get_admin_remote(), '/var',
+                            'upgrade.sh', password=
+                            hlp_data.KEYSTONE_CREDS['password'])
+        checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
+                                      phrase='*** UPGRADE DONE SUCCESSFULLY')
+        checkers.check_upgraded_containers(self.env.get_admin_remote(),
+                                           hlp_data.UPGRADE_FUEL_FROM,
+                                           hlp_data.UPGRADE_FUEL_TO)
+        self.fuel_web.assert_nodes_in_ready_state(cluster_id)
+        self.fuel_web.assert_fuel_version(hlp_data.UPGRADE_FUEL_TO)
+        self.fuel_web.assert_nailgun_upgrade_migration()
+        nailgun_nodes = self.fuel_web.update_nodes(
+            cluster_id, {'slave-03': ['compute', 'ceph-osd']}, False, True)
+        task = self.fuel_web.deploy_cluster(cluster_id)
+        self.fuel_web.assert_task_success(task)
+        nodes = filter(lambda x: x["pending_deletion"] is True, nailgun_nodes)
+        wait(
+            lambda: self.fuel_web.is_node_discovered(nodes[0]),
+            timeout=10 * 60
+        )
+        self.fuel_web.run_ostf(cluster_id=cluster_id, should_fail=1)
+        self.env.make_snapshot("upgrade_simple_delete_node")
 
     @test(groups=["upgrade_ha"])
     @log_snapshot_on_error
