@@ -24,6 +24,7 @@ from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import ostf_test_mapping as map_ostf
 from fuelweb_test import settings
+from fuelweb_test.settings import NEUTRON_ENABLE
 from fuelweb_test import logger
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
@@ -52,6 +53,12 @@ class CephCompact(TestBasic):
             raise SkipTest()
 
         self.env.revert_snapshot("ready_with_3_slaves")
+
+        if NEUTRON_ENABLE:
+            settings = {
+                "net_provider": 'neutron',
+                "net_segment_type": "vlan"
+            }
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
