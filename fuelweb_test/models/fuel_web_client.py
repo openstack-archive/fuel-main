@@ -922,15 +922,17 @@ class FuelWebClient(object):
             ip_network = net_name
         else:
             ip_network = IPNetwork(self.environment.get_network(net_name))
+            if 'admin' in net_name:
+                net_config['ip_ranges'] = self.get_range(ip_network, 2)
 
         net_config['ip_ranges'] = self.get_range(ip_network, 1) \
             if floating else self.get_range(ip_network, -1)
-        if 'admin' in net_name:
-            net_config['ip_ranges'] = self.get_range(ip_network, 2)
+
         net_config['cidr'] = str(ip_network)
 
         if jbond:
-            net_config['gateway'] = self.environment.router('public')
+            if net_config['name'] == 'public':
+                net_config['gateway'] = self.environment.router('public')
         else:
             net_config['vlan_start'] = None
             net_config['gateway'] = self.environment.router(net_name)
@@ -947,9 +949,8 @@ class FuelWebClient(object):
         elif ip_range == 2:
             return [[str(net[3]), str(net[half - 1])]]
 
-    def get_floating_ranges(self, network_set=None):
-        if network_set:
-            net_name = 'public{0}'.format(network_set)
+    def get_floating_ranges(self, network_set=''):
+        net_name = 'public{0}'.format(network_set)
         net = list(IPNetwork(self.environment.get_network(net_name)))
         ip_ranges, expected_ips = [], []
 
