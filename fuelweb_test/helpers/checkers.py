@@ -782,7 +782,7 @@ def check_stats_private_info(collector_remote, postgres_actions,
         'some_token': 'token',
         'some_ip': '\bip\b',
         'some_netmask': 'netmask',
-        'some_network': 'network(?!_assignment)',
+        'some_network': 'network\b',
     }
 
     action_logs = [l.strip() for l in postgres_actions.run_query(
