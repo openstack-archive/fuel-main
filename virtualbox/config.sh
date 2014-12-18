@@ -181,3 +181,4 @@ vm_slave_third_disk_mb=65535
 
 # Set to 1 to run VirtualBox in headless mode
 headless=0
+skipfuelmenu="no"
