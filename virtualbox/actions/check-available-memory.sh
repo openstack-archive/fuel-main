@@ -15,7 +15,7 @@
 #    under the License.
 
 #
-# This script check availble memory on host PC for quality provision VMs via VirtualBox
+# This script checks available memory on host PC for quality provision VMs via VirtualBox
 #
 
 total_memory=$(get_available_memory $os_type)

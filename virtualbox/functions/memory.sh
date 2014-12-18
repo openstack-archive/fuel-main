@@ -20,37 +20,29 @@ get_available_memory() {
   os_type=$1
   local total_memory=""
   # Check available commands and RAM on host PC
-  if [ "$os_type" = "linux" ]; then
-    # runing on linux
-    if [ "$(which free)" != "" ]; then
-      # using free
-      total_memory=$(LANG=C free | grep Mem | awk '{print $2}')
-    elif [ "$(which top)" != "" ]; then
-      # using top
-      total_memory=$(LANG=C top -n 1 | grep "Mem:" | awk '{ print $4 }')
-    else
-      total_memory="-1"
-    fi
-  elif [ "$os_type" = "darwin" ]; then
+  case "$(uname)" in
+    # runing on linux or cygwin
+    Linux|CYGWIN*)
+      if [ "$(which free)" != "" ]; then
+        # using free
+        total_memory=$(LANG=C free | grep Mem | awk '{print $2}')
+      elif [ "$(which top)" != "" ]; then
+        # using top
+        total_memory=$(LANG=C top -n 1 | grep "Mem:" | awk '{ print $4 }')
+      else
+        total_memory="-1"
+      fi
+    ;;
     # runing on mac os darwin
-    if [ "$(which sysctl)" != "" ]; then
-      # using sysctl
-      total_memory=$(sysctl -n hw.memsize)
-      total_memory=$(( $total_memory / 1024 ))
-    else
-      total_memory="-1"
-    fi
-  elif [ "$os_type" = "cygwin" ]; then
-    # runing on cygwin
-    if [ "$(which free)" != "" ]; then
-      # using free
-      total_memory=$(LANG=C free | grep Mem | awk '{print $2}')
-    elif [ "$(which top)" != "" ]; then
-      # using top
-      total_memory=$(LANG=C top -n 1 | grep "Mem:" | awk '{ print $4 }')
-    else
-      total_memory="-1"
-    fi
-  fi
+    Darwin)
+      if [ "$(which sysctl)" != "" ]; then
+        # using sysctl
+        total_memory=$(sysctl -n hw.memsize)
+        total_memory=$(( $total_memory / 1024 ))
+      else
+        total_memory="-1"
+      fi
+    ;;
+  esac
   echo $total_memory
 }

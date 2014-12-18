@@ -27,13 +27,17 @@ source ./config.sh
 source ./functions/vm.sh
 source ./functions/network.sh
 
-# Check for procps package
-if [ "$(uname -s | cut -c1-6)" = "CYGWIN" ]; then
-    echo -n "Checking for 'top' and 'free'"
-    free -V >/dev/null 2>&1 || { echo >&2 " \"free\" is not available in the path, but it's required. Please install \"procps\" package. Aborting."; exit 1; }
-    top -v >/dev/null 2>&1 || { echo >&2 " \"top\" is not available in the path, but it's required. Please install \"procps\" package. Aborting."; exit 1; }
+# Check for memory utilities
+case "$(uname)" in
+  Linux|CYGWIN*)
+    echo -n "Checking for 'top' and 'free'... "
+    free -V >/dev/null 2>&1 || { echo >&2 " \"free\" is not available, but it's required. Please install the \"procps\" package. Aborting."; exit 1; }
+    top -v >/dev/null 2>&1 || { echo >&2 " \"top\" is not available, but it's required. Please install the \"procps\" package. Aborting."; exit 1; }
     echo "OK"
-fi
+  ;;
+  Darwin)
+  ;;
+esac
 
 # Check for expect
 echo -n "Checking for 'expect'... "
