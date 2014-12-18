@@ -24,6 +24,7 @@ from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import ostf_test_mapping as map_ostf
 from fuelweb_test import settings
+from fuelweb_test.settings import NEUTRON_ENABLE
 from fuelweb_test import logger
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
@@ -48,23 +49,23 @@ class CephCompact(TestBasic):
         Snapshot ceph_multinode_compact
 
         """
-        if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
-            raise SkipTest()
-
         self.env.revert_snapshot("ready_with_3_slaves")
+        data = {
+            'volumes_ceph': True,
+            'images_ceph': True,
+            'volumes_lvm': False,
+            'tenant': 'ceph1',
+            'user': 'ceph1',
+            'password': 'ceph1'
+        }
+        if NEUTRON_ENABLE:
+            data["net_provider"] = 'neutron'
+            data["net_segment_type"] = 'vlan'
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=settings.DEPLOYMENT_MODE_SIMPLE,
-            settings={
-                'volumes_ceph': True,
-                'images_ceph': True,
-                'volumes_lvm': False,
-                'tenant': 'ceph1',
-                'user': 'ceph1',
-                'password': 'ceph1'
-            }
-        )
+            settings=data)
         self.fuel_web.update_nodes(
             cluster_id,
             {
