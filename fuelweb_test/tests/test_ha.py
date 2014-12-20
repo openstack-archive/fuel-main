@@ -317,7 +317,8 @@ class BackupRestoreHa(TestBasic):
 
         cluster_id = self.fuel_web.get_last_created_cluster()
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_public_vip(cluster_id))
+            self.fuel_web.get_public_vip(cluster_id),
+            'novaHaFlat', 'novaHaFlat', 'novaHaFlat')
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=16, networks_count=1, timeout=300)
         self.fuel_web.backup_master(self.env.get_admin_remote())
