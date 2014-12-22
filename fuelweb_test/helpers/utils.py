@@ -50,8 +50,11 @@ def nova_service_get_pid(node_ssh, nova_services=None):
 @logwrap
 def check_if_service_restarted_ubuntu(node_ssh, services_list=None):
     if services_list:
-        cmd = ("grep '/sbin/restart' /var/log/puppet.log"
-               "  | awk -F' ' '{print $11}' ")
+        cmd = ("LAST=`grep 'Finished catalog run' --line-number {0} |"
+               "cut -f1 -d: | awk 'BEGIN{{A=0;B=0;}}{{A=B;B=$1;}}"
+               "END{{print B-A}}'`; tail -n $LAST {0} |"
+               "grep -E '/sbin/(re)?start' {0} | awk -F' ' '{{print $11}}'"
+               .format('/var/log/puppet.log'))
         res = ''.join(node_ssh.execute(cmd)['stdout'])
         logger.debug('Next services were restarted {0}'.format(res))
         for el in services_list:
@@ -63,10 +66,13 @@ def check_if_service_restarted_ubuntu(node_ssh, services_list=None):
 @logwrap
 def check_if_service_restarted_centos(node_ssh, services_list=None):
     if services_list:
-        cmd_template = ("grep '/sbin/service openstack-%s'"
-                        " /var/log/puppet.log| awk -F' ' '{print $11}' ")
+        cmd = ("LAST=`grep 'Finished catalog run' --line-number {0} |"
+               "cut -f1 -d: | awk 'BEGIN{{A=0;B=0;}}{{A=B;B=$1;}}"
+               "END{{print B-A}}'`; tail -n $LAST {0} |"
+               "grep '/sbin/service openstack-%s' {0} |"
+               "awk -F' ' '{{print $11}}' ".format('/var/log/puppet.log'))
         for service in services_list:
-            res = node_ssh.execute(cmd_template % service)['stdout']
+            res = node_ssh.execute(cmd % service)['stdout']
             logger.debug('Next services were restarted {0}'.format(res))
             asserts.assert_true(len(res) > 1,
                                 'Seems service {0} was not restarted'
