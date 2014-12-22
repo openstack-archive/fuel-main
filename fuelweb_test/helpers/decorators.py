@@ -106,7 +106,11 @@ def upload_manifests(func):
             if settings.UPLOAD_MANIFESTS:
                 logger.info("Uploading new manifests from %s" %
                             settings.UPLOAD_MANIFESTS_PATH)
-                remote = args[0].environment.get_admin_remote()
+                remote = helpers.SSHClient(args[0].admin_node_ip,
+                                           username=settings.SSH_CREDENTIALS
+                                           ['login'],
+                                           password=settings.SSH_CREDENTIALS
+                                           ['password'])
                 remote.execute('rm -rf /etc/puppet/modules/*')
                 remote.upload(settings.UPLOAD_MANIFESTS_PATH,
                               '/etc/puppet/modules/')
