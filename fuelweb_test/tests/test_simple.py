@@ -28,6 +28,7 @@ from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.settings import NODE_VOLUME_SIZE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
+from fuelweb_test.tests.test_admin_node import TestAdminNodeCustomManifests
 from fuelweb_test import logger
 
 
@@ -926,3 +927,44 @@ class BackupRestoreSimple(TestBasic):
             cluster_id=cluster_id)
 
         self.env.make_snapshot("simple_backup_restore")
+
+
+@test(groups=["deploy_with_custom_master_manifests"])
+class SimpleEnvCustomMasterManifests(TestBasic):
+    @test(depends_on=[TestAdminNodeCustomManifests.
+          setup_with_custom_manifests],
+          groups=["deploy_simple_master_custom_manifests"])
+    @log_snapshot_on_error
+    def deploy_simple_master_custom_manifests(self):
+        """Deploy environment with custom master manifests
+
+        Scenario:
+            1. Setup master with custom manifests
+            2. Deploy environment
+            3. Run network verification
+            4. Run OSTF
+
+        """
+        self.env.bootstrap_nodes(self.env.nodes().slaves[:3])
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_SIMPLE
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller'],
+                'slave-02': ['compute'],
+                'slave-03': ['cinder']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
+
+        self.fuel_web.assert_cluster_ready(
+            os_conn, smiles_count=6, networks_count=1, timeout=300)
+
+        self.fuel_web.verify_network(cluster_id)
+
+        self.fuel_web.run_ostf(cluster_id=cluster_id)
