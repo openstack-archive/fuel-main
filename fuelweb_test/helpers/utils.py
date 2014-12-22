@@ -48,29 +48,19 @@ def nova_service_get_pid(node_ssh, nova_services=None):
 
 
 @logwrap
-def check_if_service_restarted_ubuntu(node_ssh, services_list=None):
+def check_if_service_restarted(node_ssh, services_list=None,
+                               pattern='(re)?start', skip=0):
     if services_list:
-        cmd = ("grep '/sbin/restart' /var/log/puppet.log"
-               "  | awk -F' ' '{print $11}' ")
+        # from the log file {2}, scan all lines after line {0} with the
+        # pattern {1} to find restarted services, print their names to stdout
+        cmd = ("awk 'NR >= {0} && /{1}/ {{print $11}}' {2}"
+               .format(skip, pattern, '/var/log/puppet.log'))
         res = ''.join(node_ssh.execute(cmd)['stdout'])
         logger.debug('Next services were restarted {0}'.format(res))
-        for el in services_list:
-            asserts.assert_true(
-                el in res,
-                'Seems service {0} was not restarted {1}'.format(el, res))
-
-
-@logwrap
-def check_if_service_restarted_centos(node_ssh, services_list=None):
-    if services_list:
-        cmd_template = ("grep '/sbin/service openstack-%s'"
-                        " /var/log/puppet.log| awk -F' ' '{print $11}' ")
         for service in services_list:
-            res = node_ssh.execute(cmd_template % service)['stdout']
-            logger.debug('Next services were restarted {0}'.format(res))
-            asserts.assert_true(len(res) > 1,
-                                'Seems service {0} was not restarted'
-                                ' {1}'.format(service, res))
+            asserts.assert_true(
+                any(service in x for x in res),
+                'Seems service {0} was not restarted {1}'.format(service, res))
 
 
 @logwrap
