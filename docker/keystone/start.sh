@@ -13,4 +13,5 @@ if [[ $exitcode != 0 && $exitcode != 2 ]]; then
 fi
 
 service openstack-keystone stop
+sed -i -e 's/^public_bind_host=.*$/public_bind_host=0.0.0.0/g' -e 's/^admin_bind_host=.*$/admin_bind_host=0.0.0.0/g' /etc/keystone/keystone.conf
 keystone-all
