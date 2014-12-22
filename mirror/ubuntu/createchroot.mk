@@ -61,6 +61,13 @@ endif
 		sed -i -e "s/\(bootstrap\|aptsources\)=.*/\0 $$extra_repos/g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf; \
 	fi
 	mount | grep -q $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc || sudo mount -t proc none $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc
+	mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/init.d
+	# Avoid base packages' configuration errors by preventing the postinst
+	# scripts from fiddling with the services' start order.
+	# Suppresses the scary error messages
+	# "Errors were while processing: <long-list-of-base-packages>'
+	# and makes it possible to install non-trivial packages in the chroot
+	touch $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/init.d/.legacy-bootordering
 	sudo multistrap -a amd64  -f $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf -d $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "dpkg --configure -a || exit 0"
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "rm -rf /var/run/*"
