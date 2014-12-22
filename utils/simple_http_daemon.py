@@ -67,7 +67,7 @@ if __name__ == "__main__":
     if sys.argv[3:]:
         timeout = int(sys.argv[3])
     else:
-        timeout = 600
+        timeout = sys.maxint
 
     server = SimpleHTTPDaemon('0.0.0.0', port, pid, timeout)
     server.start()
