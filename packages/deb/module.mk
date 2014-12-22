@@ -3,8 +3,11 @@
 clean: clean-deb
 
 clean-deb:
-	-sudo umount $(BUILD_DIR)/packages/deb/SANDBOX/proc
-	-sudo umount $(BUILD_DIR)/packages/deb/SANDBOX/dev
+	-mount | grep '$(BUILD_DIR)/packages/deb/SANDBOX' | while read entry; do \
+		set -- $$entry; \
+		mntpt="$$3"; \
+		sudo umount $$mntpt; \
+	done
 	sudo rm -rf $(BUILD_DIR)/packages/deb
 
 # Usage:
@@ -14,7 +17,7 @@ $(BUILD_DIR)/packages/deb/repo.done: $(BUILD_DIR)/packages/deb/$1.done
 $(BUILD_DIR)/packages/deb/repo.done: $(BUILD_DIR)/packages/deb/$1-repocleanup.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/mirror/ubuntu/build.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/source_$1.done
-$(BUILD_DIR)/packages/deb/$1.done: SANDBOX_UBUNTU:=$(BUILD_DIR)/packages/deb/SANDBOX
+$(BUILD_DIR)/packages/deb/$1.done: SANDBOX_UBUNTU:=$(BUILD_DIR)/packages/deb/SANDBOX/$1
 $(BUILD_DIR)/packages/deb/$1.done: SANDBOX_DEB_PKGS:=apt wget bzip2 apt-utils build-essential python-setuptools devscripts debhelper fakeroot
 $(BUILD_DIR)/packages/deb/$1.done: export SANDBOX_UBUNTU_UP:=$$(SANDBOX_UBUNTU_UP)
 $(BUILD_DIR)/packages/deb/$1.done: export SANDBOX_UBUNTU_DOWN:=$$(SANDBOX_UBUNTU_DOWN)
