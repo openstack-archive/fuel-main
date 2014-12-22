@@ -467,7 +467,8 @@ class EnvironmentModel(object):
                 .format(settings.KEYSTONE_CREDS['username'],
                         settings.KEYSTONE_CREDS['password']))
 
-    def setup_environment(self, custom=False, build_images=False):
+    def setup_environment(self, custom=settings.CUSTOM_ENV,
+                          build_images=settings.BUILD_IMAGES):
         # start admin node
         admin = self.nodes().admin
         admin.disk_devices.get(device='cdrom').volume.upload(settings.ISO_PATH)
