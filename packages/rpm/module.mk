@@ -3,8 +3,11 @@
 clean: clean-rpm
 
 clean-rpm:
-	-sudo umount $(BUILD_DIR)/packages/rpm/SANDBOX/proc
-	-sudo umount $(BUILD_DIR)/packages/rpm/SANDBOX/dev
+	-mount | grep '$(BUILD_DIR)/packages/rpm/SANDBOX' | while read entry do; \
+		set -- $$entry; \
+		mntpt="$$3"; \
+		sudo umount $$mntpt; \
+	done
 	sudo rm -rf $(BUILD_DIR)/packages/rpm
 
 RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
@@ -19,11 +22,11 @@ $(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/packages/rpm/$1-repocleanup.do
 # It will build astute rpm package
 $1: $(BUILD_DIR)/packages/rpm/$1.done
 
-$(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/mirror/build.done
+$(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/mirror/centos/build.done
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/source_$1.done
 
 
-$(BUILD_DIR)/packages/rpm/$1.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX
+$(BUILD_DIR)/packages/rpm/$1.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/$1
 $(BUILD_DIR)/packages/rpm/$1.done: export SANDBOX_UP:=$$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/$1.done: export SANDBOX_DOWN:=$$(SANDBOX_DOWN)
 $(BUILD_DIR)/packages/rpm/$1.done: \
@@ -40,7 +43,7 @@ $(BUILD_DIR)/packages/rpm/$1.done: \
 	sudo sh -c "$$$${SANDBOX_DOWN}"
 	$$(ACTION.TOUCH)
 
-$(BUILD_DIR)/packages/rpm/$1-repocleanup.done: $(BUILD_DIR)/mirror/build.done
+$(BUILD_DIR)/packages/rpm/$1-repocleanup.done: $(BUILD_DIR)/mirror/centos/build.done
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages -regex '.*/$1-[^-]+-[^-]+' -delete
 	$$(ACTION.TOUCH)
 endef
