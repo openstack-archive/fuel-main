@@ -171,6 +171,10 @@ class TestPatch(TestBasic):
             [n["devops_name"] for n in nailgun_nodes
              if 'controller' in n['roles']][0])
 
+        # get puppet log size before upgrade on the controller
+        puppet_lines = remote.execute("wc -l /var/log/puppet.log |"
+                                      "cut -f1 -d' '")['stdout'][0].strip()
+
         nova_controller_services = ['nova-api', 'nova-cert',
                                     'nova-objectstore', 'nova-conductor',
                                     'nova-scheduler']
@@ -211,7 +215,8 @@ class TestPatch(TestBasic):
                                     "heat-api-cfn'",
                                     "heat-engine'",
                                     "heat-api'",
-                                    "heat-api-cloudwatch'"])
+                                    "heat-api-cloudwatch'"],
+                skip=puppet_lines)
         else:
             utils.check_if_service_restarted_centos(
                 ssh_to_controller, ["keystone",
@@ -221,7 +226,8 @@ class TestPatch(TestBasic):
                                     "heat-engine",
                                     "heat-api",
                                     "heat-api-cloudwatch",
-                                    "nova-novncproxy"])
+                                    "nova-novncproxy"],
+                skip=puppet_lines)
 
         # get nova pids on controller after update
         nova_pids_after = utils.nova_service_get_pid(
