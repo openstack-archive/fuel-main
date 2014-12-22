@@ -21,7 +21,12 @@ from proboscis import test
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers import os_actions
 from fuelweb_test import logger
-from fuelweb_test import settings
+from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
+from fuelweb_test.settings import DEPLOYMENT_MODE_HA
+from fuelweb_test.settings import VCENTER_IP
+from fuelweb_test.settings import VCENTER_USERNAME
+from fuelweb_test.settings import VCENTER_PASSWORD
+from fuelweb_test.settings import VCENTER_CLUSTERS
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
@@ -48,13 +53,13 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'use_vcenter': True,
-                'host_ip': settings.VCENTER_IP,
-                'vc_user': settings.VCENTER_USERNAME,
-                'vc_password': settings.VCENTER_PASSWORD,
-                'cluster': settings.VCENTER_CLUSTERS
+                'host_ip': VCENTER_IP,
+                'vc_user': VCENTER_USERNAME,
+                'vc_password': VCENTER_PASSWORD,
+                'cluster': VCENTER_CLUSTERS
             }
         )
         logger.info("cluster is {}".format(cluster_id))
@@ -95,13 +100,13 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'use_vcenter': True,
-                'host_ip': settings.VCENTER_IP,
-                'vc_user': settings.VCENTER_USERNAME,
-                'vc_password': settings.VCENTER_PASSWORD,
-                'cluster': settings.VCENTER_CLUSTERS
+                'host_ip': VCENTER_IP,
+                'vc_user': VCENTER_USERNAME,
+                'vc_password': VCENTER_PASSWORD,
+                'cluster': VCENTER_CLUSTERS
             }
         )
         logger.info("cluster is {0}".format(cluster_id))
@@ -175,6 +180,57 @@ class VcenterDeploy(TestBasic):
         assert_true(res == 0, "Error in Instances network connectivity.")
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["vcenter_vmdk"])
+    @log_snapshot_on_error
+    def vcenter_vmdk(self):
+        """Deploy cluster with controller and cinder nodes and run checks
+
+        Scenario:
+            1. Create cluster
+            2. Add 2 nodes
+               1 controller
+               1 cinder (VMDK backend)
+            3. Deploy the cluster
+            4. Run OSTF
+        """
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_SIMPLE,
+            settings={
+                'use_vcenter': True,
+                'volumes_vmdk': True,
+                'volumes_lvm': False,
+                'host_ip': VCENTER_IP,
+                'vc_user': VCENTER_USERNAME,
+                'vc_password': VCENTER_PASSWORD,
+                'cluster': VCENTER_CLUSTERS,
+                'tenant': 'vcenter',
+                'user': 'vcenter',
+                'password': 'vcenter'
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Assign roles to nodes
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['cinder']}
+        )
+        # Deploy cluster
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        # Wait until nova-compute get information about clusters
+        # FIXME: Later need to change sleep with wait function.
+        time.sleep(60)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_ha"])
     @log_snapshot_on_error
     def vcenter_ha(self):
@@ -192,13 +248,13 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE_HA,
             settings={
                 'use_vcenter': True,
-                'host_ip': settings.VCENTER_IP,
-                'vc_user': settings.VCENTER_USERNAME,
-                'vc_password': settings.VCENTER_PASSWORD,
-                'cluster': settings.VCENTER_CLUSTERS,
+                'host_ip': VCENTER_IP,
+                'vc_user': VCENTER_USERNAME,
+                'vc_password': VCENTER_PASSWORD,
+                'cluster': VCENTER_CLUSTERS,
                 'tenant': 'vcenter',
                 'user': 'vcenter',
                 'password': 'vcenter'
@@ -245,15 +301,15 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'use_vcenter': True,
                 'volumes_lvm': False,
                 'volumes_vmdk': True,
-                'host_ip': settings.VCENTER_IP,
-                'vc_user': settings.VCENTER_USERNAME,
-                'vc_password': settings.VCENTER_PASSWORD,
-                'cluster': settings.VCENTER_CLUSTERS,
+                'host_ip': VCENTER_IP,
+                'vc_user': VCENTER_USERNAME,
+                'vc_password': VCENTER_PASSWORD,
+                'cluster': VCENTER_CLUSTERS,
                 'tenant': 'vcenter',
                 'user': 'vcenter',
                 'password': 'vcenter'
@@ -297,15 +353,15 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE_HA,
             settings={
                 'use_vcenter': True,
                 'volumes_lvm': False,
                 'volumes_vmdk': True,
-                'host_ip': settings.VCENTER_IP,
-                'vc_user': settings.VCENTER_USERNAME,
-                'vc_password': settings.VCENTER_PASSWORD,
-                'cluster': settings.VCENTER_CLUSTERS,
+                'host_ip': VCENTER_IP,
+                'vc_user': VCENTER_USERNAME,
+                'vc_password': VCENTER_PASSWORD,
+                'cluster': VCENTER_CLUSTERS,
                 'tenant': 'vcenter',
                 'user': 'vcenter',
                 'password': 'vcenter'
@@ -351,15 +407,15 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'use_vcenter': True,
                 'volumes_lvm': False,
                 'volumes_vmdk': True,
-                'host_ip': settings.VCENTER_IP,
-                'vc_user': settings.VCENTER_USERNAME,
-                'vc_password': settings.VCENTER_PASSWORD,
-                'cluster': settings.VCENTER_CLUSTERS,
+                'host_ip': VCENTER_IP,
+                'vc_user': VCENTER_USERNAME,
+                'vc_password': VCENTER_PASSWORD,
+                'cluster': VCENTER_CLUSTERS,
                 'tenant': 'vcenter',
                 'user': 'vcenter',
                 'password': 'vcenter'
