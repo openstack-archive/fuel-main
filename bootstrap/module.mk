@@ -98,7 +98,7 @@ $(BUILD_DIR)/bootstrap/initramfs.img: \
 	sudo sh -c "cd $(INITRAMROOT) && find . -xdev | cpio --create \
         --format='newc' | gzip -9 > $(BUILD_DIR)/bootstrap/initramfs.img"
 
-$(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/build.done
+$(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/centos/build.done
 	mkdir -p $(BUILD_DIR)/bootstrap
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		(cd $(BUILD_DIR)/bootstrap/; cpio -imd './boot/vmlinuz*')
@@ -114,7 +114,7 @@ $(BUILD_DIR)/bootstrap/etc/yum.conf $(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.
 
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: $(call depv,BOOTSTRAP_RPMS_CUSTOM)
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
-		$(BUILD_DIR)/packages/build.done \
+		$(BUILD_DIR)/packages/rpm/build.done \
 		$(BUILD_DIR)/bootstrap/prepare-initram-root.done \
 		$(call find-files,$(SOURCE_DIR)/bootstrap/sync) \
 		$(BUILD_DIR)/repos/nailgun.done \
@@ -161,7 +161,8 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: $(call depv,BOOTSTRAP_RPMS)
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
-		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/mirror/centos/build.done \
+		$(BUILD_DIR)/packages/rpm/build.done \
 		$(BUILD_DIR)/bootstrap/etc/yum.conf \
 		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo
 
