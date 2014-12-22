@@ -802,8 +802,6 @@ class FuelWebClient(object):
                              net_name=net['name'])
 
         self.common_net_settings(network_configuration)
-        logger.info('Network settings for push: {0}'.format(
-            network_configuration))
         return network_configuration
 
     def common_net_settings(self, network_configuration):
