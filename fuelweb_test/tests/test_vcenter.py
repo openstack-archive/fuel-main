@@ -454,3 +454,79 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.verify_network(cluster_id)
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity'],)
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["vcenter_vlan_ha", "vcenter_vlan"])
+    @log_snapshot_on_error
+    def vcenter_vlan_ha(self):
+        """Deploy a cluster in HA mode with 2 controller node,
+            1 controller + cinder node, vCenter and VlanManager enabled.
+            Verify that it works.
+
+        Scenario:
+            1. Create a Simple cluster with vCenter as a hypervisor
+            2. Add 3 nodes with roles:
+                 2 controller
+                 1 controller+cinder
+            3. Set Nova-Network VlanManager as a network backend
+            4. Deploy the cluster
+            5. Run network verification
+            6. Run OSTF
+        """
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        # Configure a cluster.
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE_HA,
+            settings={
+                'use_vcenter': True,
+                'volumes_vmdk': True,
+                'volumes_lvm': False,
+                'host_ip': settings.VCENTER_IP,
+                'vc_user': settings.VCENTER_USERNAME,
+                'vc_password': settings.VCENTER_PASSWORD,
+                'cluster': settings.VCENTER_CLUSTERS,
+                'tenant': 'vcenter',
+                'user': 'vcenter',
+                'password': 'vcenter'
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Assign roles to nodes.
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['controller'],
+             'slave-03': ['controller', 'cinder'],
+             }
+        )
+
+        # Configure network interfaces.
+        # Public and Fixed networks are on the same interface
+        # because Nova will use the same vSwitch for PortGroups creating
+        # as a ESXi' management interface is located in.
+        interfaces = {
+            'eth0': ["fuelweb_admin"],
+            'eth1': ["public", "fixed"],
+            'eth2': ["management", ],
+            'eth3': [],
+            'eth4': ["storage"],
+        }
+
+        slave_nodes = self.fuel_web.client.list_cluster_nodes(cluster_id)
+        for node in slave_nodes:
+            self.fuel_web.update_node_networks(node['id'], interfaces)
+
+        # Configure Nova-Network VLanManager.
+        self.fuel_web.update_vlan_network_fixed(
+            cluster_id, amount=8, network_size=32)
+
+        # Deploy the cluster.
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        # Run tests.
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'],)
