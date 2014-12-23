@@ -263,8 +263,8 @@ SERVTEST_SAHARA_IMAGE_META = {'_sahara_tag_1.2.1': 'True',
                               '_sahara_tag_vanilla': 'True',
                               '_sahara_username': 'ubuntu'}
 
-SERVTEST_MURANO_IMAGE = "cloud-fedora.qcow2"
-SERVTEST_MURANO_IMAGE_MD5 = '6e5e2f149c54b898b3c272f11ae31125'
+SERVTEST_MURANO_IMAGE = "ubuntu_14_04-murano-agent_stable_juno.qcow2"
+SERVTEST_MURANO_IMAGE_MD5 = '9f562f3f577dc32698c11a99d3f15070'
 SERVTEST_MURANO_IMAGE_NAME = 'murano'
 SERVTEST_MURANO_IMAGE_META = {
     'murano_image_info': '{"type": "linux", "title": "murano"}'}
