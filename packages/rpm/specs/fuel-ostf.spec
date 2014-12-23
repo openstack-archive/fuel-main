@@ -41,6 +41,7 @@ Requires:    python-pecan >= 0.3.0
 Requires:    python-pecan < 0.6.0
 Requires:    python-psycopg2 >= 2.5.1
 Requires:    python-stevedore >= 0.10
+Requires:    python-oslo-serialization >= 1.0.0
 
 # test_requires
 #mock >= 1.0.1
