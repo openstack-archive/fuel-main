@@ -349,3 +349,6 @@ FUEL_STATS_SSL = os.environ.get('FUEL_STATS_SSL', 'true') == 'true'
 FUEL_STATS_HOST = os.environ.get('FUEL_STATS_HOST',
                                  '172.18.2.169')
 FUEL_STATS_PORT = os.environ.get('FUEL_STATS_PORT', '443')
+
+CUSTOM_ENV = os.environ.get('CUSTOM_ENV', 'false') == 'true'
+BUILD_IMAGES = os.environ.get('BUILD_IMAGES', 'false') == 'true'

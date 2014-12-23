@@ -106,7 +106,15 @@ def upload_manifests(func):
             if settings.UPLOAD_MANIFESTS:
                 logger.info("Uploading new manifests from %s" %
                             settings.UPLOAD_MANIFESTS_PATH)
-                remote = args[0].environment.get_admin_remote()
+                if args[0].__class__.__name__ == "EnvironmentModel":
+                    environment = args[0]
+                elif args[0].__class__.__name__ == "FuelWebClient":
+                    environment = args[0].environment
+                else:
+                    logger.warning("Can't upload manifests: method of "
+                                   "unexpected class is decorated.")
+                    return result
+                remote = environment.get_admin_remote()
                 remote.execute('rm -rf /etc/puppet/modules/*')
                 remote.upload(settings.UPLOAD_MANIFESTS_PATH,
                               '/etc/puppet/modules/')
