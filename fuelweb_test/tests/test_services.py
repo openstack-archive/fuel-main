@@ -736,7 +736,6 @@ class CeilometerHAMongo(CeilometerOSTFTestsRun):
 class HeatSimple(TestBasic):
     """Heat Simple test.
     Don't recommend to start tests without kvm
-    Put Heat image before start
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_heat_simple_neutron"])
@@ -746,13 +745,12 @@ class HeatSimple(TestBasic):
 
         Scenario:
             1. Create cluster
-            2. Add 1 node with controller role
+            2. Add 1 node with controller role and mongo
             3. Add 1 nodes with compute role
-            4. Deploy the cluster
-            5. Verify heat services
-            6. Run OSTF
-            7. Register heat image
-            8. Run OSTF platform tests
+            4. Set install Ceilometer option
+            5. Deploy the cluster
+            6. Verify Heat, Ceilometer services
+            7. Run OSTF platform tests
 
         Snapshot: deploy_heat_simple_neutron
 
@@ -760,14 +758,8 @@ class HeatSimple(TestBasic):
 
         self.env.revert_snapshot("ready_with_3_slaves")
 
-        LOGGER.debug('Check MD5 of image')
-        check_image = checkers.check_image(
-            settings.SERVTEST_HEAT_IMAGE,
-            settings.SERVTEST_HEAT_IMAGE_MD5,
-            settings.SERVTEST_LOCAL_PATH)
-        asserts.assert_true(check_image, "Image verification failed")
-
         data = {
+            'ceilometer': True,
             'net_provider': 'neutron',
             'net_segment_type': 'gre',
             'tenant': 'heatSimple',
@@ -782,11 +774,12 @@ class HeatSimple(TestBasic):
         self.fuel_web.update_nodes(
             cluster_id,
             {
-                'slave-01': ['controller'],
+                'slave-01': ['controller', 'mongo'],
                 'slave-02': ['compute']
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+
         controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         os_conn = os_actions.OpenStackActions(
             controller['ip'], data['user'], data['password'], data['tenant'])
@@ -797,17 +790,9 @@ class HeatSimple(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='heat-api', count=3)
 
-        common_func = Common(controller['ip'],
-                             data['user'],
-                             data['password'],
-                             data['tenant'])
-
-        LOGGER.debug('Import Heat image')
-        common_func.image_import(
-            settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_HEAT_IMAGE,
-            settings.SERVTEST_HEAT_IMAGE_NAME,
-            settings.SERVTEST_HEAT_IMAGE_META)
+        checkers.verify_service(
+            self.env.get_ssh_to_remote_by_name("slave-01"),
+            service_name='ceilometer-api')
 
         LOGGER.debug('Run Heat OSTF platform tests')
 
@@ -816,7 +801,8 @@ class HeatSimple(TestBasic):
                            'HeatSmokeTests')
         tests_names = ['test_actions',
                        'test_autoscaling',
-                       'test_rollback']
+                       'test_rollback',
+                       'test_update']
 
         test_classes = []
 
@@ -839,13 +825,12 @@ class HeatSimple(TestBasic):
 
         Scenario:
             1. Create cluster
-            2. Add 1 node with controller role
+            2. Add 1 node with controller role and mongo
             3. Add 1 nodes with compute role
+            4. Set Ceilometer install option
             4. Deploy the cluster
-            5. Verify heat services
-            6. Run OSTF
-            7. Register heat image
-            8. Run OSTF platform tests
+            5. Verify Heat, Ceilometer services
+            6. Run OSTF platform tests
 
         Snapshot: deploy_heat_simple_nova
 
@@ -853,14 +838,8 @@ class HeatSimple(TestBasic):
 
         self.env.revert_snapshot("ready_with_3_slaves")
 
-        LOGGER.debug('Check MD5 of image')
-        check_image = checkers.check_image(
-            settings.SERVTEST_HEAT_IMAGE,
-            settings.SERVTEST_HEAT_IMAGE_MD5,
-            settings.SERVTEST_LOCAL_PATH)
-        asserts.assert_true(check_image, "Image verification failed")
-
         data = {
+            'ceilometer': True,
             'tenant': 'heatSimple',
             'user': 'heatSimple',
             'password': 'heatSimple'
@@ -873,11 +852,12 @@ class HeatSimple(TestBasic):
         self.fuel_web.update_nodes(
             cluster_id,
             {
-                'slave-01': ['controller'],
+                'slave-01': ['controller', 'mongo'],
                 'slave-02': ['compute']
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+
         controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         os_conn = os_actions.OpenStackActions(
             controller['ip'], data['user'], data['password'], data['tenant'])
@@ -888,17 +868,9 @@ class HeatSimple(TestBasic):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='heat-api', count=3)
 
-        common_func = Common(controller['ip'],
-                             data['user'],
-                             data['password'],
-                             data['tenant'])
-
-        LOGGER.debug('Import Heat image')
-        common_func.image_import(
-            settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_HEAT_IMAGE,
-            settings.SERVTEST_HEAT_IMAGE_NAME,
-            settings.SERVTEST_HEAT_IMAGE_META)
+        checkers.verify_service(
+            self.env.get_ssh_to_remote_by_name("slave-01"),
+            service_name='ceilometer-api')
 
         LOGGER.debug('Run Heat OSTF platform tests')
 
@@ -907,7 +879,8 @@ class HeatSimple(TestBasic):
                            'HeatSmokeTests')
         tests_names = ['test_actions',
                        'test_autoscaling',
-                       'test_rollback']
+                       'test_rollback',
+                       'test_update']
 
         test_classes = []
 
@@ -927,7 +900,6 @@ class HeatSimple(TestBasic):
 class HeatHA(TestBasic):
     """Heat HA test.
     Don't recommend to start tests without kvm
-    Put Heat image before start
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_heat_ha"])
@@ -937,13 +909,12 @@ class HeatHA(TestBasic):
 
         Scenario:
             1. Create cluster
-            2. Add 3 node with controller role
+            2. Add 3 node with controller role and mongo
             3. Add 1 nodes with compute role
+            4. Set Ceilometer install option
             4. Deploy the cluster
-            5. Verify heat services
-            6. Run OSTF
-            7. Register heat image
-            8. Run OSTF platform tests
+            5. Verify Heat and Ceilometer services
+            6. Run OSTF platform tests
 
         Snapshot: deploy_heat_ha
 
@@ -951,19 +922,13 @@ class HeatHA(TestBasic):
 
         self.env.revert_snapshot("ready_with_5_slaves")
 
-        LOGGER.debug('Check MD5 of image')
-        check_image = checkers.check_image(
-            settings.SERVTEST_HEAT_IMAGE,
-            settings.SERVTEST_HEAT_IMAGE_MD5,
-            settings.SERVTEST_LOCAL_PATH)
-        asserts.assert_true(check_image, "Image verification failed")
-
         data = {
+            'ceilometer': True,
             'net_provider': 'neutron',
             'net_segment_type': 'gre',
-            'tenant': 'heatSimple',
-            'user': 'heatSimple',
-            'password': 'heatSimple'
+            'tenant': 'heatHA',
+            'user': 'heatHA',
+            'password': 'heatHA'
         }
 
         cluster_id = self.fuel_web.create_cluster(
@@ -974,13 +939,14 @@ class HeatHA(TestBasic):
         self.fuel_web.update_nodes(
             cluster_id,
             {
-                'slave-01': ['controller'],
-                'slave-02': ['controller'],
-                'slave-03': ['controller'],
+                'slave-01': ['controller', 'mongo'],
+                'slave-02': ['controller', 'mongo'],
+                'slave-03': ['controller', 'mongo'],
                 'slave-04': ['compute']
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+
         cluster_vip = self.fuel_web.get_public_vip(cluster_id)
         os_conn = os_actions.OpenStackActions(
             cluster_vip, data['user'], data['password'], data['tenant'])
@@ -992,17 +958,9 @@ class HeatHA(TestBasic):
                 self.env.get_ssh_to_remote_by_name(slave),
                 service_name='heat-api', count=3)
 
-        common_func = Common(cluster_vip,
-                             data['user'],
-                             data['password'],
-                             data['tenant'])
-
-        LOGGER.debug('Import Heat image')
-        common_func.image_import(
-            settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_HEAT_IMAGE,
-            settings.SERVTEST_HEAT_IMAGE_NAME,
-            settings.SERVTEST_HEAT_IMAGE_META)
+            checkers.verify_service(
+                self.env.get_ssh_to_remote_by_name(slave),
+                service_name='ceilometer-api')
 
         LOGGER.debug('Run Heat OSTF platform tests')
 
