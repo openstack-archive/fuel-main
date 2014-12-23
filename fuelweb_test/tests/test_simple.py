@@ -898,7 +898,8 @@ class BackupRestoreSimple(TestBasic):
 
         cluster_id = self.fuel_web.get_last_created_cluster()
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
+            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'],
+            'novaSimpleFlat', 'novaSimpleFlat', 'novaSimpleFlat')
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)
         self.fuel_web.backup_master(self.env.get_admin_remote())
