@@ -361,7 +361,7 @@ class EnvironmentModel(object):
                 logger.info('Admin node started second time.')
                 self.nodes().admin.await(
                     self.admin_net, timeout=10 * 60, by_port=8000)
-                _wait(self._fuel_web.get_nailgun_version, timeout=120)
+                _wait(self._fuel_web.client.get_releases, timeout=120)
 
             self.set_admin_ssh_password()
             self.set_admin_keystone_password()
