@@ -20,14 +20,12 @@
 #
 
 # Include the handy functions to operate VMs and track ISO installation progress
-source config.sh
-source functions/vm.sh
-source functions/product.sh
+source ./config.sh
+source ./functions/vm.sh
+source ./functions/product.sh
 
 # Create master node for the product
 name="${vm_name_prefix}master"
-delete_vm $name
-echo
 create_vm $name "${host_nic_name[0]}" $vm_master_cpu_cores $vm_master_memory_mb $vm_master_disk_mb
 echo
 
@@ -44,6 +42,10 @@ mount_iso_to_vm $name $iso_path
 echo
 start_vm $name
 
+if [ "$skipfuelmenu" = "yes" ]; then
+  wait_for_fuel_menu $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
+fi
+
 # Wait until the machine gets installed and Puppet completes its run
 wait_for_product_vm_to_install $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
 
@@ -54,3 +56,5 @@ enable_outbound_network_for_product_vm $vm_master_ip $vm_master_username $vm_mas
 echo
 echo "Master node has been installed."
 
+#Sleep 10s to wait for Cobbler to settle
+sleep 10

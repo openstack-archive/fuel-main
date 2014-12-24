@@ -17,15 +17,15 @@
 # This file contains the functions to manage VMs in through VirtualBox CLI
 
 get_vm_base_path() {
-    echo -e `VBoxManage list systemproperties | grep '^Default machine folder' | sed 's/^Default machine folder\:[ \t]*//'` 
+    echo `VBoxManage list systemproperties | grep '^Default machine folder' | sed 's/^Default machine folder\:[ \t]*//'`
 }
 
 get_vms_running() {
-    echo -e `VBoxManage list runningvms | sed 's/[ \t]*{.*}//' | sed 's/^"//' | sed 's/"$//'`
+    echo `VBoxManage list runningvms | sed 's/[ \t]*{.*}//' | sed 's/^"//' | sed 's/"$//'`
 }
 
 get_vms_present() {
-    echo -e `VBoxManage list vms | sed 's/[ \t]*{.*}//' | sed 's/^"//' | sed 's/"$//'`
+    echo `VBoxManage list vms | sed 's/[ \t]*{.*}//' | sed 's/^"//' | sed 's/"$//'`
 }
 
 is_vm_running() {
@@ -40,15 +40,32 @@ is_vm_running() {
     fi
 }
 
+is_vm_present() {
+    name=$1
+    list=$(get_vms_present)
+
+    if [[ $list = *$name* ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 create_vm() {
     name=$1
     nic=$2
     cpu_cores=$3
     memory_mb=$4
     disk_mb=$5
-   
-    # Create virtual machine with the right name and type (assuming CentOS) 
-    VBoxManage createvm --name $name --ostype RedHat_64 --register
+    os='RedHat_64'
+
+    # There is a chance that some files are left from previous VM instance
+    vm_base_path=$(get_vm_base_path)
+    vm_path="$vm_base_path/$name/"
+    rm -rf "$vm_path"
+
+    # Create virtual machine with the right name and type (assuming CentOS)
+    VBoxManage createvm --name $name --ostype $os --register
 
     # Set the real-time clock (RTC) operate in UTC time
     # Set memory and CPU parameters
@@ -57,6 +74,7 @@ create_vm() {
 
     # Configure main network interface for management/PXE network
     add_hostonly_adapter_to_vm $name 1 "$nic"
+    VBoxManage modifyvm $name --boot1 disk --boot2 dvd --boot3 net --boot4 none
 
     # Configure storage controllers
     VBoxManage storagectl $name --name 'IDE' --add ide --hostiocache on
@@ -101,7 +119,7 @@ add_disk_to_vm() {
     vm_disk_path="$(get_vm_base_path)/$vm_name/"
     disk_name="${vm_name}_${port}"
     disk_filename="${disk_name}.vdi"
-    VBoxManage createhd --filename "$vm_disk_path/$disk_name" --size $disk_mb --format VDI
+    VBoxManage createhd --filename "$vm_disk_path/$disk_filename" --size $disk_mb --format VDI
     VBoxManage storageattach $vm_name --storagectl 'SATA' --port $port --device 0 --type hdd --medium "$vm_disk_path/$disk_filename"
 }
 
@@ -115,23 +133,24 @@ delete_vm() {
         VBoxManage controlvm $name poweroff
     fi
 
-    # Virtualbox does not fully delete VM file structure, so we need to delete the corresponding directory with files as well 
-    if [ -d "$vm_path"  ]; then
-        echo "Deleting existing virtual machine $name..."
+    echo "Deleting existing virtual machine $name..."
+    while is_vm_present $name
+    do
         VBoxManage unregistervm $name --delete
-        rm -rf "$vm_path"
-    fi
+    done
+    # Virtualbox does not fully delete VM file structure, so we need to delete the corresponding directory with files as well
+    rm -rf "$vm_path"
 }
 
 delete_vms_multiple() {
     name_prefix=$1
     list=$(get_vms_present)
 
-    # Loop over the list of VMs and delete them, if its name matches the given refix 
+    # Loop over the list of VMs and delete them, if its name matches the given refix
     for name in $list; do
         if [[ $name == $name_prefix* ]]; then
             echo "Found existing VM: $name. Deleting it..."
-            delete_vm $name 
+            delete_vm $name
         fi
     done
 }
@@ -140,14 +159,17 @@ start_vm() {
     name=$1
 
     # Just start it
-    #VBoxManage startvm $name --type headless
-    VBoxManage startvm $name
+    if [[ $headless == 1 ]]; then
+        VBoxManage startvm $name --type headless
+    else
+        VBoxManage startvm $name
+    fi
 }
 
 mount_iso_to_vm() {
     name=$1
     iso_path=$2
- 
+
     # Mount ISO to the VM
     VBoxManage storageattach $name --storagectl "IDE" --port 0 --device 0 --type dvddrive --medium "$iso_path"
 }
@@ -156,6 +178,6 @@ enable_network_boot_for_vm() {
     name=$1
 
     # Set the right boot priority
-    VBoxManage modifyvm $name --boot1 disk --boot2 net --boot3 none --boot4 none --nicbootprio1 1
+    VBoxManage modifyvm $name --boot1 net --boot2 disk --boot3 none --boot4 none --nicbootprio1 1
 }
 
