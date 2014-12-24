@@ -18,16 +18,22 @@
 #
 # This script performs initial check and configuration of the host system. It:
 #   - verifies that all available command-line tools are present on the host system
-#   - check that there is no previous installation of Mirantis OpenStack (if there is one, the script deletes it)
-#   - creates host-only network interfaces
 #
 # We are avoiding using 'which' because of http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script 
 #
 
 # Include the script with handy functions to operate VMs and VirtualBox networking
-source config.sh 
-source functions/vm.sh
-source functions/network.sh
+source ./config.sh 
+source ./functions/vm.sh
+source ./functions/network.sh
+
+# Check for procps package
+if [ "$(uname -s | cut -c1-6)" = "CYGWIN" ]; then
+    echo -n "Checking for 'top' and 'free'"
+    free -V >/dev/null 2>&1 || { echo >&2 " \"free\" is not available in the path, but it's required. Please install \"procps\" package. Aborting."; exit 1; }
+    top -v >/dev/null 2>&1 || { echo >&2 " \"top\" is not available in the path, but it's required. Please install \"procps\" package. Aborting."; exit 1; }
+    echo "OK"
+fi
 
 # Check for expect
 echo -n "Checking for 'expect'... "
@@ -57,6 +63,7 @@ if [ -z $iso_path ]; then
     exit 1
 fi
 echo "OK"
+echo "Going to use Mirantis OpenStack ISO file $iso_path"
 
 # Check if SSH is installed. Cygwin does not install SSH by default.
 echo "Checking if SSH client installed... "
@@ -92,18 +99,5 @@ case "$(uname)" in
 esac
 echo "OK"
 
-# Delete all VMs from the previous Mirantis OpenStack installation
-delete_vms_multiple $vm_name_prefix
-
-# Delete all host-only interfaces
-delete_all_hostonly_interfaces
-
-# Create the required host-only interfaces
-# Change {0..2} to {0..4} below if you are going to create 5 interfaces instead of 3
-for idx in $(eval echo {0..2}); do
-  create_hostonly_interface "${host_nic_name[$idx]}" ${host_nic_ip[$idx]} ${host_nic_mask[$idx]}
-done
-
 # Report success
 echo "Setup is done."
-
