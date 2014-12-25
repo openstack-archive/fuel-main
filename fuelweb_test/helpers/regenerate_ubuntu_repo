@@ -1,0 +1,59 @@
+#!/bin/bash
+# Based on the method described here:
+# http://troubleshootingrange.blogspot.com/2012/09/hosting-simple-apt-repository-on-centos.html
+
+set -e
+
+ARCH=amd64
+REPO_PATH=$1
+REPONAME=$2
+
+BINDIR=${REPO_PATH}/dists/${REPONAME}/main
+
+binoverride=indices/override.${REPONAME}.main
+binoverride_udeb=indices/override.${REPONAME}.main.debian-installer
+extraoverride=indices/override.${REPONAME}.extra.main
+release_header=`head -8 ${REPO_PATH}/dists/${REPONAME}/Release`
+
+package_deb=${BINDIR}/binary-${ARCH}/Packages
+package_udeb=${BINDIR}/debian-installer/binary-${ARCH}/Packages
+
+cd ${REPO_PATH}
+
+# Scan *.deb packages
+dpkg-scanpackages  -m --extra-override ${extraoverride} -a ${ARCH} pool/main ${binoverride}  > ${package_deb}.tmp 2>/dev/null
+
+gzip -9c ${package_deb}.tmp > ${package_deb}.gz.tmp
+
+# Scan *.udeb packages
+dpkg-scanpackages --udeb -m -a ${ARCH} pool/debian-installer ${binoverride_udeb}  > ${package_udeb}.tmp 2>/dev/null
+
+gzip -9c ${package_udeb}.tmp > ${package_udeb}.gz.tmp
+
+# Replace original files with new ones
+mv --backup -f ${package_deb}.tmp ${package_deb}
+mv --backup -f ${package_deb}.gz.tmp ${package_deb}.gz
+mv --backup -f ${package_udeb}.tmp ${package_udeb}
+mv --backup -f ${package_udeb}.gz.tmp ${package_udeb}.gz
+
+# Generate release file
+cd ${REPO_PATH}/dists/${REPONAME}
+echo "$release_header" > Release.tmp
+
+# Generate hashes
+c1=(MD5Sum: SHA1: SHA256: SHA512:)
+c2=(md5 sha1 sha256 sha512)
+
+i=0
+while [ $i -lt ${#c1[*]} ]; do
+    echo ${c1[i]}
+        for hashme in `find main -type f \( -not -name "*~" -name "Package*" -o -name "Release*" \)`; do
+        ohash=`openssl dgst -${c2[$i]} ${hashme}`
+        chash="${ohash##* }"
+        size=`stat -c %s ${hashme}`
+        echo " ${chash} ${size} ${hashme}"
+    done
+    i=$(( $i + 1));
+done >> Release.tmp
+
+mv --backup -f Release.tmp Release
