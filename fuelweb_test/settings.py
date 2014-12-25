@@ -325,6 +325,9 @@ LOCAL_MIRROR_UBUNTU = os.environ.get('LOCAL_MIRROR_UBUNTU',
 LOCAL_MIRROR_CENTOS = os.environ.get('LOCAL_MIRROR_CENTOS',
                                      '/var/www/nailgun/centos/x86_64')
 
+# Release name of local Ubuntu mirror on Fuel master node.
+UBUNTU_RELEASE = os.environ.get('UBUNTU_RELEASE', 'precise')
+
 UPDATE_TIMEOUT = os.environ.get('UPDATE_TIMEOUT', 3600)
 
 IMAGE_PROVISIONING = os.environ.get('IMAGE_PROVISIONING', 'false') == 'true'
