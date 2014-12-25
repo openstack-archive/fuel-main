@@ -71,7 +71,10 @@ class VcenterDeploy(TestBasic):
         time.sleep(60)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=[('Check network connectivity from '
+                               'instance without floating IP')])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_1],
           groups=["vcenter_multiple_cluster"])
@@ -222,7 +225,10 @@ class VcenterDeploy(TestBasic):
         time.sleep(60)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=[('Check network connectivity from '
+                               'instance without floating IP')])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_simple_add_cinder"])
@@ -275,7 +281,10 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.verify_network(cluster_id)
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=[('Check network connectivity from '
+                               'instance without floating IP')])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["vcenter_ha_deployment_with_cinder"])
@@ -326,7 +335,10 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.verify_network(cluster_id)
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=[('Check network connectivity from '
+                               'instance without floating IP')])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_simple_stop_deployment"])
@@ -380,7 +392,10 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:2])
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=[('Check network connectivity from '
+                               'instance without floating IP')])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_vlan_simple", "vcenter_vlan"])
@@ -453,7 +468,10 @@ class VcenterDeploy(TestBasic):
         # Run tests.
         self.fuel_web.verify_network(cluster_id)
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity'],)
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
+            should_fail=1,
+            failed_test_name=[('Check network connectivity from '
+                               'instance without floating IP')])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_vlan_ha", "vcenter_vlan"])
@@ -519,6 +537,7 @@ class VcenterDeploy(TestBasic):
         for node in slave_nodes:
             self.fuel_web.update_node_networks(node['id'], interfaces)
 
+
         # Configure Nova-Network VLanManager.
         self.fuel_web.update_vlan_network_fixed(
             cluster_id, amount=8, network_size=32)
@@ -529,4 +548,7 @@ class VcenterDeploy(TestBasic):
         # Run tests.
         self.fuel_web.verify_network(cluster_id)
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'],)
+            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'],,
+            should_fail=1,
+            failed_test_name=[('Check network connectivity from '
+                               'instance without floating IP')])
