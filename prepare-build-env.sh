@@ -18,7 +18,6 @@
 #    building a Fuel ISO.
 
 # - We need not try to install rubygems on trusty, because it doesn't exists
-# - We also should use multistrap version 2.1.6 from devops mirror
 
 # install yum and yum-utils from trusty, so it can handle the meta-data
 # of OSCI rpm repositories. Works around ISO build failure (LP #1381535).
@@ -42,16 +41,8 @@ case "${DISTRO}" in
 
   trusty)
     GEMPKG="ruby ruby-dev"
-    # we need multistrap version 2.1.6, let's install it from devops mirror
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys D5A05778
     echo "deb http://mirror.fuel-infra.org/devops/ubuntu/ ./" | sudo tee /etc/apt/sources.list.d/fuel-devops.list
-    # be sure, that we will not update multistrap in future
-    sudo tee /etc/apt/preferences.d/fuel-pin-300 <<EOF
-Package: *multistrap*
-Pin: version 2.1.6*
-Pin-Priority: 1000
-
-EOF
     sudo apt-get update && sudo apt-get -y install nodejs nodejs-legacy npm
     ;;
 
@@ -119,7 +110,7 @@ sudo apt-get update
 sudo apt-get -y install build-essential make git $GEMPKG debootstrap createrepo \
   python-setuptools yum yum-utils libmysqlclient-dev isomd5sum bc \
   python-nose libvirt-bin python-ipaddr python-paramiko python-yaml \
-  python-pip kpartx extlinux unzip genisoimage multistrap \
+  python-pip kpartx extlinux unzip genisoimage \
   lrzip python-daemon python-dev
 sudo gem install bundler -v 1.2.1
 sudo gem install builder
