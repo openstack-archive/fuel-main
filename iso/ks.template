@@ -246,7 +246,7 @@ lsof
 man
 mlocate
 nmap-ncat
-ntp
+ntp-dev
 openssh-clients
 policycoreutils
 python-daemon
@@ -545,6 +545,8 @@ rm -rf ${FS}
 echo "server 127.127.1.0"            >> /etc/ntp.conf
 echo "fudge  127.127.1.0 stratum 10" >> /etc/ntp.conf
 echo "tos    orphan 7"               >> /etc/ntp.conf
+mkdir /var/lib/ntp
+chown -R ntp:ntp /var/lib/ntp
 
 # Do not show error message on ntpdate failure. Customers should not be confused
 # if admin node does not have access to the internet time servers.

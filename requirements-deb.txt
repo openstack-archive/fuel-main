@@ -188,6 +188,8 @@ nova-objectstore
 nova-scheduler
 novnc
 ntp
+ntp-dev
+ntpdate
 openhpid
 openssh-server
 openstack-dashboard
