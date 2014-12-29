@@ -109,7 +109,7 @@ mkdir -p ${wrkdir}/apt.tmp/sources
 mkdir -p ${wrkdir}/apt.tmp/cache
 
 # Extract all specified repos (except backports repo)
-for list in /etc/apt/sources.list.d/*.list; do
+for list in /etc/apt/sources.list; do
   for repo in `cat $list| grep -v backports | sed 's| \+|\||g' | grep "^deb|"`; do
      repourl=`echo $repo | awk -F '|' '{print $2}'`
      repodist=`echo $repo | awk -F '|' '{print $3}'`
