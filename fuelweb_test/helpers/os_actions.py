@@ -44,7 +44,7 @@ class OpenStackActions(common.Common):
         hypervisor = self.nova.hypervisors.get(hypervisor.id)
         return getattr(hypervisor, "running_vms")
 
-    def get_hypervisor_hostanme(self, hypervisor):
+    def get_hypervisor_hostname(self, hypervisor):
         hypervisor = self.nova.hypervisors.get(hypervisor.id)
         return getattr(hypervisor, "hypervisor_hostname")
 
