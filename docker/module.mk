@@ -82,14 +82,5 @@ $(BUILD_DIR)/docker/sources.done: \
 	cp -r $(SOURCE_DIR)/utils/simple_http_daemon.py $(BUILD_DIR)/docker/utils
 	$(ACTION.TOUCH)
 
-$(eval $(call build_container,astute))
-$(eval $(call build_container,cobbler))
-$(eval $(call build_container,mcollective))
-$(eval $(call build_container,nailgun))
-$(eval $(call build_container,keystone))
-$(eval $(call build_container,nginx))
-$(eval $(call build_container,ostf))
-$(eval $(call build_container,rsync))
-$(eval $(call build_container,rabbitmq))
-$(eval $(call build_container,postgres))
-$(eval $(call build_container,rsyslog))
+containers:=astute cobbler mcollective nailgun keystone nginx ostf rsync rabbitmq postgres
+$(foreach cnt,$(containers),$(eval $(call build_container,$(cnt))))
