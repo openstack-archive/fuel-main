@@ -33,4 +33,6 @@
                   branch-pattern: '**'
 
     builders:
-    - shell: "cd $WORKSPACE/ && tox "
+    - shell: "bash $JENKINS_HOME/fuel-main/utils/jenkins/fuel-ci/git-prep.sh\
+        \n\
+        \nbash $JENKINS_HOME/fuel-main/utils/jenkins/fuel-ci/fuel-jenkins/scripts/stackforge-verify-fuel-ostf.sh"
