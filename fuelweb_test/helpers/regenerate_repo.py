@@ -36,6 +36,7 @@ class CustomRepo(object):
         self.centos_script = 'regenerate_centos_repo'
         self.local_mirror_ubuntu = settings.LOCAL_MIRROR_UBUNTU
         self.local_mirror_centos = settings.LOCAL_MIRROR_CENTOS
+        self.ubuntu_release = settings.UBUNTU_RELEASE
         self.ubuntu_yaml_versions = ('/etc/puppet/manifests/'
                                      'ubuntu-versions.yaml')
         self.centos_yaml_versions = ('/etc/puppet/manifests/'
@@ -287,9 +288,10 @@ class CustomRepo(object):
             raise
 
         # Update the local repository using prevously uploaded script.
-        script_cmd = 'REPO_PATH={0} {1}/{2}'.format(local_mirror_path,
-                                                    self.remote_path_scripts,
-                                                    regenerate_script)
+        script_cmd = '{0}/{1} {2} {3}'.format(self.remote_path_scripts,
+                                              regenerate_script,
+                                              local_mirror_path,
+                                              self.ubuntu_release)
         script_result = remote.execute(script_cmd)
         assert_equal(0, script_result['exit_code'],
                      self.assert_msg(script_cmd, script_result['stderr']))
