@@ -260,8 +260,8 @@ SERVTEST_MURANO_IMAGE_NAME = 'murano'
 SERVTEST_MURANO_IMAGE_META = {
     'murano_image_info': '{"type": "linux", "title": "murano"}'}
 
-SERVTEST_HEAT_SERVER_URL = ("http://fedorapeople.org/groups/"
-                            "heat/prebuilt-jeos-images/")
+SERVTEST_HEAT_SERVER_URL = ("http://murano-files.mirantis.com/"
+                            "F17-x86_64-cfntools.qcow2")
 SERVTEST_HEAT_IMAGE = "F17-x86_64-cfntools.qcow2"
 SERVTEST_HEAT_IMAGE_NAME = 'F17-x86_64-cfntools'
 SERVTEST_HEAT_IMAGE_MD5 = 'afab0f79bac770d61d24b4d0560b5f70'
