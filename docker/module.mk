@@ -41,7 +41,8 @@ $(BUILD_DIR)/docker/$1.done: \
 		$(BUILD_DIR)/packages/build.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
 		$(BUILD_DIR)/docker/base-images.done
-	(cd $(LOCAL_MIRROR_CENTOS) && python $(SOURCE_DIR)/utils/simple_http_daemon.py $(RANDOM_PORT) /tmp/simple_http_daemon_$(RANDOM_PORT).pid)
+	mkdir -p "/tmp/simple_http_daemon"
+	(cd $(LOCAL_MIRROR_CENTOS) && python $(SOURCE_DIR)/utils/simple_http_daemon.py $(RANDOM_PORT) /tmp/simple_http_daemon/simple_http_daemon_$(RANDOM_PORT).pid)
 	mkdir -p "$(BUILD_DIR)/docker/containers"
 	rm -rf $(BUILD_DIR)/docker/$1
 	cp -a $(SOURCE_DIR)/docker/$1 $(BUILD_DIR)/docker/$1
@@ -54,7 +55,7 @@ $(BUILD_DIR)/docker/$1.done: \
 	rsync -a $(BUILD_DIR)/repos/fuellib/deployment/puppet/* $(BUILD_DIR)/docker/$1/etc/puppet/modules/
 	sudo docker build -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
 	sudo docker save fuel/$1_$(PRODUCT_VERSION) > $(BUILD_DIR)/docker/containers/$1.tar
-	kill `cat /tmp/simple_http_daemon_$(RANDOM_PORT).pid`
+	kill `cat /tmp/simple_http_daemon/simple_http_daemon_$(RANDOM_PORT).pid`
 	$$(ACTION.TOUCH)
 endef
 
