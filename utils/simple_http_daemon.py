@@ -21,7 +21,7 @@ import daemon
 import daemon.pidlockfile
 import BaseHTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
-
+import signal
 
 class SimpleHTTPDaemon:
     def __init__(self, address='0.0.0.0', port='9001',
@@ -38,9 +38,9 @@ class SimpleHTTPDaemon:
         Protocol = "HTTP/1.0"
         server_address = (self.address, self.port)
         HandlerClass.protocol_version = Protocol
-        httpd = ServerClass(server_address, HandlerClass)
+        self.httpd = ServerClass(server_address, HandlerClass)
         while time.time() < self.end:
-            httpd.handle_request()
+            self.httpd.handle_request()
 
     def start(self):
         self.end = time.time() + self.ttl
@@ -51,6 +51,10 @@ class SimpleHTTPDaemon:
         )
         with context:
             self.run_http_server()
+
+    def stop(self):
+        self.httpd.shutdown()
+        os.remove(pidfile)
 
 if __name__ == "__main__":
 
@@ -71,3 +75,4 @@ if __name__ == "__main__":
 
     server = SimpleHTTPDaemon('0.0.0.0', port, pid, timeout)
     server.start()
+    signal(signal.SIGTERM,server.stop())
