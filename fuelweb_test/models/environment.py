@@ -22,6 +22,7 @@ from devops.helpers.helpers import SSHClient
 from devops.helpers.helpers import wait
 from devops.manager import Manager
 from ipaddr import IPNetwork
+from keystoneclient import exceptions
 from paramiko import Agent
 from paramiko import RSAKey
 from proboscis.asserts import assert_equal
@@ -422,10 +423,14 @@ class EnvironmentModel(object):
                 logger.info('Admin node started second time.')
                 self.nodes().admin.await(
                     self.admin_net, timeout=10 * 60, by_port=8000)
-                _wait(self._fuel_web.client.get_releases, timeout=120)
 
             self.set_admin_ssh_password()
-            self.set_admin_keystone_password()
+            try:
+                _wait(self._fuel_web.client.get_releases,
+                      expected=EnvironmentError, timeout=300)
+            except exceptions.Unauthorized:
+                self.set_admin_keystone_password()
+                self._fuel_web.get_nailgun_version()
 
             self.sync_time_admin_node()
 
@@ -468,11 +473,8 @@ class EnvironmentModel(object):
     def set_admin_keystone_password(self):
         remote = self.get_admin_remote()
         try:
-            self.execute_remote_cmd(
-                remote, 'fuel --user {0} --password {1} release'
-                .format(settings.KEYSTONE_CREDS['username'],
-                        settings.KEYSTONE_CREDS['password']))
-        except AssertionError:
+            self._fuel_web.client.get_releases()
+        except exceptions.Unauthorized:
             self.execute_remote_cmd(
                 remote, 'fuel user --newpass {0} --change-password'
                 .format(settings.KEYSTONE_CREDS['password']))
