@@ -61,7 +61,7 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	chmod +x $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/mkrepo.sh
 	# bootstrap Ubuntu
 	sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) \
-		--variant=minbase --include=apt-utils,wget,bzip2 \
+		--variant=minbase --include=apt-utils,wget,bzip2,make \
 		$(UBUNTU_RELEASE) $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot $(MIRROR_UBUNTU)
 	sudo rm -f $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list.d/*.list
 	echo "$${APT_SOURCES_LIST}" | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list
