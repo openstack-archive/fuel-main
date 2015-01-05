@@ -422,10 +422,10 @@ class EnvironmentModel(object):
                 logger.info('Admin node started second time.')
                 self.nodes().admin.await(
                     self.admin_net, timeout=10 * 60, by_port=8000)
-                _wait(self._fuel_web.client.get_releases, timeout=120)
+                _wait(self._fuel_web.get_nailgun_version, timeout=120)
 
             self.set_admin_ssh_password()
-            self.set_admin_keystone_password()
+            _wait(self.set_admin_keystone_password, timeout=120)
 
             self.sync_time_admin_node()
 
@@ -466,12 +466,16 @@ class EnvironmentModel(object):
                            settings.SSH_CREDENTIALS['password']))
 
     def set_admin_keystone_password(self):
+        api_ver = self._fuel_web.client.get_api_version()
+        if api_ver['release'][0] == '5':
+            cmd = 'fuel --os-username {0} --os-password {1} release'
+        else:
+            cmd = 'fuel --user {0} --password {1} release'
         remote = self.get_admin_remote()
         try:
             self.execute_remote_cmd(
-                remote, 'fuel --user {0} --password {1} release'
-                .format(settings.KEYSTONE_CREDS['username'],
-                        settings.KEYSTONE_CREDS['password']))
+                remote, cmd.format(settings.KEYSTONE_CREDS['username'],
+                                   settings.KEYSTONE_CREDS['password']))
         except AssertionError:
             self.execute_remote_cmd(
                 remote, 'fuel user --newpass {0} --change-password'
