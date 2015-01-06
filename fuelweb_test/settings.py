@@ -353,3 +353,11 @@ FUEL_STATS_PORT = os.environ.get('FUEL_STATS_PORT', '443')
 
 CUSTOM_ENV = os.environ.get('CUSTOM_ENV', 'false') == 'true'
 BUILD_IMAGES = os.environ.get('BUILD_IMAGES', 'false') == 'true'
+
+CREATE_ENV = os.environ.get('CREATE_ENV', 'false') == 'true'
+CLUSTER_TEMPLATES_DIR = '/etc/fuel/tests/clusters'
+ADMIN_NODE_IP = '172.16.52.108'
+ADMIN_NODE_PASS = 'test37'
+KEYSTONE_AUTH_CREDS = {'username': 'admin',
+                       'password': 'admin',
+                       'tenant_name': 'admin'}

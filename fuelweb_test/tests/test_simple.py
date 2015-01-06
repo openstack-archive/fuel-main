@@ -21,7 +21,8 @@ from proboscis import test
 
 from fuelweb_test.helpers import checkers
 from devops.helpers.helpers import tcp_ping
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_on_error, \
+    revert_snapshot, bootstrap_nodes
 from fuelweb_test.helpers.eb_tables import Ebtables
 from fuelweb_test.helpers import os_actions
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
@@ -30,13 +31,17 @@ from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 from fuelweb_test import logger
 
+from certification import tools as cert_tools
+
 
 @test(groups=["thread_2"])
 class OneNodeDeploy(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_release],
-          groups=["deploy_one_node"])
-    @log_snapshot_on_error
-    def deploy_one_node(self):
+          groups=["deploy_one_node", "certification"])
+    @revert_snapshot("ready")
+    @bootstrap_nodes("1")
+    @cert_tools.with_cluster("simple", release=1)
+    def deploy_one_node(self, cluster):
         """Deploy cluster with controller node only
 
         Scenario:
@@ -47,25 +52,14 @@ class OneNodeDeploy(TestBasic):
             services, there are no errors in logs
 
         """
-        self.env.revert_snapshot("ready")
-        self.fuel_web.client.get_root()
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:1])
-
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__
-        )
-        logger.info('cluster is %s' % str(cluster_id))
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {'slave-01': ['controller']}
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
-        os_conn = os_actions.OpenStackActions(controller['ip'])
-        self.fuel_web.assert_cluster_ready(
-            os_conn, smiles_count=4, networks_count=1, timeout=300)
+        node = [node for node in cluster.get_all_nodes() if 'controller'
+                in node.data['roles']][0]
+        self.fuel_web.assert_cluster_ready(node.name,
+                                           ip=node.get_ip(),
+                                           smiles_count=4,
+                                           networks_count=1, timeout=300)
         self.fuel_web.run_single_ostf_test(
-            cluster_id=cluster_id, test_sets=['sanity'],
+            cluster_id=cluster.id, test_sets=['sanity'],
             test_name=('fuel_health.tests.sanity.test_sanity_identity'
                        '.SanityIdentityTest.test_list_users'))
 

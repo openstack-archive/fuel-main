@@ -40,7 +40,36 @@ from fuelweb_test import logwrap
 from fuelweb_test import logger
 
 
-class EnvironmentModel(object):
+class SSH(object):
+
+    def __init__(self):
+        self._keys = None
+
+    def get_admin_remote(self):
+        return self.get_ssh_to_remote(self.admin_node_ip, use_pk=False)
+
+    def get_ssh_to_remote(self, ip, username='root',
+                          password=settings.ADMIN_NODE_PASS,
+                          use_pk=True):
+        pk = self.get_private_keys() if use_pk else None
+        return SSHClient(ip,
+                         username=username,
+                         password=password,
+                         private_keys=pk)
+
+    @logwrap
+    def get_private_keys(self, force=False):
+        admin_remote = self.get_admin_remote()
+        if force or self._keys is None:
+            self._keys = []
+            for key_string in ['/root/.ssh/id_rsa',
+                               '/root/.ssh/bootstrap.rsa']:
+                with admin_remote.open(key_string) as f:
+                    self._keys.append(RSAKey.from_private_key(f))
+        return self._keys
+
+
+class EnvironmentModel(SSH):
     hostname = 'nailgun'
     domain = 'test.domain.local'
     installation_timeout = 1800
@@ -53,6 +82,7 @@ class EnvironmentModel(object):
     __wrapped__ = None
 
     def __init__(self, os_image=None):
+        super(EnvironmentModel, self).__init__()
         self._virtual_environment = None
         self._keys = None
         self.manager = Manager()
@@ -261,19 +291,13 @@ class EnvironmentModel(object):
         return node
 
     @logwrap
-    def get_admin_remote(self, login=settings.SSH_CREDENTIALS['login'],
-                         password=settings.SSH_CREDENTIALS['password']):
-        """SSH to admin node
-        :rtype : SSHClient
-        """
-        return self.nodes().admin.remote(self.admin_net,
-                                         login=login,
-                                         password=password)
-
-    @logwrap
     def get_admin_node_ip(self):
-        return str(
-            self.nodes().admin.get_ip_address_by_network_name(self.admin_net))
+        if settings.CREATE_ENV:
+            ip = str(self.nodes().admin.get_ip_address_by_network_name(
+                self.admin_net))
+        else:
+            ip = settings.ADMIN_NODE_IP
+        return ip
 
     @logwrap
     def get_ebtables(self, cluster_id, devops_nodes):
@@ -311,35 +335,6 @@ class EnvironmentModel(object):
             " <Enter>\n"
         ) % params
         return keys
-
-    @logwrap
-    def get_private_keys(self, force=False):
-        if force or self._keys is None:
-            self._keys = []
-            for key_string in ['/root/.ssh/id_rsa',
-                               '/root/.ssh/bootstrap.rsa']:
-                with self.get_admin_remote().open(key_string) as f:
-                    self._keys.append(RSAKey.from_private_key(f))
-        return self._keys
-
-    @logwrap
-    def get_ssh_to_remote(self, ip):
-        return SSHClient(ip,
-                         username=settings.SSH_CREDENTIALS['login'],
-                         password=settings.SSH_CREDENTIALS['password'],
-                         private_keys=self.get_private_keys())
-
-    @logwrap
-    def get_ssh_to_remote_by_key(self, ip, keyfile):
-        try:
-            with open(keyfile) as f:
-                keys = [RSAKey.from_private_key(f)]
-                return SSHClient(ip, private_keys=keys)
-        except IOError:
-            logger.warning('Loading of SSH key from file failed. Trying to use'
-                           ' SSH agent ...')
-            keys = Agent().get_keys()
-            return SSHClient(ip, private_keys=keys)
 
     @logwrap
     def get_ssh_to_remote_by_name(self, node_name):

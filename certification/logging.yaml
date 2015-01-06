@@ -1,0 +1,29 @@
+version: 1
+formatters:
+    simpleFormater:
+        format: '%(asctime)s - %(levelname)s: %(message)s'
+        datefmt: '%Y/%m/%d %H:%M:%S'
+
+handlers:
+    console:
+        class: logging.StreamHandler
+        formatter: simpleFormater
+        level: DEBUG
+        stream: ext://sys.stdout
+    file:
+        class : logging.FileHandler
+        formatter: simpleFormater
+        level: WARNING
+        filename: songinfo.log
+
+loggers:
+    #clogger:
+    #    level: DEBUG
+    #    handlers: [console]
+    flogger:
+        level: WARNING
+        handlers: [file]
+
+root:
+    level: DEBUG
+    handlers: [console, file]

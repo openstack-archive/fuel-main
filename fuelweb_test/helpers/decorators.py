@@ -31,7 +31,7 @@ from fuelweb_test.helpers.checkers import count_stats_on_collector
 from proboscis import SkipTest
 from proboscis.asserts import assert_equal
 
-from fuelweb_test import logger
+from fuelweb_test import logger, settings
 from fuelweb_test import settings
 from fuelweb_test.helpers.regenerate_repo import CustomRepo
 from fuelweb_test.helpers.utils import pull_out_logs_via_ssh
@@ -278,4 +278,44 @@ def check_fuel_statistics(func):
         except Exception:
             logger.error(traceback.format_exc())
             raise
+    return wrapper
+
+
+def revert_snapshot(name):
+    def decorator(f):
+        def wrapper(self, *args, **kwargs):
+            if settings.CREATE_ENV:
+                self.env.revert_snapshot(name)
+            return f(self, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def bootstrap_nodes(num_nodes):
+    def decorator(f):
+        def wrapper(self, *args, **kwargs):
+            if settings.CREATE_ENV:
+                self.env.bootstrap_nodes(self.env.nodes().slaves[:num_nodes])
+            return f(self, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def cluster_template(name):
+    def decorator(f):
+        def wrapper(self):
+            cluster_templ = self.templates.get(name)
+            return f(self, cluster_templ)
+        return wrapper
+    return decorator
+
+
+def skip_if(condition):
+    def wrapper(func):
+        def inner(*args, **kwargs):
+            if condition:
+                raise SkipTest()
+            else:
+                return func(*args, **kwargs)
+        return inner
     return wrapper

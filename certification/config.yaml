@@ -1,0 +1,23 @@
+tests:
+    clusters_directory: clusters
+    tests:
+        test_simple:
+            cluster: simple
+            suits:
+              - sanity
+              - smoke
+
+deploy_timeout: 3600
+discovery_timeout: 600
+name: "sert-cluster"
+gui_config_file: /tmp/cfg.yaml
+
+log_settings: logging.yaml
+config_file: /tmp/netconfig.yaml
+
+report:
+  mail:
+    smtp_server: "smtp.gmail.com"
+    mail_to: "lht-sert-results@mirantis.com"
+    mail_from: "lht-sert-results@mirantis.com"
+    login: "lht-sert-results@mirantis.com"

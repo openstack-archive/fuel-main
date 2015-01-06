@@ -1,0 +1,16 @@
+name: simple
+deployment_mode: multinode
+
+settings:
+    net_provider: "nova_network"
+
+release: 1
+nodes:
+    node1:
+      roles:
+        - "controller"
+
+timeout: 3600
+
+
+

@@ -12,13 +12,28 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
+
 from proboscis import SkipTest
 from proboscis import test
 
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_on_error, skip_if
 from fuelweb_test.models.environment import EnvironmentModel
+from fuelweb_test import settings
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_REDHAT
+from fuelweb_test import logger
+
+# need to set this parameters before fuelclient.client
+# imported
+os.environ["SERVER_ADDRESS"] = settings.ADMIN_NODE_IP
+os.environ["KEYSTONE_USER"] = settings.KEYSTONE_AUTH_CREDS['username']
+os.environ["KEYSTONE_PASSWORD"] = settings.KEYSTONE_AUTH_CREDS['password']
+
+from certification import tools as cert_tools
+
+
+cert_tools.set_logger(logger)
 
 
 class TestBasic(object):
@@ -30,6 +45,8 @@ class TestBasic(object):
     def __init__(self):
         self.env = EnvironmentModel()
         self.fuel_web = self.env.fuel_web
+        self.templates = cert_tools.load_all_clusters(
+            settings.CLUSTER_TEMPLATES_DIR)
 
     def check_run(self, snapshot_name):
         """Checks if run of current test is required.
@@ -47,6 +64,7 @@ class TestBasic(object):
 @test
 class SetupEnvironment(TestBasic):
     @test(groups=["setup"])
+    @skip_if(not settings.CREATE_ENV)
     def setup_master(self):
         """Create environment and set up master node
 
@@ -58,6 +76,7 @@ class SetupEnvironment(TestBasic):
         self.env.make_snapshot("empty", is_make=True)
 
     @test(depends_on=[setup_master])
+    @skip_if(not settings.CREATE_ENV)
     def prepare_release(self):
         """Prepare master node
 
@@ -88,6 +107,7 @@ class SetupEnvironment(TestBasic):
 
     @test(depends_on=[prepare_release],
           groups=["prepare_slaves_1"])
+    @skip_if(not settings.CREATE_ENV)
     def prepare_slaves_1(self):
         """Bootstrap 1 slave nodes
 
@@ -105,6 +125,7 @@ class SetupEnvironment(TestBasic):
 
     @test(depends_on=[prepare_release],
           groups=["prepare_slaves_3"])
+    @skip_if(not settings.CREATE_ENV)
     @log_snapshot_on_error
     def prepare_slaves_3(self):
         """Bootstrap 3 slave nodes
@@ -124,6 +145,7 @@ class SetupEnvironment(TestBasic):
     @test(depends_on=[prepare_release],
           groups=["prepare_slaves_5"])
     @log_snapshot_on_error
+    @skip_if(not settings.CREATE_ENV)
     def prepare_slaves_5(self):
         """Bootstrap 5 slave nodes
 
@@ -142,6 +164,7 @@ class SetupEnvironment(TestBasic):
     @test(depends_on=[prepare_release],
           groups=["prepare_slaves_9"])
     @log_snapshot_on_error
+    @skip_if(not settings.CREATE_ENV)
     def prepare_slaves_9(self):
         """Bootstrap 9 slave nodes
 
