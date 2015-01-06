@@ -1,31 +1,25 @@
-ISOLINUX_FILES:=netboot.tar.gz
 
-LOCAL_NETBOOT_DIR:=$(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/installer-amd64/current/images/netboot
-LOCAL_NETBOOT_TGZ:=$(LOCAL_NETBOOT_DIR)/$(ISOLINUX_FILES)
-NETBOOT_URL:=$(MIRROR_UBUNTU)/installer-amd64/current/images/netboot/netboot.tar.gz
+LOCAL_NETBOOT_DIR:=$(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/installer-$(UBUNTU_ARCH)/current/images/netboot
+
+# Fetch Debian-installer initrd.gz and linux from this URL
+UBUNTU_NETBOOT_URL:=$(MIRROR_UBUNTU)/installer-$(UBUNTU_ARCH)/current/images/netboot/ubuntu-installer/$(UBUNTU_ARCH)
 ifeq ($(USE_MIRROR),none)
-	NETBOOT_URL:=$(MIRROR_UBUNTU)/ubuntu/dists/$(UBUNTU_RELEASE)-updates/main/installer-amd64/current/images/$(UBUNTU_NETBOOT_FLAVOR)/netboot.tar.gz
+	UBUNTU_NETBOOT_URL:=$(MIRROR_UBUNTU)/ubuntu/dists/$(UBUNTU_RELEASE)-updates/main/installer-$(UBUNTU_ARCH)/current/images/$(UBUNTU_NETBOOT_FLAVOR)/ubuntu-installer/$(UBUNTU_ARCH)
 endif
 
-patched_di_initrd_img:=$(LOCAL_NETBOOT_DIR)/ubuntu-installer/amd64/initrd.gz
+patched_di_initrd_img:=$(LOCAL_NETBOOT_DIR)/ubuntu-installer/$(UBUNTU_ARCH)/initrd.gz
+di_kernel_img:=$(dir $(patched_di_initrd_img))linux
 di_initrd_img:=$(BUILD_DIR)/ubuntu/ubuntu-installer/$(UBUNTU_ARCH)/initrd.gz
 
-# download the Debian installer netboot
-$(LOCAL_NETBOOT_TGZ):
-	@mkdir -p $(@D)
-	wget -nv -O $@.tmp $(NETBOOT_URL)
+# extract the kernel and initrd from the netboot
+$(di_initrd_img):
+	mkdir -p $(@D)
+	wget -nv -O $@.tmp $(UBUNTU_NETBOOT_URL)/initrd.gz
 	mv $@.tmp $@
 
-$(di_initrd_img): tmpdir=$(LOCAL_NETBOOT_DIR)_tmp
-
-# extract the kernel and initrd from the netboot
-$(di_initrd_img): $(LOCAL_NETBOOT_TGZ)
-	mkdir -p $(tmpdir)
-	mkdir -p $(dir $@)
-	tar -xzf $< -C $(tmpdir)
-	mv $(tmpdir)/ubuntu-installer/amd64/initrd.gz $@.tmp
-	rsync -avH $(tmpdir)/ $(LOCAL_NETBOOT_DIR)/
-	-rm -rf $(tmpdir)
+$(di_kernel_img):
+	mkdir -p $(@D)
+	wget -nv -O $@.tmp $(UBUNTU_NETBOOT_URL)/linux
 	mv $@.tmp $@
 
 $(patched_di_initrd_img): initrd_dir=$(dir $(di_initrd_img))initrd_dir
@@ -38,7 +32,7 @@ $(patched_di_initrd_img): hook_target_dir:=/usr/lib/post-base-installer.d
 
 # unpack the initrd, apply patches, and repack it
 $(patched_di_initrd_img): $(di_initrd_img)
-	mkdir -p $(initrd_dir)
+	mkdir -p $(initrd_dir) && mkdir -p $(@D)
 	set -e; cd $(initrd_dir); \
 	zcat $< | sudo cpio -di; \
 	sudo chown -R `whoami` .; \
@@ -49,7 +43,7 @@ $(patched_di_initrd_img): $(di_initrd_img)
 	mv $@.tmp $@
 	-rm -rf $(initrd_dir)
 
-$(BUILD_DIR)/mirror/ubuntu/boot.done: $(patched_di_initrd_img)
+$(BUILD_DIR)/mirror/ubuntu/boot.done: $(patched_di_initrd_img) $(di_kernel_img)
 	$(ACTION.TOUCH)
 
 di_kernel_modules_dir=$(shell zcat $(di_initrd_img) | cpio --list 'lib/modules/*/kernel')
