@@ -1,0 +1,11 @@
+Verified+2: Jenkins
+Code-Review+1: Bogdan Dobrelya <bdobrelia@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+1: Tomasz 'Zen' Napierala <tnapierala@mirantis.com>
+Code-Review+2: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Workflow+1: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 07 Jan 2015 15:35:34 +0000
+Reviewed-on: https://review.openstack.org/145512
+Project: stackforge/fuel-main
+Branch: refs/heads/stable/5.1
