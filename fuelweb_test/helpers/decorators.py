@@ -153,12 +153,13 @@ def update_ostf(func):
                 remote = args[0].environment.get_admin_remote()
                 remote.upload(settings.PATCH_PATH.rstrip('/'),
                               '/tmp/fuel-ostf')
-                remote.execute('source /opt/fuel_plugins/ostf/bin/activate; '
-                               'cd /tmp/fuel-ostf; python setup.py develop')
+                remote.execute('dockerctl shell cobbler '
+                               'bash -c "cd /tmp/fuel-ostf; '
+                               'python setup.py develop"')
                 remote.execute('/etc/init.d/supervisord restart')
                 helpers.wait(
                     lambda: "RUNNING" in
-                    remote.execute("supervisorctl status ostf | awk\
+                    remote.execute("supervisorctl status docker-ostf | awk\
                                    '{print $2}'")['stdout'][0],
                     timeout=60)
                 logger.info("OSTF status: RUNNING")
