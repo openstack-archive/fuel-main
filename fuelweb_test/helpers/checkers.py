@@ -816,3 +816,13 @@ def check_stats_private_info(collector_remote, postgres_actions,
 def check_kernel(kernel, expected_kernel):
     assert_equal(kernel, expected_kernel,
                  "kernel version is wrong, it is {0}".format(kernel))
+
+
+def check_swift_ring(remote):
+    res = ''.join(remote.execute(
+        "swift-ring-builder /etc/swift/object.builder")['stdout'])
+    logger.debug("swift ring builder output is {0}".format(res))
+    balance = re.search('\d+.\d+ balance', res).group(0).split(' ')[0]
+    #uncomment after fix for LP1405783
+    #assert_false(balance == "100.00", "swift ring builder is not ok, balance"
+    #                                  " is {0}".format(balance))
