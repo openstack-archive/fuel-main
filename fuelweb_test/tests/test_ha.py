@@ -24,6 +24,7 @@ from fuelweb_test.helpers import os_actions
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
+from fuelweb_test import logger
 
 
 @test(groups=["thread_3", "ha", "bvt_2"])
@@ -150,6 +151,11 @@ class TestHaFlat(TestBasic):
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.security.verify_firewall(cluster_id)
+        devops_node = self.fuel_web.get_nailgun_primary_controller(
+            self.env.nodes().slaves[0])
+        logger.debug("devops node name is {0}".format(devops_node.name))
+        remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
+        checkers.check_swift_ring(remote)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
