@@ -1387,8 +1387,9 @@ class FuelWebClient(object):
     def get_controller_with_running_service(self, slave, service_name):
         ret = self.get_pacemaker_status(slave.name)
         logger.debug("pacemaker status is {0}".format(ret))
-        fqdn = re.search(service_name, ret).group(1)
-        logger.debug('fdqn is {0}'.format(fqdn))
+        node_name = re.search(service_name, ret).group(1)
+        logger.debug("node name is {0}".format(node_name))
+        fqdn = self.get_fqdn_by_hostname(node_name)
         devops_node = self.find_devops_node_by_nailgun_fqdn(
             fqdn, self.environment.nodes().slaves)
         return devops_node
@@ -1418,3 +1419,17 @@ class FuelWebClient(object):
             if len(node_groups[ngroup]) > 0:
                 ngroup_id = self.get_nodegroup(cluster_id, name=ngroup)['id']
                 self.client.assign_nodegroup(ngroup_id, node_groups[ngroup])
+
+    @logwrap
+    def get_nailgun_primary_controller(self, slave):
+        #returns controller that is primary in nailgun
+        remote = self.get_ssh_for_node(slave.name)
+        data = yaml.load(''.join(
+            remote.execute('cat /etc/astute.yaml')['stdout']))
+        node_name = [node['fqdn'] for node in data['nodes']
+                     if node['role'] == 'primary-controller'][0]
+        logger.debug("node name is {0}".format(node_name))
+        fqdn = self.get_fqdn_by_hostname(node_name)
+        devops_node = self.find_devops_node_by_nailgun_fqdn(
+            fqdn, self.environment.nodes().slaves)
+        return devops_node
