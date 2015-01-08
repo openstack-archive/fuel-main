@@ -69,6 +69,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
                                            hlp_data.UPGRADE_FUEL_FROM,
                                            hlp_data.UPGRADE_FUEL_TO)
         self.fuel_web.assert_nodes_in_ready_state(cluster_id)
+        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:3])
         self.fuel_web.assert_fuel_version(hlp_data.UPGRADE_FUEL_TO)
         self.fuel_web.assert_nailgun_upgrade_migration()
         self.env.bootstrap_nodes(self.env.nodes().slaves[3:4])
@@ -124,6 +125,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
                                            hlp_data.UPGRADE_FUEL_FROM,
                                            hlp_data.UPGRADE_FUEL_TO)
         self.fuel_web.assert_nodes_in_ready_state(cluster_id)
+        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:3])
         self.fuel_web.assert_fuel_version(hlp_data.UPGRADE_FUEL_TO)
         self.fuel_web.assert_nailgun_upgrade_migration()
         nailgun_nodes = self.fuel_web.update_nodes(
@@ -180,6 +182,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
                                            hlp_data.UPGRADE_FUEL_TO)
         self.fuel_web.assert_fuel_version(hlp_data.UPGRADE_FUEL_TO)
         self.fuel_web.assert_nodes_in_ready_state(cluster_id)
+        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:5])
         self.fuel_web.assert_nailgun_upgrade_migration()
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
@@ -256,6 +259,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
                                            hlp_data.UPGRADE_FUEL_FROM,
                                            hlp_data.UPGRADE_FUEL_TO)
         self.fuel_web.assert_nodes_in_ready_state(cluster_id)
+        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:3])
         self.fuel_web.assert_fuel_version(hlp_data.UPGRADE_FUEL_TO)
         self.fuel_web.assert_nailgun_upgrade_migration()
         available_releases_after = self.fuel_web.get_releases_list_for_os(
