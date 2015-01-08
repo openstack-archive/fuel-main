@@ -15,8 +15,9 @@ if [[ $exitcode != 0 && $exitcode != 2 ]]; then
   exit $exitcode
 fi
 
+set +e
 service rabbitmq-server stop
-#Just in case stopping service fails
+# Just in case stopping service fails
 pkill -u rabbitmq
 
 /usr/sbin/rabbitmq-server
