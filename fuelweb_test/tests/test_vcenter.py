@@ -492,15 +492,15 @@ class VcenterDeploy(TestBasic):
         # Configure a cluster.
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
                 'use_vcenter': True,
                 'volumes_vmdk': True,
                 'volumes_lvm': False,
-                'host_ip': settings.VCENTER_IP,
-                'vc_user': settings.VCENTER_USERNAME,
-                'vc_password': settings.VCENTER_PASSWORD,
-                'cluster': settings.VCENTER_CLUSTERS,
+                'host_ip': VCENTER_IP,
+                'vc_user': VCENTER_USERNAME,
+                'vc_password': VCENTER_PASSWORD,
+                'cluster': VCENTER_CLUSTERS,
                 'tenant': 'vcenter',
                 'user': 'vcenter',
                 'password': 'vcenter'
@@ -574,15 +574,15 @@ class VcenterDeploy(TestBasic):
         # Configure a cluster.
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE_HA,
             settings={
                 'use_vcenter': True,
                 'volumes_vmdk': True,
                 'volumes_lvm': False,
-                'host_ip': settings.VCENTER_IP,
-                'vc_user': settings.VCENTER_USERNAME,
-                'vc_password': settings.VCENTER_PASSWORD,
-                'cluster': settings.VCENTER_CLUSTERS,
+                'host_ip': VCENTER_IP,
+                'vc_user': VCENTER_USERNAME,
+                'vc_password': VCENTER_PASSWORD,
+                'cluster': VCENTER_CLUSTERS,
                 'tenant': 'vcenter',
                 'user': 'vcenter',
                 'password': 'vcenter'
