@@ -1,10 +1,5 @@
 #!/bin/bash
-apt-get update
 
-#for pkg in $(cat /requirements-deb.txt | grep -Ev "^#"); do
-#	apt-get -dy install $pkg || exit 1
-#done
- 
 if [ -z "$UBUNTU_RELEASE" ]; then
 	echo 'mkrepo.sh: UBUNTU_RELEASE is not defined'
 	exit 1
@@ -29,14 +24,51 @@ linux-image-generic-${UBUNTU_KERNEL_FLAVOR}
 linux-headers-generic-${UBUNTU_KERNEL_FLAVOR}
 EOF
 
+requirements_add_essential_pkgs () {
+	# All essential packages are already installed, so ask dpkg for a list
+	dpkg-query -W -f='${Package} ${Essential}\n' > /tmp/essential.pkgs
+	sed -i /tmp/essential.pkgs -n -e 's/\([^ ]\+\).*yes$/\1/p'
+	cat /tmp/essential.pkgs >> /requirements-deb.txt
+}
+
+# Note: apt-get install --print-uris package
+# is not going to print anything if the package is already installed. Thus
+# the base packages will be omitted if we use the main APT/dpkg settings.
+# Pretend that no package has been installed by creating an alternative APT
+# state and configuration directories.
+# Previously we used to copy all debs from the APT cache which is unreliable:
+# - a wrong version of the package might be included
+# - multiple revisions of the same package might be included
+apt_altstate="/apt-altstate"
+rm -rf "$apt_altstate"
+apt_lists_dir="$apt_altstate/var/lib/apt/lists"
+apt_cache_dir="$apt_altstate/var/cache/apt"
+null_dpkg_status="$apt_altstate/var/lib/dpkg/status"
+
+mkdir -p "$apt_lists_dir"
+mkdir -p "$apt_cache_dir"
+mkdir -p "${null_dpkg_status%/*}"
+touch "${null_dpkg_status}"
+
+apt_altstate_opts="-o APT::Get::AllowUnauthenticated=1"
+apt_altstate_opts="${apt_altstate_opts} -o Dir::State::Lists=${apt_lists_dir}"
+apt_altstate_opts="${apt_altstate_opts} -o Dir::State::status=${null_dpkg_status}"
+apt_altstate_opts="${apt_altstate_opts} -o Dir::Cache=${apt_cache_dir}"
+
+if ! apt-get $apt_altstate_opts update; then
+	echo "mkrepo.sh: failed to populate alt apt state"
+	exit 1
+fi
+
+requirements_add_essential_pkgs
 has_apt_errors=''
 rm -f /apt-errors.log
 while read pkg; do
 	downloads_list="/downloads_${pkg}.list"
-	if ! apt-get --print-uris --yes -qq install $pkg >"${downloads_list}" 2>>"/apt-errors.log"; then
+	if ! apt-get $apt_altstate_opts --print-uris --yes -qq install $pkg >"${downloads_list}" 2>>"/apt-errors.log"; then
 		echo "package $pkg can not be installed" >>/apt-errors.log
 		# run apt-get once more to get a verbose error message
-		apt-get --print-uris --yes install $pkg >>/apt-errors.log 2>&1 || true
+		apt-get $apt_altstate_opts --print-uris --yes install $pkg >>/apt-errors.log 2>&1 || true
 		has_apt_errors='yes'
 	fi
 	sed -i "${downloads_list}" -n -e "s/^'\([^']\+\)['].*$/\1/p"
@@ -48,10 +80,11 @@ if [ -n "$has_apt_errors" ]; then
 	exit 1
 fi
 
+rm -rf "$apt_altstate"
+
 cat /downloads_*.list | sort | uniq > /repo/download/download_urls.list
 rm /downloads_*.list /apt-errors.log
 (cat /repo/download/download_urls.list | xargs -n1 -P4 wget -nv -P /repo/download/) || exit 1
-mv /var/cache/apt/archives/*deb /repo/download/
 # Make structure and mocks for multiarch
 for dir in binary-i386 binary-amd64; do 
 	mkdir -p /repo/dists/${UBUNTU_RELEASE}/main/$dir /repo/dists/${UBUNTU_RELEASE}/main/debian-installer/$dir
@@ -101,15 +134,6 @@ for list in /etc/apt/sources.list.d/*.list; do
      done
   done
 done
-
-apt-get -dy install linux-image-${UBUNTU_INSTALLER_KERNEL_VERSION} || exit 1
-
-## Get latest kernel version
-## Exact kernel version specified in requirements-deb.txt
-## and preseed template ubuntu-1204.preseed.erb
-#kernelver=`cat ${wrkdir}/override.${UBUNTU_RELEASE}.main | egrep "^linux\-image\-[0-9]+" | awk '{print $1}' | sort -rV | head -1 | egrep -o "[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+"`
-#apt-get -dy install --reinstall linux-image-$kernelver || exit 1
-#apt-get -dy install --reinstall linux-headers-$kernelver || exit 1
 
 # Collect all udebs except packages with suffux generic or virtual
 packages=`cat ${wrkdir}/UPackages.tmp | sort -u | egrep -v "generic|virtual"`
