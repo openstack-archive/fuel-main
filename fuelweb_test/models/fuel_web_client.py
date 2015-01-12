@@ -377,8 +377,8 @@ class FuelWebClient(object):
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "kvm"
 
-            logger.info('Set Hypervisor type to vCenter')
             if help_data.VCENTER_USE:
+                logger.info('Set Hypervisor type to vCenter')
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "vcenter"
 
