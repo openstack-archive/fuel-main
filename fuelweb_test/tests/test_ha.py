@@ -158,7 +158,7 @@ class TestHaFlat(TestBasic):
         self.env.make_snapshot("deploy_ha_flat")
 
 
-@test(groups=["thread_4", "ha", "image-based"])
+@test(groups=["thread_4", "ha", "image_based"])
 class TestHaFlatAddCompute(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
