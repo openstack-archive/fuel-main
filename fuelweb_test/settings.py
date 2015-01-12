@@ -23,9 +23,9 @@ ENV_NAME = os.environ.get("ENV_NAME", "fuel_system_test")
 ISO_PATH = os.environ.get('ISO_PATH')
 DNS = os.environ.get('DNS', '8.8.8.8')
 
-OPENSTACK_RELEASE_CENTOS = 'CentOS'
-OPENSTACK_RELEASE_UBUNTU = 'Ubuntu'
-OPENSTACK_RELEASE_REDHAT = 'RHOS 3.0 for RHEL 6.4'
+OPENSTACK_RELEASE_CENTOS = 'centos'
+OPENSTACK_RELEASE_UBUNTU = 'ubuntu'
+OPENSTACK_RELEASE_REDHAT = 'rhos 3.0 for rhel 6.4'
 OPENSTACK_RELEASE = os.environ.get(
     'OPENSTACK_RELEASE', OPENSTACK_RELEASE_CENTOS)
 
