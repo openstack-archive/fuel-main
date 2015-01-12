@@ -54,6 +54,15 @@ endef
 define SANDBOX_UBUNTU_UP
 echo "SANDBOX_UBUNTU_UP: start"
 mkdir -p $(SANDBOX_UBUNTU)
+mkdir -p $(SANDBOX_UBUNTU)/usr/sbin
+cat > $(SANDBOX_UBUNTU)/usr/sbin/policy-rc.d <<EOF
+#!/bin/sh
+# suppress services start in the staging chroots
+exit 101
+EOF
+chmod 755 $(SANDBOX_UBUNTU)/usr/sbin/policy-rc.d
+mkdir -p $(SANDBOX_UBUNTU)/etc/init.d
+touch $(SANDBOX_UBUNTU)/etc/init.d/.legacy-bootordering
 echo "Running debootstrap"
 sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) file://$(LOCAL_MIRROR)/ubuntu
 sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
