@@ -123,6 +123,19 @@ for idx in $(seq 0 $((${#MOUNTPOINTS[@]} - 1)) ); do
     sudo mount ${LOOP_DEV} ${TMP_CHROOT_DIR}${MOUNT_POINT} || die "Couldn't mount mountpoint"
 done
 
+
+# inhibit service startup in the chroot
+# do this *before* running deboostrap to suppress udev start
+# (by its postinst script)
+sudo mkdir -p ${TMP_CHROOT_DIR}/usr/sbin
+cat > policy-rc.d << EOF
+#!/bin/sh
+# prevent any service from being started
+exit 101
+EOF
+chmod 755 policy-rc.d
+sudo cp policy-rc.d ${TMP_CHROOT_DIR}/usr/sbin
+
 # install base system
 sudo debootstrap $DEBOOTSTRAP_PARAMS || die "Couldn't finish debootstrap successfully"
 
@@ -142,6 +155,9 @@ sudo umount ${TMP_CHROOT_DIR}/tmp/mirror
 #cloud-init reconfigure to use NoCloud data source
 echo "cloud-init cloud-init/datasources multiselect NoCloud, None" | sudo chroot ${TMP_CHROOT_DIR} debconf-set-selections -v
 sudo chroot ${TMP_CHROOT_DIR} dpkg-reconfigure -f noninteractive cloud-init
+
+# re-enable services
+sudo rm ${TMP_CHROOT_DIR}/usr/sbin/policy-rc.d
 
 for idx in $(seq $((${#MOUNTPOINTS[@]} - 1)) -1 0); do
     MOUNT_POINT=${MOUNTPOINTS[$idx]}
