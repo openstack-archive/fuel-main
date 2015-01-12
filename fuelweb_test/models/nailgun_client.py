@@ -157,7 +157,7 @@ class NailgunClient(object):
     @logwrap
     def get_release_id(self, release_name=OPENSTACK_RELEASE):
         for release in self.get_releases():
-            if release["name"].find(release_name) != -1:
+            if release["name"].lower().find(release_name.lower()) != -1:
                 return release["id"]
 
     @logwrap
