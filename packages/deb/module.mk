@@ -35,6 +35,8 @@ endif
 	sudo cp -r $(BUILD_DIR)/packages/sources/$1/* $$(SANDBOX_UBUNTU)/tmp/$1/
 	sudo cp -r $(SOURCE_DIR)/packages/deb/specs/$1/* $$(SANDBOX_UBUNTU)/tmp/$1/
 	dpkg-checkbuilddeps $(SOURCE_DIR)/packages/deb/specs/$1/debian/control 2>&1 | sed 's/^dpkg-checkbuilddeps: Unmet build dependencies: //g' | sed 's/([^()]*)//g;s/|//g' | sudo tee $$(SANDBOX_UBUNTU)/tmp/$1.installdeps
+	# without this it will fail in installing 'at' with: initctl: Unable to connect to Upstart: Failed to connect to socket /com/ubuntu/upstart: Connection refused
+	sudo chroot $$(SANDBOX_UBUNTU) /bin/bash -c "dpkg-divert --local --rename --add /sbin/initctl && ln -sf /bin/true /sbin/initctl"
 	sudo chroot $$(SANDBOX_UBUNTU) /bin/bash -c "cat /tmp/$1.installdeps | xargs apt-get -y install"
 	sudo chroot $$(SANDBOX_UBUNTU) /bin/bash -c "cd /tmp/$1 ; DEB_BUILD_OPTIONS=nocheck debuild -us -uc -b -d"
 	cp $$(SANDBOX_UBUNTU)/tmp/*$1*.deb $(BUILD_DIR)/packages/deb/packages
