@@ -148,6 +148,7 @@ echo 'APT::Get::AllowUnauthenticated 1;' | sudo tee ${TMP_CHROOT_DIR}/etc/apt/ap
 sudo mkdir -p ${TMP_CHROOT_DIR}/tmp/mirror
 sudo mount --bind ${LOCAL_MIRROR} ${TMP_CHROOT_DIR}/tmp/mirror
 sudo /bin/sh -c "echo deb file:///tmp/mirror/ubuntu ${UBUNTU_RELEASE} main > ${TMP_CHROOT_DIR}/etc/apt/sources.list"
+sudo chroot ${TMP_CHROOT_DIR} dpkg-divert --local --rename --add /sbin/initctl && ln -sf /bin/true /sbin/initctl
 sudo chroot ${TMP_CHROOT_DIR} apt-get update || die "Couldn't update packages list from sources"
 if ! mountpoint -q ${TMP_CHROOT_DIR}/proc; then
 	sudo mount -t proc proc ${TMP_CHROOT_DIR}/proc
