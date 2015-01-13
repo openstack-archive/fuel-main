@@ -123,7 +123,7 @@ class SaharaSimple(TestBasic):
         self.fuel_web.run_single_ostf_test(
             cluster_id=cluster_id, test_sets=['platform_tests'],
             test_name=('fuel_health.tests.platform_tests.'
-                       'test_platform_sahara.PlatformSaharaTests.'
+                       'test_sahara.PlatformSaharaTests.'
                        'test_platform_sahara'), timeout=60 * 200)
 
         self.env.make_snapshot("deploy_sahara_simple_gre")
@@ -228,7 +228,7 @@ class SaharaHA(TestBasic):
         self.fuel_web.run_single_ostf_test(
             cluster_id=cluster_id, test_sets=['platform_tests'],
             test_name=('fuel_health.tests.platform_tests.'
-                       'test_platform_sahara.PlatformSaharaTests.'
+                       'test_sahara.PlatformSaharaTests.'
                        'test_platform_sahara'), timeout=60 * 200)
 
         self.env.make_snapshot("deploy_sahara_ha_gre")
@@ -338,8 +338,7 @@ class MuranoSimple(TestBasic):
         LOGGER.debug('Run OSTF platform tests')
 
         test_class_main = ('fuel_health.tests.platform_tests'
-                           '.test_platform_murano_linux.'
-                           'MuranoDeployLinuxServicesTests')
+                           '.test_murano_linux.MuranoDeployLinuxServicesTests')
         tests_names = ['test_deploy_apache_service', ]
 
         test_classes = []
@@ -460,8 +459,7 @@ class MuranoHA(TestBasic):
         LOGGER.debug('Run OSTF platform tests')
 
         test_class_main = ('fuel_health.tests.platform_tests'
-                           '.test_platform_murano_linux.'
-                           'MuranoDeployLinuxServicesTests')
+                           '.test_murano_linux.MuranoDeployLinuxServicesTests')
         tests_names = ['test_deploy_apache_service', ]
 
         test_classes = []
