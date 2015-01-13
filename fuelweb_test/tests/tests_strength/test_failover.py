@@ -372,26 +372,34 @@ class TestHaFailover(TestBasic):
         self.env.revert_snapshot("deploy_ha")
 
         devops_ctrls = self.env.nodes().slaves[:3]
+        pcm_nodes = ' '.join(self.fuel_web.get_pcm_nodes(
+            self.env.nodes().slaves[0].name)['Online'])
+        logger.debug("pacemaker nodes are {0}".format(pcm_nodes))
         for devops_node in devops_ctrls:
             config = self.fuel_web.get_pacemaker_config(devops_node.name)
-            for n in devops_ctrls:
-                if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
-                    fqdn = self.fuel_web.fqdn(n).split('.')[0]
-                else:
-                    fqdn = self.fuel_web.fqdn(n)
-                assert_true(
-                    'node {0}'.format(fqdn) in config,
-                    'node {0} exists'.format(fqdn))
-            assert_not_equal(
-                re.search('primitive p_(openstack-)?heat-engine', config),
-                None, 'heat engine')
-            assert_true('primitive p_haproxy' in config, 'haproxy')
-            assert_true(re.search('(master|clone)_p_mysql p_mysql', config),
-                        'mysql')
+            logger.debug("config on node {0} is {1}".format(
+                devops_node.name, config))
+            assert_not_equal(re.search(
+                "vip__public\s+\(ocf::mirantis:ns_IPaddr2\):\s+Started\s+"
+                "Clone Set:\s+clone_ping_vip__public\s+\[ping_vip__public\]"
+                "\s+Started:\s+\[ {0} \]".format(pcm_nodes), config), None,
+                'public vip is not configured right')
             assert_true(
-                'primitive vip__management' in config, 'vip management')
-            assert_true(
-                'primitive vip__public' in config, 'vip public')
+                'vip__management	(ocf::mirantis:ns_IPaddr2):	Started'
+                in config, 'vip management is not configured right')
+            assert_not_equal(re.search(
+                "Clone Set: clone_p_openstack-heat-engine"
+                " \[p_openstack-heat-engine\]\s+Started: \[ {0} \]".format(
+                    pcm_nodes), config), None,
+                'heat engine is not configured right')
+            assert_not_equal(re.search(
+                "Clone Set: clone_p_mysql \[p_mysql\]\s+Started:"
+                " \[ {0} \]".format(pcm_nodes), config), None,
+                'mysql is not configured right')
+            assert_not_equal(re.search(
+                "Clone Set: clone_p_haproxy \[p_haproxy\]\s+Started:"
+                " \[ {0} \]".format(pcm_nodes), config), None,
+                'haproxy is not configured right')
 
     @test(depends_on_groups=['deploy_ha'],
           groups=["ha_pacemaker_restart_heat_engine"])
