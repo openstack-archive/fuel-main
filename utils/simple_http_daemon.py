@@ -18,7 +18,10 @@ import sys
 import os
 import time
 import daemon
-import daemon.pidlockfile
+try:
+    from daemon.pidlockfile import PIDLockFile
+except ImportError:
+    from lockfile.pidlockfile import PIDLockFile
 import BaseHTTPServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
@@ -47,7 +50,7 @@ class SimpleHTTPDaemon:
         context = daemon.DaemonContext(
             working_directory=os.getcwd(),
             umask=0o002,
-            pidfile=daemon.pidlockfile.PIDLockFile(self.pid_file)
+            pidfile=PIDLockFile(self.pid_file)
         )
         with context:
             self.run_http_server()
