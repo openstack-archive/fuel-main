@@ -633,7 +633,7 @@ openssl
 openstack-dashboard
 openstack-dashboard-ubuntu-theme
 openvswitch-common
-openvswitch-datapath-lts-saucy-dkms
+openvswitch-datapath-dkms
 openvswitch-switch
 os-prober
 pacemaker
