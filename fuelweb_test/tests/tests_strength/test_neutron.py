@@ -328,3 +328,40 @@ class TestNeutronFailover(base_test_case.TestBasic):
             test_sets=['ha', 'smoke', 'sanity'],
             should_fail=1,
             failed_test_name=['Check that required services are running'])
+
+    @test(depends_on=[deploy_ha_neutron],
+          groups=["neutron_packets_drops_stat"])
+    @log_snapshot_on_error
+    def neutron_packets_drop_stat(self):
+        """Check packets drops statistic when size is equal to MTU
+
+        Scenario:
+            1. Revert snapshot with neutron cluster
+            2. Create instance, assign floating IP to it
+            3. Send ICMP packets from controller to instance with 1500 bytes
+            4. If at least 7 responses on 10 requests are received
+               assume test is passed
+
+        Snapshot neutron_packets_drop_stat
+
+        """
+        self.env.revert_snapshot("deploy_ha_neutron")
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_public_vip(cluster_id))
+
+        instance = os_conn.create_server_for_migration(neutron=True)
+        floating_ip = os_conn.assign_floating_ip(instance)
+        logger.debug("instance floating ip is {0}".format(floating_ip.ip))
+        remote = self.env.get_ssh_to_remote_by_name('slave-01')
+        mtu_cmd = r"ip link show dev $(ip r g {0} | " \
+                  r"sed -rn 's/.*dev\s+(\S+)\s.*/\1/p') | " \
+                  r"sed -rn" \
+                  r" 's/.*mtu\s+([0-9]+)\s.*/\1/p'".format(floating_ip.ip)
+        mtu = ''.join(remote.execute(mtu_cmd)['stdout'])
+        logger.debug('mtu is equal to {0}'.format(mtu))
+        cmd = "ping -q -s {0} -c 7 -w 10 {1}".format(int(mtu) - 28,
+                                                     floating_ip.ip)
+        res = remote.execute(cmd)
+        assert_equal(0, res['exit_code'],
+                     'most packages were dropped, result is {0}'.format(res))
