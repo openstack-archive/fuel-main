@@ -88,6 +88,7 @@ dnsmasq-base
 dnsmasq-utils
 dnsutils
 dosfstools
+dpdk-dkms
 dpkg
 dpkg-dev
 dstat
