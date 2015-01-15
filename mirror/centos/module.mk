@@ -9,5 +9,6 @@ $(BUILD_DIR)/mirror/centos/build.done: \
 	$(ACTION.TOUCH)
 
 mirror-centos: $(BUILD_DIR)/mirror/centos/build.done
+repo-centos: $(BUILD_DIR)/mirror/centos/repo.done
 
-.PHONY: mirror-centos
+.PHONY: mirror-centos repo-centos
