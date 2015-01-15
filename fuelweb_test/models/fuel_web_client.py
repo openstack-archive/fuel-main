@@ -403,8 +403,8 @@ class FuelWebClient(object):
                 vc_clusters = attributes['editable']['vcenter']['cluster']
                 vc_clusters['value'] = help_data.VCENTER_CLUSTERS
 
-            logger.info("Try to update cluster "
-                        "with next attributes {0}".format(attributes))
+            logger.debug("Try to update cluster "
+                         "with next attributes {0}".format(attributes))
             self.client.update_cluster_attributes(cluster_id, attributes)
 
             logger.debug("Attributes of cluster were updated,"
