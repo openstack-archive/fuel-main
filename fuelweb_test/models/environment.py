@@ -51,7 +51,6 @@ class EnvironmentModel(object):
     admin_net = 'admin'
     admin_net2 = 'admin2'
     multiple_cluster_networks = settings.MULTIPLE_NETWORKS
-    __wrapped__ = None
 
     def __init__(self, os_image=None):
         self._virtual_environment = None
@@ -380,7 +379,6 @@ class EnvironmentModel(object):
             self.get_virtual_environment().suspend(verbose=False)
             self.get_virtual_environment().snapshot(snapshot_name, force=True)
             revert_info(snapshot_name, description)
-        if self.__wrapped__ == 'check_fuel_statistics':
             self.get_virtual_environment().resume()
             try:
                 self.nodes().admin.await(self.admin_net, timeout=60)
