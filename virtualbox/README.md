@@ -8,6 +8,7 @@ Requirements
 - procps
 - expect
 - Cygwin for Windows host PC
+- Enable VT-x/AMD-V acceleration option on your hardware for 64-bits guests
 
 Run
 ---
