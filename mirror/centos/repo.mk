@@ -31,52 +31,122 @@ $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo:
 	@mkdir -p $(@D)
 	/bin/echo -e "$${contents}" > $@
 
+centos_empty_installroot:=$(BUILD_DIR)/mirror/centos/dummy_installroot
+
 $(BUILD_DIR)/mirror/centos/yum-config.done: \
 		$(BUILD_DIR)/mirror/centos/etc/yum.conf \
 		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo \
 		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo \
 		$(BUILD_DIR)/mirror/centos/etc/yum-plugins/priorities.py \
 		$(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d/priorities.conf
+	rm -rf $(centos_empty_installroot)
+	mkdir -p $(centos_empty_installroot)/cache
+# By default yum uses /var/tmp/yum-$USER-xxyyzz as a meta-data cache. Use
+# a local directory to avoid old meta-data copies. Also makes it possible
+# to run several builds in parallel
+	env \
+		TMPDIR='$(centos_empty_installroot)/cache' \
+		TMP='$(centos_empty_installroot)/cahce' \
+		yum --installroot=$(centos_empty_installroot) -c $< makecache
+# yum makecache does not load groups lists data, run some command which makes
+# use of group lists (and downloads them as a side effect)
+	env \
+		TMPDIR='$(centos_empty_installroot)/cache' \
+		TMP='$(centos_empty_installroot)/cahce' \
+	yumdownloader -q --urls \
+		--archlist=$(CENTOS_ARCH) \
+		--installroot="$(centos_empty_installroot)" \
+		-c $< --resolve @Base @Core > /dev/null
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/mirror/centos/yum.done: \
-		$(BUILD_DIR)/mirror/centos/yum-config.done \
-		$(SOURCE_DIR)/requirements-rpm.txt
-	yum -c $(BUILD_DIR)/mirror/centos/etc/yum.conf clean all
-	# sudo is required because we use 'sudo yum' in several places
-	sudo yum -c $(BUILD_DIR)/mirror/centos/etc/yum.conf clean all
-	rm -rf /var/tmp/yum-$$USER-*/
-	yumdownloader --resolve --archlist=$(CENTOS_ARCH) \
-		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
-		--destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \
-		$(REQUIRED_RPMS) 2>&1 | grep -v '^looking for' | tee $(BUILD_DIR)/mirror/centos/yumdownloader.log
-	[ -z "$(YUM_DOWNLOAD_SRC)" ] || \
-	 yumdownloader --archlist=src --source -c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
-	 --destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Sources $(REQUIRED_RPMS) 2>&1 | \
-	 grep -v '^looking for' | tee $(BUILD_DIR)/mirror/centos/yumdownloader_src.log
-	# Yumdownloader/repotrack workaround number one:
-	# i686 packages are downloaded by mistake. Remove them
-	rm -rf $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages/*.i686.rpm
-	# Yumdownloader workaround number two:
-	# yumdownloader should fail if some packages are missed
-	test `grep "No Match" $(BUILD_DIR)/mirror/centos/yumdownloader.log | wc -l` = 0
-	# Yumdownloader workaround number three:
-	# We have exactly four downloading conflicts: django, mysql, kernel-headers and kernel-lt-firmware
-	test `grep "conflicts with" $(BUILD_DIR)/mirror/centos/yumdownloader.log | grep -v '^[[:space:]]' | wc -l` -le 9
-	# Yumdownloader workaround number four:
-	# yumdownloader should fail if some errors appears
-	test `grep "Errno" $(BUILD_DIR)/mirror/centos/yumdownloader.log | wc -l` = 0
+$(BUILD_DIR)/mirror/centos/yum.done: $(BUILD_DIR)/mirror/centos/rpm-download.done
 	$(ACTION.TOUCH)
 
-show-yum-urls-centos: \
+ifneq (,$(strip $(YUM_DOWNLOAD_SRC)))
+$(BUILD_DIR)/mirror/centos/yum.done: $(BUILD_DIR)/mirror/centos/src-rpm-download.done
+endif
+
+$(BUILD_DIR)/mirror/centos/rpm-download.done: $(BUILD_DIR)/mirror/centos/urls.list
+	dst="$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages"; \
+	mkdir -p "$$dst" && \
+	xargs -n1 -P4 wget -nv -P "$$dst" < $< 
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/mirror/centos/src-rpm-download.done: $(BUILD_DIR)/mirror/centos/src_urls.list
+	dst="$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Sources"; \
+	mkdir -p "$$dst" && \
+	xargs -n1 -P4 wget -nv -P "$$dst" < $<
+	$(ACTION.TOUCH)
+
+rpm_download_lists:=$(REQUIRED_RPMS:%=$(BUILD_DIR)/mirror/centos/lists/%.list)
+src_rpm_download_lists:=$(REQUIRED_RPMS:%=$(BUILD_DIR)/mirror/centos/src_lists/%.list)
+
+$(BUILD_DIR)/mirror/centos/urls.list: $(rpm_download_lists)
+	mkdir -p $(@D)
+	cat $^ > $@.pre
+	# yumdownloader -q prints logs to stdout, filter them out
+	sed -rne '/\.rpm$$/ {p}' -i $@.pre
+# yumdownloader selects i686 packages too. Remove them. However be
+# careful not to remove the syslinux-nolinux package (it contains
+# 32 binaries executed on a bare hardware. That package really should
+# have been noarch
+	sed -re '/i686\.rpm$$/ { /syslinux-nonlinux/p;d }' -i $@.pre
+	sort -u < $@.pre > $@.tmp
+	mv $@.tmp $@
+
+$(BUILD_DIR)/mirror/centos/src_urls.list: $(src_rpm_download_lists)
+	mkdir -p $(@D) && \
+	cat $^ > $@.pre
+# yumdownloader -q prints logs to stdout, filter them out
+	sed -rne '/\.rpm$$/ {p}' -i $@.pre && \
+	sort -u < $@.pre > $@.tmp && \
+	mv $@.tmp $@
+
+# XXX: yumdownloader operates upon rpmdb so running several instances
+# concurrently (within the same installroot) is not safe. Create
+# an installroot template and make a shallow copy for every yumdownloader
+# process. Hard link the repository metadata too and tell yum to use that
+# (instead of /var/tmp/yum-$USER-xxyyzz) via TMP and TMPDIR environment
+# variables.
+
+$(rpm_download_lists): $(BUILD_DIR)/mirror/centos/lists/%.list: \
 		$(BUILD_DIR)/mirror/centos/yum-config.done \
 		$(SOURCE_DIR)/requirements-rpm.txt
-	yum -c $(BUILD_DIR)/mirror/centos/etc/yum.conf clean all
-	rm -rf /var/tmp/yum-$$USER-*/
-	yumdownloader --urls -q --resolve --archlist=$(CENTOS_ARCH) \
+	tmp_installchroot=$(dir $(centos_empty_installroot))installchroot-$*; \
+	cp -al "$(centos_empty_installroot)" "$$tmp_installchroot" && \
+	mkdir -p $(@D) && \
+	env \
+		TMPDIR="$$tmp_installchroot/cache" \
+		TMP="$$tmp_installchroot/cache" \
+	yumdownloader -q --urls \
+		--archlist=$(CENTOS_ARCH) \
+		--installroot="$$tmp_installchroot" \
 		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
-		--destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \
-		$(REQUIRED_RPMS)
+		--cacheonly \
+		--resolve $* > $@.tmp 2>$@.log && \
+	rm -rf "$$tmp_installchroot" && \
+	mv $@.tmp $@
+
+$(src_rpm_download_lists): $(BUILD_DIR)/mirror/centos/src_lists/%.list: \
+		$(BUILD_DIR)/mirror/centos/yum-config.done \
+		$(SOURCE_DIR)/requirements-rpm.txt
+	tmp_installchroot=$(dir $(centos_empty_installroot))installchroot-src-$*; \
+	cp -a "$(centos_empty_installroot)" "$$tmp_installchroot" && \
+	mkdir -p $(@D) && \
+	env \
+		TMPDIR="$$tmp_installchroot/cache" \
+		TMP="$$tmp_installchroot/cache" \
+	yumdownloader -q --urls \
+		--archlist=src --source \
+		--installroot="$$tmp_installchroot" \
+		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
+		--cacheonly \
+		--resolve $* > $@.tmp 2>$@.log && \
+	rm -rf "$$tmp_installchroot" && \
+	mv $@.tmp $@
+
+show-yum-urls-centos: $(BUILD_DIR)/mirror/centos/urls.list
+	cat $<
 
 $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml: \
 		export COMPSXML=$(shell wget -qO- $(MIRROR_CENTOS_OS_BASEURL)/repodata/repomd.xml | grep -m 1 '$(@F)' | awk -F'"' '{ print $$2 }')
