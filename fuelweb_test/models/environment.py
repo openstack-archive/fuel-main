@@ -445,9 +445,9 @@ class EnvironmentModel(object):
     def sync_node_time(self, remote):
         self.execute_remote_cmd(remote, 'hwclock -s')
         self.execute_remote_cmd(remote, 'NTPD=$(find /etc/init.d/ -regex \''
-                                        '/etc/init.d/ntp.?\'); $NTPD stop; '
-                                        'killall ntpd; ntpd -qg && '
-                                        '$NTPD start')
+                                        '/etc/init.d/\(ntp.?\|ntp-dev\)\');'
+                                        ' $NTPD stop; killall ntpd; '
+                                        'ntpd -qg && $NTPD start')
         self.execute_remote_cmd(remote, 'hwclock -w')
         remote_date = remote.execute('date')['stdout']
         logger.info("Node time: %s" % remote_date)
