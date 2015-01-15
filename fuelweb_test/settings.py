@@ -40,7 +40,7 @@ DEPLOYMENT_MODE_HA = "ha_compact"
 DEPLOYMENT_MODE = os.environ.get("DEPLOYMENT_MODE", DEPLOYMENT_MODE_HA)
 
 ADMIN_NODE_SETUP_TIMEOUT = os.environ.get("ADMIN_NODE_SETUP_TIMEOUT", 30)
-PUPPET_TIMEOUT = os.environ.get("PUPPET_TIMEOUT", 3000)
+PUPPET_TIMEOUT = os.environ.get("PUPPET_TIMEOUT", 6000)
 
 HARDWARE = {
     "admin_node_memory": os.environ.get("ADMIN_NODE_MEMORY", 2048),
@@ -290,7 +290,7 @@ OSTF_TEST_RETRIES_COUNT = int(os.environ.get('OSTF_TEST_RETRIES_COUNT', 50))
 DEPLOYMENT_NAME = os.environ.get('DEPLOYMENT_NAME')
 
 # Need for iso with docker
-TIMEOUT = int(os.environ.get('TIMEOUT', 10))
+TIMEOUT = int(os.environ.get('TIMEOUT', 60))
 ATTEMPTS = int(os.environ.get('ATTEMPTS', 5))
 
 #Create snapshots as last step in test-case
