@@ -197,7 +197,7 @@ class FuelWebClient(object):
     def assert_release_state(self, release_name, state='available'):
         logger.info('Assert release %s has state %s', release_name, state)
         for release in self.client.get_releases():
-            if release["name"].find(release_name) != -1:
+            if release["name"].lower().find(release_name) != -1:
                 assert_equal(release['state'], state,
                              'Release state {0}'.format(release['state']))
                 return release["id"]
