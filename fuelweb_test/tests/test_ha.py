@@ -31,6 +31,7 @@ class TestHaVLAN(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_ha_vlan", "ha_nova_vlan"])
+    @store_astute_yaml
     @log_snapshot_on_error
     def deploy_ha_vlan(self):
         """Deploy cluster in HA mode with VLAN Manager
