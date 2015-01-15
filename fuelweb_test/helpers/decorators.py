@@ -279,3 +279,18 @@ def check_fuel_statistics(func):
             logger.error(traceback.format_exc())
             raise
     return wrapper
+
+
+def store_astute_yaml(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        try:
+            remote = args[0].environment.get_ssh_to_remote_by_name('slave-01')
+            if not remote.download('/etc/astute.yaml', '{0}/{1}.yaml'
+                                   .format(settings.LOGS_DIR, func.__name__)):
+                logger.error("Downloading of 'astute.yaml' failed.")
+        except Exception:
+            logger.error(traceback.format_exc())
+        return result
+    return wrapper

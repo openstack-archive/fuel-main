@@ -16,6 +16,7 @@ from proboscis.asserts import assert_equal
 from proboscis import test
 
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import store_astute_yaml
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -27,6 +28,7 @@ class NeutronGre(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_neutron_gre", "simple_neutron_gre"])
+    @store_astute_yaml
     @log_snapshot_on_error
     def deploy_neutron_gre(self):
         """Deploy cluster in simple mode with Neutron GRE
@@ -265,6 +267,7 @@ class NeutronVlanHa(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_neutron_vlan_ha", "ha_neutron_vlan"])
+    @store_astute_yaml
     @log_snapshot_on_error
     def deploy_neutron_vlan_ha(self):
         """Deploy cluster in HA mode with Neutron VLAN
