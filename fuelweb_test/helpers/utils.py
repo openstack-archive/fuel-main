@@ -86,3 +86,22 @@ def pull_out_logs_via_ssh(admin_remote, name,
                               "wasn't saved on local host"))
     except Exception:
         logger.error(traceback.format_exc())
+
+
+@logwrap
+def store_astute_yaml(env, func_name):
+    if not settings.STORE_ASTUTE_YAML:
+        return
+    for node in env.nodes().slaves:
+        nailgun_node = env.fuel_web.get_nailgun_node_by_devops_node(node)
+        if node.driver.node_active(node) and nailgun_node['roles']:
+            try:
+                remote = env.get_ssh_to_remote_by_name(node.name)
+                filename = '{0}/{1}-{2}.yaml'.format(settings.LOGS_DIR,
+                                                     func_name, node.name)
+                logger.info("Storing {0}".format(filename))
+                if not remote.download('/etc/astute.yaml', filename):
+                    logger.error("Downloading 'astute.yaml' from the node "
+                                 "{0} failed.".format(node.name))
+            except Exception:
+                logger.error(traceback.format_exc())
