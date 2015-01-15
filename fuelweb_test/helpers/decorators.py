@@ -35,6 +35,7 @@ from fuelweb_test import logger
 from fuelweb_test import settings
 from fuelweb_test.helpers.regenerate_repo import CustomRepo
 from fuelweb_test.helpers.utils import pull_out_logs_via_ssh
+from fuelweb_test.helpers.utils import store_astute_yaml
 
 
 def save_logs(url, filename):
@@ -56,8 +57,13 @@ def log_snapshot_on_error(func):
     """
     @functools.wraps(func)
     def wrapper(*args, **kwagrs):
+        logger.info("\n" + "<" * 5 + "#" * 30 + "[ {} ]"
+                    .format(func.__name__) + "#" * 30 + ">" * 5 + "\n{}"
+                    .format(func.__doc__))
         try:
-            return func(*args, **kwagrs)
+            result = func(*args, **kwagrs)
+            store_astute_yaml(args[0].env, func.__name__)
+            return result
         except SkipTest:
             raise SkipTest()
         except Exception as test_exception:
@@ -235,9 +241,7 @@ def custom_repo(func):
 def check_fuel_statistics(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        args[0].env.__wrapped__ = 'check_fuel_statistics'
         result = func(*args, **kwargs)
-        args[0].env.__wrapped__ = None
         if not settings.FUEL_STATS_CHECK:
             return result
         logger.info('Test "{0}" passed. Checking stats.'.format(func.__name__))
