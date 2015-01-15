@@ -68,6 +68,7 @@ if [ -f /root/.build_images ]; then
   WORKDIR=$(mktemp -d /tmp/docker-buildXXX)
   SOURCE=/var/www/nailgun/docker
   REPODIR="$WORKDIR/repo"
+  FUEL_RELEASE=$(grep release: /etc/fuel/version.yaml | cut -d: -f2 | tr -d '" ')
   mkdir -p $REPODIR/os
   ln -s /var/www/nailgun/centos/x86_64 $REPODIR/os/x86_64
   (cd $REPODIR && /var/www/nailgun/docker/utils/simple_http_daemon.py ${RANDOM_PORT} /tmp/simple_http_daemon_${RANDOM_PORT}.pid 5000)
@@ -82,7 +83,7 @@ if [ -f /root/.build_images ]; then
     cp -R /etc/puppet /etc/fuel $WORKDIR/$image/etc
     sed -e "s/_PORT_/${RANDOM_PORT}/" -i $WORKDIR/$image/Dockerfile
     sed -e 's/production:.*/production: "docker-build"/' -i $WORKDIR/$image/etc/fuel/version.yaml
-    docker build -t fuel/${image}_6.0 $WORKDIR/$image
+    docker build -t fuel/${image}_${FUEL_RELEASE} $WORKDIR/$image
   done
   kill `cat /tmp/simple_http_daemon_${RANDOM_PORT}.pid`
   rm -rf "$WORKDIR"
