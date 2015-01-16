@@ -22,7 +22,7 @@ from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
 
-@test(groups=["thread_1", "neutron", "bvt_1"])
+@test(groups=["thread_1", "neutron", "smoke_neutron"])
 class NeutronGre(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
