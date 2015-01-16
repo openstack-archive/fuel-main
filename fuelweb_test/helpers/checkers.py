@@ -309,8 +309,9 @@ def run_script(node_ssh, script_path, script_name, password='admin',
     c_res = node_ssh.execute('chmod 755 {0}'.format(path))
     logger.debug("Result of cmod is {0}".format(c_res))
     if rollback:
-        path = "{0}/{1} --password {2}".format(script_path, script_name,
-                                               password)
+        path = "UPGRADERS='host-system bootstrap docker openstack" \
+               " raise-error targetimages' {0}/{1}" \
+               " --password {2}".format(script_path, script_name, password)
         chan, stdin, stderr, stdout = node_ssh.execute_async(path)
         logger.debug('Try to read status code from chain...')
         assert_equal(chan.recv_exit_status(), exit_code,

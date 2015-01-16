@@ -377,10 +377,6 @@ class RollbackFuelMaster(base_test_data.TestBasic):
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
                                         TARBALL_PATH), '/var')
-        self.fuel_web.modify_python_file(self.env.get_admin_remote(),
-                                         "2i \ \ \ \ 2014.2-6.0: blah-blah",
-                                         '/var/upgrade/releases/'
-                                         'metadata.yaml')
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
                             password=
                             hlp_data.KEYSTONE_CREDS['password'],
@@ -440,10 +436,6 @@ class RollbackFuelMaster(base_test_data.TestBasic):
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
                                         TARBALL_PATH), '/var')
-        self.fuel_web.modify_python_file(self.env.get_admin_remote(),
-                                         "2i \ \ \ \ 2014.2-6.0: blah-blah",
-                                         '/var/upgrade/releases/'
-                                         'metadata.yaml')
         #we expect 255 exit code here because upgrade failed
         # and exit status is 255
         checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
