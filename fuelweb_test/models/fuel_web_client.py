@@ -476,7 +476,7 @@ class FuelWebClient(object):
     def get_pacemaker_config(self, controller_node_name):
         logger.info('Get pacemaker config at %s node', controller_node_name)
         remote = self.get_ssh_for_node(controller_node_name)
-        return ''.join(remote.check_call('crm configure show')['stdout'])
+        return ''.join(remote.check_call('crm_resource --list')['stdout'])
 
     @logwrap
     def get_last_created_cluster(self):
