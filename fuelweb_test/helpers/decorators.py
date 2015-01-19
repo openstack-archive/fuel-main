@@ -122,6 +122,9 @@ def upload_manifests(func):
                             settings.SITEPP_FOR_UPLOAD)
                 remote.execute("cp %s /etc/puppet/manifests" %
                                settings.SITEPP_FOR_UPLOAD)
+                if settings.SYNC_DEPL_TASKS:
+                    remote.execute("fuel release --sync-deployment-tasks"
+                                   " --dir /etc/puppet/")
         except Exception:
             logger.error("Could not upload manifests")
             raise
