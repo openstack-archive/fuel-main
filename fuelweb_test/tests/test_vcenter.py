@@ -55,7 +55,6 @@ class VcenterDeploy(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
-                'use_vcenter': True,
                 'host_ip': VCENTER_IP,
                 'vc_user': VCENTER_USERNAME,
                 'vc_password': VCENTER_PASSWORD,
@@ -108,7 +107,6 @@ class VcenterDeploy(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
-                'use_vcenter': True,
                 'host_ip': VCENTER_IP,
                 'vc_user': VCENTER_USERNAME,
                 'vc_password': VCENTER_PASSWORD,
@@ -206,7 +204,6 @@ class VcenterDeploy(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
-                'use_vcenter': True,
                 'volumes_vmdk': True,
                 'volumes_lvm': False,
                 'host_ip': VCENTER_IP,
@@ -256,7 +253,6 @@ class VcenterDeploy(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_HA,
             settings={
-                'use_vcenter': True,
                 'host_ip': VCENTER_IP,
                 'vc_user': VCENTER_USERNAME,
                 'vc_password': VCENTER_PASSWORD,
@@ -315,7 +311,6 @@ class VcenterDeploy(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
-                'use_vcenter': True,
                 'volumes_lvm': False,
                 'volumes_vmdk': True,
                 'host_ip': VCENTER_IP,
@@ -374,7 +369,6 @@ class VcenterDeploy(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_HA,
             settings={
-                'use_vcenter': True,
                 'volumes_lvm': False,
                 'volumes_vmdk': True,
                 'host_ip': VCENTER_IP,
@@ -435,7 +429,6 @@ class VcenterDeploy(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
-                'use_vcenter': True,
                 'volumes_lvm': False,
                 'volumes_vmdk': True,
                 'host_ip': VCENTER_IP,
@@ -494,7 +487,6 @@ class VcenterDeploy(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_SIMPLE,
             settings={
-                'use_vcenter': True,
                 'volumes_vmdk': True,
                 'volumes_lvm': False,
                 'host_ip': VCENTER_IP,
@@ -576,7 +568,6 @@ class VcenterDeploy(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE_HA,
             settings={
-                'use_vcenter': True,
                 'volumes_vmdk': True,
                 'volumes_lvm': False,
                 'host_ip': VCENTER_IP,

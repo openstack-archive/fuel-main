@@ -356,8 +356,7 @@ class FuelWebClient(object):
                     section = 'storage'
                 if option in ('tenant', 'password', 'user'):
                     section = 'access'
-                if option in ('vc_password', 'cluster', 'host_ip', 'vc_user',
-                              'use_vcenter'):
+                if option in ('vc_password', 'cluster', 'host_ip', 'vc_user'):
                     section = 'vcenter'
                 if option == 'assign_to_all_nodes':
                     section = 'public_network_assignment'
