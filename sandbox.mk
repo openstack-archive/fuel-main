@@ -34,21 +34,20 @@ cp /etc/resolv.conf $(SANDBOX)/etc/resolv.conf
 cat > $(SANDBOX)/etc/yum.repos.d/base.repo <<EOF
 $(yum_local_repo)
 EOF
-rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
+sudo rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
 echo "centos-release already installed"
-rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
+sudo rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
 echo 'Rebuilding RPM DB'
-rpm --root=$(SANDBOX) --rebuilddb
+sudo rpm --root=$(SANDBOX) --rebuilddb
 echo 'Installing packages for Sandbox'
-yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --exclude=ruby-2.1.1 --nogpgcheck install $(SANDBOX_PACKAGES)
+sudo /bin/sh -c 'export TMPDIR=$(SANDBOX)/tmp/yum TMP=$(SANDBOX)/tmp/yum; yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install $(SANDBOX_PACKAGES)'
 mount | grep -q $(SANDBOX)/proc || sudo mount --bind /proc $(SANDBOX)/proc
 mount | grep -q $(SANDBOX)/dev || sudo mount --bind /dev $(SANDBOX)/dev
 endef
 
 define SANDBOX_DOWN
-sync
-umount $(SANDBOX)/proc
-umount $(SANDBOX)/dev
+sudo umount $(SANDBOX)/proc || true
+sudo umount $(SANDBOX)/dev || true
 endef
 
 define SANDBOX_UBUNTU_UP
