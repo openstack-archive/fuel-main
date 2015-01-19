@@ -222,6 +222,7 @@ LOGS_DIR = os.environ.get('LOGS_DIR', os.getcwd())
 USE_ALL_DISKS = os.environ.get('USE_ALL_DISKS', 'true') == 'true'
 
 UPLOAD_MANIFESTS = os.environ.get('UPLOAD_MANIFESTS', 'false') == 'true'
+SYNC_DEPL_TASKS = os.environ.get('SYNC_DEPL_TASKS', 'false') == 'true'
 UPLOAD_MANIFESTS_PATH = os.environ.get(
     'UPLOAD_MANIFESTS_PATH', '~/git/fuel/deployment/puppet/')
 SITEPP_FOR_UPLOAD = os.environ.get(
