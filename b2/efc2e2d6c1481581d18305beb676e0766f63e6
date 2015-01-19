@@ -1,0 +1,11 @@
+Verified+2: Jenkins
+Code-Review+2: Vladimir Kuklin <vkuklin@mirantis.com>
+Workflow+1: Vladimir Kuklin <vkuklin@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+1: Egor Kotko <ykotko@mirantis.com>
+Code-Review+1: Igor Belikov <ibelikov@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 19 Jan 2015 14:53:26 +0000
+Reviewed-on: https://review.openstack.org/147577
+Project: stackforge/fuel-main
+Branch: refs/heads/master
