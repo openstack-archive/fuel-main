@@ -33,6 +33,7 @@ $(patched_di_initrd_img): hook_target_dir:=/usr/lib/post-base-installer.d
 # unpack the initrd, apply patches, and repack it
 $(patched_di_initrd_img): $(di_initrd_img)
 	mkdir -p $(initrd_dir) && mkdir -p $(@D)
+ifeq (none,$(strip $(USE_MIRROR)))
 	set -e; cd $(initrd_dir); \
 	zcat $< | sudo cpio -di; \
 	sudo chown -R `whoami` .; \
@@ -42,6 +43,9 @@ $(patched_di_initrd_img): $(di_initrd_img)
 	find . | cpio --create --format='newc' --owner=root:root | gzip -9 > $@.tmp
 	mv $@.tmp $@
 	-rm -rf $(initrd_dir)
+else
+	cp -a $< $@
+endif
 
 $(BUILD_DIR)/mirror/ubuntu/boot.done: $(patched_di_initrd_img) $(di_kernel_img)
 	$(ACTION.TOUCH)
