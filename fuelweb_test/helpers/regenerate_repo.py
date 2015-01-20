@@ -304,6 +304,7 @@ class CustomRepo(object):
                .format(cmd, err)
 
     def check_puppet_logs(self):
+        logger.info("Checking puppet logs for packages that have unmet dependences.")
         if settings.OPENSTACK_RELEASE_UBUNTU in settings.OPENSTACK_RELEASE:
             err_deps = self.check_puppet_logs_ubuntu()
         else:
@@ -314,6 +315,7 @@ class CustomRepo(object):
                         .format(err_deps_key))
             for dep in err_deps[err_deps_key]:
                 logger.info('        {0}'.format(dep.strip()))
+        logger.info("Checking puppet logs complete.")
 
     def check_puppet_logs_ubuntu(self):
         """ Check puppet-agent.log files on all nodes for package
