@@ -386,7 +386,7 @@ class TestHaFailover(TestBasic):
                 'vip__management	(ocf::mirantis:ns_IPaddr2):	Started'
                 in config, 'vip management is not configured right')
             assert_not_equal(re.search(
-                "Clone Set: clone_p_openstack-heat-engine"
+                "Clone Set: clone_p_(heat|openstack-heat)-engine"
                 " \[p_openstack-heat-engine\]\s+Started: \[ {0} \]".format(
                     pcm_nodes), config), None,
                 'heat engine is not configured right')
