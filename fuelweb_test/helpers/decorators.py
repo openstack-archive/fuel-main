@@ -227,6 +227,8 @@ def custom_repo(func):
         try:
             return func(*args, **kwargs)
         except Exception:
+            # Every time when deploy is failed, puppet logs are checked
+            # for unmet dependences during package installation on slave nodes.
             custom_pkgs.check_puppet_logs()
             raise
     return wrapper
