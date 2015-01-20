@@ -66,6 +66,7 @@ heat-api-cfn
 heat-api-cloudwatch
 heat-common
 heat-engine
+heat-docker
 hicolor-icon-theme
 hostname
 htop
