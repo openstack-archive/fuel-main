@@ -69,10 +69,10 @@ sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
 echo "Generating utf8 locale"
 sudo chroot $(SANDBOX_UBUNTU) /bin/sh -c 'locale-gen en_US.UTF-8; dpkg-reconfigure locales'
 echo "Preparing directory for chroot local mirror"
-test -e $(SANDBOX_UBUNTU)/tmp/apt && sudo rm -rf $(SANDBOX_UBUNTU)/tmp/apt
 sudo mkdir -p $(SANDBOX_UBUNTU)/tmp/apt
-echo "Copying local ubuntu mirror into $(SANDBOX_UBUNTU)/tmp/apt"
-sudo cp -al $(LOCAL_MIRROR)/ubuntu/dists $(LOCAL_MIRROR)/ubuntu/pool $(SANDBOX_UBUNTU)/tmp/apt
+echo "Bind mounting local Ubuntu mirror to $(SANDBOX_UBUNTU)/tmp/apt"
+sudo mount -o bind $(LOCAL_MIRROR)/ubuntu $(SANDBOX_UBUNTU)/tmp/apt
+sudo mount -o remount,ro,bind $(SANDBOX_UBUNTU)/tmp/apt
 echo "Configuring apt sources.list: deb file:///tmp/apt $(UBUNTU_RELEASE) main"
 echo "deb file:///tmp/apt $(UBUNTU_RELEASE) main" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/sources.list
 echo "Allowing using unsigned repos"
@@ -85,6 +85,6 @@ echo "SANDBOX_UBUNTU_UP: done"
 endef
 
 define SANDBOX_UBUNTU_DOWN
-sync
-sudo umount $(SANDBOX_UBUNTU)/proc
+if mountpoint -q $(SANDBOX_UBUNTU)/proc; then sudo umount $(SANDBOX_UBUNTU)/proc; fi
+sudo umount $(SANDBOX_UBUNTU)/tmp/apt || true
 endef
