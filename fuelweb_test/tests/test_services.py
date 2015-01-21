@@ -43,14 +43,14 @@ class SaharaSimple(TestBasic):
         """Deploy cluster in simple mode with Sahara and Neutron GRE
 
         Scenario:
-            1. Create cluster. Set install Sahara option
-            2. Add 1 node with controller role
-            3. Add 1 node with compute role
-            4. Deploy the cluster
-            5. Verify Sahara services
-            6. Run OSTF
-            7. Register Sahara image
-            8. Run OSTF platform Sahara test only
+            1. Create a Fuel cluster. Set the option for Sahara installation
+            2. Add 1 node with "controller" role
+            3. Add 1 node with "compute" role
+            4. Deploy the Fuel cluster
+            5. Verify Sahara service on controller
+            6. Run all sanity and smoke tests
+            7. Register Vanilla2 image for Sahara
+            8. Run platform Vanilla2 test for Sahara
 
         Snapshot: deploy_sahara_simple_gre
 
@@ -58,15 +58,16 @@ class SaharaSimple(TestBasic):
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
-        LOGGER.debug('Check MD5 of image')
+        LOGGER.debug('Check MD5 sum of Vanilla2 image')
         check_image = checkers.check_image(
-            settings.SERVTEST_SAHARA_IMAGE,
-            settings.SERVTEST_SAHARA_IMAGE_MD5,
+            settings.SERVTEST_SAHARA_VANILLA_2_IMAGE,
+            settings.SERVTEST_SAHARA_VANILLA_2_IMAGE_MD5,
             settings.SERVTEST_LOCAL_PATH)
         asserts.assert_true(check_image)
 
         self.env.revert_snapshot("ready_with_3_slaves")
-        LOGGER.debug('Create cluster for sahara tests')
+
+        LOGGER.debug('Create Fuel cluster for Sahara tests')
         data = {
             'sahara': True,
             'net_provider': 'neutron',
@@ -75,7 +76,6 @@ class SaharaSimple(TestBasic):
             'user': 'saharaSimple',
             'password': 'saharaSimple'
         }
-
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             settings=data
@@ -87,7 +87,6 @@ class SaharaSimple(TestBasic):
                 'slave-02': ['compute']
             }
         )
-
         self.fuel_web.deploy_cluster_wait(cluster_id)
         controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         os_conn = os_actions.OpenStackActions(
@@ -95,36 +94,35 @@ class SaharaSimple(TestBasic):
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=5, networks_count=2, timeout=300)
 
+        LOGGER.debug('Verify Sahara service on controller')
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='sahara-all')
 
-        common_func = Common(controller['ip'], data['user'], data['password'],
-                             data['tenant'])
-
-        test_classes = ['fuel_health.tests.sanity.test_sanity_sahara.'
-                        'SanitySaharaTests.test_sanity_sahara']
+        LOGGER.debug('Run all sanity and smoke tests')
+        path = 'fuel_health.tests.sanity.test_sanity_sahara.'
+        test_1 = path + 'VanillaTwoTemplatesTest.test_vanilla_two_templates'
+        test_2 = path + 'HDPTwoTemplatesTest.test_hdp_two_templates'
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            tests_must_be_passed=test_classes
+            tests_must_be_passed=[test_1, test_2]
         )
 
-        LOGGER.debug('Import image')
+        LOGGER.debug('Import Vanilla2 image for Sahara')
+        common_func = Common(controller['ip'],
+                             data['user'], data['password'], data['tenant'])
         common_func.image_import(
             settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_SAHARA_IMAGE,
-            settings.SERVTEST_SAHARA_IMAGE_NAME,
-            settings.SERVTEST_SAHARA_IMAGE_META)
+            settings.SERVTEST_SAHARA_VANILLA_2_IMAGE,
+            settings.SERVTEST_SAHARA_VANILLA_2_IMAGE_NAME,
+            settings.SERVTEST_SAHARA_VANILLA_2_IMAGE_META)
 
-        common_func.goodbye_security()
-
-        LOGGER.debug('Run OSTF Sahara platform test')
-
+        LOGGER.debug('Run platform Vanilla2 test for Sahara')
+        path = 'fuel_health.tests.platform_tests.test_sahara.'
+        test = path + 'VanillaTwoClusterTest.test_vanilla_two_cluster'
         self.fuel_web.run_single_ostf_test(
             cluster_id=cluster_id, test_sets=['platform_tests'],
-            test_name=('fuel_health.tests.platform_tests.'
-                       'test_sahara.PlatformSaharaTests.'
-                       'test_platform_sahara'), timeout=60 * 200)
+            test_name=test, timeout=60 * 200)
 
         self.env.make_snapshot("deploy_sahara_simple_gre")
 
@@ -142,14 +140,14 @@ class SaharaHA(TestBasic):
         """Deploy cluster in HA mode with Sahara and Neutron GRE
 
         Scenario:
-            1. Create cluster. Set install Sahara option
-            2. Add 3 node with controller role
-            3. Add 1 node with compute role
-            4. Deploy the cluster
-            5. Verify Sahara services
-            6. Run OSTF
-            7. Register Sahara image
-            8. Run OSTF platform Sahara test only
+            1. Create a Fuel cluster. Set the option for Sahara installation
+            2. Add 3 node with "controller" role
+            3. Add 1 node with "compute" role
+            4. Deploy the Fuel cluster
+            5. Verify Sahara service on all controllers
+            6. Run all sanity and smoke tests
+            7. Register Vanilla2 image for Sahara
+            8. Run platform Vanilla2 test for Sahara
 
         Snapshot: deploy_sahara_ha_gre
 
@@ -157,15 +155,16 @@ class SaharaHA(TestBasic):
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
-        LOGGER.debug('Check MD5 of image')
+        LOGGER.debug('Check MD5 sum of Vanilla2 image')
         check_image = checkers.check_image(
-            settings.SERVTEST_SAHARA_IMAGE,
-            settings.SERVTEST_SAHARA_IMAGE_MD5,
+            settings.SERVTEST_SAHARA_VANILLA_2_IMAGE,
+            settings.SERVTEST_SAHARA_VANILLA_2_IMAGE_MD5,
             settings.SERVTEST_LOCAL_PATH)
         asserts.assert_true(check_image)
 
         self.env.revert_snapshot("ready_with_5_slaves")
-        LOGGER.debug('Create cluster for sahara tests')
+
+        LOGGER.debug('Create Fuel cluster for Sahara tests')
         data = {
             'sahara': True,
             'net_provider': 'neutron',
@@ -174,7 +173,6 @@ class SaharaHA(TestBasic):
             'user': 'saharaHA',
             'password': 'saharaHA'
         }
-
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=settings.DEPLOYMENT_MODE_HA,
@@ -190,46 +188,42 @@ class SaharaHA(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-
         cluster_vip = self.fuel_web.get_public_vip(cluster_id)
-
         os_conn = os_actions.OpenStackActions(
             cluster_vip, data['user'], data['password'], data['tenant'])
-
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=13, networks_count=2, timeout=300)
 
+        LOGGER.debug('Verify Sahara service on all controllers')
         for slave in ["slave-01", "slave-02", "slave-03"]:
             checkers.verify_service(
                 self.env.get_ssh_to_remote_by_name(slave),
                 service_name='sahara-all')
 
-        common_func = Common(cluster_vip, data['user'], data['password'],
-                             data['tenant'])
-
-        test_classes = ['fuel_health.tests.sanity.test_sanity_sahara.'
-                        'SanitySaharaTests.test_sanity_sahara']
+        LOGGER.debug('Run all sanity and smoke tests')
+        path = 'fuel_health.tests.sanity.test_sanity_sahara.'
+        test_1 = path + 'VanillaTwoTemplatesTest.test_vanilla_two_templates'
+        test_2 = path + 'HDPTwoTemplatesTest.test_hdp_two_templates'
         self.fuel_web.run_ostf(
             cluster_id=self.fuel_web.get_last_created_cluster(),
-            tests_must_be_passed=test_classes
+            tests_must_be_passed=[test_1, test_2]
         )
 
-        LOGGER.debug('Import image')
+        LOGGER.debug('Import Vanilla2 image for Sahara')
+        common_func = Common(cluster_vip,
+                             data['user'], data['password'], data['tenant'])
         common_func.image_import(
             settings.SERVTEST_LOCAL_PATH,
-            settings.SERVTEST_SAHARA_IMAGE,
-            settings.SERVTEST_SAHARA_IMAGE_NAME,
-            settings.SERVTEST_SAHARA_IMAGE_META)
+            settings.SERVTEST_SAHARA_VANILLA_2_IMAGE,
+            settings.SERVTEST_SAHARA_VANILLA_2_IMAGE_NAME,
+            settings.SERVTEST_SAHARA_VANILLA_2_IMAGE_META)
 
-        common_func.goodbye_security()
-
-        LOGGER.debug('Run OSTF Sahara platform test')
-
+        LOGGER.debug('Run platform Vanilla2 test for Sahara')
+        path = 'fuel_health.tests.platform_tests.test_sahara.'
+        test = path + 'VanillaTwoClusterTest.test_vanilla_two_cluster'
         self.fuel_web.run_single_ostf_test(
             cluster_id=cluster_id, test_sets=['platform_tests'],
-            test_name=('fuel_health.tests.platform_tests.'
-                       'test_sahara.PlatformSaharaTests.'
-                       'test_platform_sahara'), timeout=60 * 200)
+            test_name=test, timeout=60 * 200)
 
         self.env.make_snapshot("deploy_sahara_ha_gre")
 
