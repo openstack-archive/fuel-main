@@ -52,14 +52,14 @@ echo "OK"
 echo -n "Checking for VirtualBox Extension Pack... "
 extpacks=`VBoxManage list extpacks | grep 'Usable' | grep 'true' | wc -l`
 if [ "$extpacks" -le 0 ]; then
-    echo >&2 "VirtualBox Extension Pack is not installed. Please, download and install it from the official VirtualBox web site. Aborting."; exit 1;
+    echo >&2 "VirtualBox Extension Pack is not installed. Please, download and install it from the official VirtualBox web site at https://www.virtualbox.org/wiki/Downloads"; exit 1;
 fi
 echo "OK"
 
 # Check for ISO image to be available
 echo -n "Checking for Mirantis OpenStack ISO image... "
 if [ -z $iso_path ]; then
-    echo "Mirantis OpenStack image is not found. Please download it and put under 'iso' directory."
+    echo "Mirantis OpenStack image is not found. Please download it from software.mirantis.com and put under the 'iso' directory."
     exit 1
 fi
 echo "OK"
