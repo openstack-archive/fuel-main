@@ -1,4 +1,4 @@
-#    Copyright 2014 Mirantis, Inc.
+#    Copyright 2015 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -12,65 +12,89 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from conf import GOOGLE
 from gdata.spreadsheet import text_db
-from settings import GOOGLE_LOGIN, GOOGLE_PASSWORD
-
 import logging
+
 logger = logging.getLogger(__package__)
 
 
-class BuildsDocument(object):
-    def __init__(self, spreadsheet_key):
-        # connect to google docs and get spreadsheet
-        self.gclient = text_db.DatabaseClient(GOOGLE_LOGIN, GOOGLE_PASSWORD)
-        self.gspreadsheet = \
-            self.gclient.GetDatabases(spreadsheet_key=spreadsheet_key)[0]
+class Document():
+    def __init__(self):
+        self.gclient = text_db.DatabaseClient(
+            GOOGLE["user"],
+            GOOGLE["password"],
+        )
+        self.gspreadsheet = self.gclient.GetDatabases(
+            spreadsheet_key=GOOGLE["key"]
+        )[0]
 
-    def get_sheet(self, name):
+    def get_page(self, name):
         tables = self.gspreadsheet.GetTables(name=name)
-        if len(tables) == 0:
-            # Create new sheet
+        if len(tables) > 0:
+            logger.debug("Use worksheet {0}".format(name))
+        else:
+            # Create new worksheet
+            logger.debug("Create new worksheet {0}".format(name))
             self.gspreadsheet.client._GetSpreadsheetsClient().AddWorksheet(
-                title=name, row_count=1, col_count=50,
-                key=self.gspreadsheet.spreadsheet_key)
+                title=name,
+                row_count=1,
+                col_count=50,
+                key=self.gspreadsheet.spreadsheet_key,
+            )
             tables = self.gspreadsheet.GetTables(name=name)
-        return BuildSheet(tables.pop())
+
+        return Page(tables.pop())
 
 
-class BuildSheet:
-    BUILD_COLUMN = 'b{0}-{1}'
-
+class Page():
     def __init__(self, table):
         self.table = table
         self.table.LookupFields()
-        if len(self.table.fields) == 0:
-            # set fields if sheet is empty
-            self.table.SetFields(['name'])
 
-    @property
-    def last_build_column(self):
-        if len(self.table.fields) < 2:
+    def build_exists(self, number):
+        records = self.table.FindRecords(
+            "number == {0}".format(number)
+        )
+        return records
+
+    def add_build(self, build_record):
+        """Adds build to the table
+
+        If there is a row with same build id and build number,
+        do nothing.
+        """
+        build_number = build_record[0][1]
+        if self.build_exists(build_number):
+            logger.debug(
+                "Build {0} is already there".format(build_number)
+            )
             return None
-        else:
-            return self.table.fields[1]
 
-    def get_build_column_name(self, build_num, iso_number):
-        """
-        Returns column name of a build.
-        If there is no such column it creates another one
+        logger.debug("Create record "
+                     "for build {0}".format(build_number))
+        self.update_columns(build_record)
+        self.table.AddRecord(dict(build_record))
+        logger.info("Created record "
+                    "for build {0}".format(build_number))
 
-        It turns out name of column could not be a number.
-        For ex: if name is '12' r.content returns {'_cokwr': 'PASSED'}
-        So,we have to append a string to a build number and then
-        use the result string as a column name
-        Also name can't contain spaces and should be lower case
+    def update_columns(self, build_record):
+        """Update table columns
+
+        If current build has more tests than the previous one
+        we extend the table by appending more columns.
+
         """
-        name = self.BUILD_COLUMN.format(build_num, iso_number).\
-            lower().replace(" ", "-").replace("_", "-")
-        if self.last_build_column != name:
-            logger.debug("Create column {0}".format(name))
-            fields = self.table.fields
-            fields.insert(1, name)
+        fields_changed = False
+
+        fields = self.table.fields
+        for key in [key for key, value in build_record if key not in fields]:
+            fields_changed = True
+            fields.append(key)
+
+        if fields_changed:
+            logger.debug("New columns: {}".format(fields))
             self.table.SetFields(fields)
-            self.table.LookupFields()
-        return name
+            logger.debug("New columns added")
+
+        return fields
