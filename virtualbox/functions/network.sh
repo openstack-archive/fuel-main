@@ -140,13 +140,3 @@ create_hostonly_interface() {
     exit 1
   fi
 }
-
-delete_all_hostonly_interfaces() {
-  OIFS=$IFS;IFS=",";list=(`VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`);IFS=$OIFS
-  # Delete every single hostonly interface in the system
-  for interface in "${list[@]}"; do
-    echo "Deleting host-only interface: $interface..."
-    VBoxManage hostonlyif remove "$interface"
-  done
-}
-

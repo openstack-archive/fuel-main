@@ -25,9 +25,6 @@ source ./config.sh
 source ./functions/vm.sh
 source ./functions/network.sh
 
-# Delete all host-only interfaces
-delete_all_hostonly_interfaces
-
 # Create the required host-only interfaces
 # Change {0..2} to {0..4} below if you are going to create 5 interfaces instead of 3
 for idx in $(eval echo {0..2}); do
