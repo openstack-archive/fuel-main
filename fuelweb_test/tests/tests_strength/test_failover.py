@@ -371,7 +371,7 @@ class TestHaFailover(TestBasic):
 
         devops_ctrls = self.env.nodes().slaves[:3]
         pcm_nodes = ' '.join(self.fuel_web.get_pcm_nodes(
-            self.env.nodes().slaves[0].name)['Online'])
+            self.env.nodes().slaves[0].name, pure=True)['Online'])
         logger.debug("pacemaker nodes are {0}".format(pcm_nodes))
         for devops_node in devops_ctrls:
             config = self.fuel_web.get_pacemaker_config(devops_node.name)
@@ -386,8 +386,9 @@ class TestHaFailover(TestBasic):
                 'vip__management	(ocf::mirantis:ns_IPaddr2):	Started'
                 in config, 'vip management is not configured right')
             assert_not_equal(re.search(
-                "Clone Set: clone_p_openstack-heat-engine"
-                " \[p_openstack-heat-engine\]\s+Started: \[ {0} \]".format(
+                "Clone Set: clone_p_(heat|openstack-heat)-engine"
+                " \[p_(heat|openstack-heat)-engine\]\s+"
+                "Started: \[ {0} \]".format(
                     pcm_nodes), config), None,
                 'heat engine is not configured right')
             assert_not_equal(re.search(

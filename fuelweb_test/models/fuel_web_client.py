@@ -266,14 +266,18 @@ class FuelWebClient(object):
         return nailgun_node['fqdn']
 
     @logwrap
-    def get_pcm_nodes(self, ctrl_node):
+    def get_pcm_nodes(self, ctrl_node, pure=False):
         nodes = {}
         remote = self.get_ssh_for_node(ctrl_node)
         pcs_status = remote.execute('pcs status nodes')['stdout']
         pcm_nodes = yaml.load(''.join(pcs_status).strip())
         for status in ('Online', 'Offline', 'Standby'):
             list_nodes = (pcm_nodes['Pacemaker Nodes'][status] or '').split()
-            nodes[status] = [self.get_fqdn_by_hostname(x) for x in list_nodes]
+            if not pure:
+                nodes[status] = [self.get_fqdn_by_hostname(x)
+                                 for x in list_nodes]
+            else:
+                nodes[status] = list_nodes
         return nodes
 
     @logwrap
