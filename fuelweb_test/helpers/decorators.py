@@ -62,12 +62,8 @@ def log_snapshot_on_error(func):
             raise SkipTest()
         except Exception as test_exception:
             exc_trace = sys.exc_traceback
-            if args and 'snapshot' in args[0].__dict__:
-                name = 'error_%s' % args[0].snapshot
-                description = "Failed in method '%s'." % args[0].snapshot
-            else:
-                name = 'error_%s' % func.__name__
-                description = "Failed in method '%s'." % func.__name__
+            name = 'error_%s' % func.__name__
+            description = "Failed in method '%s'." % func.__name__
             if args[0].env is not None:
                 try:
                     create_diagnostic_snapshot(args[0].env,
