@@ -98,7 +98,7 @@ class HAOneControllerZabbix(TestBasic):
 
         # login in dashboard
         node_ip = self.fuel_web.get_nailgun_node_by_devops_node(
-            self.env.get_virtual_environment().node_by_name('slave-03'))['ip']
+            self.env.get_virtual_environment().get_node(name='slave-03'))['ip']
 
         dashboard_url = 'http://{0}/zabbix/'.format(node_ip)
 
