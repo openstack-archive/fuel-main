@@ -1,5 +1,5 @@
 %define name python-fuelclient
-%define unmangled_name fuelclient
+%define unmangled_name python-fuelclient
 %define version 6.0.0
 %define release 1
 
