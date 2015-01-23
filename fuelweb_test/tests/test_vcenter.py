@@ -428,7 +428,8 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.provisioning_cluster_wait(cluster_id)
         self.fuel_web.deploy_task_wait(cluster_id=cluster_id, progress=40)
         self.fuel_web.stop_deployment_wait(cluster_id)
-        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:2])
+        self.fuel_web.wait_nodes_get_online_state(
+            self.env.get_virtual_environment().nodes_container().slaves[:2])
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         self.fuel_web.run_ostf(
