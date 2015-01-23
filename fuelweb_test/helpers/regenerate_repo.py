@@ -75,7 +75,7 @@ class CustomRepo(object):
                     .format(settings.CUSTOM_PKGS_MIRROR))
 
         # Modify admin resolv.conf to use local host resolver
-        dns_server = self.env.router()
+        dns_server = self.env.get_virtual_environment().router()
         new_resolv_conf = ["nameserver {0}".format(dns_server)]
 
         # Set the local router as nameserver that will allow
