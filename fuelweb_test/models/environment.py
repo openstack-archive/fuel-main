@@ -20,7 +20,12 @@ from devops.helpers.helpers import _tcp_ping
 from devops.helpers.helpers import _wait
 from devops.helpers.helpers import SSHClient
 from devops.helpers.helpers import wait
-from devops.manager import Manager
+from devops.models import DiskDevice
+from devops.models import Environment
+from devops.models import Interface
+from devops.models import Network
+from devops.models import Node
+from devops.models import Volume
 from ipaddr import IPNetwork
 from keystoneclient import exceptions
 from paramiko import Agent
@@ -56,7 +61,6 @@ class EnvironmentModel(object):
     def __init__(self, os_image=None):
         self._virtual_environment = None
         self._keys = None
-        self.manager = Manager()
         self.os_image = os_image
         self._fuel_web = FuelWebClient(self.get_admin_node_ip(), self)
 
@@ -70,7 +74,7 @@ class EnvironmentModel(object):
 
     def _get_or_create(self):
         try:
-            return self.manager.environment_get(self.env_name)
+            return Environment.get(self.env_name)
         except Exception:
             self._virtual_environment = self.describe_environment()
             self._virtual_environment.define()
@@ -112,9 +116,9 @@ class EnvironmentModel(object):
     def add_empty_volume(self, node, name,
                          capacity=settings.NODE_VOLUME_SIZE * 1024 * 1024
                          * 1024, device='disk', bus='virtio', format='qcow2'):
-        self.manager.node_attach_volume(
+        DiskDevice.node_attach_volume(
             node=node,
-            volume=self.manager.volume_create(
+            volume=Volume.volume_create(
                 name=name,
                 capacity=capacity,
                 environment=self.get_virtual_environment(),
@@ -123,7 +127,7 @@ class EnvironmentModel(object):
             bus=bus)
 
     def add_node(self, memory, name, vcpu=1, boot=None):
-        return self.manager.node_create(
+        return Node.node_create(
             name=name,
             memory=memory,
             vcpu=vcpu,
@@ -158,18 +162,18 @@ class EnvironmentModel(object):
                           model=settings.INTERFACE_MODEL):
         if settings.BONDING:
             for network in networks:
-                self.manager.interface_create(
+                Interface.interface_create(
                     network, node=node, model=model,
                     interface_map=settings.BONDING_INTERFACES)
         else:
             for network in networks:
-                self.manager.interface_create(network, node=node, model=model)
+                Interface.interface_create(network, node=node, model=model)
 
     def describe_environment(self):
         """Environment
         :rtype : Environment
         """
-        environment = self.manager.environment_create(self.env_name)
+        environment = Environment.create(self.env_name)
         networks = []
         interfaces = settings.INTERFACE_ORDER
         if self.multiple_cluster_networks:
@@ -201,9 +205,9 @@ class EnvironmentModel(object):
         ip_networks = [
             IPNetwork(x) for x in settings.POOLS.get(name)[0].split(',')]
         new_prefix = int(settings.POOLS.get(name)[1])
-        pool = self.manager.create_network_pool(networks=ip_networks,
+        pool = Network.create_network_pool(networks=ip_networks,
                                                 prefix=int(new_prefix))
-        return self.manager.network_create(
+        return Network.network_create(
             name=name,
             environment=environment,
             pool=pool,
@@ -235,13 +239,13 @@ class EnvironmentModel(object):
                 device='cdrom',
                 bus='ide')
         else:
-            volume = self.manager.volume_get_predefined(self.os_image)
-            vol_child = self.manager.volume_create_child(
+            volume = Volume.volume_get_predefined(self.os_image)
+            vol_child = Volume.volume_create_child(
                 name=name + '-system',
                 backing_store=volume,
                 environment=self.get_virtual_environment()
             )
-            self.manager.node_attach_volume(
+            DiskDevice.node_attach_volume(
                 node=node,
                 volume=vol_child
             )
