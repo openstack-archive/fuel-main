@@ -99,5 +99,10 @@ case "$(uname)" in
 esac
 echo "OK"
 
+# Check if ping is installed. Cygwin does not install ping by default and can use Windows ping.
+echo "Checking if ping installed... "
+type ping >/dev/null 2>&1 || { echo >&2 "No ping available in your environment. Please check you can run ping from command prompt."; exit 1; }
+echo "OK"
+
 # Report success
 echo "Setup is done."
