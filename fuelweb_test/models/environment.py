@@ -21,6 +21,7 @@ from devops.helpers.helpers import _wait
 from devops.helpers.helpers import SSHClient
 from devops.helpers.helpers import wait
 from devops.manager import Manager
+from devops.models import Environment
 from ipaddr import IPNetwork
 from keystoneclient import exceptions
 from paramiko import Agent
@@ -70,7 +71,7 @@ class EnvironmentModel(object):
 
     def _get_or_create(self):
         try:
-            return self.manager.environment_get(self.env_name)
+            return Environment.get(self.env_name)
         except Exception:
             self._virtual_environment = self.describe_environment()
             self._virtual_environment.define()
@@ -169,7 +170,7 @@ class EnvironmentModel(object):
         """Environment
         :rtype : Environment
         """
-        environment = self.manager.environment_create(self.env_name)
+        environment = Environment.create(self.env_name)
         networks = []
         interfaces = settings.INTERFACE_ORDER
         if self.multiple_cluster_networks:
