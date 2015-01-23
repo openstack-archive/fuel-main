@@ -96,7 +96,7 @@ def configure_second_dhcrelay(self):
     remote = self.get_admin_remote()
     second_admin_if = settings.INTERFACES.get(self.admin_net2)
     sed_cmd = "/  interface:/a \  interface: {0}".format(second_admin_if)
-    self._fuel_web.modify_python_file(remote, sed_cmd,
+    self.fuel_web.modify_python_file(remote, sed_cmd,
                                       settings.FUEL_SETTINGS_YAML)
     cmd = ('supervisorctl restart dhcrelay_monitor; '
            'pgrep -f "[d]hcrelay.*{0}"').format(second_admin_if)
