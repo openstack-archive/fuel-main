@@ -368,8 +368,37 @@ class SimpleVlan(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
-        self.env.make_snapshot("deploy_simple_vlan")
+        self.env.make_snapshot("deploy_simple_vlan", is_make=True)
 
+    @test(depends_on=[deploy_simple_vlan],
+          groups=["deploy_base_os_node"])
+    @log_snapshot_on_error
+    def deploy_base_os_node(self):
+        """Add compute node to cluster in simple mode
+
+        Scenario:
+            1. Revert snapshot "deploy_simple_vlan"
+            2. Add 1 node with base-os role
+            3. Deploy the cluster
+            4. Run OSTF
+
+        Snapshot: simple_flat_add_compute
+
+        """
+        self.env.revert_snapshot("deploy_simple_vlan")
+
+        cluster_id = self.fuel_web.get_last_created_cluster()
+
+        self.fuel_web.update_nodes(
+            cluster_id, {'slave-03': ['base-os']}, True, False)
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        assert_equal(
+            3, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))
+
+        self.fuel_web.run_ostf(cluster_id=cluster_id)
+
+        self.env.make_snapshot("simple_flat_add_base_os", is_make=True)
 
 @test(groups=["thread_2", "multirole"])
 class MultiroleControllerCinder(TestBasic):
