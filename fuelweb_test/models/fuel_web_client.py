@@ -34,21 +34,7 @@ from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.helpers.security import SecurityChecks
 from fuelweb_test.models.nailgun_client import NailgunClient
 from fuelweb_test import ostf_test_mapping as map_ostf
-from fuelweb_test.settings import ATTEMPTS
-from fuelweb_test.settings import BONDING
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
-from fuelweb_test.settings import KVM_USE
-from fuelweb_test.settings import MULTIPLE_NETWORKS
-from fuelweb_test.settings import NEUTRON
-from fuelweb_test.settings import NEUTRON_SEGMENT
-from fuelweb_test.settings import NODEGROUPS
-from fuelweb_test.settings import OPENSTACK_RELEASE
-from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
-from fuelweb_test.settings import OSTF_TEST_NAME
-from fuelweb_test.settings import OSTF_TEST_RETRIES_COUNT
-from fuelweb_test.settings import TIMEOUT
-
-import fuelweb_test.settings as help_data
+from fuelweb_test import settings
 
 
 class FuelWebClient(object):
@@ -261,7 +247,7 @@ class FuelWebClient(object):
     def fqdn(self, devops_node):
         logger.info('Get FQDN of a devops node %s', devops_node.name)
         nailgun_node = self.get_nailgun_node_by_devops_node(devops_node)
-        if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
+        if settings.OPENSTACK_RELEASE_UBUNTU in settings.OPENSTACK_RELEASE:
             return nailgun_node['meta']['system']['fqdn']
         return nailgun_node['fqdn']
 
@@ -306,8 +292,8 @@ class FuelWebClient(object):
     def create_cluster(self,
                        name,
                        settings=None,
-                       release_name=help_data.OPENSTACK_RELEASE,
-                       mode=DEPLOYMENT_MODE_SIMPLE,
+                       release_name=settings.OPENSTACK_RELEASE,
+                       mode=settings.DEPLOYMENT_MODE_SIMPLE,
                        port=514,
                        release_id=None):
         """Creates a cluster
@@ -367,44 +353,44 @@ class FuelWebClient(object):
                 if section:
                     attributes['editable'][section][option]['value'] =\
                         settings[option]
-            if help_data.IMAGE_PROVISIONING:
+            if settings.IMAGE_PROVISIONING:
                 attributes['editable']['provision']['method']['value'] = \
                     'image'
 
-            logger.info('Set DEBUG MODE to %s', help_data.DEBUG_MODE)
+            logger.info('Set DEBUG MODE to %s', settings.DEBUG_MODE)
             attributes['editable']['common']['debug']['value'] = \
-                help_data.DEBUG_MODE
+                settings.DEBUG_MODE
 
-            if KVM_USE:
+            if settings.KVM_USE:
                 logger.info('Set Hypervisor type to KVM')
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "kvm"
 
-            if help_data.VCENTER_USE:
+            if settings.VCENTER_USE:
                 logger.info('Set Hypervisor type to vCenter')
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "vcenter"
 
                 datacenter = attributes['editable']['storage']['vc_datacenter']
-                datacenter['value'] = help_data.VC_DATACENTER
+                datacenter['value'] = settings.VC_DATACENTER
 
                 datastore = attributes['editable']['storage']['vc_datastore']
-                datastore['value'] = help_data.VC_DATASTORE
+                datastore['value'] = settings.VC_DATASTORE
 
                 imagedir = attributes['editable']['storage']['vc_image_dir']
-                imagedir['value'] = help_data.VC_IMAGE_DIR
+                imagedir['value'] = settings.VC_IMAGE_DIR
 
                 host = attributes['editable']['storage']['vc_host']
-                host['value'] = help_data.VC_HOST
+                host['value'] = settings.VC_HOST
 
                 vc_user = attributes['editable']['storage']['vc_user']
-                vc_user['value'] = help_data.VC_USER
+                vc_user['value'] = settings.VC_USER
 
                 vc_password = attributes['editable']['storage']['vc_password']
-                vc_password['value'] = help_data.VC_PASSWORD
+                vc_password['value'] = settings.VC_PASSWORD
 
                 vc_clusters = attributes['editable']['vcenter']['cluster']
-                vc_clusters['value'] = help_data.VCENTER_CLUSTERS
+                vc_clusters['value'] = settings.VCENTER_CLUSTERS
 
             logger.debug("Try to update cluster "
                          "with next attributes {0}".format(attributes))
@@ -412,10 +398,10 @@ class FuelWebClient(object):
 
             logger.debug("Attributes of cluster were updated,"
                          " going to update networks ...")
-            if MULTIPLE_NETWORKS:
-                node_groups = {n['name']: [] for n in NODEGROUPS}
+            if settings.MULTIPLE_NETWORKS:
+                node_groups = {n['name']: [] for n in settings.NODEGROUPS}
                 self.update_nodegroups(cluster_id, node_groups)
-                for NODEGROUP in NODEGROUPS:
+                for NODEGROUP in settings.NODEGROUPS:
                     self.update_network_configuration(cluster_id,
                                                       nodegroup=NODEGROUP)
             else:
@@ -495,7 +481,7 @@ class FuelWebClient(object):
         nailgun_node_roles = []
         for node_name in nodes_dict:
             slave = self.environment.get_virtual_environment().\
-                node_by_name(node_name)
+                node(name=node_name)
             node = self.get_nailgun_node_by_devops_node(slave)
             nailgun_node_roles.append((node, nodes_dict[node_name]))
         return nailgun_node_roles
@@ -504,7 +490,7 @@ class FuelWebClient(object):
     def get_nailgun_node_by_name(self, node_name):
         logger.info('Get nailgun node by %s devops node', node_name)
         return self.get_nailgun_node_by_devops_node(
-            self.environment.get_virtual_environment().node_by_name(node_name))
+            self.environment.get_virtual_environment().node(name=node_name))
 
     @logwrap
     def get_nailgun_node_by_devops_node(self, devops_node):
@@ -514,18 +500,18 @@ class FuelWebClient(object):
         """
         d_macs = {i.mac_address.upper() for i in devops_node.interfaces}
         logger.debug('Verify that nailgun api is running')
-        attempts = ATTEMPTS
+        attempts = settings.ATTEMPTS
         while attempts > 0:
             logger.debug(
                 'current timeouts is {0} count of '
-                'attempts is {1}'.format(TIMEOUT, attempts))
+                'attempts is {1}'.format(settings.TIMEOUT, attempts))
             try:
                 self.client.list_nodes()
                 attempts = 0
             except Exception:
                 logger.debug(traceback.format_exc())
                 attempts -= 1
-                time.sleep(TIMEOUT)
+                time.sleep(settings.TIMEOUT)
         logger.debug('Look for nailgun node by macs %s', d_macs)
         for nailgun_node in self.client.list_nodes():
             macs = {i['mac'] for i in nailgun_node['meta']['interfaces']}
@@ -555,7 +541,7 @@ class FuelWebClient(object):
     def get_ssh_for_node(self, node_name):
         ip = self.get_nailgun_node_by_devops_node(
             self.environment.get_virtual_environment().
-            node_by_name(node_name))['ip']
+            node(name=node_name))['ip']
         return self.environment.get_ssh_to_remote(ip)
 
     @logwrap
@@ -662,7 +648,7 @@ class FuelWebClient(object):
         nodes_data = []
         nodes_groups = {}
         for node_name in nodes_dict:
-            if MULTIPLE_NETWORKS:
+            if settings.MULTIPLE_NETWORKS:
                 node_roles = nodes_dict[node_name][0]
                 node_group = nodes_dict[node_name][1]
             else:
@@ -670,7 +656,7 @@ class FuelWebClient(object):
                 node_group = 'default'
 
             devops_node = self.environment.get_virtual_environment().\
-                node_by_name(node_name)
+                node(name=node_name)
 
             wait(lambda:
                  self.get_nailgun_node_by_devops_node(devops_node)['online'],
@@ -759,11 +745,11 @@ class FuelWebClient(object):
 
     @logwrap
     def update_redhat_credentials(
-            self, license_type=help_data.REDHAT_LICENSE_TYPE,
-            username=help_data.REDHAT_USERNAME,
-            password=help_data.REDHAT_PASSWORD,
-            satellite_host=help_data.REDHAT_SATELLITE_HOST,
-            activation_key=help_data.REDHAT_ACTIVATION_KEY):
+            self, license_type=settings.REDHAT_LICENSE_TYPE,
+            username=settings.REDHAT_USERNAME,
+            password=settings.REDHAT_PASSWORD,
+            satellite_host=settings.REDHAT_SATELLITE_HOST,
+            activation_key=settings.REDHAT_ACTIVATION_KEY):
 
         # release name is in environment variable OPENSTACK_RELEASE
         release_id = self.client.get_release_id('RHOS')
@@ -788,7 +774,7 @@ class FuelWebClient(object):
         self.client.update_network(
             cluster_id,
             networking_parameters={
-                "net_manager": help_data.NETWORK_MANAGERS['vlan'],
+                "net_manager": settings.NETWORK_MANAGERS['vlan'],
                 "fixed_network_size": network_size,
                 "fixed_networks_amount": amount
             }
@@ -798,7 +784,7 @@ class FuelWebClient(object):
     def verify_network(self, cluster_id, timeout=60 * 5, success=True):
         # TODO(apanchenko): remove this hack when network verification begins
         # TODO(apanchenko): to work for environments with multiple net groups
-        if MULTIPLE_NETWORKS:
+        if settings.MULTIPLE_NETWORKS:
             logger.warning('Network verification is temporary disabled when '
                            '"multiple cluster networks" feature is used')
             return
@@ -811,7 +797,7 @@ class FuelWebClient(object):
     @logwrap
     def update_nodes_interfaces(self, cluster_id):
         net_provider = self.client.get_cluster(cluster_id)['net_provider']
-        if NEUTRON == net_provider:
+        if settings.NEUTRON == net_provider:
             assigned_networks = {
                 'eth1': ['public'],
                 'eth2': ['management'],
@@ -821,7 +807,7 @@ class FuelWebClient(object):
             if self.client.get_networks(cluster_id).\
                 get("networking_parameters").\
                 get("segmentation_type") == \
-                    NEUTRON_SEGMENT['vlan']:
+                    settings.NEUTRON_SEGMENT['vlan']:
                 assigned_networks.update({'eth3': ['private']})
         else:
             assigned_networks = {
@@ -886,13 +872,14 @@ class FuelWebClient(object):
         nc = network_configuration["networking_parameters"]
         public = IPNetwork(self.environment.get_network("public"))
 
-        float_range = public if not BONDING else list(public.subnet(27))[0]
+        float_range = public if not settings.BONDING else list(
+            public.subnet(27))[0]
         nc["floating_ranges"] = self.get_range(float_range, 1)
 
     def set_network(self, net_config, net_name, net_pools=None):
         nets_wo_floating = ['public', 'management', 'storage']
         if not net_pools:
-            if not BONDING:
+            if not settings.BONDING:
                 if 'floating' == net_name:
                     self.net_settings(net_config, 'public', floating=True)
                 elif net_name in nets_wo_floating:
@@ -915,7 +902,7 @@ class FuelWebClient(object):
             public_net = _get_true_net_name('public')
             admin_net = _get_true_net_name('admin')
 
-            if not BONDING:
+            if not settings.BONDING:
                 if 'floating' == net_name:
                     self.net_settings(net_config, public_net, floating=True)
                 elif net_name in nets_wo_floating:
@@ -1127,8 +1114,8 @@ class FuelWebClient(object):
         res = []
         passed_count = []
         failed_count = []
-        test_nama_to_ran = test_name or OSTF_TEST_NAME
-        retr = test_retries or OSTF_TEST_RETRIES_COUNT
+        test_nama_to_ran = test_name or settings.OSTF_TEST_NAME
+        retr = test_retries or settings.OSTF_TEST_RETRIES_COUNT
         test_path = map_ostf.OSTF_TEST_MAPPING.get(test_nama_to_ran)
         logger.info('Test path is {0}'.format(test_path))
 
@@ -1163,7 +1150,7 @@ class FuelWebClient(object):
     @logwrap
     def sync_ceph_time(self, ceph_nodes):
         self.environment.sync_time_admin_node()
-        if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
+        if settings.OPENSTACK_RELEASE_UBUNTU in settings.OPENSTACK_RELEASE:
             cmd = 'service ceph-all restart'
         else:
             cmd = 'service ceph restart'
