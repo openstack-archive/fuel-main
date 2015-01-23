@@ -14,7 +14,7 @@ NOISOFOUND_ERR=107
 COPYISO_ERR=108
 SYMLINKISO_ERR=109
 CDWORKSPACE_ERR=110
-ISODOWNLOAD_ERR=111 
+ISODOWNLOAD_ERR=111
 INVALIDTASK_ERR=112
 
 # Defaults
@@ -50,7 +50,7 @@ if you do need to override them.
 -m (name)   - Use this mirror to build ISO from.
               Uses 'srt' if not set.
 -U          - ISO URL for tests.
-              Null by default.             
+              Null by default.
 -r (yes/no) - Should built ISO file be places with build number tag and
               symlinked to the last build or just copied over the last file.
 -b (num)    - Allows you to override Jenkins' build number if you need to.
@@ -110,8 +110,8 @@ GlobalVariables() {
   # if was not overriden by options or export
   if [ -z "${ISO_PATH}" ]; then
     ISO_PATH="${ISO_DIR}/${ISO_NAME}"
-  fi  
-  
+  fi
+
   # what task should be ran
   # it's taken from jenkins job name suffix if not set by options
   if [ -z "${TASK_NAME}" ]; then
@@ -206,14 +206,14 @@ CheckVariables() {
 
   if [ -z "${JOB_NAME}" ]; then
     echo "Error! JOB_NAME is not set!"
-    exit $NOJOBNAME_ERR 
+    exit $NOJOBNAME_ERR
   fi
 
   if [ -z "${ISO_PATH}" ]; then
     echo "Error! ISO_PATH is not set!"
-    exit $NOISOPATH_ERR 
+    exit $NOISOPATH_ERR
   fi
-  
+
   if [ -z "${TASK_NAME}" ]; then
     echo "Error! TASK_NAME is not set!"
     exit $NOTASKNAME_ERR
@@ -252,7 +252,7 @@ MakeISO() {
 
   if [ "${ec}" -gt "0" ]; then
     echo "Error making ISO!"
-    exit $MAKEISO_ERR 
+    exit $MAKEISO_ERR
   fi
 
   if [ "${DRY_RUN}" = "yes" ]; then
@@ -366,8 +366,8 @@ RunTest() {
     # run python virtualenv
     if [ "${DRY_RUN}" = "yes" ]; then
         echo . $VENV_PATH/bin/activate
-    else
-        . $VENV_PATH/bin/activate
+    #else
+    #    . $VENV_PATH/bin/activate
     fi
 
     if [ "${ENV_NAME}" = "" ]; then
@@ -441,7 +441,7 @@ RouteTasks() {
   case "${TASK_NAME}" in
   test)
     RunTest
-    ;;  
+    ;;
   iso)
     MakeISO
     ;;
