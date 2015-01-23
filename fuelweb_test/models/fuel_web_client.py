@@ -495,7 +495,7 @@ class FuelWebClient(object):
         nailgun_node_roles = []
         for node_name in nodes_dict:
             slave = self.environment.get_virtual_environment().\
-                node_by_name(node_name)
+                node(name=node_name)
             node = self.get_nailgun_node_by_devops_node(slave)
             nailgun_node_roles.append((node, nodes_dict[node_name]))
         return nailgun_node_roles
@@ -504,7 +504,7 @@ class FuelWebClient(object):
     def get_nailgun_node_by_name(self, node_name):
         logger.info('Get nailgun node by %s devops node', node_name)
         return self.get_nailgun_node_by_devops_node(
-            self.environment.get_virtual_environment().node_by_name(node_name))
+            self.environment.get_virtual_environment().node(name=node_name))
 
     @logwrap
     def get_nailgun_node_by_devops_node(self, devops_node):
@@ -555,7 +555,7 @@ class FuelWebClient(object):
     def get_ssh_for_node(self, node_name):
         ip = self.get_nailgun_node_by_devops_node(
             self.environment.get_virtual_environment().
-            node_by_name(node_name))['ip']
+            node(name=node_name))['ip']
         return self.environment.get_ssh_to_remote(ip)
 
     @logwrap
@@ -670,7 +670,7 @@ class FuelWebClient(object):
                 node_group = 'default'
 
             devops_node = self.environment.get_virtual_environment().\
-                node_by_name(node_name)
+                node(name=node_name)
 
             wait(lambda:
                  self.get_nailgun_node_by_devops_node(devops_node)['online'],
@@ -884,7 +884,7 @@ class FuelWebClient(object):
 
     def common_net_settings(self, network_configuration):
         nc = network_configuration["networking_parameters"]
-        public = IPNetwork(self.environment.get_network("public"))
+        public = IPNetwork(self.environment._get_network("public"))
 
         float_range = public if not BONDING else list(public.subnet(27))[0]
         nc["floating_ranges"] = self.get_range(float_range, 1)
@@ -899,7 +899,7 @@ class FuelWebClient(object):
                     self.net_settings(net_config, net_name)
             else:
                 pub_subnets = list(IPNetwork(
-                    self.environment.get_network("public")).subnet(27))
+                    self.environment._get_network("public")).subnet(27))
                 if "floating" == net_name:
                     self.net_settings(net_config, pub_subnets[0],
                                       floating=True, jbond=True)
@@ -924,7 +924,7 @@ class FuelWebClient(object):
                     self.net_settings(net_config, admin_net)
             else:
                 pub_subnets = list(IPNetwork(
-                    self.environment.get_network(public_net)).subnet(27))
+                    self.environment._get_network(public_net)).subnet(27))
 
                 if "floating" == net_name:
                     self.net_settings(net_config, pub_subnets[0],
@@ -939,7 +939,7 @@ class FuelWebClient(object):
         if jbond:
             ip_network = net_name
         else:
-            ip_network = IPNetwork(self.environment.get_network(net_name))
+            ip_network = IPNetwork(self.environment._get_network(net_name))
             if 'admin' in net_name:
                 net_config['ip_ranges'] = self.get_range(ip_network, 2)
 
@@ -950,10 +950,12 @@ class FuelWebClient(object):
 
         if jbond:
             if net_config['name'] == 'public':
-                net_config['gateway'] = self.environment.router('public')
+                net_config['gateway'] = \
+                    self.environment.get_virtual_environment().router('public')
         else:
             net_config['vlan_start'] = None
-            net_config['gateway'] = self.environment.router(net_name)
+            net_config['gateway'] = self.environment.get_virtual_environment(
+            ).router(net_name)
 
     def get_range(self, ip_network, ip_range=0):
         net = list(IPNetwork(ip_network))
@@ -969,7 +971,7 @@ class FuelWebClient(object):
 
     def get_floating_ranges(self, network_set=''):
         net_name = 'public{0}'.format(network_set)
-        net = list(IPNetwork(self.environment.get_network(net_name)))
+        net = list(IPNetwork(self.environment._get_network(net_name)))
         ip_ranges, expected_ips = [], []
 
         for i in [0, -20, -40]:
