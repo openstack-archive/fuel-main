@@ -159,15 +159,17 @@ def update_ostf(func):
                             .format(settings.GERRIT_REFSPEC))
                 remote = args[0].environment.get_admin_remote()
                 remote.upload(settings.PATCH_PATH.rstrip('/'),
-                              '/tmp/fuel-ostf')
-                remote.execute('source /opt/fuel_plugins/ostf/bin/activate; '
-                               'cd /tmp/fuel-ostf; python setup.py develop')
-                remote.execute('/etc/init.d/supervisord restart')
+                              '/var/www/nailgun/fuel-ostf')
+                remote.execute('dockerctl shell ostf '
+                               'bash -c "cd /var/www/nailgun/fuel-ostf; '
+                               'python setup.py develop"')
+                remote.execute('dockerctl shell ostf '
+                               'bash -c "supervisorctl restart ostf"')
                 helpers.wait(
-                    lambda: "RUNNING" in
-                    remote.execute("supervisorctl status ostf | awk\
-                                   '{print $2}'")['stdout'][0],
-                    timeout=60)
+                    lambda: "0" in
+                    remote.execute('dockerctl shell ostf '
+                                   'bash -c "pgrep [o]stf; echo $?"')
+                    ['stdout'][1], timeout=60)
                 logger.info("OSTF status: RUNNING")
         except Exception as e:
             logger.error("Could not upload patch set {e}".format(e=e))
