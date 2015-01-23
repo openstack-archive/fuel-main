@@ -51,7 +51,8 @@ class OneNodeDeploy(TestBasic):
         """
         self.env.revert_snapshot("ready")
         self.fuel_web.client.get_root()
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:1])
+        self.env.bootstrap_nodes(
+            self.env.get_virtual_environment().nodes().slaves[:1])
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -244,7 +245,8 @@ class HAOneControllerFlat(TestBasic):
             os_conn, smiles_count=6, networks_count=1, timeout=300)
 
         ebtables = self.env.get_ebtables(
-            cluster_id, self.env.nodes().slaves[:2])
+            cluster_id, self.env.get_virtual_environment(
+            ).nodes().slaves[:2])
         ebtables.restore_vlans()
         try:
             ebtables.block_first_vlan()
@@ -785,7 +787,7 @@ class MultinicBootstrap(TestBasic):
         """
         self.env.revert_snapshot("ready")
 
-        slave = self.env.nodes().slaves[0]
+        slave = self.env.get_virtual_environment().nodes().slaves[0]
         mac_addresses = [interface.mac_address for interface in
                          slave.interfaces.filter(network__name='internal')]
         try:
@@ -794,7 +796,8 @@ class MultinicBootstrap(TestBasic):
             for mac in mac_addresses:
                 Ebtables.restore_mac(mac)
                 slave.destroy(verbose=False)
-                self.env.nodes().admins[0].revert("ready")
+                self.env.get_virtual_environment(
+                ).nodes().admins[0].revert("ready")
                 nailgun_slave = self.env.bootstrap_nodes([slave])[0]
                 assert_equal(mac.upper(), nailgun_slave['mac'].upper())
                 Ebtables.block_mac(mac)

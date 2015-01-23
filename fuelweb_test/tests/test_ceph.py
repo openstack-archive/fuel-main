@@ -1,4 +1,4 @@
-    #    Copyright 2014 Mirantis, Inc.
+#    Copyright 2014 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -112,7 +112,8 @@ class CephCompactWithCinder(TestBasic):
             return
 
         self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:4])
+        self.env.bootstrap_nodes(
+            self.env.get_virtual_environment().nodes().slaves[:4])
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -186,7 +187,8 @@ class CephHA(TestBasic):
             return
 
         self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:6])
+        self.env.bootstrap_nodes(
+            self.env.get_virtual_environment().nodes().slaves[:6])
         csettings = {}
         if settings.NEUTRON_ENABLE:
             csettings = {
@@ -569,7 +571,7 @@ class CheckCephPartitionsAfterReboot(TestBasic):
             logger.info("Warm-restart nodes")
             self.fuel_web.warm_restart_nodes(
                 [self.fuel_web.environment.get_virtual_environment().
-                    node_by_name(node)])
+                    get_node(name=node)])
 
             logger.info("Get partitions for {node} once again".format(
                 node=node
@@ -590,7 +592,7 @@ class CheckCephPartitionsAfterReboot(TestBasic):
             logger.info("Cold-restart nodes")
             self.fuel_web.cold_restart_nodes(
                 [self.fuel_web.environment.get_virtual_environment().
-                    node_by_name(node)])
+                    get_node(name=node)])
 
             after_reboot_partitions = [checkers.get_ceph_partitions(
                 self.env.get_ssh_to_remote_by_name(node),
