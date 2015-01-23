@@ -495,7 +495,7 @@ class FuelWebClient(object):
         nailgun_node_roles = []
         for node_name in nodes_dict:
             slave = self.environment.get_virtual_environment().\
-                node_by_name(node_name)
+                node(name=node_name)
             node = self.get_nailgun_node_by_devops_node(slave)
             nailgun_node_roles.append((node, nodes_dict[node_name]))
         return nailgun_node_roles
@@ -504,7 +504,7 @@ class FuelWebClient(object):
     def get_nailgun_node_by_name(self, node_name):
         logger.info('Get nailgun node by %s devops node', node_name)
         return self.get_nailgun_node_by_devops_node(
-            self.environment.get_virtual_environment().node_by_name(node_name))
+            self.environment.get_virtual_environment().node(name=node_name))
 
     @logwrap
     def get_nailgun_node_by_devops_node(self, devops_node):
@@ -555,7 +555,7 @@ class FuelWebClient(object):
     def get_ssh_for_node(self, node_name):
         ip = self.get_nailgun_node_by_devops_node(
             self.environment.get_virtual_environment().
-            node_by_name(node_name))['ip']
+            node(name=node_name))['ip']
         return self.environment.get_ssh_to_remote(ip)
 
     @logwrap
@@ -670,7 +670,7 @@ class FuelWebClient(object):
                 node_group = 'default'
 
             devops_node = self.environment.get_virtual_environment().\
-                node_by_name(node_name)
+                node(name=node_name)
 
             wait(lambda:
                  self.get_nailgun_node_by_devops_node(devops_node)['online'],
@@ -950,10 +950,12 @@ class FuelWebClient(object):
 
         if jbond:
             if net_config['name'] == 'public':
-                net_config['gateway'] = self.environment.router('public')
+                net_config['gateway'] = \
+                    self.environment.get_virtual_environment().router('public')
         else:
             net_config['vlan_start'] = None
-            net_config['gateway'] = self.environment.router(net_name)
+            net_config['gateway'] = self.environment.get_virtual_environment(
+            ).router(net_name)
 
     def get_range(self, ip_network, ip_range=0):
         net = list(IPNetwork(ip_network))
