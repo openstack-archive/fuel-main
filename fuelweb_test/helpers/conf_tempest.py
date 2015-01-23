@@ -94,7 +94,7 @@ class TempestConfigState(object):
             self._configure_nova_network(client)
 
     def _configure_openstack_neutron(self, client):
-        network = client.get_network(self.options['public_network_name'])
+        network = client._get_network(self.options['public_network_name'])
         router = client.get_router(network)
         self.options['public_network'] = network['id']
         self.options['public_router'] = router['id']

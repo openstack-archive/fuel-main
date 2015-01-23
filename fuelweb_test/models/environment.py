@@ -15,12 +15,11 @@
 import time
 import yaml
 
-from devops.helpers.helpers import _get_file_size
 from devops.helpers.helpers import _tcp_ping
 from devops.helpers.helpers import _wait
 from devops.helpers.helpers import SSHClient
 from devops.helpers.helpers import wait
-from devops.manager import Manager
+from devops.models import Environment
 from ipaddr import IPNetwork
 from keystoneclient import exceptions
 from paramiko import Agent
@@ -33,7 +32,8 @@ from fuelweb_test.helpers.decorators import revert_info
 from fuelweb_test.helpers.decorators import retry
 from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.helpers.eb_tables import Ebtables
-from fuelweb_test.helpers.fuel_actions import FuelActions
+from fuelweb_test.helpers.fuel_actions import NailgunActions
+from fuelweb_test.helpers.fuel_actions import PostgresActions
 from fuelweb_test.helpers import multiple_networks_hacks
 from fuelweb_test.models.fuel_web_client import FuelWebClient
 from fuelweb_test import settings
@@ -42,97 +42,27 @@ from fuelweb_test import logger
 
 
 class EnvironmentModel(object):
-    hostname = 'nailgun'
-    domain = 'test.domain.local'
-    installation_timeout = 1800
-    deployment_timeout = 1800
-    puppet_timeout = 2000
-    nat_interface = ''  # INTERFACES.get('admin')
-    admin_net = 'admin'
-    admin_net2 = 'admin2'
-    multiple_cluster_networks = settings.MULTIPLE_NETWORKS
-
-    def __init__(self, os_image=None):
+    def __init__(self):
         self._virtual_environment = None
         self._keys = None
-        self.manager = Manager()
-        self.os_image = os_image
-        self._fuel_web = FuelWebClient(self.get_admin_node_ip(), self)
+        self.fuel_web = FuelWebClient(self.get_admin_node_ip(), self)
 
     @property
     def nailgun_actions(self):
-        return FuelActions.Nailgun(self.get_admin_remote())
+        return NailgunActions(self.get_admin_remote())
 
     @property
     def postgres_actions(self):
-        return FuelActions.Postgres(self.get_admin_remote())
-
-    def _get_or_create(self):
-        try:
-            return self.manager.environment_get(self.env_name)
-        except Exception:
-            self._virtual_environment = self.describe_environment()
-            self._virtual_environment.define()
-            return self._virtual_environment
-
-    def router(self, router_name=None):
-        router_name = router_name or self.admin_net
-        if router_name == self.admin_net2:
-            return str(IPNetwork(self.get_virtual_environment().
-                                 network_by_name(router_name).ip_network)[2])
-        return str(
-            IPNetwork(
-                self.get_virtual_environment().network_by_name(router_name).
-                ip_network)[1])
-
-    @property
-    def fuel_web(self):
-        """FuelWebClient
-        :rtype: FuelWebClient
-        """
-        return self._fuel_web
+        return PostgresActions(self.get_admin_remote())
 
     @property
     def admin_node_ip(self):
         return self.fuel_web.admin_node_ip
 
-    @property
-    def node_roles(self):
-        return NodeRoles(
-            admin_names=['admin'],
-            other_names=['slave-%02d' % x for x in range(1, int(
-                settings.NODES_COUNT))]
-        )
-
-    @property
-    def env_name(self):
-        return settings.ENV_NAME
-
-    def add_empty_volume(self, node, name,
-                         capacity=settings.NODE_VOLUME_SIZE * 1024 * 1024
-                         * 1024, device='disk', bus='virtio', format='qcow2'):
-        self.manager.node_attach_volume(
-            node=node,
-            volume=self.manager.volume_create(
-                name=name,
-                capacity=capacity,
-                environment=self.get_virtual_environment(),
-                format=format),
-            device=device,
-            bus=bus)
-
-    def add_node(self, memory, name, vcpu=1, boot=None):
-        return self.manager.node_create(
-            name=name,
-            memory=memory,
-            vcpu=vcpu,
-            environment=self.get_virtual_environment(),
-            boot=boot)
-
     @logwrap
     def add_syslog_server(self, cluster_id, port=5514):
         self.fuel_web.add_syslog_server(
-            cluster_id, self.get_host_node_ip(), port)
+            cluster_id, self.get_virtual_environment().router(), port)
 
     def bootstrap_nodes(self, devops_nodes, timeout=600):
         """Lists registered nailgun nodes
@@ -153,143 +83,39 @@ class EnvironmentModel(object):
 
         return self.nailgun_nodes(devops_nodes)
 
-    def create_interfaces(self, networks, node,
-                          model=settings.INTERFACE_MODEL):
-        if settings.BONDING:
-            for network in networks:
-                self.manager.interface_create(
-                    network, node=node, model=model,
-                    interface_map=settings.BONDING_INTERFACES)
-        else:
-            for network in networks:
-                self.manager.interface_create(network, node=node, model=model)
-
-    def describe_environment(self):
-        """Environment
-        :rtype : Environment
-        """
-        environment = self.manager.environment_create(self.env_name)
-        networks = []
-        interfaces = settings.INTERFACE_ORDER
-        if self.multiple_cluster_networks:
-            logger.info('Multiple cluster networks feature is enabled!')
-        if settings.BONDING:
-            interfaces = settings.BONDING_INTERFACES.keys()
-
-        for name in interfaces:
-            networks.append(self.create_networks(name, environment))
-        for name in self.node_roles.admin_names:
-            self.describe_admin_node(name, networks)
-        for name in self.node_roles.other_names:
-            if self.multiple_cluster_networks:
-                networks1 = [net for net in networks if net.name
-                             in settings.NODEGROUPS[0]['pools']]
-                networks2 = [net for net in networks if net.name
-                             in settings.NODEGROUPS[1]['pools']]
-                # If slave index is even number, then attach to
-                # it virtual networks from the second network group.
-                if int(name[-2:]) % 2 == 1:
-                    self.describe_empty_node(name, networks1)
-                elif int(name[-2:]) % 2 == 0:
-                    self.describe_empty_node(name, networks2)
-            else:
-                self.describe_empty_node(name, networks)
-        return environment
-
-    def create_networks(self, name, environment):
-        ip_networks = [
-            IPNetwork(x) for x in settings.POOLS.get(name)[0].split(',')]
-        new_prefix = int(settings.POOLS.get(name)[1])
-        pool = self.manager.create_network_pool(networks=ip_networks,
-                                                prefix=int(new_prefix))
-        return self.manager.network_create(
-            name=name,
-            environment=environment,
-            pool=pool,
-            forward=settings.FORWARDING.get(name),
-            has_dhcp_server=settings.DHCP.get(name))
-
-    def devops_nodes_by_names(self, devops_node_names):
-        return map(
-            lambda name:
-            self.get_virtual_environment().node_by_name(name),
-            devops_node_names)
-
-    @logwrap
-    def describe_admin_node(self, name, networks):
-        node = self.add_node(
-            memory=settings.HARDWARE.get("admin_node_memory", 1024),
-            vcpu=settings.HARDWARE.get("admin_node_cpu", 1),
-            name=name,
-            boot=['hd', 'cdrom'])
-        self.create_interfaces(networks, node)
-
-        if self.os_image is None:
-            self.add_empty_volume(node, name + '-system')
-            self.add_empty_volume(
-                node,
-                name + '-iso',
-                capacity=_get_file_size(settings.ISO_PATH),
-                format='raw',
-                device='cdrom',
-                bus='ide')
-        else:
-            volume = self.manager.volume_get_predefined(self.os_image)
-            vol_child = self.manager.volume_create_child(
-                name=name + '-system',
-                backing_store=volume,
-                environment=self.get_virtual_environment()
-            )
-            self.manager.node_attach_volume(
-                node=node,
-                volume=vol_child
-            )
-        return node
-
-    def describe_empty_node(self, name, networks):
-        node = self.add_node(
-            name=name,
-            memory=settings.HARDWARE.get("slave_node_memory", 1024),
-            vcpu=settings.HARDWARE.get("slave_node_cpu", 1))
-        self.create_interfaces(networks, node)
-        self.add_empty_volume(node, name + '-system')
-
-        if settings.USE_ALL_DISKS:
-            self.add_empty_volume(node, name + '-cinder')
-            self.add_empty_volume(node, name + '-swift')
-
-        return node
-
     @logwrap
     def get_admin_remote(self, login=settings.SSH_CREDENTIALS['login'],
                          password=settings.SSH_CREDENTIALS['password']):
         """SSH to admin node
         :rtype : SSHClient
         """
-        return self.nodes().admin.remote(self.admin_net,
-                                         login=login,
-                                         password=password)
+        return self.get_virtual_environment().nodes().admin.remote(
+            self.get_virtual_environment().admin_net,
+            login=login,
+            password=password)
 
     @logwrap
     def get_admin_node_ip(self):
         return str(
-            self.nodes().admin.get_ip_address_by_network_name(self.admin_net))
+            self.get_virtual_environment().nodes(
+            ).admin.get_ip_address_by_network_name(
+                self.get_virtual_environment().admin_net))
 
     @logwrap
     def get_ebtables(self, cluster_id, devops_nodes):
         return Ebtables(self.get_target_devs(devops_nodes),
                         self.fuel_web.client.get_cluster_vlans(cluster_id))
 
-    def get_host_node_ip(self):
-        return self.router()
-
     def get_keys(self, node, custom=None, build_images=None):
         params = {
-            'ip': node.get_ip_address_by_network_name(self.admin_net),
-            'mask': self.get_net_mask(self.admin_net),
-            'gw': self.router(),
-            'hostname': '.'.join((self.hostname, self.domain)),
-            'nat_interface': self.nat_interface,
+            'ip': node.get_ip_address_by_network_name(
+                self.get_virtual_environment().admin_net),
+            'mask': self.get_net_mask(self.get_virtual_environment(
+            ).admin_net),
+            'gw': self.get_virtual_environment().router(),
+            'hostname': '.'.join((self.get_virtual_environment().hostname,
+                                  self.get_virtual_environment().domain)),
+            'nat_interface': self.get_virtual_environment().nat_interface,
             'dns1': settings.DNS,
             'showmenu': 'yes' if custom else 'no',
             'build_images': '1' if build_images else '0'
@@ -345,7 +171,7 @@ class EnvironmentModel(object):
     def get_ssh_to_remote_by_name(self, node_name):
         return self.get_ssh_to_remote(
             self.fuel_web.get_nailgun_node_by_devops_node(
-                self.get_virtual_environment().node_by_name(node_name))['ip']
+                self.get_virtual_environment().get_node(name=node_name))['ip']
         )
 
     def get_target_devs(self, devops_nodes):
@@ -355,24 +181,25 @@ class EnvironmentModel(object):
                 for val in var]]
 
     def get_virtual_environment(self):
-        """Returns virtual environment
-        :rtype : devops.models.Environment
-        """
         if self._virtual_environment is None:
-            self._virtual_environment = self._get_or_create()
+            try:
+                return Environment.get(name=settings.ENV_NAME)
+            except Exception:
+                self._virtual_environment = Environment.describe_environment()
+                self._virtual_environment.define()
         return self._virtual_environment
 
-    def get_network(self, net_name):
+    def _get_network(self, net_name):
         return str(
             IPNetwork(
-                self.get_virtual_environment().network_by_name(net_name).
+                self.get_virtual_environment().get_network(name=net_name).
                 ip_network))
 
     def get_net_mask(self, net_name):
         return str(
             IPNetwork(
-                self.get_virtual_environment().network_by_name(
-                    net_name).ip_network).netmask)
+                self.get_virtual_environment().get_network(
+                    name=net_name).ip_network).netmask)
 
     def make_snapshot(self, snapshot_name, description="", is_make=False):
         if settings.MAKE_SNAPSHOT or is_make:
@@ -382,7 +209,8 @@ class EnvironmentModel(object):
             revert_info(snapshot_name, description)
             self.get_virtual_environment().resume()
             try:
-                self.nodes().admin.await(self.admin_net, timeout=60)
+                self.get_virtual_environment().nodes().admin.await(
+                    self.get_virtual_environment().admin_net, timeout=60)
             except Exception:
                 logger.error('Admin node is unavailable via SSH after '
                              'environment resume ')
@@ -394,9 +222,6 @@ class EnvironmentModel(object):
             devops_nodes
         )
 
-    def nodes(self):
-        return Nodes(self.get_virtual_environment(), self.node_roles)
-
     def revert_snapshot(self, name):
         if self.get_virtual_environment().has_snapshot(name):
             logger.info('We have snapshot with such name %s' % name)
@@ -407,33 +232,37 @@ class EnvironmentModel(object):
             self.get_virtual_environment().resume()
             logger.info('Starting snapshot resuming ...')
 
-            admin = self.nodes().admin
+            admin = self.get_virtual_environment().nodes().admin
 
             try:
                 admin.await(
-                    self.admin_net, timeout=10 * 60, by_port=8000)
+                    self.get_virtual_environment().admin_net, timeout=10 * 60,
+                    by_port=8000)
             except Exception as e:
                 logger.warning("From first time admin isn't reverted: "
                                "{0}".format(e))
                 admin.destroy()
                 logger.info('Admin node was destroyed. Wait 10 sec.')
                 time.sleep(10)
-                self.get_virtual_environment().start(self.nodes().admins)
+                self.get_virtual_environment().start(
+                    self.get_virtual_environment().nodes().admins)
                 logger.info('Admin node started second time.')
-                self.nodes().admin.await(
-                    self.admin_net, timeout=10 * 60, by_port=8000)
+                self.get_virtual_environment().nodes().admin.await(
+                    self.get_virtual_environment().admin_net, timeout=10 * 60,
+                    by_port=8000)
 
             self.set_admin_ssh_password()
             try:
-                _wait(self._fuel_web.client.get_releases,
+                _wait(self.fuel_web.client.get_releases,
                       expected=EnvironmentError, timeout=300)
             except exceptions.Unauthorized:
                 self.set_admin_keystone_password()
-                self._fuel_web.get_nailgun_version()
+                self.fuel_web.get_nailgun_version()
 
             self.sync_time_admin_node()
 
-            for node in self.nodes().slaves:
+            for node in self.get_virtual_environment().nodes(
+            ).slaves:
                 if not node.driver.node_active(node):
                     continue
                 try:
@@ -472,7 +301,7 @@ class EnvironmentModel(object):
     def set_admin_keystone_password(self):
         remote = self.get_admin_remote()
         try:
-            self._fuel_web.client.get_releases()
+            self.fuel_web.client.get_releases()
         except exceptions.Unauthorized:
             self.execute_remote_cmd(
                 remote, 'fuel user --newpass {0} --change-password'
@@ -485,9 +314,10 @@ class EnvironmentModel(object):
     def setup_environment(self, custom=settings.CUSTOM_ENV,
                           build_images=settings.BUILD_IMAGES):
         # start admin node
-        admin = self.nodes().admin
+        admin = self.get_virtual_environment().nodes().admin
         admin.disk_devices.get(device='cdrom').volume.upload(settings.ISO_PATH)
-        self.get_virtual_environment().start(self.nodes().admins)
+        self.get_virtual_environment().start(self.get_virtual_environment(
+        ).nodes().admins)
         logger.info("Waiting for admin node to start up")
         wait(lambda: admin.driver.node_active(admin), 60)
         logger.info("Proceed with installation")
@@ -497,7 +327,7 @@ class EnvironmentModel(object):
         if custom:
             self.setup_customisation()
         # wait while installation complete
-        admin.await(self.admin_net, timeout=10 * 60)
+        admin.await(self.get_virtual_environment().admin_net, timeout=10 * 60)
         self.set_admin_ssh_password()
         self.wait_bootstrap()
         time.sleep(10)
@@ -520,8 +350,9 @@ class EnvironmentModel(object):
     @upload_manifests
     def wait_for_provisioning(self):
         _wait(lambda: _tcp_ping(
-            self.nodes().admin.get_ip_address_by_network_name
-            (self.admin_net), 22), timeout=5 * 60)
+            self.get_virtual_environment().nodes(
+            ).admin.get_ip_address_by_network_name
+            (self.get_virtual_environment().admin_net), 22), timeout=5 * 60)
 
     def setup_customisation(self):
         self.wait_for_provisioning()
@@ -687,11 +518,15 @@ class EnvironmentModel(object):
     @logwrap
     def describe_second_admin_interface(self):
         remote = self.get_admin_remote()
-        second_admin_network = self.get_network(self.admin_net2).split('/')[0]
-        second_admin_netmask = self.get_net_mask(self.admin_net2)
-        second_admin_if = settings.INTERFACES.get(self.admin_net2)
-        second_admin_ip = str(self.nodes().admin.
-                              get_ip_address_by_network_name(self.admin_net2))
+        second_admin_network = self._get_network(self.get_virtual_environment(
+        ).admin_net2).split('/')[0]
+        second_admin_netmask = self.get_net_mask(self.get_virtual_environment(
+        ).admin_net2)
+        second_admin_if = settings.INTERFACES.get(self.get_virtual_environment(
+        ).admin_net2)
+        second_admin_ip = str(self.get_virtual_environment().nodes(
+        ).admin.get_ip_address_by_network_name(self.get_virtual_environment(
+        ).admin_net2))
         logger.info(('Parameters for second admin interface configuration: '
                      'Network - {0}, Netmask - {1}, Interface - {2}, '
                      'IP Address - {3}').format(second_admin_network,
@@ -727,27 +562,3 @@ class EnvironmentModel(object):
         return self.postgres_actions.run_query(
             db='nailgun',
             query="select master_node_uid from master_node_settings limit 1;")
-
-
-class NodeRoles(object):
-    def __init__(self,
-                 admin_names=None,
-                 other_names=None):
-        self.admin_names = admin_names or []
-        self.other_names = other_names or []
-
-
-class Nodes(object):
-    def __init__(self, environment, node_roles):
-        self.admins = []
-        self.others = []
-        for node_name in node_roles.admin_names:
-            self.admins.append(environment.node_by_name(node_name))
-        for node_name in node_roles.other_names:
-            self.others.append(environment.node_by_name(node_name))
-        self.slaves = self.others
-        self.all = self.slaves + self.admins
-        self.admin = self.admins[0]
-
-    def __iter__(self):
-        return self.all.__iter__()
