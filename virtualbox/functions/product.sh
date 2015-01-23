@@ -141,6 +141,20 @@ wait_for_product_vm_to_install() {
     done
 }
 
+check_internet_connection() {
+    line=$1
+    OIFS="${IFS}"
+    NIFS=$' '
+    IFS="${NIFS}"
+    for i in $line; do
+        if [[ "$i" == *% && "$i" != 100* ]]; then
+            return 0
+        fi
+    done
+    IFS="${OIFS}"
+    return 1
+}
+
 enable_outbound_network_for_product_vm() {
     ip=$1
     username=$2
@@ -151,12 +165,42 @@ enable_outbound_network_for_product_vm() {
 
     # Check for internet access on the host system
     echo -n "Checking for internet connectivity on the host system... "
-    if [ "`ping -c 5 google.com || ping -c 5 wikipedia.com`" ]; then
+    check_hosts=`echo google.com wikipedia.com | tr '  ' '\n'`
+    case $(uname) in
+        Linux | Darwin)
+            for i in ${check_hosts} ; do
+                ping_host=`ping -c 2 ${i} | grep %`
+                ping_host_result+=$ping_host
+            done
+        ;;
+        CYGWIN*)
+            if [ ! -z "`type ping | grep system32`" ]; then
+                for i in ${check_hosts} ; do
+                    ping_host=`ping -n 5 ${i} | grep %`
+                    ping_host_result+=$ping_host
+                done
+            elif [ ! -z "`type ping | grep bin`" ]; then
+                for i in ${check_hosts} ; do
+                    ping_host=`ping ${i} count 5 | grep %`
+                    ping_host_result+=$ping_host
+                done
+            else
+                print_no_internet_connectivity_banner
+                return 1
+            fi
+        ;;
+        *)
+            print_no_internet_connectivity_banner
+            return 1
+        ;;
+    esac
+
+    check_internet_connection "$ping_host_result"
+    if [[ $? -eq 0 ]]; then
         echo "OK"
     else
-        echo "FAIL"
         print_no_internet_connectivity_banner
-	return 1
+        return 1
     fi
 
     # Check host nameserver configuration
@@ -205,11 +249,14 @@ enable_outbound_network_for_product_vm() {
         expect "$prompt"
         send "dockerctl restart cobbler >/dev/null 2>&1\r"
         expect "$prompt"
-        send "service network restart >/dev/null 2>&1\r"
+        send "dockerctl check cobbler >/dev/null 2>&1\r"
+        expect "*ready*"
         expect "$prompt"
-        send "service dnsmasq restart >/dev/null 2>&1\r"
+        send "service network restart >/dev/null 2>&1\r"
+        expect "*OK*"
         expect "$prompt"
         send "for i in 1 2 3 4 5; do ping -c 2 google.com || ping -c 2 wikipedia.com || sleep 2; done\r"
+        expect "*icmp*"
         expect "$prompt"
 ENDOFEXPECT
     )
@@ -226,26 +273,22 @@ ENDOFEXPECT
     for line in $result; do
         IFS="${OIFS}"
         if [[ $line == *icmp_seq* ]]; then
-	    IFS="${NIFS}"
+        IFS="${NIFS}"
             echo "OK"
-	    return 0;
+        return 0;
         fi
         IFS="${NIFS}"
     done
-
-    echo "FAIL"
     print_no_internet_connectivity_banner
-
     return 1
 }
 
 print_no_internet_connectivity_banner() {
-
+    echo "FAIL"
     echo "############################################################"
     echo "# WARNING: some of the Fuel features will not be supported #"
     echo "#          (e.g. RHOS/RHEL integration) because there is   #"
     echo "#          no Internet connectivity                        #"
-    echo "############################################################"
-
+    echo "############################################################"    
 }
 
