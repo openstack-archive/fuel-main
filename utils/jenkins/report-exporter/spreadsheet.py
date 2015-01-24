@@ -31,20 +31,40 @@ class Document():
 
     def get_page(self, name):
         tables = self.gspreadsheet.GetTables(name=name)
-        if len(tables) > 0:
-            logger.debug("Use worksheet {0}".format(name))
-        else:
+
+        # GetTables by name searches by substring in the table name.
+        # GetTables(name="smth") can return ["smth","smth_else"]
+        # Thus we run additional check for table.name
+        tables = [table for table in tables if table.name == name]
+
+        if len(tables) == 0:
             # Create new worksheet
             logger.debug("Create new worksheet {0}".format(name))
-            self.gspreadsheet.client._GetSpreadsheetsClient().AddWorksheet(
+            wrksh = self.gspreadsheet.client._GetSpreadsheetsClient().AddWorksheet(
                 title=name,
                 row_count=1,
                 col_count=50,
                 key=self.gspreadsheet.spreadsheet_key,
             )
-            tables = self.gspreadsheet.GetTables(name=name)
+            table = text_db.Table(
+                name=name,
+                worksheet_entry=wrksh,
+                database_client=self.gspreadsheet.client,
+                spreadsheet_key=self.gspreadsheet.spreadsheet_key
+            )
+        elif len(tables) == 1:
+            table = tables[0]
+            logger.debug("Use worksheet {0}".format(table.name))
+        else:
+            logger.error(
+                "There are {0} tables named {1}".format(
+                    len(tables),
+                    name,
+                )
+            )
+            raise
 
-        return Page(tables.pop())
+        return Page(table)
 
 
 class Page():

@@ -58,13 +58,35 @@ class Build():
             job_info = J.get_job_info(self.name, depth=1)
             self.number = job_info["lastCompletedBuild"]["number"]
         else:
-            self.number = number
+            self.number = int(number)
 
         self.build_data = J.get_build_info(self.name, self.number, depth=1)
         self.url = self.build_data["url"]
 
     def test_data(self):
-        return get_test_data(self.url)
+        try:
+            data = get_test_data(self.url)
+        except Exception as e:
+            logger.warning("No test data for {0}: {1}".format(
+                self.url,
+                e,
+            ))
+            # If we failed to get any tests for the build, return
+            # meta test case 'jenkins' with status 'failed'.
+            data = {
+                "suites": [
+                    {
+                        "cases": [
+                            {
+                                "className": "jenkins",
+                                "status": "failed"
+                            }
+                        ]
+                    }
+                ]
+            }
+
+        return data
 
     def __str__(self):
         string = "\n".join([
