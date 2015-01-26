@@ -148,22 +148,26 @@ endef
 # Repos and versions
 FUELLIB_COMMIT?=master
 NAILGUN_COMMIT?=master
+PYTHON_FUELCLIENT_COMMIT?=master
 ASTUTE_COMMIT?=master
 OSTF_COMMIT?=master
 
 FUELLIB_REPO?=https://github.com/stackforge/fuel-library.git
 NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
+PYTHON_FUELCLIENT_REPO?=https://github.com/stackforge/python-fuelclient.git
 ASTUTE_REPO?=https://github.com/stackforge/fuel-astute.git
 OSTF_REPO?=https://github.com/stackforge/fuel-ostf.git
 
 # Gerrit URLs and commits
 FUELLIB_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-library
 NAILGUN_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-web
+PYTHON_FUELCLIENT_GERRIT_URL?=https://review.openstack.org/stackforge/python-fuelclient
 ASTUTE_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-astute
 OSTF_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-ostf
 
 FUELLIB_GERRIT_COMMIT?=none
 NAILGUN_GERRIT_COMMIT?=none
+PYTHON_FUELCLIENT_GERRIT_COMMIT?=none
 ASTUTE_GERRIT_COMMIT?=none
 OSTF_GERRIT_COMMIT?=none
 
