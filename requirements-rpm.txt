@@ -468,7 +468,7 @@ python-tablib-0.9.11.20120702git752443f-5.el6
 python-unittest2-0.5.1-3.el6
 python-urwid
 python-versiontools-1.9.1-3.el6
-python-virtualenv-1.7.2-1.el6
+python-virtualenv
 python-warlock
 python-webcolors-1.4-1
 python-webob
