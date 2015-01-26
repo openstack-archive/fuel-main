@@ -66,7 +66,6 @@ heat-api-cfn
 heat-api-cloudwatch
 heat-common
 heat-engine
-heat-docker
 hicolor-icon-theme
 hostname
 htop
@@ -125,7 +124,6 @@ nailgun-net-check
 ncurses-base
 neutron-dhcp-agent
 neutron-l3-agent
-neutron-lbaas-agent
 neutron-metadata-agent
 neutron-metering-agent
 neutron-plugin-bigswitch-agent
@@ -152,8 +150,6 @@ neutron-plugin-openflow-agent
 neutron-plugin-openvswitch-agent
 neutron-plugin-openvswitch
 neutron-plugin-plumgrid
-neutron-plugin-ryu-agent
-neutron-plugin-ryu
 neutron-plugin-vmware
 neutron-plugin-vpn-agent
 neutron-server
