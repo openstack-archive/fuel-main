@@ -1,0 +1,13 @@
+Verified+2: Jenkins
+Code-Review+1: Roman Prykhodchenko <me@romcheg.me>
+Code-Review+2: Dmitry Pyzhov <dpyzhov+gerrit@mirantis.com>
+Workflow+1: Dmitry Pyzhov <dpyzhov+gerrit@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+1: Aleksandra Fedorova <afedorova@mirantis.com>
+Code-Review+1: Vitaly Parakhin <vparakhin@mirantis.com>
+Code-Review+1: Bart?omiej Piotrowski <bpiotrowski@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Mon, 26 Jan 2015 12:02:23 +0000
+Reviewed-on: https://review.openstack.org/149672
+Project: stackforge/fuel-main
+Branch: refs/heads/master
