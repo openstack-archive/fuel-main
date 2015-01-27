@@ -278,10 +278,10 @@ class TestHaFlatScalability(TestBasic):
                 devops_node.name, self.env.nodes().slaves[:5], [])
             ret = self.fuel_web.get_pacemaker_status(devops_node.name)
             assert_true(
-                re.search('vip__management\s+\(ocf::mirantis:ns_IPaddr2\):'
+                re.search('vip__management\s+\(ocf::fuel:ns_IPaddr2\):'
                           '\s+Started node', ret), 'vip management started')
             assert_true(
-                re.search('vip__public\s+\(ocf::mirantis:ns_IPaddr2\):'
+                re.search('vip__public\s+\(ocf::fuel:ns_IPaddr2\):'
                           '\s+Started node', ret), 'vip public started')
 
         self.fuel_web.security.verify_firewall(cluster_id)
