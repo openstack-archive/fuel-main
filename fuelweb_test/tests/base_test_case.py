@@ -11,6 +11,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+"""
+Setup environment and common actions on it 
+"""
 
 from proboscis import SkipTest
 from proboscis import test
@@ -46,6 +49,9 @@ class TestBasic(object):
 
 @test
 class SetupEnvironment(TestBasic):
+    """
+    Setup Environment
+    """
     @test(groups=["setup"])
     def setup_master(self):
         """Create environment and set up master node
