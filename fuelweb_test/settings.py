@@ -349,7 +349,7 @@ EXAMPLE_PLUGIN_PATH = os.environ.get('EXAMPLE_PLUGIN_PATH')
 LBAAS_PLUGIN_PATH = os.environ.get('LBAAS_PLUGIN_PATH')
 
 FUEL_STATS_CHECK = os.environ.get('FUEL_STATS_CHECK', 'false') == 'true'
-FUEL_STATS_ENABLED = os.environ.get('FUEL_STATS_ENABLED', 'false') == 'true'
+FUEL_STATS_ENABLED = os.environ.get('FUEL_STATS_ENABLED', 'true') == 'true'
 FUEL_STATS_SSL = os.environ.get('FUEL_STATS_SSL', 'true') == 'true'
 FUEL_STATS_HOST = os.environ.get('FUEL_STATS_HOST',
                                  '172.18.2.169')
