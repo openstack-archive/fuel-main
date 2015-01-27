@@ -216,12 +216,12 @@ class TestHaFailover(TestBasic):
             logger.debug("Pacemaker status {0} for node {1}".format
                          (ret, devops_node.name))
             assert_true(
-                re.search('vip__management\s+\(ocf::mirantis:ns_IPaddr2\):'
+                re.search('vip__management\s+\(ocf::fuel:ns_IPaddr2\):'
                           '\s+Started node', ret),
                 'vip management not started. '
                 'Current pacemaker status is {0}'.format(ret))
             assert_true(
-                re.search('vip__public\s+\(ocf::mirantis:ns_IPaddr2\):'
+                re.search('vip__public\s+\(ocf::fuel:ns_IPaddr2\):'
                           '\s+Started node', ret),
                 'vip public not started. '
                 'Current pacemaker status is {0}'.format(ret))
@@ -378,12 +378,12 @@ class TestHaFailover(TestBasic):
             logger.debug("config on node {0} is {1}".format(
                 devops_node.name, config))
             assert_not_equal(re.search(
-                "vip__public\s+\(ocf::mirantis:ns_IPaddr2\):\s+Started\s+"
+                "vip__public\s+\(ocf::fuel:ns_IPaddr2\):\s+Started\s+"
                 "Clone Set:\s+clone_ping_vip__public\s+\[ping_vip__public\]"
                 "\s+Started:\s+\[ {0} \]".format(pcm_nodes), config), None,
                 'public vip is not configured right')
             assert_true(
-                'vip__management	(ocf::mirantis:ns_IPaddr2):	Started'
+                'vip__management	(ocf::fuel:ns_IPaddr2):	Started'
                 in config, 'vip management is not configured right')
             assert_not_equal(re.search(
                 "Clone Set: clone_p_(heat|openstack-heat)-engine"
@@ -429,7 +429,7 @@ class TestHaFailover(TestBasic):
 
         ocf_status = \
             'script -q -c "OCF_ROOT=/usr/lib/ocf' \
-            ' /usr/lib/ocf/resource.d/mirantis/{0}' \
+            ' /usr/lib/ocf/resource.d/fuel/{0}' \
             ' monitor 2>&1"'.format(heat_name)
 
         remote = self.fuel_web.get_ssh_for_node(
