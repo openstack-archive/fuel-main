@@ -27,7 +27,7 @@ deb $(MIRROR_UBUNTU) $(UBUNTU_RELEASE)-security main universe multiverse restric
 deb $(MIRROR_UBUNTU_SECURITY) $(UBUNTU_RELEASE)-security main universe multiverse restricted
 deb $(MIRROR_FUEL_UBUNTU) $(UBUNTU_RELEASE) main
 )
-$(if $(EXTRA_DEB_REPOS),$(subst |,$(newline)deb,deb $(EXTRA_DEB_REPOS)))
+$(if $(EXTRA_DEB_REPOS),$(subst |,$(newline)deb ,deb $(EXTRA_DEB_REPOS)))
 endef
 
 define policy_rc_d
