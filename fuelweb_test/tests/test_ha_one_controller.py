@@ -371,7 +371,50 @@ class HAOneControllerVlan(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
-        self.env.make_snapshot("deploy_ha_one_controller_vlan")
+        self.env.make_snapshot("deploy_ha_one_controller_vlan", is_make=True)
+
+    @test(depends_on=[deploy_ha_one_controller_vlan],
+          groups=["deploy_base_os_node"])
+    @log_snapshot_on_error
+    def deploy_base_os_node(self):
+        """Add base-os node to cluster in simple mode
+
+        Scenario:
+            1. Revert snapshot "deploy_simple_vlan"
+            2. Add 1 node with base-os role
+            3. Deploy the cluster
+            4. Run network verification
+            5. Run OSTF
+            6. Ssh to the base-os node and check
+                /etc/astute.yaml link source.
+            7. Make snapshot.
+
+        Snapshot: deploy_base_os_node
+
+        """
+        self.env.revert_snapshot("deploy_ha_one_controller_vlan")
+
+        cluster_id = self.fuel_web.get_last_created_cluster()
+
+        self.fuel_web.update_nodes(
+            cluster_id, {'slave-03': ['base-os']}, True, False)
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        assert_equal(
+            3, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))
+
+        self.fuel_web.verify_network(cluster_id)
+
+        self.fuel_web.run_ostf(cluster_id=cluster_id)
+
+        remote = self.env.get_ssh_to_remote_by_name('slave-03')
+
+        result = remote.execute('readlink /etc/astute.yaml')['stdout']
+
+        assert_true("base-os" in result[0],
+                    "Role mismatch. Node slave-03 is not base-os")
+
+        self.env.make_snapshot("deploy_base_os_node", is_make=True)
 
 
 @test(groups=["thread_2", "multirole"])
