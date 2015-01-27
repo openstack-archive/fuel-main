@@ -11,7 +11,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
+"""
+Tests for master node
+"""
 
 from devops.helpers.helpers import http
 from devops.helpers.helpers import wait
@@ -31,6 +33,9 @@ from fuelweb_test import logger
 
 @test(groups=["thread_1"])
 class TestAdminNode(TestBasic):
+    """
+    Verification of critical services on master node
+    """
     @test(depends_on=[SetupEnvironment.setup_master],
           groups=["test_cobbler_alive"])
     def test_cobbler_alive(self):
@@ -88,6 +93,9 @@ class TestAdminNode(TestBasic):
 
 @test(groups=["known_issues"])
 class TestAdminNodeBackupRestore(TestBasic):
+    """
+    Verification backup/restore for master node
+    """
     @test(depends_on=[SetupEnvironment.setup_master],
           groups=["backup_restore_master_base"])
     @log_snapshot_on_error
@@ -113,6 +121,9 @@ class TestAdminNodeBackupRestore(TestBasic):
 
 @test(groups=["setup_master_custom"])
 class TestAdminNodeCustomManifests(TestBasic):
+    """
+    Setup master node via custom manifests
+    """
     @test(groups=["setup_master_custom_manifests"])
     @log_snapshot_on_error
     def setup_with_custom_manifests(self):
