@@ -82,9 +82,18 @@ fi
 
 rm -rf "$apt_altstate"
 
-cat /downloads_*.list | sort | uniq > /repo/download/download_urls.list
+# Download only upstream packages
+cat /downloads_*.list | sort | uniq | grep ${MIRROR_UBUNTU} > /repo/download/download_urls.list
 rm /downloads_*.list /apt-errors.log
-(cat /repo/download/download_urls.list | xargs -n1 -P4 wget -nv -P /repo/download/) || exit 1
+
+# Get the list of packages from upstream ISO
+curl -ss http://releases.ubuntu.com/${UBUNTU_RELEASE_FULL}/ubuntu-${UBUNTU_RELEASE_FULL}-server-${UBUNTU_ARCH}.list > /iso.list || exit 1
+
+# Filter out packages that exist on upstream ISO
+cat /iso.list | rev | cut -d"/" -f1 | rev | grep "\.deb$" > /iso_filtered.list
+grep -v -f /iso_filtered.list /repo/download/download_urls.list > /repo/download/download_urls_filtered.list
+
+(cat /repo/download/download_urls_filtered.list | xargs -n1 -P4 wget -nv -P /repo/download/) || exit 1
 # Make structure and mocks for multiarch
 for dir in binary-i386 binary-amd64; do 
 	mkdir -p /repo/dists/${UBUNTU_RELEASE}/main/$dir /repo/dists/${UBUNTU_RELEASE}/main/debian-installer/$dir

@@ -61,7 +61,7 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	chmod +x $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/mkrepo.sh
 	# bootstrap Ubuntu
 	sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) \
-		--variant=minbase --include=apt-utils,wget,bzip2 \
+		--variant=minbase --include=apt-utils,wget,bzip2,curl \
 		$(UBUNTU_RELEASE) $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot $(MIRROR_UBUNTU)
 	sudo rm -f $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list.d/*.list
 	echo "$${APT_SOURCES_LIST}" | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list
@@ -76,9 +76,12 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 		extra_env="HTTP_PROXY=$${HTTP_PROXY} http_proxy=$${HTTP_PROXY}"; \
 	fi; \
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot env \
+		MIRROR_UBUNTU='$(MIRROR_UBUNTU)' \
 		UBUNTU_RELEASE='$(UBUNTU_RELEASE)' \
+		UBUNTU_ARCH='$(UBUNTU_ARCH)' \
 		UBUNTU_INSTALLER_KERNEL_VERSION='$(UBUNTU_INSTALLER_KERNEL_VERSION)' \
 		UBUNTU_KERNEL_FLAVOR='$(UBUNTU_KERNEL_FLAVOR)' \
+		UBUNTU_RELEASE_FULL='$(UBUNTU_MAJOR).$(UBUNTU_MINOR).$(UBUNTU_UPDATE)' \
 		$$extra_env \
 		/repo/mkrepo.sh
 	sudo rsync -a --delete $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/* $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/
