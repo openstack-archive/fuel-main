@@ -401,6 +401,12 @@ class SimpleVlan(TestBasic):
 
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
+        remote = self.env.get_ssh_to_remote_by_name('slave-03')
+
+        result = remote.execute('ls -l /etc/astute.yaml')['stdout']
+
+        assert_true("base-os" in result[0], "Role mismatch. Node slave-03 is not base-os")
+
         self.env.make_snapshot("deploy_base_os_node", is_make=True)
 
 
