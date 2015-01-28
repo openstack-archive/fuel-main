@@ -1,5 +1,5 @@
 %define rbname astute
-%define version 6.0.0
+%define version 6.1.0
 %define release 1
 %global gemdir %(ruby -rubygems -e 'puts Gem::dir' 2>/dev/null)
 %global geminstdir %{gemdir}/gems/%{gemname}-%{version}
@@ -15,7 +15,6 @@ License: Distributable
 URL: http://fuel.mirantis.com
 Source0: %{rbname}-%{version}.gem
 # Make sure the spec template is included in the SRPM
-Source1: astute.conf
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Requires: ruby >= 2.1
 Requires: ruby21-rubygem-activesupport = 3.0.10
@@ -53,7 +52,7 @@ mv %{gembuilddir}/bin/* %{buildroot}%{_bindir}
 rmdir %{gembuilddir}/bin
 
 install -d -m 750 %{buildroot}%{_sysconfdir}/astute
-install -p -D -m 640 %{SOURCE1} %{buildroot}%{_sysconfdir}/astute/astute.conf
+
 cat > %{buildroot}%{_bindir}/astuted <<EOF
 #!/bin/bash
 ruby -r 'rubygems' -e "gem 'astute', '>= 0'; load Gem.bin_path('astute', 'astuted', '>= 0')" -- \$@
