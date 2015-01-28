@@ -34,10 +34,10 @@ class EnvironmentAction(base_test_case.TestBasic):
     @log_snapshot_on_error
     @check_fuel_statistics
     def deploy_flat_stop_on_deploying(self):
-        """Stop reset cluster in simple mode with flat nova-network
+        """Stop reset cluster in HA mode with flat nova-network
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in HA mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Run provisioning task
@@ -54,7 +54,7 @@ class EnvironmentAction(base_test_case.TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=hlp_data.DEPLOYMENT_MODE_SIMPLE,
+            mode=hlp_data.DEPLOYMENT_MODE,
             settings={
                 'tenant': 'stop_deploy',
                 'user': 'stop_deploy',
@@ -96,10 +96,10 @@ class EnvironmentAction(base_test_case.TestBasic):
           groups=["smoke", "deploy_flat_stop_reset_on_provisioning"])
     @log_snapshot_on_error
     def deploy_flat_stop_reset_on_provisioning(self):
-        """Stop reset cluster in simple mode with flat nova-network
+        """Stop reset cluster in HA mode with flat nova-network
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in HA mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Run provisioning task
@@ -116,7 +116,7 @@ class EnvironmentAction(base_test_case.TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=hlp_data.DEPLOYMENT_MODE_SIMPLE
+            mode=hlp_data.DEPLOYMENT_MODE
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -156,10 +156,10 @@ class EnvironmentAction(base_test_case.TestBasic):
     @log_snapshot_on_error
     @check_fuel_statistics
     def deploy_reset_on_ready(self):
-        """Stop reset cluster in simple mode
+        """Stop reset cluster in HA mode with 1 controller
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in Ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Deploy cluster
@@ -176,7 +176,7 @@ class EnvironmentAction(base_test_case.TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=hlp_data.DEPLOYMENT_MODE_SIMPLE
+            mode=hlp_data.DEPLOYMENT_MODE
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -188,7 +188,7 @@ class EnvironmentAction(base_test_case.TestBasic):
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
+            self.fuel_web.get_public_vip(cluster_id))
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)
 
@@ -199,7 +199,7 @@ class EnvironmentAction(base_test_case.TestBasic):
             cluster_id, amount=8, network_size=32)
         self.fuel_web.deploy_cluster_wait(cluster_id)
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
+            self.fuel_web.get_public_vip(cluster_id))
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=8, timeout=300)
 

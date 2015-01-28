@@ -56,13 +56,13 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         logger.debug("slave kernel is {0}".format(kernel))
         return kernel
 
-    @test(groups=["upgrade_simple"])
+    @test(groups=["upgrade_ha_one_controller"])
     @log_snapshot_on_error
-    def upgrade_simple_env(self):
-        """Upgrade simple deployed cluster with ceph
+    def upgrade_ha_one_controller_env(self):
+        """Upgrade ha one controller deployed cluster with ceph
 
         Scenario:
-            1. Revert snapshot with simple ceph env
+            1. Revert snapshot with ha one controller ceph env
             2. Run upgrade on master
             3. Check that upgrade was successful
             4. Add another compute node
@@ -108,7 +108,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'],
+            self.fuel_web.get_public_vip(cluster_id),
             user='ceph1', tenant='ceph1', passwd='ceph1')
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=10, networks_count=1, timeout=300)
@@ -119,16 +119,16 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
             checkers.check_kernel(kernel, expected_kernel)
         create_diagnostic_snapshot(self.env, "pass", "upgrade_simple_env")
 
-        self.env.make_snapshot("upgrade_simple")
+        self.env.make_snapshot("upgrade_ha_one_controller")
 
-    @test(groups=["upgrade_simple_delete_node"])
+    @test(groups=["upgrade_ha_one_controller_delete_node"])
     @log_snapshot_on_error
-    def upgrade_simple_delete_node(self):
-        """Upgrade simple deployed cluster with ceph and
+    def upgrade_ha_one_controller_delete_node(self):
+        """Upgrade ha 1 controller deployed cluster with ceph and
            delete node from old cluster
 
         Scenario:
-            1. Revert snapshot with simple ceph env
+            1. Revert ceph multinode snapshot
             2. Run upgrade on master
             3. Check that upgrade was successful
             4. Delete one compute+ceph node
@@ -174,7 +174,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
             timeout=10 * 60
         )
         self.fuel_web.run_ostf(cluster_id=cluster_id, should_fail=1)
-        self.env.make_snapshot("upgrade_simple_delete_node")
+        self.env.make_snapshot("upgrade_ha_one_controller_delete_node")
 
     @test(groups=["upgrade_ha"])
     @log_snapshot_on_error
@@ -186,7 +186,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
             2. Run upgrade on master
             3. Check that upgrade was successful
             4. Check cluster is operable
-            5. Create new simple Vlan cluster
+            5. Create new ha cluster with 1 controller Vlan cluster
             6. Deploy cluster
             7. Run OSTF
 
@@ -235,7 +235,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         }
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=hlp_data.DEPLOYMENT_MODE_SIMPLE,
+            mode=hlp_data.DEPLOYMENT_MODE,
             settings=data,
             release_id=added_release[0]
         )
@@ -252,7 +252,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-06')['ip'],
+            self.fuel_web.get_public_vip(cluster_id),
             data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=8, timeout=300)
@@ -271,7 +271,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         """Upgrade and deploy new ha cluster
 
         Scenario:
-            1. Revert snapshot with simple ceph env
+            1. Revert snapshot with ha 1 controller ceph env
             2. Run upgrade on master
             3. Check that upgrade was successful
             4. Re-deploy cluster
@@ -315,7 +315,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         segment_type = 'vlan'
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=hlp_data.DEPLOYMENT_MODE_HA,
+            mode=hlp_data.DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type
@@ -350,10 +350,10 @@ class RollbackFuelMaster(base_test_data.TestBasic):
     @test(groups=["rollback_automatic_ha"])
     @log_snapshot_on_error
     def rollback_automatically_ha_env(self):
-        """Rollback manually simple deployed cluster
+        """Rollback manually ha deployed cluster
 
         Scenario:
-            1. Revert snapshot with simple neutron gre ha env
+            1. Revert snapshot with neutron gre ha env
             2. Add raise exception to openstack.py file
             3. Run upgrade on master
             4. Check that rollback starts automatically
@@ -403,13 +403,13 @@ class RollbackFuelMaster(base_test_data.TestBasic):
 
         self.env.make_snapshot("rollback_automatic_ha")
 
-    @test(groups=["rollback_automatic_simple"])
+    @test(groups=["rollback_automatic_ha_one_controller"])
     @log_snapshot_on_error
-    def rollback_automatically_simple_env(self):
-        """Rollback automatically simple deployed cluster
+    def rollback_automatically_ha_one_controller_env(self):
+        """Rollback automatically ha one controller deployed cluster
 
         Scenario:
-            1. Revert snapshot with simple neutron gre env
+            1. Revert snapshot with deploy neutron gre env
             2. Add raise exception to docker_engine.py file
             3. Run upgrade on master
             4. Check that rollback starts automatically
@@ -466,4 +466,4 @@ class RollbackFuelMaster(base_test_data.TestBasic):
             checkers.check_kernel(kernel, expected_kernel)
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
-        self.env.make_snapshot("rollback_automatic_simple")
+        self.env.make_snapshot("rollback_automatic_ha_one_controller")
