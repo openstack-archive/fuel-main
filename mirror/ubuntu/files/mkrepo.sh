@@ -124,8 +124,25 @@ for list in /etc/apt/sources.list; do
          bz=${repourl}/dists/${repodist}/$packagesfile
          wget -nv -qO - $bz | bzip2 -cdq | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
        else
-         bz=${repourl}/dists/${repodist}/${repo}/debian-installer/binary-amd64/Packages
-         wget -nv -qO - $bz | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+         #${repourl}/dists/${repodist}/Release is missed from debian repo, will try to fetch package list directly
+         for suffix in "" ".bz2" ".gz" ; do
+           bz=${repourl}/dists/${repodist}/${repo}/debian-installer/binary-amd64/Packages${suffix}
+           if wget -q -O /dev/null $bz ; then
+             break
+           fi
+         done
+         case $suffix in
+           .bz2)
+             ex_cmd="bzcat"
+             ;;
+           .gz)
+             ex_cmd="zcat"
+             ;;
+           *)
+             ex_cmd="cat"
+             ;;
+         esac
+         wget -qO - $bz | $ex_cmd | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
        fi
        # Getting indices
        wget -nv -O - ${repourl}/indices/override.${repodist}.${repo} >> ${wrkdir}/override.${UBUNTU_RELEASE}.main
