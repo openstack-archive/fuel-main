@@ -582,3 +582,51 @@ class VcenterDeploy(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
+          groups=["smoke", "vcenter_ha_one_node_simple"])
+    @log_snapshot_on_error
+    def vcenter_ha_one_node_simple(self):
+        """Deploy cluster with 1 controller node only
+
+        Scenario:
+            1. Create cluster
+            2. Add 1 node with controller role
+            3. Deploy the cluster
+            4. Verify that the cluster was set up correctly, there are no
+               dead services
+            5. Create instance and delete instance
+
+        """
+        self.env.revert_snapshot("ready_with_1_slaves")
+
+         # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_HA,
+            settings={
+                'host_ip': VCENTER_IP,
+                'vc_user': VCENTER_USERNAME,
+                'vc_password': VCENTER_PASSWORD,
+                'cluster': VCENTER_CLUSTERS,
+                'tenant': 'vcenter',
+                'user': 'vcenter',
+                'password': 'vcenter'
+            }
+        )
+        logger.info("cluster is {0}".format(cluster_id))
+
+        # Assign role to node
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller']}
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        # Wait until nova-compute get information about clusters
+        # Fix me. Later need to change sleep with wait function.
+        time.sleep(60)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
