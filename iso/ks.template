@@ -359,7 +359,6 @@ save_cfg
 # Mounting installation source
 SOURCE=/tmp/source
 FS=/tmp/fs
-OPENSTACK_VERSION=`cat ${SOURCE}/openstack_version`
 
 echo
 mkdir -p ${SOURCE}
@@ -370,6 +369,7 @@ if test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
     mount -o loop ${FS}/nailgun.iso ${SOURCE}
 fi
 
+OPENSTACK_VERSION=`cat ${SOURCE}/openstack_version`
 
 # ----------------------
 # UNPACKING REPOSITORIES
