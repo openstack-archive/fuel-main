@@ -27,7 +27,7 @@ from fuelweb_test.helpers.checkers import check_mysql
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers import os_actions
 from fuelweb_test import logger
-from fuelweb_test.settings import DEPLOYMENT_MODE_HA
+from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
 from fuelweb_test.settings import NEUTRON_ENABLE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -70,7 +70,7 @@ class TestHaFailover(TestBasic):
             }
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings=settings
         )
         self.fuel_web.update_nodes(

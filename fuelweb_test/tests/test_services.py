@@ -30,17 +30,17 @@ from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
 
-@test(groups=["services", "services.sahara", "services_simple"])
-class SaharaSimple(TestBasic):
-    """Sahara simple tests.
+@test(groups=["services", "services.sahara", "services_ha_one_controller"])
+class SaharaHAOneController(TestBasic):
+    """Sahara ha with 1 controller tests.
     Don't recommend to start tests without kvm
     Put Sahara image before start
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_sahara_simple_gre"])
+          groups=["deploy_sahara_ha_one_controller_gre"])
     @log_snapshot_on_error
-    def deploy_sahara_simple_gre(self):
-        """Deploy cluster in simple mode with Sahara and Neutron GRE
+    def deploy_sahara_ha_one_controller_gre(self):
+        """Deploy cluster in ha mode with 1 controller Sahara and Neutron GRE
 
         Scenario:
             1. Create a Fuel cluster. Set the option for Sahara installation
@@ -52,7 +52,7 @@ class SaharaSimple(TestBasic):
             7. Register Vanilla2 image for Sahara
             8. Run platform Vanilla2 test for Sahara
 
-        Snapshot: deploy_sahara_simple_gre
+        Snapshot: deploy_sahara_ha_one_controller_gre
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -78,6 +78,7 @@ class SaharaSimple(TestBasic):
         }
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE,
             settings=data
         )
         self.fuel_web.update_nodes(
@@ -88,9 +89,9 @@ class SaharaSimple(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         os_conn = os_actions.OpenStackActions(
-            controller['ip'], data['user'], data['password'], data['tenant'])
+            self.fuel_web.get_public_vip(cluster_id),
+            data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=5, networks_count=2, timeout=300)
 
@@ -110,8 +111,9 @@ class SaharaSimple(TestBasic):
         )
 
         LOGGER.debug('Import Vanilla2 image for Sahara')
-        common_func = Common(controller['ip'],
-                             data['user'], data['password'], data['tenant'])
+        common_func = Common(
+            self.fuel_web.get_public_vip(cluster_id),
+            data['user'], data['password'], data['tenant'])
         common_func.image_import(
             settings.SERVTEST_LOCAL_PATH,
             settings.SERVTEST_SAHARA_VANILLA_2_IMAGE,
@@ -126,7 +128,7 @@ class SaharaSimple(TestBasic):
                 cluster_id=cluster_id, test_sets=['platform_tests'],
                 test_name=path_to_tests + test_name, timeout=60 * 200)
 
-        self.env.make_snapshot("deploy_sahara_simple_gre")
+        self.env.make_snapshot("deploy_sahara_ha_one_controller_gre")
 
 
 @test(groups=["services", "services.sahara", "services_ha"])
@@ -177,7 +179,7 @@ class SaharaHA(TestBasic):
         }
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE,
             settings=data
         )
         self.fuel_web.update_nodes(
@@ -232,18 +234,18 @@ class SaharaHA(TestBasic):
         self.env.make_snapshot("deploy_sahara_ha_gre")
 
 
-@test(groups=["services", "services.murano", "services_simple"])
-class MuranoSimple(TestBasic):
-    """Murano Simple tests.
+@test(groups=["services", "services.murano", "services_ha_one_controller"])
+class MuranoHAOneController(TestBasic):
+    """Murano HA with 1 controller tests.
     Don't recommend to start tests without kvm
     Put Murano image before start
     Murano OSTF platform tests  without Internet connection will be failed
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_murano_simple_gre"])
+          groups=["deploy_murano_ha_one_controller_gre"])
     @log_snapshot_on_error
-    def deploy_murano_simple_gre(self):
-        """Deploy cluster in simple mode with Murano and Neutron GRE
+    def deploy_murano_ha_one_controller_gre(self):
+        """Deploy cluster in HA mode with Murano and Neutron GRE
 
         Scenario:
             1. Create cluster. Set install Murano option
@@ -255,7 +257,7 @@ class MuranoSimple(TestBasic):
             7. Register Murano image
             8. Run OSTF Murano platform tests
 
-        Snapshot: deploy_murano_simple_gre
+        Snapshot: deploy_murano_ha_one_controller_gre
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -281,6 +283,7 @@ class MuranoSimple(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE,
             settings=data)
 
         self.fuel_web.update_nodes(
@@ -292,16 +295,17 @@ class MuranoSimple(TestBasic):
         )
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         os_conn = os_actions.OpenStackActions(
-            controller['ip'], data['user'], data['password'], data['tenant'])
+            self.fuel_web.get_public_vip(cluster_id),
+            data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=5, networks_count=2, timeout=300)
         checkers.verify_service(
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='murano-api')
 
-        common_func = Common(controller['ip'], data['user'], data['password'],
+        common_func = Common(self.fuel_web.get_public_vip(cluster_id),
+                             data['user'], data['password'],
                              data['tenant'])
 
         LOGGER.debug('Run sanity and functional Murano OSTF tests')
@@ -350,7 +354,7 @@ class MuranoSimple(TestBasic):
                 cluster_id=cluster_id, test_sets=['platform_tests'],
                 test_name=test_name, timeout=60 * 36)
 
-        self.env.make_snapshot("deploy_murano_simple_gre")
+        self.env.make_snapshot("deploy_murano_ha_one_controller_gre")
 
 
 @test(groups=["services", "services.murano", "services_ha"])
@@ -399,7 +403,7 @@ class MuranoHA(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE,
             settings=data)
 
         self.fuel_web.update_nodes(
@@ -506,14 +510,14 @@ class CeilometerOSTFTestsRun(TestBasic):
                 test_name=test_name, timeout=60 * 20)
 
 
-@test(groups=["services", "services.ceilometer", "services_simple"])
-class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
+@test(groups=["services", "services.ceilometer", "services_ha_one_controller"])
+class CeilometerHAOneControllerMongo(CeilometerOSTFTestsRun):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_ceilometer_simple_with_mongo"])
+          groups=["deploy_ceilometer_ha_one_controller_with_mongo"])
     @log_snapshot_on_error
-    def deploy_ceilometer_simple_with_mongo(self):
-        """Deploy cluster in simple mode with Ceilometer
+    def deploy_ceilometer_ha_one_controller_with_mongo(self):
+        """Deploy cluster in HA mode with Ceilometer
 
         Scenario:
             1. Create cluster. Set install Ceilometer option
@@ -525,13 +529,14 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
             7. Verify ceilometer api is running
             8. Run OSTF
 
-        Snapshot: deploy_ceilometer_simple_with_mongo
+        Snapshot: deploy_ceilometer_ha_one_controller_with_mongo
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE,
             settings={
                 'ceilometer': True,
                 'tenant': 'ceilometerSimple',
@@ -583,13 +588,14 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
                      ' to size after {1}'.format(mongo_disk_gb, partitions))
 
         self.run_tests(cluster_id)
-        self.env.make_snapshot("deploy_ceilometer_simple_with_mongo")
+        self.env.make_snapshot(
+            "deploy_ceilometer_ha_one_controller_with_mongo")
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_ceilometer_simple_multirole"])
+          groups=["deploy_ceilometer_ha_one_controller_multirole"])
     @log_snapshot_on_error
-    def deploy_ceilometer_simple_multirole(self):
-        """Deploy cluster in simple multirole mode with Ceilometer
+    def deploy_ceilometer_ha_one_controller_multirole(self):
+        """Deploy cluster in ha multirole mode with Ceilometer
 
         Scenario:
             1. Create cluster. Set install Ceilometer option
@@ -600,13 +606,14 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
             6. Verify ceilometer api is running
             7. Run OSTF
 
-        Snapshot: deploy_ceilometer_simple_multirole
+        Snapshot: deploy_ceilometer_ha_one_controller_multirole
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE,
             settings={
                 'ceilometer': True
             }
@@ -626,7 +633,7 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
             service_name='ceilometer-api')
 
         self.run_tests(cluster_id)
-        self.env.make_snapshot("deploy_ceilometer_simple_mulirole")
+        self.env.make_snapshot("deploy_ceilometer_ha_one_controller_mulirole")
 
 
 @test(groups=["services", "services.ceilometer", "services_ha"])
@@ -654,7 +661,7 @@ class CeilometerHAMongo(CeilometerOSTFTestsRun):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE,
             settings={
                 'ceilometer': True,
                 'tenant': 'ceilometerHA',
@@ -703,7 +710,7 @@ class CeilometerHAMongo(CeilometerOSTFTestsRun):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE,
             settings={
                 'ceilometer': True
             }
@@ -728,16 +735,16 @@ class CeilometerHAMongo(CeilometerOSTFTestsRun):
         self.env.make_snapshot("deploy_ceilometer_ha_mulirole")
 
 
-@test(groups=["services", "services.heat", "services_simple"])
-class HeatSimple(TestBasic):
-    """Heat Simple test.
+@test(groups=["services", "services.heat", "services_ha_one_controller"])
+class HeatHAOneController(TestBasic):
+    """Heat HA one controller test.
     Don't recommend to start tests without kvm
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_heat_simple_neutron"])
+          groups=["deploy_heat_ha_one_controller_neutron"])
     @log_snapshot_on_error
-    def deploy_heat_simple_neutron(self):
-        """Deploy Heat cluster in simple mode with Neutron GRE
+    def deploy_heat_ha_one_controller_neutron(self):
+        """Deploy Heat cluster in HA mode with Neutron GRE
 
         Scenario:
             1. Create cluster
@@ -748,7 +755,7 @@ class HeatSimple(TestBasic):
             6. Verify Heat, Ceilometer services
             7. Run OSTF platform tests
 
-        Snapshot: deploy_heat_simple_neutron
+        Snapshot: deploy_heat_ha_one_controller_neutron
 
         """
 
@@ -765,6 +772,7 @@ class HeatSimple(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE,
             settings=data)
 
         self.fuel_web.update_nodes(
@@ -776,9 +784,9 @@ class HeatSimple(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         os_conn = os_actions.OpenStackActions(
-            controller['ip'], data['user'], data['password'], data['tenant'])
+            self.fuel_web.get_public_vip(cluster_id),
+            data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=5, networks_count=2, timeout=300)
 
@@ -811,13 +819,13 @@ class HeatSimple(TestBasic):
                 cluster_id=cluster_id, test_sets=['platform_tests'],
                 test_name=test_name, timeout=60 * 60)
 
-        self.env.make_snapshot("deploy_heat_simple_neutron")
+        self.env.make_snapshot("deploy_heat_ha_one_controller_neutron")
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_heat_simple_nova"])
+          groups=["deploy_heat_ha_one_controller_nova"])
     @log_snapshot_on_error
-    def deploy_heat_simple_nova(self):
-        """Deploy Heat cluster in simple mode with Nova Network
+    def deploy_heat_ha_one_controller_nova(self):
+        """Deploy Heat cluster in ha mode with Nova Network
 
         Scenario:
             1. Create cluster
@@ -828,7 +836,7 @@ class HeatSimple(TestBasic):
             5. Verify Heat, Ceilometer services
             6. Run OSTF platform tests
 
-        Snapshot: deploy_heat_simple_nova
+        Snapshot: deploy_heat_ha_one_controller_nova
 
         """
 
@@ -843,6 +851,7 @@ class HeatSimple(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
+            mode=settings.DEPLOYMENT_MODE,
             settings=data)
 
         self.fuel_web.update_nodes(
@@ -854,9 +863,9 @@ class HeatSimple(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         os_conn = os_actions.OpenStackActions(
-            controller['ip'], data['user'], data['password'], data['tenant'])
+            self.fuel_web.get_public_vip(cluster_id),
+            data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)
 
@@ -889,7 +898,7 @@ class HeatSimple(TestBasic):
                 cluster_id=cluster_id, test_sets=['platform_tests'],
                 test_name=test_name, timeout=60 * 60)
 
-        self.env.make_snapshot("deploy_heat_simple_nova")
+        self.env.make_snapshot("deploy_heat_ha_one_controller_nova")
 
 
 @test(groups=["services", "services.heat", "services_ha"])
@@ -929,7 +938,7 @@ class HeatHA(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE,
             settings=data)
 
         self.fuel_web.update_nodes(

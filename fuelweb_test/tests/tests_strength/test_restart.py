@@ -17,7 +17,7 @@ from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test import logger
 from fuelweb_test import ostf_test_mapping as map_ostf
 from fuelweb_test import settings
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
+from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
@@ -29,14 +29,14 @@ from proboscis import test
 @test(groups=["thread_3", "ceph"])
 class CephRestart(TestBasic):
 
-    @test(depends_on_groups=['ceph_multinode_with_cinder'],
-          groups=["ceph_multinode_restart"])
+    @test(depends_on_groups=['ceph_ha_one_controller_with_cinder'],
+          groups=["ceph_ha_one_controller_with_cinder_restart"])
     @log_snapshot_on_error
-    def ceph_multinode_restart(self):
-        """Deploy ceph with cinder in simple mode
+    def ceph_ha_one_controller_with_cinder_restart(self):
+        """Deploy ceph with cinder in ha mode
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in ha mode with 1 controller
             2. Add 1 node with controller and ceph OSD roles
             3. Add 1 node with compute role
             4. Add 2 nodes with cinder and ceph OSD roles
@@ -50,7 +50,7 @@ class CephRestart(TestBasic):
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
 
-        self.env.revert_snapshot("ceph_multinode_with_cinder")
+        self.env.revert_snapshot("ceph_ha_one_controller_with_cinder")
 
         cluster_id = self.fuel_web.get_last_created_cluster()
 
@@ -169,13 +169,13 @@ class CephRestart(TestBasic):
 
 
 @test(groups=["thread_1"])
-class SimpleFlatRestart(TestBasic):
+class HAOneControllerFlatRestart(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["simple_flat_warm_restart"])
+          groups=["ha_one_controller_flat_warm_restart"])
     @log_snapshot_on_error
-    def simple_flat_warm_restart(self):
-        """Cold restart for simple environment
+    def ha_one_controller_flat_warm_restart(self):
+        """Cold restart for ha one controller environment
 
         Scenario:
             1. Create cluster
@@ -195,7 +195,7 @@ class SimpleFlatRestart(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
+            mode=DEPLOYMENT_MODE
         )
         self.fuel_web.update_nodes(
             cluster_id,

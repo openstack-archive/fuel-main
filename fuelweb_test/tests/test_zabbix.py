@@ -26,18 +26,18 @@ from fuelweb_test import logger
 
 
 @test(groups=["thread_2"])
-class SimpleZabbix(TestBasic):
+class HAOneControllerZabbix(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_simple_zabbix"])
+          groups=["deploy_ha_one_controller_zabbix"])
     @log_snapshot_on_error
-    def deploy_simple_zabbix(self):
-        """Deploy cluster in simple mode with zabbix-server
+    def deploy_ha_one_controller_zabbix(self):
+        """Deploy cluster in ha mode 1 controller with zabbix-server
 
         Scenario:
             1. Setup master node
             2. Enable 'experimental' in Nailgun
             3. Restart Nailgun
-            4. Create cluster
+            4. Create cluster in ha mode with 1 controller
             5. Add 1 node with controller role
             6. Add 1 node with compute role
             7. Add 1 node with zabbix role
@@ -47,7 +47,7 @@ class SimpleZabbix(TestBasic):
             11. Run OSTF
             12. Login in zabbix dashboard
 
-        Snapshot: deploy_simple_zabbix
+        Snapshot: deploy_ha_one_controller_zabbix
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -70,7 +70,7 @@ class SimpleZabbix(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=hlp.DEPLOYMENT_MODE_SIMPLE,
+            mode=hlp.DEPLOYMENT_MODE,
             settings={
                 'tenant': 'admin',
                 'user': 'admin',
@@ -87,7 +87,7 @@ class SimpleZabbix(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
+            self.fuel_web.get_public_vip(cluster_id))
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)
 
@@ -115,4 +115,4 @@ class SimpleZabbix(TestBasic):
             cookie=login_resp.headers.get('Set-Cookie'))
         assert_equals(event_resp.code, 200)
 
-        self.env.make_snapshot("deploy_simple_zabbix")
+        self.env.make_snapshot("deploy_ha_one_controller_zabbix")

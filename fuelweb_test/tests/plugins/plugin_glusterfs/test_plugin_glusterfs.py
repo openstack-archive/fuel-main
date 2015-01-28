@@ -19,8 +19,7 @@ from proboscis import test
 
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers import checkers
-from fuelweb_test.settings import DEPLOYMENT_MODE_HA
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
+from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.settings import GLUSTER_CLUSTER_ENDPOINT
 from fuelweb_test.settings import GLUSTER_PLUGIN_PATH
 from fuelweb_test.settings import NEUTRON_ENABLE
@@ -44,10 +43,10 @@ class GlusterfsPlugin(TestBasic):
                     'Can not find gsf endpoint in gfs configs')
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_glusterfs_simple"])
+          groups=["deploy_ha_one_controller_glusterfs"])
     @log_snapshot_on_error
-    def deploy_glusterfs_simple(self):
-        """Deploy cluster in simple mode with glusterfs plugin
+    def deploy_ha_one_controller_glusterfs_simple(self):
+        """Deploy cluster in ha mode with glusterfs plugin
 
         Scenario:
             1. Upload plugin to the master node
@@ -61,7 +60,7 @@ class GlusterfsPlugin(TestBasic):
             9. Check plugin health
             10. Run OSTF
 
-        Snapshot deploy_glusterfs_simple
+        Snapshot deploy_ha_one_controller_glusterfs
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -87,7 +86,7 @@ class GlusterfsPlugin(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings=settings
         )
 
@@ -121,7 +120,7 @@ class GlusterfsPlugin(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
-        self.env.make_snapshot("deploy_glusterfs_simple")
+        self.env.make_snapshot("deploy_ha_one_controller_glusterfs")
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_glusterfs_ha"])
@@ -171,7 +170,7 @@ class GlusterfsPlugin(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings=settings
         )
 

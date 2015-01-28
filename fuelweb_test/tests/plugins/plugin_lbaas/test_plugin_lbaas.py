@@ -29,7 +29,7 @@ from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
 
-@test(groups=["plugins"])
+@test(enabled=False, groups=["plugins"])
 class LbaasPlugin(TestBasic):
     @classmethod
     def check_neutron_agents_statuses(cls, os_conn):
