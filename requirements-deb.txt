@@ -182,7 +182,6 @@ openssh-server
 openstack-dashboard
 openstack-dashboard-ubuntu-theme
 openvswitch-common
-openvswitch-datapath-lts-saucy-dkms
 openvswitch-switch
 os-prober
 pacemaker
