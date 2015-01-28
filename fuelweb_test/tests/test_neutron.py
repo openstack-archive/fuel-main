@@ -16,8 +16,7 @@ from proboscis.asserts import assert_equal
 from proboscis import test
 
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
-from fuelweb_test.settings import DEPLOYMENT_MODE_HA
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
+from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
@@ -26,10 +25,10 @@ from fuelweb_test.tests.base_test_case import TestBasic
 class NeutronGre(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_neutron_gre", "simple_neutron_gre"])
+          groups=["deploy_neutron_gre", "one_controller_ha_neutron_gre"])
     @log_snapshot_on_error
     def deploy_neutron_gre(self):
-        """Deploy cluster in simple mode with Neutron GRE
+        """Deploy cluster in ha mode with 1 controller and Neutron GRE
 
         Scenario:
             1. Create cluster
@@ -47,7 +46,7 @@ class NeutronGre(TestBasic):
         segment_type = 'gre'
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type,
@@ -86,10 +85,10 @@ class NeutronGre(TestBasic):
 class NeutronVlan(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_neutron_vlan", "simple_neutron_vlan"])
+          groups=["deploy_neutron_vlan", "one_controller_ha_neutron_vlan"])
     @log_snapshot_on_error
     def deploy_neutron_vlan(self):
-        """Deploy cluster in simple mode with Neutron VLAN
+        """Deploy cluster in ha mode with 1 controller and Neutron VLAN
 
         Scenario:
             1. Create cluster
@@ -107,7 +106,7 @@ class NeutronVlan(TestBasic):
         segment_type = 'vlan'
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type,
@@ -163,7 +162,7 @@ class NeutronGreHa(TestBasic):
         segment_type = 'gre'
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type,
@@ -186,7 +185,6 @@ class NeutronGreHa(TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
-        # assert_equal(str(cluster['net_segment_type']), segment_type)
 
         self.fuel_web.verify_network(cluster_id)
 
@@ -224,7 +222,7 @@ class NeutronGreHaPublicNetwork(TestBasic):
         segment_type = 'gre'
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type,
@@ -248,7 +246,6 @@ class NeutronGreHaPublicNetwork(TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
-        # assert_equal(str(cluster['net_segment_type']), segment_type)
 
         self.fuel_web.verify_network(cluster_id)
 
@@ -285,7 +282,7 @@ class NeutronVlanHa(TestBasic):
         segment_type = 'vlan'
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type
@@ -348,7 +345,7 @@ class NeutronVlanHaPublicNetwork(TestBasic):
         segment_type = 'vlan'
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type,
