@@ -47,7 +47,7 @@ class HugeEnvironments(base_test_case.TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE,
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True,
@@ -104,7 +104,7 @@ class HugeEnvironments(base_test_case.TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE,
             settings={
                 'volumes_ceph': True,
                 'images_ceph': False,
@@ -179,7 +179,7 @@ class HugeHaNeutron(base_test_case.TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE,
             settings=data
         )
         self.fuel_web.update_nodes(
@@ -258,7 +258,7 @@ class HugeHaNeutron(base_test_case.TestBasic):
         }
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE,
             settings=data
         )
         self.fuel_web.update_nodes(

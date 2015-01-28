@@ -27,10 +27,10 @@ class OstfRepeatableTests(base_test_case.TestBasic):
           groups=["create_delete_ip_n_times_nova_vlan"])
     @log_snapshot_on_error
     def create_delete_ip_n_times_nova_vlan(self):
-        """Deploy cluster in simple mode with VLAN Manager
+        """Deploy cluster in ha mode with VLAN Manager
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in ha mode with 1 controller
             2. Add 1 nodes with controller roles
             3. Add 2 nodes with compute roles
             4. Set up cluster to use Network VLAN manager with 8 networks
@@ -46,7 +46,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=hlp_date.DEPLOYMENT_MODE_SIMPLE
+            mode=hlp_date.DEPLOYMENT_MODE
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -68,10 +68,10 @@ class OstfRepeatableTests(base_test_case.TestBasic):
           groups=["create_delete_ip_n_times_nova_flat"])
     @log_snapshot_on_error
     def deploy_create_delete_ip_n_times_nova_flat(self):
-        """Deploy cluster in simple mode with flat nova-network
+        """Deploy cluster in ha mode with flat nova-network
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Deploy the cluster
@@ -86,7 +86,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=hlp_date.DEPLOYMENT_MODE_SIMPLE
+            mode=hlp_date.DEPLOYMENT_MODE
         )
         self.fuel_web.update_nodes(
             cluster_id,

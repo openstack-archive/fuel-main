@@ -23,15 +23,16 @@ from fuelweb_test.tests import base_test_case
 
 
 @test(groups=["thread_non_func_1"])
-class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
+class DeployHAOneControllerMasterNodeFail(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
-          groups=["non_functional", "deploy_simple_flat_master_node_fail"])
-    def deploy_simple_flat_master_node_fail(self):
-        """Deploy cluster in simple mode with flat nova-network
+          groups=["non_functional",
+                  "deploy_ha_one_controller_flat_master_node_fail"])
+    def deploy_ha_one_controller_flat_master_node_fail(self):
+        """Deploy cluster in ha mode with flat nova-network
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Deploy the cluster
@@ -48,7 +49,7 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE
+            mode=settings.DEPLOYMENT_MODE
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -58,8 +59,7 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        controller_ip = self.fuel_web.get_nailgun_node_by_name(
-            'slave-01')['ip']
+        controller_ip = self.fuel_web.get_public_vip(cluster_id)
         os_conn = os_actions.OpenStackActions(controller_ip)
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)

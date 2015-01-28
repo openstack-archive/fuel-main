@@ -19,8 +19,7 @@ from proboscis import test
 from fuelweb_test import logger
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers import checkers
-from fuelweb_test.settings import DEPLOYMENT_MODE_HA
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
+from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.settings import EXAMPLE_PLUGIN_PATH
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
@@ -30,10 +29,10 @@ from fuelweb_test.tests.base_test_case import TestBasic
 class ExamplePlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_neutron_example_simple"])
+          groups=["deploy_ha_controller_neutron_example"])
     @log_snapshot_on_error
-    def deploy_neutron_example_simple(self):
-        """Deploy cluster in simple mode with example plugin
+    def deploy_ha_one_controller_neutron_example(self):
+        """Deploy cluster in ha mode with example plugin
 
         Scenario:
             1. Upload plugin to the master node
@@ -46,7 +45,7 @@ class ExamplePlugin(TestBasic):
             8. Check plugin health
             9. Run OSTF
 
-        Snapshot deploy_neutron_example_simple
+        Snapshot deploy_ha_one_controller_neutron_example
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -66,7 +65,7 @@ class ExamplePlugin(TestBasic):
         segment_type = 'vlan'
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type,
@@ -108,11 +107,10 @@ class ExamplePlugin(TestBasic):
         assert_equal(0, res_pgrep['exit_code'],
                      'Failed with error {0}'.format(res_curl['stderr']))
 
-        # add verification here
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
-        self.env.make_snapshot("deploy_neutron_example")
+        self.env.make_snapshot("deploy_ha_one_controller_neutron_example")
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_nova_example_ha"])
@@ -150,7 +148,7 @@ class ExamplePlugin(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
         )
 
         attr = self.fuel_web.client.get_cluster_attributes(cluster_id)
@@ -192,7 +190,6 @@ class ExamplePlugin(TestBasic):
                          'Failed with error {0} '
                          'on node {1}'.format(res_curl['stderr'], node))
 
-        # add verification here
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
@@ -237,7 +234,7 @@ class ExamplePlugin(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": 'gre',

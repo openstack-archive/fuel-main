@@ -106,7 +106,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": 'gre'

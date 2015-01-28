@@ -34,10 +34,11 @@ from fuelweb_test.tests.base_test_case import TestBasic
 class CephCompact(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["ceph_multinode_compact", "simple_nova_ceph"])
+          groups=["ceph_ha_one_controller_compact",
+                  "ha_one_controller_nova_ceph"])
     @log_snapshot_on_error
-    def ceph_multinode_compact(self):
-        """Deploy ceph in simple mode
+    def ceph_ha_one_controller_compact(self):
+        """Deploy ceph in HA mode with 1 controller
 
         Scenario:
             1. Create cluster
@@ -46,7 +47,7 @@ class CephCompact(TestBasic):
             4. Deploy the cluster
             5. Check ceph status
 
-        Snapshot ceph_multinode_compact
+        Snapshot ceph_ha_one_controller_compact
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -64,7 +65,7 @@ class CephCompact(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            mode=settings.DEPLOYMENT_MODE,
             settings=data)
         self.fuel_web.update_nodes(
             cluster_id,
@@ -81,17 +82,17 @@ class CephCompact(TestBasic):
         # Run ostf
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
-        self.env.make_snapshot("ceph_multinode_compact")
+        self.env.make_snapshot("ceph_ha_one_controller_compact")
 
 
 @test(groups=["thread_3", "ceph"])
 class CephCompactWithCinder(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
-          groups=["ceph_multinode_with_cinder"])
+          groups=["ceph_ha_one_controller_with_cinder"])
     @log_snapshot_on_error
-    def ceph_multinode_with_cinder(self):
-        """Deploy ceph with cinder in simple mode
+    def ceph_ha_one_controller_with_cinder(self):
+        """Deploy ceph with cinder in ha mode with 1 controller
 
         Scenario:
             1. Create cluster
@@ -102,11 +103,11 @@ class CephCompactWithCinder(TestBasic):
             6. Check ceph status
             7. Check partitions on controller node
 
-        Snapshot ceph_multinode_with_cinder
+        Snapshot ceph_ha_one_controller_with_cinder
 
         """
         try:
-            self.check_run('ceph_multinode_with_cinder')
+            self.check_run('ceph_ha_one_controller_with_cinder')
         except SkipTest:
             return
 
@@ -115,7 +116,7 @@ class CephCompactWithCinder(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            mode=settings.DEPLOYMENT_MODE,
             settings={
                 'volumes_ceph': False,
                 'images_ceph': True,
@@ -154,7 +155,8 @@ class CephCompactWithCinder(TestBasic):
         # Run ostf
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
-        self.env.make_snapshot("ceph_multinode_with_cinder", is_make=True)
+        self.env.make_snapshot("ceph_ha_one_controller_with_cinder",
+                               is_make=True)
 
 
 @test(groups=["thread_3", "ceph", "image_based"])
@@ -202,7 +204,7 @@ class CephHA(TestBasic):
         )
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_HA,
+            mode=settings.DEPLOYMENT_MODE,
             settings=csettings
         )
         self.fuel_web.update_nodes(
@@ -233,7 +235,7 @@ class CephRadosGW(TestBasic):
           groups=["ceph_rados_gw"])
     @log_snapshot_on_error
     def ceph_rados_gw(self):
-        """Deploy ceph with RadosGW for objects
+        """Deploy ceph ha with 1 controller with RadosGW for objects
 
         Scenario:
             1. Create cluster
@@ -255,7 +257,7 @@ class CephRadosGW(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            mode=settings.DEPLOYMENT_MODE,
             settings={
                 'volumes_lvm': False,
                 'volumes_ceph': True,
@@ -317,7 +319,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
           groups=["ceph_migration"])
     @log_snapshot_on_error
     def migrate_vm_backed_with_ceph(self):
-        """Check VM backed with ceph migration in simple mode
+        """Check VM backed with ceph migration in ha mode with 1 controller
 
         Scenario:
             1. Create cluster
@@ -341,7 +343,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            mode=settings.DEPLOYMENT_MODE,
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True,
@@ -386,7 +388,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
 
         # Create new server
         os = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name("slave-01")["ip"])
+            self.fuel_web.get_public_vip(cluster_id))
 
         logger.info("Create new server")
         srv = os.create_server_for_migration(
@@ -441,8 +443,6 @@ class VmBackedWithCephMigrationBasic(TestBasic):
                     "Verify server was deleted")
 
         # Create new server
-        os = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name("slave-01")["ip"])
 
         logger.info("Create new server")
         srv = os.create_server_for_migration(
@@ -513,7 +513,7 @@ class CheckCephPartitionsAfterReboot(TestBasic):
         """Check that Ceph OSD partitions are remounted after reboot
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in Ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute and Ceph OSD roles
             4. Add 1 node with Ceph OSD role
@@ -537,7 +537,7 @@ class CheckCephPartitionsAfterReboot(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=settings.DEPLOYMENT_MODE_SIMPLE,
+            mode=settings.DEPLOYMENT_MODE,
             settings={
                 'volumes_ceph': True,
                 'images_ceph': True,
