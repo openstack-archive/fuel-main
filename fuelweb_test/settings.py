@@ -242,6 +242,11 @@ VCENTER_IP = os.environ.get('VCENTER_IP')
 VCENTER_USERNAME = os.environ.get('VCENTER_USERNAME')
 VCENTER_PASSWORD = os.environ.get('VCENTER_PASSWORD')
 VCENTER_CLUSTERS = os.environ.get('VCENTER_CLUSTERS')
+if DEPLOYMENT_MODE == "multinode":
+    VCENTER_TEST_LIST = ['smoke', 'sanity']
+else:
+    VCENTER_TEST_LIST = ['smoke', 'sanity', 'ha']
+
 
 # Cinder with VMDK backend settings
 VC_HOST = os.environ.get('VCENTER_IP')
@@ -296,7 +301,7 @@ DEPLOYMENT_NAME = os.environ.get('DEPLOYMENT_NAME')
 TIMEOUT = int(os.environ.get('TIMEOUT', 60))
 ATTEMPTS = int(os.environ.get('ATTEMPTS', 5))
 
-#Create snapshots as last step in test-case
+# Create snapshots as last step in test-case
 MAKE_SNAPSHOT = os.environ.get('MAKE_SNAPSHOT', 'false') == 'true'
 
 NEUTRON_ENABLE = os.environ.get('NEUTRON_ENABLE', 'false') == 'true'
