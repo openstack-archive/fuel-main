@@ -24,7 +24,7 @@ from devops.helpers.helpers import tcp_ping
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers.eb_tables import Ebtables
 from fuelweb_test.helpers import os_actions
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
+from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.settings import NODE_VOLUME_SIZE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
@@ -52,7 +52,8 @@ class OneNodeDeploy(TestBasic):
         self.env.bootstrap_nodes(self.env.nodes().slaves[:1])
 
         cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE
         )
         logger.info('cluster is %s' % str(cluster_id))
         self.fuel_web.update_nodes(
@@ -60,8 +61,8 @@ class OneNodeDeploy(TestBasic):
             {'slave-01': ['controller']}
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
-        os_conn = os_actions.OpenStackActions(controller['ip'])
+        os_conn = os_actions.OpenStackActions(
+            self.fuel_web.get_public_vip(cluster_id))
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=4, networks_count=1, timeout=300)
         self.fuel_web.run_single_ostf_test(
@@ -71,16 +72,16 @@ class OneNodeDeploy(TestBasic):
 
 
 @test(groups=["thread_2"])
-class SimpleFlat(TestBasic):
+class HAOneControllerFlat(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["smoke", "deploy_simple_flat",
-                  "simple_nova_flat", "image_based", "smoke_nova"])
+          groups=["smoke", "deploy_ha_one_controller_flat",
+                  "ha_one_controller_nova_flat", "image_based", "smoke_nova"])
     @log_snapshot_on_error
-    def deploy_simple_flat(self):
-        """Deploy cluster in simple mode with flat nova-network
+    def deploy_ha_one_controller_flat(self):
+        """Deploy cluster in HA mode with flat nova-network
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in HA mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Deploy the cluster
@@ -90,7 +91,7 @@ class SimpleFlat(TestBasic):
             7. Verify network configuration on controller
             8. Run OSTF
 
-        Snapshot: deploy_simple_flat
+        Snapshot: deploy_ha_one_controller_flat
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -104,7 +105,7 @@ class SimpleFlat(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings=data
         )
         self.fuel_web.update_nodes(
@@ -117,7 +118,7 @@ class SimpleFlat(TestBasic):
         self.fuel_web.update_internal_network(cluster_id, '10.1.0.0/24')
         self.fuel_web.deploy_cluster_wait(cluster_id)
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'],
+            self.fuel_web.get_public_vip(cluster_id),
             data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)
@@ -131,30 +132,31 @@ class SimpleFlat(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
-        self.env.make_snapshot("deploy_simple_flat", is_make=True)
+        self.env.make_snapshot("deploy_ha_one_controller_flat", is_make=True)
 
-    @test(depends_on=[deploy_simple_flat],
-          groups=["simple_flat_create_instance"])
+    @test(depends_on=[deploy_ha_one_controller_flat],
+          groups=["ha_one_controller_flat_create_instance"])
     @log_snapshot_on_error
-    def simple_flat_create_instance(self):
+    def ha_one_controller_flat_create_instance(self):
         """Create instance with file injection
 
          Scenario:
-            1. Revert "simple flat" environment
+            1. Revert "ha one controller flat" environment
             2. Create instance with file injection
             3. Assert instance was created
             4. Assert file is on instance
 
         """
-        self.env.revert_snapshot("deploy_simple_flat")
+        self.env.revert_snapshot("deploy_ha_one_controller_flat")
         data = {
             'tenant': 'novaSimpleFlat',
             'user': 'novaSimpleFlat',
             'password': 'novaSimpleFlat'
         }
-        controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
-        os = os_actions.OpenStackActions(controller['ip'], data['user'],
-                                         data['password'], data['tenant'])
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        os = os_actions.OpenStackActions(
+            self.fuel_web.get_public_vip(cluster_id),
+            data['password'], data['tenant'])
 
         remote = self.env.get_ssh_to_remote_by_name('slave-01')
         remote.execute("echo 'Hello World' > /root/test.txt")
@@ -167,20 +169,20 @@ class SimpleFlat(TestBasic):
             floating_ip.ip, "sudo cat /root/test.txt")
         assert_true(res == 'Hello World', 'file content is {0}'.format(res))
 
-    @test(depends_on=[deploy_simple_flat],
-          groups=["simple_flat_node_deletion"])
+    @test(depends_on=[deploy_ha_one_controller_flat],
+          groups=["ha_one_controller_flat_node_deletion"])
     @log_snapshot_on_error
-    def simple_flat_node_deletion(self):
-        """Remove controller from cluster in simple mode with flat nova-network
+    def ha_one_controller_flat_node_deletion(self):
+        """Remove compute from cluster in ha mode with flat nova-network
 
          Scenario:
-            1. Revert "simple flat" environment
-            2. Remove compute nodes
+            1. Revert "deploy_ha_one_controller_flat" environment
+            2. Remove compute node
             3. Deploy changes
             4. Verify node returns to unallocated pull
 
         """
-        self.env.revert_snapshot("deploy_simple_flat")
+        self.env.revert_snapshot("deploy_ha_one_controller_flat")
 
         cluster_id = self.fuel_web.get_last_created_cluster()
         nailgun_nodes = self.fuel_web.update_nodes(
@@ -197,13 +199,13 @@ class SimpleFlat(TestBasic):
         )
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["simple_flat_blocked_vlan"])
+          groups=["ha_one_controller_flat_blocked_vlan"])
     @log_snapshot_on_error
-    def simple_flat_blocked_vlan(self):
+    def ha_one_controller_flat_blocked_vlan(self):
         """Verify network verification with blocked VLANs
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in Ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Deploy the cluster
@@ -218,7 +220,7 @@ class SimpleFlat(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
+            mode=DEPLOYMENT_MODE
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -229,7 +231,7 @@ class SimpleFlat(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
+            self.fuel_web.get_public_vip(cluster_id))
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)
 
@@ -243,13 +245,13 @@ class SimpleFlat(TestBasic):
             ebtables.restore_first_vlan()
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["simple_flat_add_compute"])
+          groups=["ha_one_controller_flat_add_compute"])
     @log_snapshot_on_error
-    def simple_flat_add_compute(self):
-        """Add compute node to cluster in simple mode
+    def ha_one_controller_flat_add_compute(self):
+        """Add compute node to cluster in ha mode
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in HA mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Deploy the cluster
@@ -262,7 +264,7 @@ class SimpleFlat(TestBasic):
             9. Verify services list on compute nodes
             10. Run OSTF
 
-        Snapshot: simple_flat_add_compute
+        Snapshot: ha_one_controller_flat_add_compute
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -276,7 +278,7 @@ class SimpleFlat(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings=data
         )
         self.fuel_web.update_nodes(
@@ -288,7 +290,7 @@ class SimpleFlat(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'],
+            self.fuel_web.get_public_vip(cluster_id),
             data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)
@@ -306,19 +308,20 @@ class SimpleFlat(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
-        self.env.make_snapshot("simple_flat_add_compute")
+        self.env.make_snapshot("ha_one_controller_flat_add_compute")
 
 
 @test(groups=["thread_2"])
-class SimpleVlan(TestBasic):
+class HAOneControllerVlan(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_simple_vlan", "simple_nova_vlan"])
+          groups=["deploy_ha_one_controller_vlan",
+                  "ha_one_controller_nova_vlan"])
     @log_snapshot_on_error
-    def deploy_simple_vlan(self):
-        """Deploy cluster in simple mode with nova-network VLAN Manager
+    def deploy_ha_one_controller_vlan(self):
+        """Deploy cluster in ha mode with nova-network VLAN Manager
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in Ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Set up cluster to use Network VLAN manager with 8 networks
@@ -328,7 +331,7 @@ class SimpleVlan(TestBasic):
             7. Run network verification
             8. Run OSTF
 
-        Snapshot: deploy_simple_vlan
+        Snapshot: deploy_ha_one_controller_vlan
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -341,7 +344,7 @@ class SimpleVlan(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings=data
         )
         self.fuel_web.update_nodes(
@@ -357,7 +360,7 @@ class SimpleVlan(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'],
+            self.fuel_web.get_public_vip(cluster_id),
             data['user'], data['password'], data['tenant'])
 
         self.fuel_web.assert_cluster_ready(
@@ -368,7 +371,7 @@ class SimpleVlan(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
-        self.env.make_snapshot("deploy_simple_vlan")
+        self.env.make_snapshot("deploy_ha_one_controller_vlan")
 
 
 @test(groups=["thread_2", "multirole"])
@@ -377,10 +380,10 @@ class MultiroleControllerCinder(TestBasic):
           groups=["deploy_multirole_controller_cinder"])
     @log_snapshot_on_error
     def deploy_multirole_controller_cinder(self):
-        """Deploy cluster in simple mode with multi-role controller and cinder
+        """Deploy cluster in HA mode with multi-role controller and cinder
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in HA mode with 1 controller
             2. Add 1 node with controller and cinder roles
             3. Add 1 node with compute role
             4. Deploy the cluster
@@ -400,7 +403,7 @@ class MultiroleControllerCinder(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings=data
         )
         self.fuel_web.update_nodes(
@@ -425,10 +428,10 @@ class MultiroleComputeCinder(TestBasic):
           groups=["deploy_multirole_compute_cinder"])
     @log_snapshot_on_error
     def deploy_multirole_compute_cinder(self):
-        """Deploy cluster in simple mode with multi-role compute and cinder
+        """Deploy cluster in HA mode with multi-role compute and cinder
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in Ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 2 node with compute and cinder roles
             4. Deploy the cluster
@@ -442,7 +445,7 @@ class MultiroleComputeCinder(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
+            mode=DEPLOYMENT_MODE
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -470,7 +473,7 @@ class FloatingIPs(TestBasic):
         """Deploy cluster with non-default 3 floating IPs ranges
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in Ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute and cinder roles
             4. Update floating IP ranges. Use 3 ranges
@@ -485,7 +488,7 @@ class FloatingIPs(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 'tenant': 'floatingip',
                 'user': 'floatingip',
@@ -520,16 +523,17 @@ class FloatingIPs(TestBasic):
         self.env.make_snapshot("deploy_floating_ips")
 
 
-@test(groups=["simple_cinder"])
-class SimpleCinder(TestBasic):
+@test(groups=["ha_one_controller"])
+class HAOneControllerCinder(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["deploy_simple_cinder", "simple_nova_cinder"])
+          groups=["deploy_ha_one_controller_cinder",
+                  "ha_one_controller_nova_cinder"])
     @log_snapshot_on_error
-    def deploy_simple_cinder(self):
-        """Deploy cluster in simple mode with cinder
+    def deploy_ha_one_controller_cinder(self):
+        """Deploy cluster in HA mode with cinder
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in Ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Add 1 node with cinder role
@@ -538,14 +542,14 @@ class SimpleCinder(TestBasic):
             services, there are no errors in logs
             7. Run OSTF
 
-        Snapshot: deploy_simple_cinder
+        Snapshot: deploy_ha_one_controller_cinder
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
+            mode=DEPLOYMENT_MODE
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -558,7 +562,7 @@ class SimpleCinder(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
+            self.fuel_web.get_public_vip(cluster_id))
 
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)
@@ -570,7 +574,7 @@ class SimpleCinder(TestBasic):
 
         self.fuel_web.run_ostf(cluster_id=cluster_id)
 
-        self.env.make_snapshot("deploy_simple_cinder")
+        self.env.make_snapshot("deploy_ha_one_controller_cinder")
 
 
 @test(groups=["thread_1"])
@@ -582,7 +586,7 @@ class NodeMultipleInterfaces(TestBasic):
         """Deploy cluster with networks allocated on different interfaces
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in Ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Add 1 node with cinder role
@@ -605,7 +609,7 @@ class NodeMultipleInterfaces(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
+            mode=DEPLOYMENT_MODE
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -675,7 +679,7 @@ class NodeDiskSizes(TestBasic):
         """Verify nailgun notifications for discovered nodes
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in Ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Add 1 node with cinder role
@@ -688,7 +692,7 @@ class NodeDiskSizes(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE
+            mode=DEPLOYMENT_MODE
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -700,7 +704,7 @@ class NodeDiskSizes(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'])
+            self.fuel_web.get_public_vip(cluster_id))
 
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)
@@ -784,7 +788,7 @@ class MultinicBootstrap(TestBasic):
 
 @test(groups=["thread_2", "test"])
 class DeleteEnvironment(TestBasic):
-    @test(depends_on=[SimpleFlat.deploy_simple_flat],
+    @test(depends_on=[HAOneControllerFlat.deploy_ha_one_controller_flat],
           groups=["delete_environment"])
     @log_snapshot_on_error
     def delete_environment(self):
@@ -792,12 +796,12 @@ class DeleteEnvironment(TestBasic):
         and verify nodes returns to unallocated state
 
         Scenario:
-            1. Revert "simple flat" environment
+            1. Revert "deploy_ha_one_controller" environment
             2. Delete environment
             3. Verify node returns to unallocated pull
 
         """
-        self.env.revert_snapshot("deploy_simple_flat")
+        self.env.revert_snapshot("deploy_ha_one_controller_flat")
 
         cluster_id = self.fuel_web.get_last_created_cluster()
         self.fuel_web.client.delete_cluster(cluster_id)
@@ -826,7 +830,7 @@ class UntaggedNetworksNegative(TestBasic):
         """Verify network verification fails with untagged network on eth0
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Split networks on existing physical interfaces
@@ -847,6 +851,7 @@ class UntaggedNetworksNegative(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE
         )
         self.fuel_web.update_nodes(
             cluster_id,
@@ -876,15 +881,15 @@ class UntaggedNetworksNegative(TestBasic):
 
 
 @test(groups=["known_issues"])
-class BackupRestoreSimple(TestBasic):
-    @test(depends_on=[SimpleFlat.deploy_simple_flat],
-          groups=["simple_backup_restore"])
+class BackupRestoreHAOneController(TestBasic):
+    @test(depends_on=[HAOneControllerFlat.deploy_ha_one_controller_flat],
+          groups=["ha_one_controller_backup_restore"])
     @log_snapshot_on_error
-    def simple_backup_restore(self):
+    def ha_one_controller_backup_restore(self):
         """Backup/restore master node with cluster in simple mode
 
         Scenario:
-            1. Revert snapshot "deploy_simple_flat"
+            1. Revert snapshot "deploy_ha_one_controller_flat"
             2. Backup master
             3. Check backup
             4. Run OSTF
@@ -894,11 +899,11 @@ class BackupRestoreSimple(TestBasic):
             8. Run OSTF
 
         """
-        self.env.revert_snapshot("deploy_simple_flat")
+        self.env.revert_snapshot("deploy_ha_one_controller_flat")
 
         cluster_id = self.fuel_web.get_last_created_cluster()
         os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'],
+            self.fuel_web.get_public_vip(cluster_id),
             'novaSimpleFlat', 'novaSimpleFlat', 'novaSimpleFlat')
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)
@@ -926,4 +931,4 @@ class BackupRestoreSimple(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
-        self.env.make_snapshot("simple_backup_restore")
+        self.env.make_snapshot("ha_one_controller_backup_restore")

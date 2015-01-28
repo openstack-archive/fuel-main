@@ -8,7 +8,7 @@ def run_tests():
     from tests import test_neutron  # noqa
     from tests import test_pullrequest  # noqa
     from tests import test_services  # noqa
-    from tests import test_simple  # noqa
+    from tests import test_ha_one_controller  # noqa
     from tests import test_vcenter  # noqa
     from tests.tests_strength import test_failover  # noqa
     from tests.tests_strength import test_master_node_failover  # noqa

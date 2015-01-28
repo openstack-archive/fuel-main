@@ -17,21 +17,20 @@ from proboscis import SkipTest
 from proboscis import test
 
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
-from fuelweb_test.settings import DEPLOYMENT_MODE_HA
+from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_REDHAT
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
 
-@test(groups=["bonding_simple", "bonding"])
+@test(groups=["bonding_one_controller", "bonding"])
 class BondingSimple(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_bonding_active_backup"])
     @log_snapshot_on_error
     def deploy_bonding_active_backup(self):
-        """Deploy cluster in simple mode with bonding
+        """Deploy cluster in ha mode with one controller bonding
 
         Scenario:
             1. Create cluster
@@ -55,7 +54,7 @@ class BondingSimple(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type,
@@ -119,7 +118,7 @@ class BondingSimple(TestBasic):
           groups=["deploy_bonding_balance_slb"])
     @log_snapshot_on_error
     def deploy_bonding_balance_slb(self):
-        """Deploy cluster in simple mode with bonding
+        """Deploy cluster in ha mode with 1 controller and  bonding
 
         Scenario:
             1. Create cluster
@@ -143,7 +142,7 @@ class BondingSimple(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type,
@@ -234,7 +233,7 @@ class BondingHA(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type,
@@ -325,7 +324,7 @@ class BondingHA(TestBasic):
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings={
                 "net_provider": 'neutron',
                 "net_segment_type": segment_type,
