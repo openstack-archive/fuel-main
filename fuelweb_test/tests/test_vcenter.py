@@ -23,6 +23,7 @@ from fuelweb_test.helpers import os_actions
 from fuelweb_test import logger
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
+from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.settings import VCENTER_IP
 from fuelweb_test.settings import VCENTER_USERNAME
 from fuelweb_test.settings import VCENTER_PASSWORD
@@ -53,7 +54,7 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 'host_ip': VCENTER_IP,
                 'vc_user': VCENTER_USERNAME,
@@ -61,6 +62,7 @@ class VcenterDeploy(TestBasic):
                 'cluster': VCENTER_CLUSTERS
             }
         )
+
         logger.info("cluster is {}".format(cluster_id))
 
         # Assign role to node
@@ -74,8 +76,7 @@ class VcenterDeploy(TestBasic):
         # Fix me. Later need to change sleep with wait function.
         time.sleep(60)
 
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+        self.fuel_web.run_ostf(cluster_id=cluster_id)
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_1],
           groups=["vcenter_multiple_cluster"])
