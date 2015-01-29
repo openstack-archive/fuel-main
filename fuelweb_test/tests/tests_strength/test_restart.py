@@ -33,7 +33,7 @@ class CephRestart(TestBasic):
           groups=["ceph_multinode_restart"])
     @log_snapshot_on_error
     def ceph_multinode_restart(self):
-        """Deploy ceph with cinder in simple mode
+        """Restart cluster with ceph and cinder (multinode)
 
         Scenario:
             1. Create cluster

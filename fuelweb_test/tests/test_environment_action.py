@@ -34,7 +34,7 @@ class EnvironmentAction(base_test_case.TestBasic):
     @log_snapshot_on_error
     @check_fuel_statistics
     def deploy_flat_stop_on_deploying(self):
-        """Stop reset cluster in simple mode with flat nova-network
+        """Stop deploying cluster in simple mode with flat nova-network
 
         Scenario:
             1. Create cluster
@@ -96,14 +96,14 @@ class EnvironmentAction(base_test_case.TestBasic):
           groups=["smoke", "deploy_flat_stop_reset_on_provisioning"])
     @log_snapshot_on_error
     def deploy_flat_stop_reset_on_provisioning(self):
-        """Stop reset cluster in simple mode with flat nova-network
+        """Stop provisioning cluster in simple mode with flat nova-network
 
         Scenario:
             1. Create cluster
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Run provisioning task
-            5. Stop deployment
+            5. Stop provisioning
             6. Reset settings
             7. Add 1 node with cinder role
             8. Re-deploy cluster

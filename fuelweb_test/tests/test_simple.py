@@ -672,7 +672,7 @@ class NodeDiskSizes(TestBasic):
           groups=["check_nodes_disks"])
     @log_snapshot_on_error
     def check_nodes_disks(self):
-        """Verify nailgun notifications for discovered nodes
+        """Verify hard drive sizes for deployed nodes
 
         Scenario:
             1. Create cluster

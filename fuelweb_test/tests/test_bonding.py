@@ -31,7 +31,7 @@ class BondingSimple(TestBasic):
           groups=["deploy_bonding_active_backup"])
     @log_snapshot_on_error
     def deploy_bonding_active_backup(self):
-        """Deploy cluster in simple mode with bonding
+        """Deploy cluster in simple mode with bonding (active backup)
 
         Scenario:
             1. Create cluster
@@ -119,7 +119,7 @@ class BondingSimple(TestBasic):
           groups=["deploy_bonding_balance_slb"])
     @log_snapshot_on_error
     def deploy_bonding_balance_slb(self):
-        """Deploy cluster in simple mode with bonding
+        """Deploy cluster in simple mode with bonding (balance SLB)
 
         Scenario:
             1. Create cluster
@@ -210,7 +210,7 @@ class BondingHA(TestBasic):
           groups=["deploy_bonding_ha_active_backup"])
     @log_snapshot_on_error
     def deploy_bonding_ha_active_backup(self):
-        """Deploy cluster in HA mode with bonding
+        """Deploy cluster in HA mode with bonding (active backup)
 
         Scenario:
             1. Create cluster
@@ -301,7 +301,7 @@ class BondingHA(TestBasic):
           groups=["deploy_bonding_ha_balance_slb"])
     @log_snapshot_on_error
     def deploy_bonding_ha_balance_slb(self):
-        """Deploy cluster in HA mode with bonding
+        """Deploy cluster in HA mode with bonding (balance SLB)
 
         Scenario:
             1. Create cluster

@@ -68,7 +68,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
           groups=["create_delete_ip_n_times_nova_flat"])
     @log_snapshot_on_error
     def deploy_create_delete_ip_n_times_nova_flat(self):
-        """Deploy cluster in simple mode with flat nova-network
+        """Deploy multinode cluster, check connectivity from instance n times
 
         Scenario:
             1. Create cluster

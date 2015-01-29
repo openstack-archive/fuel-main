@@ -202,7 +202,7 @@ class ExamplePlugin(TestBasic):
           groups=["deploy_neutron_example_ha_add_node"])
     @log_snapshot_on_error
     def deploy_neutron_example_ha_add_node(self):
-        """Deploy cluster in ha mode with example plugin
+        """Deploy and scale cluster in ha mode with example plugin
 
         Scenario:
             1. Upload plugin to the master node

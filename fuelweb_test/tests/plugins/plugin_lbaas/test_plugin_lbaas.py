@@ -169,7 +169,7 @@ class LbaasPlugin(TestBasic):
           groups=["deploy_neutron_lbaas_simple_reset_ready"])
     @log_snapshot_on_error
     def deploy_neutron_lbaas_simple_reset_ready(self):
-        """Deploy cluster in simple mode with LbaaS plugin
+        """Deploy and re-deploy cluster in simple mode with LbaaS plugin
 
         Scenario:
             1. Upload plugin to the master node

@@ -42,7 +42,7 @@ class TestHaFailover(TestBasic):
           groups=["deploy_ha"])
     @log_snapshot_on_error
     def deploy_ha(self):
-        """Deploy cluster in HA mode with flat nova-network
+        """Prepare cluster in HA mode for further tests
 
         Scenario:
             1. Create cluster
