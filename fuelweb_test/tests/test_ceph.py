@@ -46,6 +46,7 @@ class CephCompact(TestBasic):
             4. Deploy the cluster
             5. Check ceph status
 
+        Duration 35m
         Snapshot ceph_multinode_compact
 
         """
@@ -102,6 +103,7 @@ class CephCompactWithCinder(TestBasic):
             6. Check ceph status
             7. Check partitions on controller node
 
+        Duration 40m
         Snapshot ceph_multinode_with_cinder
 
         """
@@ -174,6 +176,7 @@ class CephHA(TestBasic):
             5. Deploy the cluster
             6. Check ceph status
 
+        Duration 90m
         Snapshot ceph_ha
 
         """
@@ -245,6 +248,7 @@ class CephRadosGW(TestBasic):
             7. Run OSTF tests
             8. Check the radosqw daemon is started
 
+        Duration 40m
         Snapshot ceph_rados_gw
 
         """
@@ -331,6 +335,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
             9. Check cluster and server state after migration
             10. Terminate VM
 
+        Duration 35m
         Snapshot vm_backed_with_ceph_live_migration
 
         """
@@ -527,6 +532,7 @@ class CheckCephPartitionsAfterReboot(TestBasic):
             13. Read partitions again
             14. Check Ceph health
 
+        Duration 40m
         Snapshot check_ceph_partitions_after_reboot
 
         """

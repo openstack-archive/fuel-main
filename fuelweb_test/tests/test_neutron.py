@@ -39,6 +39,7 @@ class NeutronGre(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 35m
         Snapshot deploy_neutron_gre
 
         """
@@ -99,6 +100,7 @@ class NeutronVlan(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 35m
         Snapshot deploy_neutron_vlan
 
         """
@@ -155,6 +157,7 @@ class NeutronGreHa(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 80m
         Snapshot deploy_neutron_gre_ha
 
         """
@@ -216,6 +219,7 @@ class NeutronGreHaPublicNetwork(TestBasic):
             7. Run network verification
             8. Run OSTF
 
+        Duration 80m
         Snapshot deploy_neutron_gre_ha_public_network
 
         """
@@ -277,6 +281,7 @@ class NeutronVlanHa(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 80m
         Snapshot deploy_neutron_vlan_ha
 
         """
@@ -339,8 +344,8 @@ class NeutronVlanHaPublicNetwork(TestBasic):
             7. Run network verification
             8. Run OSTF
 
+        Duration 80m
         Snapshot deploy_neutron_vlan_ha_public_network
-
 
         """
         self.env.revert_snapshot("ready_with_5_slaves")

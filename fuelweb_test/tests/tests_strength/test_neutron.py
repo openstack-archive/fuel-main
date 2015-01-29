@@ -94,6 +94,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
             4. Add 1 node with cinder role
             5. Deploy the cluster
 
+        Duration 90m
         Snapshot deploy_ha_neutron
 
         """
@@ -141,9 +142,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
             5. Check network connectivity from instance via
                dhcp namespace
             6. Run OSTF
-
-        Snapshot deploy_ha_neutron
-
+        Duration 30m 
         """
         self.env.revert_snapshot("deploy_ha_neutron")
         cluster_id = self.fuel_web.get_last_created_cluster()
@@ -208,8 +207,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
                dhcp namespace
             6. Run OSTF
 
-        Snapshot deploy_ha_neutron
-
+        Duration 30m
         """
         self.env.revert_snapshot("deploy_ha_neutron")
         cluster_id = self.fuel_web.get_last_created_cluster()
@@ -268,8 +266,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
                dhcp namespace
             6. Run OSTF
 
-        Snapshot deploy_ha_neutron
-
+        Duration 30m
         """
         self.env.revert_snapshot("deploy_ha_neutron")
         cluster_id = self.fuel_web.get_last_created_cluster()
@@ -342,7 +339,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
             4. If at least 7 responses on 10 requests are received
                assume test is passed
 
-        Snapshot neutron_packets_drop_stat
+        Duration 30m
 
         """
         self.env.revert_snapshot("deploy_ha_neutron")
