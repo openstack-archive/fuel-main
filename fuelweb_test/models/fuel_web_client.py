@@ -126,16 +126,10 @@ class FuelWebClient(object):
 
         for set_result in set_result_list:
             for test in set_result['tests']:
-                intresting_test = False
-
-                for test_class in tests_must_be_passed:
-                    if test['id'].find(test_class) > -1:
-                        intresting_test = True
-
-                if intresting_test:
+                if test['id'] in tests_must_be_passed:
                     if test['status'] == 'success':
                         tests_pass_count += 1
-                        logger.info('Passed OSTF tests %s found', test_class)
+                        logger.info('Passed OSTF test %s found', test['id'])
                     else:
                         details = ('%s (%s). Test status: %s, message: %s'
                                    % (test['name'], test['id'], test['status'],
