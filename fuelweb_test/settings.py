@@ -14,6 +14,7 @@
 
 
 import os
+import time
 
 # Default timezone for clear logging
 TIME_ZONE = 'UTC'
@@ -361,3 +362,6 @@ CUSTOM_ENV = os.environ.get('CUSTOM_ENV', 'false') == 'true'
 BUILD_IMAGES = os.environ.get('BUILD_IMAGES', 'false') == 'true'
 
 STORE_ASTUTE_YAML = os.environ.get('STORE_ASTUTE_YAML', 'false') == 'true'
+TIMESTAT_YAML_PATH = os.environ.get(
+    'TIMESTAT_YAML_PATH',
+    LOGS_DIR + '/timestat_{}.yaml'.format(time.strftime("%Y%m%d-%H%M%S")))
