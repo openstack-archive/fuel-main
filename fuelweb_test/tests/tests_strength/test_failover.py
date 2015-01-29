@@ -400,7 +400,7 @@ class TestHaFailover(TestBasic):
                 " \[ {0} \]".format(pcm_nodes), config), None,
                 'haproxy is not configured right')
 
-    @test(depends_on_groups=['deploy_ha'],
+    @test(enabled=False, depends_on_groups=['deploy_ha'],
           groups=["ha_pacemaker_restart_heat_engine"])
     @log_snapshot_on_error
     def ha_pacemaker_restart_heat_engine(self):
