@@ -52,6 +52,7 @@ class SaharaSimple(TestBasic):
             7. Register Vanilla2 image for Sahara
             8. Run platform Vanilla2 test for Sahara
 
+        Duration 65m
         Snapshot: deploy_sahara_simple_gre
 
         """
@@ -151,6 +152,7 @@ class SaharaHA(TestBasic):
             7. Register Vanilla2 image for Sahara
             8. Run platform Vanilla2 test for Sahara
 
+        Duration 130m
         Snapshot: deploy_sahara_ha_gre
 
         """
@@ -255,6 +257,7 @@ class MuranoSimple(TestBasic):
             7. Register Murano image
             8. Run OSTF Murano platform tests
 
+        Duration 40m
         Snapshot: deploy_murano_simple_gre
 
         """
@@ -376,6 +379,7 @@ class MuranoHA(TestBasic):
             7. Register Murano image
             8. Run OSTF Murano platform tests
 
+        Duration 100m
         Snapshot: deploy_murano_ha_with_gre
 
         """
@@ -524,7 +528,8 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
             6. Deploy the cluster
             7. Verify ceilometer api is running
             8. Run OSTF
-
+        
+        Duration 45m
         Snapshot: deploy_ceilometer_simple_with_mongo
 
         """
@@ -600,6 +605,7 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
             6. Verify ceilometer api is running
             7. Run OSTF
 
+        Duration 35m
         Snapshot: deploy_ceilometer_simple_multirole
 
         """
@@ -646,6 +652,7 @@ class CeilometerHAMongo(CeilometerOSTFTestsRun):
             6. Verify ceilometer api is running
             7. Run OSTF
 
+        Duration 65m
         Snapshot: deploy_ceilometer_ha_with_mongo
 
         """
@@ -696,6 +703,7 @@ class CeilometerHAMongo(CeilometerOSTFTestsRun):
             6. Verify ceilometer api is running
             7. Run OSTF
 
+        Duration 80m
         Snapshot: deploy_ceilometer_ha_multirole
 
         """
@@ -748,6 +756,7 @@ class HeatSimple(TestBasic):
             6. Verify Heat, Ceilometer services
             7. Run OSTF platform tests
 
+        Duration 40m
         Snapshot: deploy_heat_simple_neutron
 
         """
@@ -828,6 +837,7 @@ class HeatSimple(TestBasic):
             5. Verify Heat, Ceilometer services
             6. Run OSTF platform tests
 
+        Duration 40m
         Snapshot: deploy_heat_simple_nova
 
         """
@@ -912,6 +922,7 @@ class HeatHA(TestBasic):
             5. Verify Heat and Ceilometer services
             6. Run OSTF platform tests
 
+        Duration 70m
         Snapshot: deploy_heat_ha
 
         """

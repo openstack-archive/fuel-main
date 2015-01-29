@@ -42,6 +42,8 @@ class TestAdminNode(TestBasic):
             1. Revert snapshot "empty"
             2. test cobbler API and HTTP server through send http request
 
+        Duration 1m
+
         """
         if OPENSTACK_RELEASE_CENTOS not in OPENSTACK_RELEASE:
             raise SkipTest()
@@ -70,6 +72,8 @@ class TestAdminNode(TestBasic):
         Scenario:
             1. Revert snapshot "empty"
             2. Search for master and child processes
+
+        Duration 1m
 
         """
         if OPENSTACK_RELEASE_CENTOS not in OPENSTACK_RELEASE:
@@ -101,6 +105,8 @@ class TestAdminNodeBackupRestore(TestBasic):
             4. Restore master
             5. Check restore
 
+        Duration 30m
+
         """
         self.env.revert_snapshot("empty")
         self.fuel_web.backup_master(self.env.get_admin_remote())
@@ -117,10 +123,13 @@ class TestAdminNodeCustomManifests(TestBasic):
     @log_snapshot_on_error
     def setup_with_custom_manifests(self):
         """Setup master node with custom manifests
+        
         Scenario:
-        1. Start installation of master
-        2. Enter "fuelmenu"
-        3. Upload custom manifests
-        4. Kill "fuelmenu" pid
+            1. Start installation of master
+            2. Enter "fuelmenu"
+            3. Upload custom manifests
+            4. Kill "fuelmenu" pid
+
+        Duration 20
         """
         self.env.setup_environment(custom=True, build_images=True)

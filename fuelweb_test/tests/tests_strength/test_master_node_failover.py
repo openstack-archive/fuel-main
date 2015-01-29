@@ -28,7 +28,7 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
           groups=["non_functional", "deploy_simple_flat_master_node_fail"])
     def deploy_simple_flat_master_node_fail(self):
-        """Deploy cluster in simple mode with flat nova-network
+        """Deploy multinode cluster and check how it works without master node
 
         Scenario:
             1. Create cluster
@@ -42,6 +42,8 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
             8. Run OSTF
             9. Shut down master node
             10. Run openstack verification
+
+        Duration 1000m
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")

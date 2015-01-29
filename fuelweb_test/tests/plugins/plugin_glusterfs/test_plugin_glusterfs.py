@@ -61,6 +61,7 @@ class GlusterfsPlugin(TestBasic):
             9. Check plugin health
             10. Run OSTF
 
+        Duration 35m
         Snapshot deploy_glusterfs_simple
 
         """
@@ -145,6 +146,7 @@ class GlusterfsPlugin(TestBasic):
             13. Check plugin health
             14. Run ostf
 
+        Duration 50m
         Snapshot deploy_glasterfs_ha
 
         """

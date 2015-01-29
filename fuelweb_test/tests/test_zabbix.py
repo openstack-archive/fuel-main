@@ -47,6 +47,7 @@ class SimpleZabbix(TestBasic):
             11. Run OSTF
             12. Login in zabbix dashboard
 
+        Duration 30m
         Snapshot: deploy_simple_zabbix
 
         """

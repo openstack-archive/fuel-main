@@ -42,7 +42,7 @@ class TestHaFailover(TestBasic):
           groups=["deploy_ha"])
     @log_snapshot_on_error
     def deploy_ha(self):
-        """Deploy cluster in HA mode with flat nova-network
+        """Prepare cluster in HA mode for failover tests
 
         Scenario:
             1. Create cluster
@@ -51,6 +51,7 @@ class TestHaFailover(TestBasic):
             4. Deploy the cluster
             8. Make snapshot
 
+        Duration 70m
         Snapshot deploy_ha
 
         """
@@ -117,6 +118,7 @@ class TestHaFailover(TestBasic):
             6. Check pacemaker status
             7. Run OSTF
 
+        Duration 35m    
         """
 
         for devops_node in self.env.nodes().slaves[:2]:
@@ -159,7 +161,7 @@ class TestHaFailover(TestBasic):
             5. Check pacemaker status
             6. Run OSTF
 
-        Snapshot deploy_ha
+        Duration 45m
 
         """
 
@@ -198,7 +200,7 @@ class TestHaFailover(TestBasic):
             3. Verify it is restored
             4. Run OSTF
 
-        Snapshot deploy_ha
+        Duration 30m
 
         """
         logger.debug('Start reverting of deploy_ha snapshot')
@@ -290,7 +292,7 @@ class TestHaFailover(TestBasic):
             4. Go to another controller
             5. Run OSTF
 
-        Snapshot deploy_ha
+        Duration 15m
 
         """
         self.env.revert_snapshot("deploy_ha")
@@ -331,7 +333,7 @@ class TestHaFailover(TestBasic):
             4. Go to another controller
             5. Run OSTF
 
-        Snapshot deploy_ha
+        Duration 25m
 
         """
         self.env.revert_snapshot("deploy_ha")
@@ -364,7 +366,7 @@ class TestHaFailover(TestBasic):
             2. Verify resources are configured
             3. Go to next controller
 
-        Snapshot deploy_ha
+        Duration 15m
 
         """
         self.env.revert_snapshot("deploy_ha")
@@ -416,7 +418,7 @@ class TestHaFailover(TestBasic):
             6. Check heat-engine process is running with new pid
             7. Check amqp connection re-appears for heat-engine
 
-        Snapshot ha_pacemaker_restart_heat_engine
+        Duration 15m
 
         """
         self.env.revert_snapshot("deploy_ha")
@@ -487,7 +489,7 @@ class TestHaFailover(TestBasic):
             2. Kill nova-compute service
             3. Check service is restarted by monit
 
-        Snapshot ha_check_monit
+        Duration 25m
 
         """
         self.env.revert_snapshot("deploy_ha")

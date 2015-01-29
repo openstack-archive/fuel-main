@@ -38,6 +38,8 @@ class TestMultipleClusterNets(TestBasic):
             2. Check that slaves got IPs via DHCP from both admin/pxe networks
             3. Make environment snapshot
 
+        
+        Duration 6m 
         Snapshot multiple_cluster_net_setup
 
         """
@@ -74,6 +76,7 @@ class TestMultipleClusterNets(TestBasic):
             5. Deploy cluster
             6. Run health checks (OSTF)
 
+        Duration 110m
         Snapshot deploy_neutron_gre_ha_nodegroups
 
         """
@@ -128,6 +131,7 @@ class TestMultipleClusterNets(TestBasic):
             5. Deploy cluster
             6. Run health checks (OSTF)
 
+        Duration 110
         Snapshot deploy_neutron_gre_ha_nodegroups
 
         """
