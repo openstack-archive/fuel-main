@@ -60,7 +60,7 @@ class RepeatableImageBased(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.client.delete_cluster(cluster_id)
         #wait nodes go to reboot
-        wait(lambda: not self.fuel_web.client.list_nodes(), timeout=5 * 60)
+        wait(lambda: not self.fuel_web.client.list_nodes(), timeout=10 * 60)
         #wait for nodes to appear after bootstrap
         wait(lambda: len(self.fuel_web.client.list_nodes()) == 5,
              timeout=5 * 60)
