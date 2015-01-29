@@ -86,9 +86,13 @@ def log_snapshot_on_error(func):
                                      format(traceback.format_exc()))
                 finally:
                     logger.debug(args)
-                    args[0].env.make_snapshot(snapshot_name=name[-50:],
-                                              description=description,
-                                              is_make=True)
+                    try:
+                        args[0].env.make_snapshot(snapshot_name=name[-50:],
+                                                  description=description,
+                                                  is_make=True)
+                    except:
+                        logger.error("Error making the environment snapshot:"
+                                     " {0}".format(traceback.format_exc()))
             raise test_exception, None, exc_trace
     return wrapper
 
