@@ -12,8 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import inspect
 import time
 import traceback
+import yaml
+import os.path
 
 from proboscis import asserts
 
@@ -103,3 +106,72 @@ def store_astute_yaml(env, func_name):
                                  "{0} failed.".format(node.name))
             except Exception:
                 logger.error(traceback.format_exc())
+
+
+def update_yaml(yaml_tree=[], yaml_value='', is_uniq=True,
+                yaml_file=settings.TIMESTAT_YAML_PATH):
+    yaml_data = {}
+    if os.path.isfile(yaml_file):
+        with open(yaml_file, 'r') as f:
+            yaml_data = yaml.load(f)
+
+    # Walk through the 'yaml_data' dict, find or create a tree using
+    # sub-leafs provided in 'yaml_tree' list
+    item = yaml_data
+    for n in yaml_tree[:-1]:
+        if n not in item:
+            item[n] = {}
+        item = item[n]
+
+    if is_uniq:
+        last = yaml_tree[-1]
+    else:
+        # Create an uniq suffix in range '_00' to '_99'
+        for n in range(100):
+            last = yaml_tree[-1] + '_' + str(n).zfill(2)
+            if last not in item:
+                break
+
+    item[last] = yaml_value
+    with open(yaml_file, 'w') as f:
+        yaml.dump(yaml_data, f, default_flow_style=False)
+
+
+class timestat(object):
+
+    def __init__(self, name=None, is_uniq=False):
+        if name:
+            self.name = name
+        else:
+            self.name = 'timestat'
+        self.is_uniq = is_uniq
+
+    def __enter__(self):
+        self.begin_time = time.time()
+
+    def __exit__(self, exp_type, exp_value, traceback):
+        self.end_time = time.time()
+        self.total_time = self.end_time - self.begin_time
+
+        # Find the name of the current test in the stack. It can be found
+        # right under the class with the name 'NoneType' (when proboscis
+        # run the test method with unittest.FunctionTestCase)
+        stack = inspect.stack()
+        method = ''
+        for m in stack:
+            if 'self' in m[0].f_locals:
+                if m[0].f_locals['self'].__class__.__name__ == 'NoneType':
+                    break
+                method = m[3]
+
+        # Create a path where the 'self.total_time' must be stored.
+        # There will be a list of two yaml leafs:
+        # - first leaf name is the test method name
+        # - second leaf name is provided from the decorator (the name of the
+        #   just executed function), or manually.
+        yaml_path = []
+        if method:
+            yaml_path.append(method)
+        yaml_path.append(self.name)
+
+        update_yaml(yaml_path, '{:.2f}'.format(self.total_time), self.is_uniq)

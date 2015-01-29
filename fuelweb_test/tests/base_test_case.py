@@ -16,6 +16,7 @@ from proboscis import SkipTest
 from proboscis import test
 
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.utils import timestat
 from fuelweb_test.models.environment import EnvironmentModel
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_REDHAT
@@ -54,7 +55,8 @@ class SetupEnvironment(TestBasic):
 
         """
         self.check_run("empty")
-        self.env.setup_environment()
+        with timestat("setup_environment", is_uniq=True):
+            self.env.setup_environment()
         self.env.make_snapshot("empty", is_make=True)
 
     @test(depends_on=[setup_master])
