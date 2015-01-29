@@ -446,7 +446,7 @@ class EnvironmentModel(object):
         self.execute_remote_cmd(remote, 'hwclock -s')
         self.execute_remote_cmd(remote, 'NTPD=$(find /etc/init.d/ -regex \''
                                         '/etc/init.d/\(ntp.?\|ntp-dev\)\');'
-                                        ' $NTPD stop; killall ntpd; '
+                                        ' $NTPD stop; killall ntpd || true; '
                                         'ntpd -qg && $NTPD start')
         self.execute_remote_cmd(remote, 'hwclock -w')
         remote_date = remote.execute('date')['stdout']
