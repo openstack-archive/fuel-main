@@ -539,8 +539,8 @@ class EnvironmentModel(object):
         self.execute_remote_cmd(remote, 'hwclock -s')
         self.execute_remote_cmd(remote, 'NTPD=$(find /etc/init.d/ -regex \''
                                         '/etc/init.d/\(ntp.?\|ntp-dev\)\');'
-                                        ' $NTPD stop; killall ntpd; '
-                                        'ntpd -qg && $NTPD start')
+                                        '$NTPD stop && ntpd -dqg && $NTPD '
+                                        'start')
         self.execute_remote_cmd(remote, 'hwclock -w')
         remote_date = remote.execute('date')['stdout']
         logger.info("Node time: %s" % remote_date)
@@ -556,15 +556,16 @@ class EnvironmentModel(object):
             # If public NTP servers aren't accessible ntpdate will fail and
             # ntpd daemon shouldn't be restarted to avoid 'Server has gone
             # too long without sync' error while syncing time from slaves
-            self.execute_remote_cmd(remote, "ntpdate -d $(awk '/^server/{print"
-                                            " $2}' /etc/ntp.conf)")
+            self.execute_remote_cmd(remote, "ntpdate -vu $(awk '/^server/ && "
+                                            "$2 !~ /127.*/ {print $2}' "
+                                            "/etc/ntp.conf)")
         except AssertionError as e:
             logger.warning('Error occurred while synchronizing time on master'
                            ': {0}'.format(e))
             raise
         else:
-            self.execute_remote_cmd(remote, 'service ntpd stop && ntpd -qg && '
-                                            'service ntpd start')
+            self.execute_remote_cmd(remote, 'service ntpd stop && ntpd -dqg &&'
+                                            ' service ntpd start')
             self.execute_remote_cmd(remote, 'hwclock -w')
 
         remote_date = remote.execute('date')['stdout']
@@ -680,7 +681,7 @@ class EnvironmentModel(object):
         result = remote.execute(cmd)
         assert_equal(result['exit_code'], exit_code,
                      'Failed to execute "{0}" on remote host: {1}'.
-                     format(cmd, result['stderr']))
+                     format(cmd, result))
         return result['stdout']
 
     @logwrap
