@@ -17,40 +17,18 @@
 # This file contains the functions to get available memory on host PC
 
 get_available_memory() {
-  os_type=$1
-  local total_memory=""
-  # Check available commands and RAM on host PC
-  if [ "$os_type" = "linux" ]; then
-    # runing on linux
-    if [ "$(which free)" != "" ]; then
-      # using free
+local total_memory
+  case $(uname) in
+    Linux | CYGWIN*)
       total_memory=$(LANG=C free | grep Mem | awk '{print $2}')
-    elif [ "$(which top)" != "" ]; then
-      # using top
-      total_memory=$(LANG=C top -n 1 | grep "Mem:" | awk '{ print $4 }')
-    else
-      total_memory="-1"
-    fi
-  elif [ "$os_type" = "darwin" ]; then
-    # runing on mac os darwin
-    if [ "$(which sysctl)" != "" ]; then
-      # using sysctl
+    ;;
+    Darwin)
       total_memory=$(sysctl -n hw.memsize)
       total_memory=$(( $total_memory / 1024 ))
-    else
+    ;;
+    *)
       total_memory="-1"
-    fi
-  elif [ "$os_type" = "cygwin" ]; then
-    # runing on cygwin
-    if [ "$(which free)" != "" ]; then
-      # using free
-      total_memory=$(LANG=C free | grep Mem | awk '{print $2}')
-    elif [ "$(which top)" != "" ]; then
-      # using top
-      total_memory=$(LANG=C top -n 1 | grep "Mem:" | awk '{ print $4 }')
-    else
-      total_memory="-1"
-    fi
-  fi
+    ;;
+  esac
   echo $total_memory
 }
