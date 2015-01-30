@@ -29,12 +29,14 @@ esac
 # Prepare the host system
 ./actions/prepare-environment.sh || exit 1
 
+# Check available memory on the host system
+./actions/check-available-memory.sh || exit 1
+
 # clean previous installation if exists
 ./actions/clean-previous-installation.sh || exit 1
 
 # create host-only interfaces
 ./actions/create-interfaces.sh || exit 1
-
 
 # Create and launch master node
 ./actions/master-node-create-and-install.sh || exit 1
