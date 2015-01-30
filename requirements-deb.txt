@@ -76,6 +76,7 @@ intel-microcode
 iperf
 iperf3
 iptables-persistent
+iptstate
 iputils-arping
 ipmitool
 kdump-tools
