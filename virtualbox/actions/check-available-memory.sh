@@ -18,11 +18,14 @@
 # This script check availble memory on host PC for quality provision VMs via VirtualBox
 #
 
-total_memory=$(get_available_memory $os_type)
+source ./config.sh
+source ./functions/memory.sh
+
+total_memory=$(get_available_memory)
 
 if [ $total_memory -eq -1 ]; then
   echo "Launch without checking RAM on host PC"
-  echo "Auto check memory is unavailable, you need install 'top' and 'free'. Please install procps package."
+  echo "Auto check memory is unavailable, you need install 'free'. Please install procps package."
 else
   # Count selected RAM configuration
   for machine_number in $(eval echo {1..$cluster_size}); do
