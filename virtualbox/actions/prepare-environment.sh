@@ -29,24 +29,37 @@ source ./functions/network.sh
 
 # Check for procps package
 if [ "$(uname -s | cut -c1-6)" = "CYGWIN" ]; then
-    echo -n "Checking for 'top' and 'free'"
-    free -V >/dev/null 2>&1 || { echo >&2 " \"free\" is not available in the path, but it's required. Please install \"procps\" package. Aborting."; exit 1; }
-    top -v >/dev/null 2>&1 || { echo >&2 " \"top\" is not available in the path, but it's required. Please install \"procps\" package. Aborting."; exit 1; }
+  echo -n "Checking for 'free'... "
+  type free >/dev/null 2>&1
+  if [ $? -eq 1 ]; then
+    echo "\"free\" is not available in the path, but it's required. Please install the \"procps\" package. Aborting."
+    exit 1
+  else
     echo "OK"
+  fi
 fi
 
 # Check for expect
 echo -n "Checking for 'expect'... "
-expect -v >/dev/null 2>&1 || { echo >&2 " \"expect\" is not available in the path, but it's required. Please install Tcl \"expect\" package. Aborting."; exit 1; }
-echo "OK"
+type expect >/dev/null 2>&1
+if [ $? -eq 1 ]; then
+  echo "\"expect\" is not available in the path, but it's required. Please install Tcl \"expect\" package. Aborting."
+  exit 1
+else
+  echo "OK"
+fi
 
 # Check for VirtualBox
 echo "If you run this script under Cygwin, you may have to add path to VirtualBox directory to your PATH. "
 echo "Usually it is enough to run \"export PATH=\$PATH:\"/cygdrive/c/Program Files/Oracle/VirtualBox\" "
 echo -n "Checking for \"VBoxManage\"... "
-echo -n " "
-VBoxManage -v >/dev/null 2>&1 || { echo >&2 "\"VBoxManage\" is not available in the path, but it's required. Likely, VirtualBox is not installed. Aborting."; exit 1; }
-echo "OK"
+type VBoxManage >/dev/null 2>&1
+if [ $? -eq 1 ]; then
+  echo "\"VBoxManage\" is not available in the path, but it's required. Likely, VirtualBox is not installed. Aborting."
+  exit 1
+else
+  echo "OK"
+fi
 
 # Check for VirtualBox Extension Pack
 echo -n "Checking for VirtualBox Extension Pack... "
@@ -66,29 +79,30 @@ echo "OK"
 echo "Going to use Mirantis OpenStack ISO file $iso_path"
 
 # Check if SSH is installed. Cygwin does not install SSH by default.
-echo "Checking if SSH client installed... "
-sshs=`which ssh | wc -l`
-if [ "$sshs" -le 0 ] ; then
-  echo -n "SSH client is not installed. Please install \"openssh\" package if you run this script under Cygwin. Aborting"
-  exit 1
+echo -n "Checking if SSH client installed... "
+type ssh >/dev/null 2>&1
+if [ $? -eq 1 ]; then
+  echo "SSH client is not installed. Please install the \"openssh\" package if you run this script under Cygwin. Aborting."
+  exit 1  
+else
+  echo "OK"
 fi
-echo "OK"
 
-echo "Checking if ipconfig or ifconfig installed... "
+echo -n "Checking if ipconfig or ifconfig installed... "
 case "$(uname)" in
   Linux | Darwin)
     if [ ! -x /sbin/ifconfig ] ; then
-      echo -n "No ifconfig available at /sbin/ifconfig path! This path is hard-coded into VBoxNetAdpCtl utility."
-      echo -n "Please install ifconfig or create symlink to proper interface configuration utility."
+      echo "No ifconfig available at /sbin/ifconfig path! This path is hard-coded into VBoxNetAdpCtl utility." 
+      echo "Please install ifconfig or create symlink to proper interface configuration utility. Aborting."
       exit 1
     fi
   ;;
   CYGWIN*)
     # Cygwin does not use ifconfig at all and even has no link to it.
     # It uses built-in Windows ipconfig utility instead.
-    ipconfigs=`which ipconfig | wc -l`
-    if [ "$ipconfigs" -le 0 ] ; then
-      echo -n "No ipconfig available in Cygwin environment. Please check you can run ipconfig from Cygwin command prompt."
+    type ipconfig >/dev/null 2>&1
+    if [ $? -eq 1 ]; then
+      echo "No ipconfig available in Cygwin environment. Please check you can run ipconfig from Cygwin command prompt. Aborting."
       exit 1
     fi
   ;;
