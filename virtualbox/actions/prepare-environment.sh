@@ -29,9 +29,8 @@ source ./functions/network.sh
 
 # Check for procps package
 if [ "$(uname -s | cut -c1-6)" = "CYGWIN" ]; then
-    echo -n "Checking for 'top' and 'free'"
+    echo -n "Checking for 'free'"
     free -V >/dev/null 2>&1 || { echo >&2 " \"free\" is not available in the path, but it's required. Please install \"procps\" package. Aborting."; exit 1; }
-    top -v >/dev/null 2>&1 || { echo >&2 " \"top\" is not available in the path, but it's required. Please install \"procps\" package. Aborting."; exit 1; }
     echo "OK"
 fi
 
@@ -67,11 +66,7 @@ echo "Going to use Mirantis OpenStack ISO file $iso_path"
 
 # Check if SSH is installed. Cygwin does not install SSH by default.
 echo "Checking if SSH client installed... "
-sshs=`which ssh | wc -l`
-if [ "$sshs" -le 0 ] ; then
-  echo -n "SSH client is not installed. Please install \"openssh\" package if you run this script under Cygwin. Aborting"
-  exit 1
-fi
+type ssh >/dev/null 2>&1 || { echo >&2 "SSH client is not installed. Please install the \"openssh\" package if you run this script under Cygwin. Aborting"; exit 1; }
 echo "OK"
 
 echo "Checking if ipconfig or ifconfig installed... "
@@ -86,8 +81,8 @@ case "$(uname)" in
   CYGWIN*)
     # Cygwin does not use ifconfig at all and even has no link to it.
     # It uses built-in Windows ipconfig utility instead.
-    ipconfigs=`which ipconfig | wc -l`
-    if [ "$ipconfigs" -le 0 ] ; then
+    type ipconfig >/dev/null 2>&1
+    if [ $? -eq 1 ] ; then
       echo -n "No ipconfig available in Cygwin environment. Please check you can run ipconfig from Cygwin command prompt."
       exit 1
     fi
