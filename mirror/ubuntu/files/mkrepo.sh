@@ -47,16 +47,13 @@ cd /repo/pool/debian-installer
 # Grab every udeb
 ###################
 
-wrkdir=`dirname $(pwd)`/`basename $(pwd)`
+apt_udeb_dir=/tmp/apt.udeb
+rm -rf "${apt_udeb_dir}"
+mkdir -p "${apt_udeb_dir}/lists"
+mkdir -p "${apt_udeb_dir}/sources"
+mkdir -p "${apt_udeb_dir}/cache"
+touch ${apt_udeb_dir}/UPackages.tmp ${apt_udeb_dir}/override.${UBUNTU_RELEASE}.main ${apt_udeb_dir}/override.${UBUNTU_RELEASE}.extra.main
 
-rm -f ${wrkdir}/UPackages.tmp ${wrkdir}/override.${UBUNTU_RELEASE}.main ${wrkdir}/override.${UBUNTU_RELEASE}.extra.main
-touch ${wrkdir}/UPackages.tmp ${wrkdir}/override.${UBUNTU_RELEASE}.main ${wrkdir}/override.${UBUNTU_RELEASE}.extra.main
-
-# Prepare temp apt dirs
-[ -d ${wrkdir}/apt.tmp ] && rm -rf ${wrkdir}/apt.tmp
-mkdir -p ${wrkdir}/apt.tmp/lists
-mkdir -p ${wrkdir}/apt.tmp/sources
-mkdir -p ${wrkdir}/apt.tmp/cache
 
 # Extract all specified repos (except backports repo)
 for list in /etc/apt/sources.list; do
@@ -65,50 +62,43 @@ for list in /etc/apt/sources.list; do
      repodist=`echo $repo | awk -F '|' '{print $3}'`
      repos=`echo $repo | awk -F '|' '{for(i=4; i<=NF; ++i) {print $i}}'`
      for repo in $repos; do
-       echo "deb ${repourl} ${repodist} ${repo}/debian-installer" >> ${wrkdir}/apt.tmp/sources/sources.list
+       echo "deb ${repourl} ${repodist} ${repo}/debian-installer" >> "${apt_udeb_dir}/sources/sources.list"
        packagesfile=`wget -nv -qO - ${repourl}/dists/${repodist}/Release | \
                      egrep '[0-9a-f]{64}' | \
                      grep ${repo}/debian-installer/binary-amd64/Packages.bz2 | \
                      awk '{print $3}'`
        if [ -n "$packagesfile" ]; then
          bz=${repourl}/dists/${repodist}/$packagesfile
-         wget -nv -qO - $bz | bzip2 -cdq | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+         wget -nv -qO - $bz | bzip2 -cdq | sed -ne 's/^Package: //p' >> ${apt_udeb_dir}/UPackages.tmp
        else
          bz=${repourl}/dists/${repodist}/${repo}/debian-installer/binary-amd64/Packages
-         wget -nv -qO - $bz | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
+         wget -nv -qO - $bz | sed -ne 's/^Package: //p' >> ${apt_udeb_dir}/UPackages.tmp
        fi
        # Getting indices
-       wget -nv -O - ${repourl}/indices/override.${repodist}.${repo} >> ${wrkdir}/override.${UBUNTU_RELEASE}.main
-       wget -nv -O - ${repourl}/indices/override.${repodist}.extra.${repo} >> ${wrkdir}/override.${UBUNTU_RELEASE}.extra.main
-       wget -nv -O - ${repourl}/indices/override.${repodist}.${repo}.debian-installer >> ${wrkdir}/override.${UBUNTU_RELEASE}.main.debian-installer
+       wget -nv -O - ${repourl}/indices/override.${repodist}.${repo} >> ${apt_udeb_dir}/override.${UBUNTU_RELEASE}.main
+       wget -nv -O - ${repourl}/indices/override.${repodist}.extra.${repo} >> ${apt_udeb_dir}/override.${UBUNTU_RELEASE}.extra.main
+       wget -nv -O - ${repourl}/indices/override.${repodist}.${repo}.debian-installer >> ${apt_udeb_dir}/override.${UBUNTU_RELEASE}.main.debian-installer
      done
   done
 done
 
 # Collect all udebs except packages with suffux generic or virtual
-packages=`cat ${wrkdir}/UPackages.tmp | sort -u | egrep -v "generic|virtual"`
+packages=`sort -u < ${apt_udeb_dir}/UPackages.tmp | egrep -v "generic|virtual"`
 
 # Find modules for ${UBUNTU_INSTALLER_KERNEL_VERSION} kernel (installer runs with this version)
-for package in `cat ${wrkdir}/UPackages.tmp | egrep "generic|virtual" | grep ${UBUNTU_INSTALLER_KERNEL_VERSION}`; do
+for package in `cat ${apt_udeb_dir}/UPackages.tmp | egrep "generic|virtual" | grep ${UBUNTU_INSTALLER_KERNEL_VERSION}`; do
   packages="$packages $package"
 done
 
+apt_udeb_opts="-o Dir::Etc::SourceParts="${apt_udeb_dir}/sources/parts""
+apt_udeb_opts="${apt_udeb_opts} -o Dir::Etc::SourceList="${apt_udeb_dir}/sources/sources.list""
+apt_udeb_opts="${apt_udeb_opts} -o Dir::State::Lists="${apt_udeb_dir}/lists""
+apt_udeb_opts="${apt_udeb_opts} -o Dir::Cache="${apt_udeb_dir}/cache""
+
 # Update apt temp cache
-apt-get -o Dir::Etc::SourceParts="${wrkdir}/apt.tmp/sources/parts" \
-        -o Dir::Etc::SourceList="${wrkdir}/apt.tmp/sources/sources.list" \
-        -o Dir::State::Lists="${wrkdir}/apt.tmp/lists" \
-        -o Dir::Cache="${wrkdir}/apt.tmp/cache" \
-        update
-
+apt-get ${apt_udeb_opts} update
 # Download udebs
-apt-get -o Dir::Etc::SourceParts="${wrkdir}/apt.tmp/sources/parts" \
-        -o Dir::Etc::SourceList="${wrkdir}/apt.tmp/sources/sources.list" \
-        -o Dir::State::Lists="${wrkdir}/apt.tmp/lists" \
-        -o Dir::Cache="${wrkdir}/apt.tmp/cache" \
-        download $packages
-
-rm -f ${wrkdir}/UPackages.tmp
-rm -rf ${wrkdir}/apt.tmp
+apt-get ${apt_udeb_opts} download $packages
 
 # Get rid of urlencoded names
 for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; done
@@ -137,9 +127,8 @@ for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; don
 mkdir -p /repo/indices
 cd /repo/indices
 for idx in override.${UBUNTU_RELEASE}.main override.${UBUNTU_RELEASE}.extra.main override.${UBUNTU_RELEASE}.main.debian-installer; do
-  cat ${wrkdir}/$idx | sort -u > /repo/indices/$idx
+  cat ${apt_udeb_dir}/$idx | sort -u > /repo/indices/$idx
 done
-rm -f ${wrkdir}/override.${UBUNTU_RELEASE}.main ${wrkdir}/override.${UBUNTU_RELEASE}.extra.main ${wrkdir}/override.${UBUNTU_RELEASE}.main.debian-installer
 cd /repo
 # Just because apt scan will produce crap
 cp -a Release-amd64 Release-i386
@@ -158,5 +147,3 @@ for pkg_file in `find dists -type f -name Packages`; do
 	sort_packages_file $pkg_file
 done
 apt-ftparchive -c apt-ftparchive-release.conf release dists/${UBUNTU_RELEASE}/ > dists/${UBUNTU_RELEASE}/Release
-# some cleanup...
-rm -rf apt-ftparchive*conf Release-amd64 Release-i386 mkrepo.sh preferences
