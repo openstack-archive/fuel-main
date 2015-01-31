@@ -57,4 +57,4 @@ echo
 echo "Slave nodes have been created. They will boot over PXE and get discovered by the master node."
 echo "To access master node, please point your browser to:"
 echo "    http://${vm_master_ip}:8000/"
-
+echo "The default username and password is admin:admin"
