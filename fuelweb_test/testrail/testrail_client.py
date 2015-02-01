@@ -116,7 +116,7 @@ class TestRailProject():
             if case['title'] == name:
                 return case
 
-    def get_case_by_group(self, suite, group, cases=None):
+    def get_case_by_group(self, suite, group, cases=None, milestone_id=None):
         for case in cases or self.get_cases(suite):
             if case['custom_test_group'] == group:
                 return case
