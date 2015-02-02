@@ -67,6 +67,7 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	echo "$${APT_SOURCES_LIST}" | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/sources.list
 	echo 'APT::Get::AllowUnauthenticated 1;' | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt/apt.conf.d/02mirantis-unauthenticated
 	sudo cp -a $(SOURCE_DIR)/mirror/ubuntu/files/preferences $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/apt
+	grep -h "^Package:" $(SOURCE_DIR)/packages/deb/specs/*/debian/control | cut -d" " -f2 | sudo tee $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/tmp/fuel.list
 	sudo rm -f $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/resolv.conf
 	sudo cp /etc/resolv.conf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/resolv.conf
 	extra_env=""; \
@@ -76,9 +77,15 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 		extra_env="HTTP_PROXY=$${HTTP_PROXY} http_proxy=$${HTTP_PROXY}"; \
 	fi; \
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot env \
+		MIRROR_UBUNTU='$(MIRROR_UBUNTU)' \
+		MIRROR_UBUNTU_SECURITY='$(MIRROR_UBUNTU_SECURITY)' \
+		MIRROR_FUEL_UBUNTU='$(MIRROR_FUEL_UBUNTU)' \
 		UBUNTU_RELEASE='$(UBUNTU_RELEASE)' \
+		UBUNTU_ARCH='$(UBUNTU_ARCH)' \
 		UBUNTU_INSTALLER_KERNEL_VERSION='$(UBUNTU_INSTALLER_KERNEL_VERSION)' \
 		UBUNTU_KERNEL_FLAVOR='$(UBUNTU_KERNEL_FLAVOR)' \
+		UBUNTU_RELEASE_FULL='$(UBUNTU_MAJOR).$(UBUNTU_MINOR).$(UBUNTU_UPDATE)' \
+		EXTRA_DEB_REPOS='$(EXTRA_DEB_REPOS)' \
 		$$extra_env \
 		/repo/mkrepo.sh
 	sudo rsync -a --delete $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/* $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/
