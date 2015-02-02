@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/bash -x
+
+splitrepos="mos-plus mos-ubuntu"
 
 if [ -z "$UBUNTU_RELEASE" ]; then
 	echo 'mkrepo.sh: UBUNTU_RELEASE is not defined'
@@ -15,7 +17,7 @@ if [ -z "$UBUNTU_KERNEL_FLAVOR" ]; then
 	exit 1
 fi
 
-mkdir -p /repo/download/
+mkdir -p /repo/download/mos-plus /repo/download/mos-ubuntu
 
 cat >> /requirements-deb.txt << EOF
 linux-image-${UBUNTU_INSTALLER_KERNEL_VERSION}
@@ -82,20 +84,41 @@ fi
 
 rm -rf "$apt_altstate"
 
+# Prepare download lists for separated repositories
 cat /downloads_*.list | sort | uniq > /repo/download/download_urls.list
-rm /downloads_*.list /apt-errors.log
-(cat /repo/download/download_urls.list | xargs -n1 -P4 wget -nv -P /repo/download/) || exit 1
-# Make structure and mocks for multiarch
-for dir in binary-i386 binary-amd64; do 
-	mkdir -p /repo/dists/${UBUNTU_RELEASE}/main/$dir /repo/dists/${UBUNTU_RELEASE}/main/debian-installer/$dir
-	touch /repo/dists/${UBUNTU_RELEASE}/main/$dir/Packages /repo/dists/${UBUNTU_RELEASE}/main/debian-installer/$dir/Packages
-done
-mkdir -p /repo/pool/debian-installer /repo/pool/main
-cd /repo/pool/debian-installer
+cat /repo/download/download_urls.list | grep ${MIRROR_UBUNTU} > /repo/download/mos-plus.list
+cat /repo/download/download_urls.list | grep ${MIRROR_FUEL_UBUNTU} > /repo/download/mos-ubuntu.list
 
-###################
-# Grab every udeb
-###################
+rm /downloads_*.list /apt-errors.log
+
+# Get the list of packages from upstream ISO
+wget -nv -O /iso.list http://releases.ubuntu.com/${UBUNTU_RELEASE_FULL}/ubuntu-${UBUNTU_RELEASE_FULL}-server-${UBUNTU_ARCH}.list || exit 1
+
+# Filter out packages that exist on upstream ISO
+cat /iso.list | rev | cut -d"/" -f1 | rev | grep "\.deb$" > /iso_filtered.list
+grep -v -f /iso_filtered.list /repo/download/mos-plus.list > /repo/download/mos-plus_filtered.list
+
+(cat /repo/download/mos-plus_filtered.list | xargs -n1 -P4 wget -nv -P /repo/download/mos-plus) || exit 1
+
+# !!! only for prototype - to be replaced with wget/rsync/etc
+(cat /repo/download/mos-ubuntu.list | xargs -n1 -P4 wget -nv -P /repo/download/mos-ubuntu) || exit 1
+# !!! only for prototype - to be replaced with wget/rsync/etc
+
+# cut out Fuel packages from mos-ubuntu
+for fuelpkg in `cat /fuel.list`; do rm -f /repo/download/mos-ubuntu/$fuelpkg* ; done
+
+# Make structure and mocks for multiarch
+for repo in $splitrepos; do
+for dir in binary-i386 binary-amd64; do 
+	mkdir -p /repo/$repo/dists/${UBUNTU_RELEASE}/main/$dir
+	touch /repo/$repo/dists/${UBUNTU_RELEASE}/main/$dir/Packages
+done
+mkdir -p /repo/$repo/pool/main
+done
+
+###########################
+# Get indices & other stuff
+###########################
 
 wrkdir=`dirname $(pwd)`/`basename $(pwd)`
 
@@ -115,50 +138,12 @@ for list in /etc/apt/sources.list; do
      repodist=`echo $repo | awk -F '|' '{print $3}'`
      repos=`echo $repo | awk -F '|' '{for(i=4; i<=NF; ++i) {print $i}}'`
      for repo in $repos; do
-       echo "deb ${repourl} ${repodist} ${repo}/debian-installer" >> ${wrkdir}/apt.tmp/sources/sources.list
-       packagesfile=`wget -nv -qO - ${repourl}/dists/${repodist}/Release | \
-                     egrep '[0-9a-f]{64}' | \
-                     grep ${repo}/debian-installer/binary-amd64/Packages.bz2 | \
-                     awk '{print $3}'`
-       if [ -n "$packagesfile" ]; then
-         bz=${repourl}/dists/${repodist}/$packagesfile
-         wget -nv -qO - $bz | bzip2 -cdq | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
-       else
-         bz=${repourl}/dists/${repodist}/${repo}/debian-installer/binary-amd64/Packages
-         wget -nv -qO - $bz | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
-       fi
        # Getting indices
        wget -nv -O - ${repourl}/indices/override.${repodist}.${repo} >> ${wrkdir}/override.${UBUNTU_RELEASE}.main
        wget -nv -O - ${repourl}/indices/override.${repodist}.extra.${repo} >> ${wrkdir}/override.${UBUNTU_RELEASE}.extra.main
-       wget -nv -O - ${repourl}/indices/override.${repodist}.${repo}.debian-installer >> ${wrkdir}/override.${UBUNTU_RELEASE}.main.debian-installer
      done
   done
 done
-
-# Collect all udebs except packages with suffux generic or virtual
-packages=`cat ${wrkdir}/UPackages.tmp | sort -u | egrep -v "generic|virtual"`
-
-# Find modules for ${UBUNTU_INSTALLER_KERNEL_VERSION} kernel (installer runs with this version)
-for package in `cat ${wrkdir}/UPackages.tmp | egrep "generic|virtual" | grep ${UBUNTU_INSTALLER_KERNEL_VERSION}`; do
-  packages="$packages $package"
-done
-
-# Update apt temp cache
-apt-get -o Dir::Etc::SourceParts="${wrkdir}/apt.tmp/sources/parts" \
-        -o Dir::Etc::SourceList="${wrkdir}/apt.tmp/sources/sources.list" \
-        -o Dir::State::Lists="${wrkdir}/apt.tmp/lists" \
-        -o Dir::Cache="${wrkdir}/apt.tmp/cache" \
-        update
-
-# Download udebs
-apt-get -o Dir::Etc::SourceParts="${wrkdir}/apt.tmp/sources/parts" \
-        -o Dir::Etc::SourceList="${wrkdir}/apt.tmp/sources/sources.list" \
-        -o Dir::State::Lists="${wrkdir}/apt.tmp/lists" \
-        -o Dir::Cache="${wrkdir}/apt.tmp/cache" \
-        download $packages
-
-rm -f ${wrkdir}/UPackages.tmp
-rm -rf ${wrkdir}/apt.tmp
 
 # Get rid of urlencoded names
 for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; done
@@ -177,21 +162,24 @@ sort_packages_file () {
 	mv "${pkg_file}.new" "${pkg_file}"
 }
 
-##########################################
-# Move all stuff to the our package pool
-##########################################
-mv /repo/download/*deb /repo/pool/main
-cd /repo/pool/main
+####################################
+# Move all stuff to our package pool
+####################################
+for repo in $splitrepos; do
+
+mv /repo/download/$repo/*deb /repo/$repo/pool/main
+cd /repo/$repo/pool/main
 # urlencode again
 for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; done
-mkdir -p /repo/indices
-cd /repo/indices
-for idx in override.${UBUNTU_RELEASE}.main override.${UBUNTU_RELEASE}.extra.main override.${UBUNTU_RELEASE}.main.debian-installer; do
-  cat ${wrkdir}/$idx | sort -u > /repo/indices/$idx
+mkdir -p /repo/$repo/indices
+cd /repo/$repo/indices
+for idx in override.${UBUNTU_RELEASE}.main override.${UBUNTU_RELEASE}.extra.main; do
+  cat ${wrkdir}/$idx | sort -u > /repo/$repo/indices/$idx
 done
-rm -f ${wrkdir}/override.${UBUNTU_RELEASE}.main ${wrkdir}/override.${UBUNTU_RELEASE}.extra.main ${wrkdir}/override.${UBUNTU_RELEASE}.main.debian-installer
-cd /repo
+cd /repo/$repo
 # Just because apt scan will produce crap
+cp -a ../Release-amd64 ../apt-ftparchive*.conf .
+sed -i "s/\/repo\//\/repo\/$repo\//g" apt-ftparchive*deb.conf
 cp -a Release-amd64 Release-i386
 sed -i 's/amd64/i386/g' Release-i386
 for amd64dir in $(find . -name binary-amd64) ; do
@@ -201,12 +189,15 @@ for i386dir in $(find . -name binary-i386) ; do
         cp -a Release-i386 $i386dir/Release
 done
 apt-ftparchive -c apt-ftparchive-release.conf generate apt-ftparchive-deb.conf
-apt-ftparchive -c apt-ftparchive-release.conf generate apt-ftparchive-udeb.conf
 # Work around the base system installation failure.
 # XXX: someone should rewrite this script to use debmirror and reprepro
 for pkg_file in `find dists -type f -name Packages`; do
 	sort_packages_file $pkg_file
 done
 apt-ftparchive -c apt-ftparchive-release.conf release dists/${UBUNTU_RELEASE}/ > dists/${UBUNTU_RELEASE}/Release
+rm -rf apt-ftparchive*conf Release-amd64 Release-i386
+done
+
 # some cleanup...
-rm -rf apt-ftparchive*conf Release-amd64 Release-i386 mkrepo.sh preferences
+rm -f ${wrkdir}/override.${UBUNTU_RELEASE}.main ${wrkdir}/override.${UBUNTU_RELEASE}.extra.main
+cd /repo ; rm -rf apt-ftparchive*conf Release-amd64 Release-i386 mkrepo.sh preferences
