@@ -72,7 +72,6 @@ $(eval $(call prepare_python_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(
 $(eval $(call prepare_python_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient))
 $(eval $(call prepare_python_source,shotgun,shotgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/shotgun))
 $(eval $(call prepare_file_source,nailgun-redhat-license,get_redhat_licenses,$(SOURCE_DIR)/packages/rpm/nailgun-redhat-license/get_redhat_licenses))
-$(eval $(call prepare_file_source,ruby21-rubygem-astute,astute.conf,$(SOURCE_DIR)/packages/rpm/astute.conf))
 $(eval $(call prepare_ruby21_source,ruby21-rubygem-astute,astute-$(PACKAGE_VERSION).gem,$(BUILD_DIR)/repos/astute))
 
 include $(SOURCE_DIR)/packages/rpm/module.mk
