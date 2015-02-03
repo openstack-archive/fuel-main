@@ -97,6 +97,7 @@ CENTOS_MINOR:=5
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
 UBUNTU_RELEASE:=precise
+UBUNTU_INSTALLER_KERNEL_VERSION:=3.13.0-44
 
 # Rebuld packages locally (do not use upstream versions)
 # This option is depricated, because there are no upstream versions
