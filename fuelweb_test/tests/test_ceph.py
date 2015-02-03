@@ -163,7 +163,7 @@ class CephCompactWithCinder(TestBasic):
 class CephHA(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
-          groups=["ceph_ha", "ha_nova_ceph", "ha_neutron_ceph", "promo_bvt"])
+          groups=["ceph_ha", "ha_nova_ceph", "ha_neutron_ceph", "bvt_2"])
     @log_snapshot_on_error
     def ceph_ha(self):
         """Deploy ceph with cinder in HA mode
