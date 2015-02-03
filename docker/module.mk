@@ -50,7 +50,7 @@ $(BUILD_DIR)/docker/$1.done: \
 	sed -e 's/production:.*/production: "docker-build"/' -i $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml
 	cp $(SOURCE_DIR)/docker/docker-astute.yaml $(BUILD_DIR)/docker/$1/etc/fuel/astute.yaml
 	rsync -a $(BUILD_DIR)/repos/fuellib/deployment/puppet/* $(BUILD_DIR)/docker/$1/etc/puppet/modules/
-	sudo docker build -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
+	sudo docker build --force-rm -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
 	sudo docker save fuel/$1_$(PRODUCT_VERSION) > $(BUILD_DIR)/docker/containers/$1.tar
 	kill `cat /tmp/simple_http_daemon_$(RANDOM_PORT).pid`
 	$$(ACTION.TOUCH)
