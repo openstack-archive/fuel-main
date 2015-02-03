@@ -26,7 +26,7 @@ from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
 
-@test(groups=["thread_3", "ha", "bvt_2"])
+@test(groups=["thread_3", "ha", "bvt_1"])
 class TestHaVLAN(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
