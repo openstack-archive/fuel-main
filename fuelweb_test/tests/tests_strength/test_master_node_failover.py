@@ -29,7 +29,7 @@ class DeployHAOneControllerMasterNodeFail(base_test_case.TestBasic):
           groups=["non_functional",
                   "deploy_ha_one_controller_flat_master_node_fail"])
     def deploy_ha_one_controller_flat_master_node_fail(self):
-        """Deploy cluster in ha mode with flat nova-network
+        """Deploy HA cluster with nova-network and check it without master node
 
         Scenario:
             1. Create cluster in ha mode with 1 controller
@@ -43,6 +43,8 @@ class DeployHAOneControllerMasterNodeFail(base_test_case.TestBasic):
             8. Run OSTF
             9. Shut down master node
             10. Run openstack verification
+
+        Duration 1000m
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")

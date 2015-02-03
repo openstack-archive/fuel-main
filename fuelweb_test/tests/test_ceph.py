@@ -47,8 +47,8 @@ class CephCompact(TestBasic):
             4. Deploy the cluster
             5. Check ceph status
 
+        Duration 35m
         Snapshot ceph_ha_one_controller_compact
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
         data = {
@@ -103,8 +103,8 @@ class CephCompactWithCinder(TestBasic):
             6. Check ceph status
             7. Check partitions on controller node
 
+        Duration 40m
         Snapshot ceph_ha_one_controller_with_cinder
-
         """
         try:
             self.check_run('ceph_ha_one_controller_with_cinder')
@@ -163,7 +163,7 @@ class CephCompactWithCinder(TestBasic):
 class CephHA(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
-          groups=["ceph_ha", "ha_nova_ceph", "ha_neutron_ceph", "promo_bvt"])
+          groups=["ceph_ha", "ha_nova_ceph", "ha_neutron_ceph", "bvt_2"])
     @log_snapshot_on_error
     def ceph_ha(self):
         """Deploy ceph with cinder in HA mode
@@ -176,6 +176,7 @@ class CephHA(TestBasic):
             5. Deploy the cluster
             6. Check ceph status
 
+        Duration 90m
         Snapshot ceph_ha
 
         """
@@ -247,6 +248,7 @@ class CephRadosGW(TestBasic):
             7. Run OSTF tests
             8. Check the radosqw daemon is started
 
+        Duration 40m
         Snapshot ceph_rados_gw
 
         """
@@ -333,6 +335,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
             9. Check cluster and server state after migration
             10. Terminate VM
 
+        Duration 35m
         Snapshot vm_backed_with_ceph_live_migration
 
         """
@@ -527,6 +530,7 @@ class CheckCephPartitionsAfterReboot(TestBasic):
             13. Read partitions again
             14. Check Ceph health
 
+        Duration 40m
         Snapshot check_ceph_partitions_after_reboot
 
         """

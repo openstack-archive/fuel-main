@@ -47,8 +47,8 @@ class HAOneControllerZabbix(TestBasic):
             11. Run OSTF
             12. Login in zabbix dashboard
 
+        Duration 30m
         Snapshot: deploy_ha_one_controller_zabbix
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 

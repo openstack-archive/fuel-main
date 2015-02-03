@@ -37,7 +37,7 @@ class HugeEnvironments(base_test_case.TestBasic):
             5. Deploy the cluster
             6. Check networks and OSTF
 
-        Snapshot None
+        Duration 150m
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -94,7 +94,7 @@ class HugeEnvironments(base_test_case.TestBasic):
             7. Deploy the cluster
             8. Check networks and OSTF
 
-        Snapshot None
+        Duration 100m
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -158,7 +158,7 @@ class HugeHaNeutron(base_test_case.TestBasic):
             6. Verify smiles count
             7. Run OSTF
 
-        Snapshot None
+        Duration 100m
 
         """
         self.env.revert_snapshot("ready_with_9_slaves")
@@ -238,7 +238,7 @@ class HugeHaNeutron(base_test_case.TestBasic):
             6. Verify smiles count
             7. Run OSTF
 
-        Snapshot None
+        Duration 100m
 
         """
         self.env.revert_snapshot("ready_with_9_slaves")

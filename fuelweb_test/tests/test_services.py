@@ -52,8 +52,8 @@ class SaharaHAOneController(TestBasic):
             7. Register Vanilla2 image for Sahara
             8. Run platform Vanilla2 test for Sahara
 
+        Duration 65m
         Snapshot: deploy_sahara_ha_one_controller_gre
-
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
@@ -153,6 +153,7 @@ class SaharaHA(TestBasic):
             7. Register Vanilla2 image for Sahara
             8. Run platform Vanilla2 test for Sahara
 
+        Duration 130m
         Snapshot: deploy_sahara_ha_gre
 
         """
@@ -257,8 +258,8 @@ class MuranoHAOneController(TestBasic):
             7. Register Murano image
             8. Run OSTF Murano platform tests
 
+        Duration 40m
         Snapshot: deploy_murano_ha_one_controller_gre
-
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
@@ -380,6 +381,7 @@ class MuranoHA(TestBasic):
             7. Register Murano image
             8. Run OSTF Murano platform tests
 
+        Duration 100m
         Snapshot: deploy_murano_ha_with_gre
 
         """
@@ -529,8 +531,8 @@ class CeilometerHAOneControllerMongo(CeilometerOSTFTestsRun):
             7. Verify ceilometer api is running
             8. Run OSTF
 
+        Duration 45m
         Snapshot: deploy_ceilometer_ha_one_controller_with_mongo
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -606,8 +608,8 @@ class CeilometerHAOneControllerMongo(CeilometerOSTFTestsRun):
             6. Verify ceilometer api is running
             7. Run OSTF
 
+        Duration 35m
         Snapshot: deploy_ceilometer_ha_one_controller_multirole
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -653,6 +655,7 @@ class CeilometerHAMongo(CeilometerOSTFTestsRun):
             6. Verify ceilometer api is running
             7. Run OSTF
 
+        Duration 65m
         Snapshot: deploy_ceilometer_ha_with_mongo
 
         """
@@ -703,6 +706,7 @@ class CeilometerHAMongo(CeilometerOSTFTestsRun):
             6. Verify ceilometer api is running
             7. Run OSTF
 
+        Duration 80m
         Snapshot: deploy_ceilometer_ha_multirole
 
         """
@@ -755,8 +759,8 @@ class HeatHAOneController(TestBasic):
             6. Verify Heat, Ceilometer services
             7. Run OSTF platform tests
 
+        Duration 40m
         Snapshot: deploy_heat_ha_one_controller_neutron
-
         """
 
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -836,8 +840,8 @@ class HeatHAOneController(TestBasic):
             5. Verify Heat, Ceilometer services
             6. Run OSTF platform tests
 
+        Duration 40m
         Snapshot: deploy_heat_ha_one_controller_nova
-
         """
 
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -921,6 +925,7 @@ class HeatHA(TestBasic):
             5. Verify Heat and Ceilometer services
             6. Run OSTF platform tests
 
+        Duration 70m
         Snapshot: deploy_heat_ha
 
         """

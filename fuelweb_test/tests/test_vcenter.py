@@ -37,7 +37,7 @@ class VcenterDeploy(TestBasic):
           groups=["smoke", "vcenter_one_node_simple"])
     @log_snapshot_on_error
     def vcenter_one_node_simple(self):
-        """Deploy cluster with controller node only
+        """Deploy vcenter cluster with controller node only
 
         Scenario:
             1. Create cluster
