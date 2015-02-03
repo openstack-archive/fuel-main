@@ -222,9 +222,12 @@ class VcenterDeploy(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity'],
-            should_fail=1,
-            failed_test_name=[('Launch instance, create snapshot,'
-                               ' launch instance from snapshot')])
+            should_fail=2,
+            failed_test_name=[
+                ('Launch instance, create snapshot,'
+                    ' launch instance from snapshot'),
+                ('Create volume and attach it to instance')
+            ])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_ha"])
