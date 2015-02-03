@@ -365,6 +365,7 @@ puppetdb-1.2.0-1.el6
 puppetdb-terminus-1.2.0-1.el6
 puppetlabs-release-6-6
 pushy
+pydot-ng
 pygobject2-2.20.0-5.el6
 pyparsing
 pyparsing-doc
@@ -427,6 +428,7 @@ python-muranoclient
 python-netaddr-0.7.5-4.el6
 python-netifaces
 python-networkx-core
+python-networkx-drawing
 python-neutron
 python-neutronclient
 python-nose-cover3
