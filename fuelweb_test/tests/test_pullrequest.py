@@ -29,7 +29,7 @@ class TestPullRequest(TestBasic):
           groups=["deploy_pr_ha"])
     @log_snapshot_on_error
     def deploy_pr_ha(self):
-        """Deploy cluster in HA mode with Neutron GRE
+        """Deploy one-controller cluster in HA mode with Neutron GRE
 
         Scenario:
             1. Create cluster

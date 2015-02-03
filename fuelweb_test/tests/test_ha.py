@@ -26,7 +26,7 @@ from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
 
-@test(groups=["thread_3", "ha", "bvt_2"])
+@test(groups=["thread_3", "ha", "bvt_1"])
 class TestHaVLAN(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
@@ -47,6 +47,7 @@ class TestHaVLAN(TestBasic):
             8. Run OSTF
             9. Create snapshot
 
+        Duration 70m
         Snapshot deploy_ha_vlan
 
         """
@@ -114,6 +115,7 @@ class TestHaFlat(TestBasic):
             7. Run OSTF
             8. Make snapshot
 
+        Duration 70m
         Snapshot deploy_ha_flat
 
         """
@@ -179,6 +181,7 @@ class TestHaFlatAddCompute(TestBasic):
             8. Run network verification
             9. Run OSTF
 
+        Duration 80m
         Snapshot ha_flat_add_compute
 
         """
@@ -240,6 +243,7 @@ class TestHaFlatScalability(TestBasic):
             9. Run network verification
             10. Run OSTF
 
+        Duration 110m
         Snapshot ha_flat_scalability
 
         """
@@ -311,6 +315,8 @@ class BackupRestoreHa(TestBasic):
             6. Restore master
             7. Check restore
             8. Run OSTF
+
+        Duration 50m
 
         """
         self.env.revert_snapshot("deploy_ha_flat")

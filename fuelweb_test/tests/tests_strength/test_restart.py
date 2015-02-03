@@ -33,7 +33,7 @@ class CephRestart(TestBasic):
           groups=["ceph_ha_one_controller_with_cinder_restart"])
     @log_snapshot_on_error
     def ceph_ha_one_controller_with_cinder_restart(self):
-        """Deploy ceph with cinder in ha mode
+        """Restart cluster with ceph and cinder in ha mode
 
         Scenario:
             1. Create cluster in ha mode with 1 controller
@@ -44,6 +44,7 @@ class CephRestart(TestBasic):
             7. Warm restart
             8. Check ceph status
 
+        Duration 90m
         Snapshot None
 
         """
@@ -95,6 +96,7 @@ class CephRestart(TestBasic):
             7. Cold retsart
             8. Check ceph status
 
+        Duration 30m
         Snapshot ceph_ha
 
         """
@@ -189,6 +191,8 @@ class HAOneControllerFlatRestart(TestBasic):
             8. Run OSTF
             9. Warm restart
             10. Run OSTF
+
+        Duration 30m
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")

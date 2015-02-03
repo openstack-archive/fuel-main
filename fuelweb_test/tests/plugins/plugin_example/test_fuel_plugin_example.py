@@ -45,8 +45,8 @@ class ExamplePlugin(TestBasic):
             8. Check plugin health
             9. Run OSTF
 
+        Duration 35m
         Snapshot deploy_ha_one_controller_neutron_example
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -130,6 +130,7 @@ class ExamplePlugin(TestBasic):
             9. check plugin health
             10. Run OSTF
 
+        Duration 70m
         Snapshot deploy_nova_example_ha
 
         """
@@ -199,7 +200,7 @@ class ExamplePlugin(TestBasic):
           groups=["deploy_neutron_example_ha_add_node"])
     @log_snapshot_on_error
     def deploy_neutron_example_ha_add_node(self):
-        """Deploy cluster in ha mode with example plugin
+        """Deploy and scale cluster in ha mode with example plugin
 
         Scenario:
             1. Upload plugin to the master node
@@ -216,6 +217,7 @@ class ExamplePlugin(TestBasic):
             12. Check plugin health
             13. Run OSTF
 
+        Duration 150m
         Snapshot deploy_neutron_example_ha_add_node
 
         """

@@ -60,8 +60,8 @@ class GlusterfsPlugin(TestBasic):
             9. Check plugin health
             10. Run OSTF
 
+        Duration 35m
         Snapshot deploy_ha_one_controller_glusterfs
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -144,6 +144,7 @@ class GlusterfsPlugin(TestBasic):
             13. Check plugin health
             14. Run ostf
 
+        Duration 50m
         Snapshot deploy_glasterfs_ha
 
         """

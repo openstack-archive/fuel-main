@@ -39,6 +39,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
             7. Run test Check network connectivity
                from instance via floating IP' n times
 
+        Duration 1000m
         Snapshot create_delete_ip_n_times_nova_vlan
 
         """
@@ -68,7 +69,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
           groups=["create_delete_ip_n_times_nova_flat"])
     @log_snapshot_on_error
     def deploy_create_delete_ip_n_times_nova_flat(self):
-        """Deploy cluster in ha mode with flat nova-network
+        """Deploy HA cluster, check connectivity from instance n times
 
         Scenario:
             1. Create cluster in ha mode with 1 controller
@@ -79,6 +80,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
             6. Run test Check network connectivity
                from instance via floating IP' n times
 
+        Duration 1000m
         Snapshot: create_delete_ip_n_times_nova_flat
 
         """
