@@ -48,6 +48,9 @@ Requires:    python-wsgiref >= 0.1.2
 Requires:    PyYAML >= 3.10
 Requires:    python-novaclient >= 2.17.0
 Requires:    python-networkx-core >= 1.8.0
+Requires:    python-networkx-drawing >= 1.8.0
+Requires:    pyparsing < 2.0
+Requires:    pydot >= 1.0.2
 # Workaroud for babel bug
 Requires:    pytz
 
