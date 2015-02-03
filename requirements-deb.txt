@@ -517,6 +517,8 @@ linux-headers-3.11.0-26
 linux-headers-3.11.0-26-generic
 linux-image-3.11.0-26
 linux-libc-dev
+inux-headers-3.11.0-18
+linux-image-3.11.0-18
 linux-server
 lksctp-tools
 lldpad
