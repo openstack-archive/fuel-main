@@ -46,6 +46,8 @@ class OneNodeDeploy(TestBasic):
             4. Validate cluster was set up correctly, there are no dead
             services, there are no errors in logs
 
+        Duration 20m
+
         """
         self.env.revert_snapshot("ready")
         self.fuel_web.client.get_root()
@@ -91,8 +93,8 @@ class HAOneControllerFlat(TestBasic):
             7. Verify network configuration on controller
             8. Run OSTF
 
+        Duration 30m
         Snapshot: deploy_ha_one_controller_flat
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -146,6 +148,8 @@ class HAOneControllerFlat(TestBasic):
             3. Assert instance was created
             4. Assert file is on instance
 
+        Duration 20m
+
         """
         self.env.revert_snapshot("deploy_ha_one_controller_flat")
         data = {
@@ -181,6 +185,8 @@ class HAOneControllerFlat(TestBasic):
             3. Deploy changes
             4. Verify node returns to unallocated pull
 
+        Duration 8m
+
         """
         self.env.revert_snapshot("deploy_ha_one_controller_flat")
 
@@ -214,6 +220,8 @@ class HAOneControllerFlat(TestBasic):
             6. Block first VLAN
             7. Run Verify network and assert it fails
             8. Restore first VLAN
+
+        Duration 20m
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -264,8 +272,8 @@ class HAOneControllerFlat(TestBasic):
             9. Verify services list on compute nodes
             10. Run OSTF
 
+        Duration 40m
         Snapshot: ha_one_controller_flat_add_compute
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -331,8 +339,8 @@ class HAOneControllerVlan(TestBasic):
             7. Run network verification
             8. Run OSTF
 
+        Duration 30m
         Snapshot: deploy_ha_one_controller_vlan
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -390,6 +398,7 @@ class MultiroleControllerCinder(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 30m
         Snapshot: deploy_multirole_controller_cinder
 
         """
@@ -438,6 +447,7 @@ class MultiroleComputeCinder(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 30m
         Snapshot: deploy_multirole_compute_cinder
 
         """
@@ -481,6 +491,7 @@ class FloatingIPs(TestBasic):
             6. Verify available floating IP list
             7. Run OSTF
 
+        Duration 30m
         Snapshot: deploy_floating_ips
 
         """
@@ -542,8 +553,8 @@ class HAOneControllerCinder(TestBasic):
             services, there are no errors in logs
             7. Run OSTF
 
+        Duration 30m
         Snapshot: deploy_ha_one_controller_cinder
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -595,6 +606,7 @@ class NodeMultipleInterfaces(TestBasic):
             7. Verify network configuration on each deployed node
             8. Run network verification
 
+        Duration 25m
         Snapshot: deploy_node_multiple_interfaces
 
         """
@@ -645,6 +657,8 @@ class NodeDiskSizes(TestBasic):
             2. Verify hard drive sizes for discovered nodes in /api/nodes
             3. Verify hard drive sizes for discovered nodes in notifications
 
+        Duration 5m
+
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -676,7 +690,7 @@ class NodeDiskSizes(TestBasic):
           groups=["check_nodes_disks"])
     @log_snapshot_on_error
     def check_nodes_disks(self):
-        """Verify nailgun notifications for discovered nodes
+        """Verify hard drive sizes for deployed nodes
 
         Scenario:
             1. Create cluster in Ha mode with 1 controller
@@ -686,6 +700,7 @@ class NodeDiskSizes(TestBasic):
             5. Deploy the cluster
             6. Verify hard drive sizes for deployed nodes
 
+        Duration 30m
         """
 
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -765,6 +780,8 @@ class MultinicBootstrap(TestBasic):
             3. Restore mac addresses and boot first slave
             4. Verify slave mac addresses is equal to unblocked
 
+        Duration 2m
+
         """
         self.env.revert_snapshot("ready")
 
@@ -799,6 +816,8 @@ class DeleteEnvironment(TestBasic):
             1. Revert "deploy_ha_one_controller" environment
             2. Delete environment
             3. Verify node returns to unallocated pull
+
+        Duration 15m
 
         """
         self.env.revert_snapshot("deploy_ha_one_controller_flat")
@@ -837,6 +856,8 @@ class UntaggedNetworksNegative(TestBasic):
             5. Remove VLAN tagging from networks which are on eth0
             6. Run network verification (assert it fails)
             7. Start cluster deployment (assert it fails)
+
+        Duration 30m
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -897,6 +918,8 @@ class BackupRestoreHAOneController(TestBasic):
             6. Restore master
             7. Check restore
             8. Run OSTF
+
+        Duration 35m
 
         """
         self.env.revert_snapshot("deploy_ha_one_controller_flat")

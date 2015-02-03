@@ -159,7 +159,7 @@ class TestByTempest(base_test_case.TestBasic):
     @test(groups=["tempest_set"])
     @log_snapshot_on_error
     def tempest_set(self):
-        """ Prepare cluster and launch Tempest
+        """Prepare cluster and launch Tempest tests from TEMPEST_TEST_SET
 
         Scenario:
             1. Revert cluster(snapshot) which Tempest will test.
@@ -201,7 +201,7 @@ class TestByTempest(base_test_case.TestBasic):
     @test(groups=["tempest_list"])
     @log_snapshot_on_error
     def tempest_list(self):
-        """ Prepare cluster and launch Tempest
+        """Prepare cluster and launch Tempest tests from TEMPEST_TESTS_LIST
 
         Scenario:
             1. Revert cluster(snapshot) which Tempest will test.
