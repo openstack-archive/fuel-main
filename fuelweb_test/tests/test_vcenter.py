@@ -21,8 +21,7 @@ from proboscis import test
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.helpers import os_actions
 from fuelweb_test import logger
-from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
-from fuelweb_test.settings import DEPLOYMENT_MODE_HA
+from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.settings import VCENTER_IP
 from fuelweb_test.settings import VCENTER_USERNAME
 from fuelweb_test.settings import VCENTER_PASSWORD
@@ -53,7 +52,7 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 'host_ip': VCENTER_IP,
                 'vc_user': VCENTER_USERNAME,
@@ -75,7 +74,7 @@ class VcenterDeploy(TestBasic):
         time.sleep(60)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+            cluster_id=cluster_id,)
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_1],
           groups=["vcenter_multiple_cluster"])
@@ -99,7 +98,7 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 'host_ip': VCENTER_IP,
                 'vc_user': VCENTER_USERNAME,
@@ -196,7 +195,7 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 'volumes_vmdk': True,
                 'volumes_lvm': False,
@@ -225,7 +224,7 @@ class VcenterDeploy(TestBasic):
         time.sleep(60)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+            cluster_id=cluster_id, )
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_ha"])
@@ -245,7 +244,7 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings={
                 'host_ip': VCENTER_IP,
                 'vc_user': VCENTER_USERNAME,
@@ -274,7 +273,7 @@ class VcenterDeploy(TestBasic):
         time.sleep(60)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+            cluster_id=cluster_id, )
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_simple_add_cinder"])
@@ -297,7 +296,7 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 'volumes_lvm': False,
                 'volumes_vmdk': True,
@@ -327,7 +326,7 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+            cluster_id=cluster_id, )
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["vcenter_ha_deployment_with_cinder"])
@@ -349,7 +348,7 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings={
                 'volumes_lvm': False,
                 'volumes_vmdk': True,
@@ -378,7 +377,7 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+            cluster_id=cluster_id, )
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_simple_stop_deployment"])
@@ -403,7 +402,7 @@ class VcenterDeploy(TestBasic):
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 'volumes_lvm': False,
                 'volumes_vmdk': True,
@@ -432,7 +431,7 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+            cluster_id=cluster_id, )
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_vlan_simple", "vcenter_vlan"])
@@ -455,7 +454,7 @@ class VcenterDeploy(TestBasic):
         # Configure a cluster.
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_SIMPLE,
+            mode=DEPLOYMENT_MODE,
             settings={
                 'volumes_vmdk': True,
                 'volumes_lvm': False,
@@ -505,7 +504,7 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
+            cluster_id=cluster_id, )
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_vlan_ha", "vcenter_vlan"])
@@ -530,7 +529,7 @@ class VcenterDeploy(TestBasic):
         # Configure a cluster.
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA,
+            mode=DEPLOYMENT_MODE,
             settings={
                 'volumes_vmdk': True,
                 'volumes_lvm': False,
@@ -581,4 +580,4 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['ha', 'smoke', 'sanity'])
+            cluster_id=cluster_id, )

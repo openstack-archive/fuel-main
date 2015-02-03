@@ -579,7 +579,7 @@ class FuelWebClient(object):
     def run_ostf(self, cluster_id, test_sets=None,
                  should_fail=0, tests_must_be_passed=None,
                  timeout=None, failed_test_name=None):
-        test_sets = test_sets or ['smoke', 'sanity']
+        test_sets = test_sets or ['smoke', 'sanity', 'ha']
         timeout = timeout or 30 * 60
         self.client.ostf_run_tests(cluster_id, test_sets)
         if tests_must_be_passed:
