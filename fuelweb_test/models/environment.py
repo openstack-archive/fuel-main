@@ -381,12 +381,21 @@ class EnvironmentModel(object):
             self.get_virtual_environment().snapshot(snapshot_name, force=True)
             revert_info(snapshot_name, description)
             self.get_virtual_environment().resume()
+
+            admin = self.nodes().admin
             try:
-                self.nodes().admin.await(self.admin_net, timeout=60)
-            except Exception:
-                logger.error('Admin node is unavailable via SSH after '
-                             'environment resume ')
-                raise
+                admin.await(
+                    self.admin_net, timeout=10 * 60, by_port=8000)
+            except Exception as e:
+                logger.warning("From first time admin isn't reverted: "
+                               "{0}".format(e))
+                admin.destroy()
+                logger.info('Admin node was destroyed. Wait 10 sec.')
+                time.sleep(10)
+                self.get_virtual_environment().start(self.nodes().admins)
+                logger.info('Admin node started second time.')
+                self.nodes().admin.await(
+                    self.admin_net, timeout=10 * 60, by_port=8000)
 
     def nailgun_nodes(self, devops_nodes):
         return map(
