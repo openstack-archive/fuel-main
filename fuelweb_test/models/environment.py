@@ -380,6 +380,7 @@ class EnvironmentModel(object):
             time.sleep(10)
             self.get_virtual_environment().snapshot(snapshot_name, force=True)
             revert_info(snapshot_name, description)
+        if settings.FUEL_STATS_CHECK:
             self.get_virtual_environment().resume()
             try:
                 self.nodes().admin.await(self.admin_net, timeout=60)
