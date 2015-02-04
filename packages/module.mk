@@ -20,7 +20,8 @@ $(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
 $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
 ifeq ($1,nailgun)
-	cd $3 && npm install && grunt build --static-dir=compressed_static
+	mkdir -p $(BUILD_DIR)/npm-cache
+	cd $3 && npm --cache $(BUILD_DIR)/npm-cache install && grunt build --static-dir=compressed_static
 	rm -rf $3/static
 	mv $3/compressed_static $3/static
 endif
