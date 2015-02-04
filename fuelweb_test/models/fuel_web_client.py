@@ -29,6 +29,7 @@ from fuelweb_test.helpers import checkers
 from fuelweb_test import logwrap
 from fuelweb_test import logger
 from fuelweb_test.helpers.decorators import custom_repo
+from fuelweb_test.helpers.decorators import download_astute_yaml
 from fuelweb_test.helpers.decorators import update_ostf
 from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.helpers.security import SecurityChecks
@@ -429,6 +430,7 @@ class FuelWebClient(object):
 
         return cluster_id
 
+    @download_astute_yaml
     @custom_repo
     def deploy_cluster_wait(self, cluster_id, is_feature=False,
                             timeout=50 * 60, interval=30):

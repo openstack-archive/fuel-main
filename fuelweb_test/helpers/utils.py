@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import inspect
 import time
 import traceback
 
@@ -89,7 +90,8 @@ def pull_out_logs_via_ssh(admin_remote, name,
 
 
 @logwrap
-def store_astute_yaml(env, func_name):
+def store_astute_yaml(env):
+    func_name = get_test_method_name()
     for node in env.nodes().slaves:
         nailgun_node = env.fuel_web.get_nailgun_node_by_devops_node(node)
         if node.driver.node_active(node) and nailgun_node['roles']:
@@ -103,3 +105,18 @@ def store_astute_yaml(env, func_name):
                                  "{0} failed.".format(node.name))
             except Exception:
                 logger.error(traceback.format_exc())
+
+
+@logwrap
+def get_test_method_name():
+    # Find the name of the current test in the stack. It can be found
+    # right under the class name 'NoneType' (when proboscis
+    # run the test method with unittest.FunctionTestCase)
+    stack = inspect.stack()
+    method = ''
+    for m in stack:
+        if 'self' in m[0].f_locals:
+            if m[0].f_locals['self'].__class__.__name__ == 'NoneType':
+                break
+            method = m[3]
+    return method
