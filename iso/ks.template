@@ -246,7 +246,8 @@ lsof
 man
 mlocate
 nmap-ncat
-ntp-dev
+ntp
+ntpdate
 openssh-clients
 policycoreutils
 python-daemon
@@ -540,6 +541,8 @@ rm -rf ${SOURCE}
 
 umount -f ${FS} || true
 rm -rf ${FS}
+
+echo "tos orphan 7" >> /etc/ntp.conf
 
 # Do not show error message on ntpdate failure. Customers should not be confused
 # if admin node does not have access to the internet time servers.
