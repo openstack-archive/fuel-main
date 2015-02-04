@@ -1241,12 +1241,12 @@ class FuelWebClient(object):
         release_ids = []
         for release in full_list:
             if release_version:
-                if release_name in release['name'] \
+                if release_name in release['name'].lower() \
                         and release_version == release['version']:
                     logger.debug('release data is {0}'.format(release))
                     release_ids.append(release['id'])
             else:
-                if release_name in release['name']:
+                if release_name in release['name'].lower():
                     release_ids.append(release['id'])
         return release_ids
 
