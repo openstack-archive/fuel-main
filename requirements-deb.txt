@@ -29,6 +29,7 @@ corosync
 cpu-checker
 cpufrequtils
 crda
+crmsh
 curl
 daemonize
 debconf-utils
