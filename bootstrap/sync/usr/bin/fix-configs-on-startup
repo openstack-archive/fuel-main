@@ -49,8 +49,12 @@ chown ntp: /var/lib/ntp/drift
 #
 sed -i "/^\s*server\b/ d" /etc/ntp.conf
 echo "server $masternode_ip burst iburst" >> /etc/ntp.conf
-/etc/init.d/sntp restart
-/etc/init.d/ntpd restart
+
+sed -i '46 a logger -t ntpdate-log -- `echo /usr/sbin/ntpdate $OPTIONS $tickers` || true\
+/usr/sbin/ntpdate $OPTIONS -d $tickers &> /dev/null' /etc/init.d/ntpdate
+
+/etc/init.d/ntpdate start
+/etc/init.d/ntpd start
 
 #
 # Update mcollective config
