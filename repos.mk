@@ -39,6 +39,6 @@ $(BUILD_DIR)/repos/repos.done:
 		echo "  $${repo}_sha: \"$${repo_commit_id}\""; \
 	done > $${version_yaml}.tmp; \
 	fuelmain_commit_id=`git rev-parse --verify HEAD`; \
-	echo "  fuelmain_sha: \"${fuelmain_commit_id}\"" >> $${version_yaml}.tmp; \
+	echo "  fuelmain_sha: \"$${fuelmain_commit_id}\"" >> $${version_yaml}.tmp; \
 	mv $${version_yaml}.tmp $${version_yaml}
 	$(ACTION.TOUCH)
