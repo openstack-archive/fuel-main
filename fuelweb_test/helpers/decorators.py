@@ -56,15 +56,12 @@ def log_snapshot_on_error(func):
     And always fetch diagnostic snapshot from master node
     """
     @functools.wraps(func)
-    def wrapper(*args, **kwagrs):
+    def wrapper(*args, **kwargs):
         logger.info("\n" + "<" * 5 + "#" * 30 + "[ {} ]"
                     .format(func.__name__) + "#" * 30 + ">" * 5 + "\n{}"
                     .format(func.__doc__))
         try:
-            result = func(*args, **kwagrs)
-            if settings.STORE_ASTUTE_YAML:
-                store_astute_yaml(args[0].env, func.__name__)
-            return result
+            return func(*args, **kwargs)
         except SkipTest:
             raise SkipTest()
         except Exception as test_exception:
@@ -288,4 +285,14 @@ def check_fuel_statistics(func):
         except Exception:
             logger.error(traceback.format_exc())
             raise
+    return wrapper
+
+
+def download_astute_yaml(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        if settings.STORE_ASTUTE_YAML:
+            store_astute_yaml(args[0].env)
+        return result
     return wrapper
