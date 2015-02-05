@@ -433,6 +433,7 @@ python-nova
 python-novaclient
 python-novaclient-doc
 python-nwdiag-0.9.4-1
+python-openstackclient
 python-ordereddict-1.1-2.el6
 python-oslo-config
 python-oslo-config-doc

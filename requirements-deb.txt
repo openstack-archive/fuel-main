@@ -216,6 +216,7 @@ python-nose
 python-novnc
 python-openid
 python-openstack-auth
+python-openstackclient
 python-pam
 python-passlib
 python-pastescript
