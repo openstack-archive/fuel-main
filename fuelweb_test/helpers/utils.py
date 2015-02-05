@@ -120,3 +120,12 @@ def get_test_method_name():
                 break
             method = m[3]
     return method
+
+
+def get_current_env(args):
+    if args[0].__class__.__name__ == "EnvironmentModel":
+        return args[0]
+    elif args[0].__class__.__name__ == "FuelWebClient":
+        return args[0].environment
+    else:
+        logger.warning("Unexpected class!")
