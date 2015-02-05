@@ -34,6 +34,7 @@ from proboscis.asserts import assert_equal
 from fuelweb_test import logger
 from fuelweb_test import settings
 from fuelweb_test.helpers.regenerate_repo import CustomRepo
+from fuelweb_test.helpers.utils import get_current_env
 from fuelweb_test.helpers.utils import pull_out_logs_via_ssh
 from fuelweb_test.helpers.utils import store_astute_yaml
 
@@ -110,11 +111,8 @@ def upload_manifests(func):
             if settings.UPLOAD_MANIFESTS:
                 logger.info("Uploading new manifests from %s" %
                             settings.UPLOAD_MANIFESTS_PATH)
-                if args[0].__class__.__name__ == "EnvironmentModel":
-                    environment = args[0]
-                elif args[0].__class__.__name__ == "FuelWebClient":
-                    environment = args[0].environment
-                else:
+                environment = get_current_env(args)
+                if not environment:
                     logger.warning("Can't upload manifests: method of "
                                    "unexpected class is decorated.")
                     return result
@@ -293,6 +291,11 @@ def download_astute_yaml(func):
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
         if settings.STORE_ASTUTE_YAML:
-            store_astute_yaml(args[0].env)
+            environment = get_current_env(args)
+            if environment:
+                store_astute_yaml(environment)
+            else:
+                logger.warning("Can't download astute.yaml: "
+                               "Unexpected class is decorated.")
         return result
     return wrapper
