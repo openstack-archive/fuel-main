@@ -208,7 +208,8 @@ echo "partition pv.001 --ondisk=${tgtdrive} --size=30000 --grow" >> /tmp/partiti
 echo "volgroup os pv.001" >> /tmp/partition.ks
 echo "logvol swap --vgname=os --recommended --name=swap" >> /tmp/partition.ks
 echo "logvol / --vgname=os --size=10000 --name=root --fstype=ext4" >> /tmp/partition.ks
-echo "logvol /var --vgname=os --size=1 --grow --name=var --fstype=xfs" >> /tmp/partition.ks
+echo "logvol /var --vgname=os --size=8096 --percent 40 --name=var --fstype=ext4" >> /tmp/partition.ks
+echo "logvol /var/log --vgname=os --size=5120 --percent 30 --name=varlog --fstype=ext4" >> /tmp/partition.ks
 
 # bootloader
 echo "bootloader --location=mbr --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
@@ -445,6 +446,11 @@ mkdir -p /var/lib/hiera
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
 # Deploy docker images and ctl tools if we built ISO with docker containers support
+lvcreate --wipesignatures y --size 1GB --name docker_metadata os
+dd if=/dev/zero of=/dev/os/docker_metadata bs=1M count=10
+lvcreate --wipesignatures y -l 100%VG --name docker_data os 
+echo -e 'other_args="--storage-opt dm.datadev=/dev/os/docker_data --storage-opt dm.metadatadev=/dev/os/docker_metadata"
+ulimit -n 102400' > /etc/sysconfig/docker
 [ -d "${SOURCE}/docker" ] && cp -r ${SOURCE}/docker ${wwwdir}/docker
 
 # Prepare local repository specification
