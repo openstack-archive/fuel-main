@@ -75,11 +75,11 @@ $(BUILD_DIR)/mirror/centos/rpm-download.done: $(BUILD_DIR)/mirror/centos/urls.li
 $(BUILD_DIR)/mirror/centos/src-rpm-download.done: $(BUILD_DIR)/mirror/centos/src_urls.list
 	dst="$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Sources"; \
 	mkdir -p "$$dst" && \
-	xargs -n1 -P4 wget -nv -P "$$dst" < $<
+	xargs --no-run-if-empty -n1 -P4 wget -nv -P "$$dst" < $<
 	$(ACTION.TOUCH)
 
 rpm_download_lists:=$(REQUIRED_RPMS:%=$(BUILD_DIR)/mirror/centos/lists/%.list)
-src_rpm_download_lists:=$(REQUIRED_RPMS:%=$(BUILD_DIR)/mirror/centos/src_lists/%.list)
+mirantis_rpms_list:=$(BUILD_DIR)/mirror/centos/mirantis_rpms.list
 
 $(BUILD_DIR)/mirror/centos/urls.list: $(rpm_download_lists)
 	mkdir -p $(@D)
@@ -94,13 +94,6 @@ $(BUILD_DIR)/mirror/centos/urls.list: $(rpm_download_lists)
 	sort -u < $@.pre > $@.tmp
 	mv $@.tmp $@
 
-$(BUILD_DIR)/mirror/centos/src_urls.list: $(src_rpm_download_lists)
-	mkdir -p $(@D) && \
-	cat $^ > $@.pre
-# yumdownloader -q prints logs to stdout, filter them out
-	sed -rne '/\.rpm$$/ {p}' -i $@.pre && \
-	sort -u < $@.pre > $@.tmp && \
-	mv $@.tmp $@
 
 # XXX: yumdownloader operates upon rpmdb so running several instances
 # concurrently (within the same installroot) is not safe. Create
@@ -127,12 +120,28 @@ $(rpm_download_lists): $(BUILD_DIR)/mirror/centos/lists/%.list: \
 	rm -rf "$$tmp_installchroot" && \
 	mv $@.tmp $@
 
-$(src_rpm_download_lists): $(BUILD_DIR)/mirror/centos/src_lists/%.list: \
+
+$(BUILD_DIR)/mirantis_rpm_pkgs_list.mk: $(BUILD_DIR)/mirror/centos/urls.list
+	sed -rne '/$(subst /,\/,$(MIRROR_FUEL))/ s/^.*[/]([^/]+)\.($(CENTOS_ARCH)|all)\.rpm$$/\1\\/p' < $< > $@.pre.list
+	sort -u < $@.pre.list > $@.list && \
+	echo 'mirantis_rpm_pkgs_list:=\\' > $@.tmp && \
+	cat $@.list >> $@.tmp && \
+	echo '$$(empty)' >> $@.tmp && \
+	mv $@.tmp $@
+
+ifneq (,$(strip $(YUM_DOWNLOAD_SRC)))
+ifeq (,$(findstring clean,$(MAKECMDGOALS)))
+include $(BUILD_DIR)/mirantis_rpm_pkgs_list.mk
+endif
+
+mirantis_src_rpm_urls_list:=$(mirantis_rpm_pkgs_list:%=$(BUILD_DIR)/mirror/centos/src_lists/%.list)
+
+$(mirantis_src_rpm_urls_list): $(BUILD_DIR)/mirror/centos/src_lists/%.list: \
 		$(BUILD_DIR)/mirror/centos/yum-config.done \
 		$(SOURCE_DIR)/requirements-rpm.txt
 	tmp_installchroot=$(dir $(centos_empty_installroot))installchroot-src-$*; \
-	cp -a "$(centos_empty_installroot)" "$$tmp_installchroot" && \
-	mkdir -p $(@D) && \
+	cp -al "$(centos_empty_installroot)" "$$tmp_installchroot" && \
+	mkdir -p "$(@D)" && \
 	env \
 		TMPDIR="$$tmp_installchroot/cache" \
 		TMP="$$tmp_installchroot/cache" \
@@ -141,9 +150,19 @@ $(src_rpm_download_lists): $(BUILD_DIR)/mirror/centos/src_lists/%.list: \
 		--installroot="$$tmp_installchroot" \
 		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
 		--cacheonly \
-		--resolve $* > $@.tmp 2>$@.log && \
+		 $* > $@.tmp 2>$@.log && \
 	rm -rf "$$tmp_installchroot" && \
 	mv $@.tmp $@
+
+$(BUILD_DIR)/mirror/centos/src_urls.list: $(mirantis_src_rpm_urls_list)
+	mkdir -p "$(@D)" && \
+	cat $^ > $@.pre && \
+	sed -rne '/\.rpm$$/ {p}' -i $@.pre && \
+	sort -u $@.pre > $@.tmp && \
+	mv $@.tmp $@
+
+endif
+# YUM_DOWNLOAD_SRC
 
 show-yum-urls-centos: $(BUILD_DIR)/mirror/centos/urls.list
 	cat $<
