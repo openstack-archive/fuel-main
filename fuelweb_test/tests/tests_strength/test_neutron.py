@@ -26,7 +26,7 @@ from fuelweb_test.helpers import os_actions
 from fuelweb_test.tests import base_test_case
 
 
-@test(groups=["thread_5", "ha"])
+@test(groups=["thread_3", "ha"])
 class TestNeutronFailover(base_test_case.TestBasic):
 
     @classmethod
