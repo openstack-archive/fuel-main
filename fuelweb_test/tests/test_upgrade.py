@@ -71,11 +71,13 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
 
         """
 
+        # For upgrade jobs *from* 6.1, change snapshot name to
+        # "ceph_ha_one_controller_compact"
         if not self.env.get_virtual_environment().has_snapshot(
-                'ceph_ha_one_controller_compact'):
+                'ceph_multinode_compact'):
             raise SkipTest()
+        self.env.revert_snapshot("ceph_multinode_compact")
 
-        self.env.revert_snapshot("ceph_ha_one_controller_compact")
         cluster_id = self.fuel_web.get_last_created_cluster()
         remote = self.env.get_ssh_to_remote_by_name('slave-01')
         expected_kernel = self.get_slave_kernel(remote)
@@ -138,11 +140,13 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
 
         """
 
+        # For upgrade jobs *from* 6.1, change snapshot name to
+        # "ceph_ha_one_controller_compact"
         if not self.env.get_virtual_environment().has_snapshot(
-                'ceph_ha_one_controller_compact'):
+                'ceph_multinode_compact'):
             raise SkipTest()
+        self.env.revert_snapshot("ceph_multinode_compact")
 
-        self.env.revert_snapshot("ceph_ha_one_controller_compact")
         cluster_id = self.fuel_web.get_last_created_cluster()
         checkers.upload_tarball(self.env.get_admin_remote(),
                                 hlp_data.TARBALL_PATH, '/var')
@@ -279,11 +283,14 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
             5. Run OSTF
 
         """
-        if not self.env.get_virtual_environment().has_snapshot(
-                'ceph_ha_one_controller_compact'):
-            raise SkipTest()
 
-        self.env.revert_snapshot("ceph_ha_one_controller_compact")
+        # For upgrade jobs *from* 6.1, change snapshot name to
+        # "ceph_ha_one_controller_compact"
+        if not self.env.get_virtual_environment().has_snapshot(
+                'ceph_multinode_compact'):
+            raise SkipTest()
+        self.env.revert_snapshot("ceph_multinode_compact")
+
         cluster_id = self.fuel_web.get_last_created_cluster()
         available_releases_before = self.fuel_web.get_releases_list_for_os(
             release_name=hlp_data.OPENSTACK_RELEASE)
