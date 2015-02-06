@@ -23,7 +23,7 @@ atop
 authconfig-6.1.12-13.el6
 autoconf-2.63-5.1.el6
 automake-1.11.1-4.el6
-avahi-0.6.25-12.el6
+avahi
 bc-1.06.95-1.el6
 bfa-firmware
 ql2100-firmware
