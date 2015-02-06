@@ -122,7 +122,7 @@ $(rpm_download_lists): $(BUILD_DIR)/mirror/centos/lists/%.list: \
 
 
 $(BUILD_DIR)/mirantis_rpm_pkgs_list.mk: $(BUILD_DIR)/mirror/centos/urls.list
-	sed -rne '/$(subst /,\/,$(MIRROR_FUEL))/ s/^.*[/]([^/]+)\.($(CENTOS_ARCH)|all)\.rpm$$/\1\\/p' < $< > $@.pre.list
+	sed -rne '/$(subst /,\/,$(MIRROR_FUEL))/ s/^.*[/]([^/]+)\.($(CENTOS_ARCH)|noarch)\.rpm$$/\1\\/p' < $< > $@.pre.list
 	sort -u < $@.pre.list > $@.list && \
 	echo 'mirantis_rpm_pkgs_list:=\\' > $@.tmp && \
 	cat $@.list >> $@.tmp && \
