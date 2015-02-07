@@ -2,10 +2,8 @@
 LOCAL_NETBOOT_DIR:=$(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/installer-$(UBUNTU_ARCH)/current/images/netboot
 
 # Fetch Debian-installer initrd.gz and linux from this URL
-UBUNTU_NETBOOT_URL:=$(MIRROR_UBUNTU)/installer-$(UBUNTU_ARCH)/current/images/netboot/ubuntu-installer/$(UBUNTU_ARCH)
-ifeq ($(USE_MIRROR),none)
-	UBUNTU_NETBOOT_URL:=$(MIRROR_UBUNTU)/ubuntu/dists/$(UBUNTU_RELEASE)-updates/main/installer-$(UBUNTU_ARCH)/current/images/$(UBUNTU_NETBOOT_FLAVOR)/ubuntu-installer/$(UBUNTU_ARCH)
-endif
+# XXX: This assumes the mirror has the correct layout.
+UBUNTU_NETBOOT_URL:=$(MIRROR_UBUNTU)/ubuntu/dists/$(UBUNTU_RELEASE)-updates/main/installer-$(UBUNTU_ARCH)/current/images/$(UBUNTU_NETBOOT_FLAVOR)/ubuntu-installer/$(UBUNTU_ARCH)
 
 patched_di_initrd_img:=$(LOCAL_NETBOOT_DIR)/ubuntu-installer/$(UBUNTU_ARCH)/initrd.gz
 di_kernel_img:=$(dir $(patched_di_initrd_img))linux
