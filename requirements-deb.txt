@@ -1,6 +1,5 @@
 anacron
 apache2
-apt-xapian-index
 aptitude
 atop
 bc
@@ -28,7 +27,6 @@ cloud-init
 corosync
 cpu-checker
 cpufrequtils
-crda
 curl
 daemonize
 debconf-utils
@@ -50,7 +48,6 @@ fuel-utils
 fence-agents
 fencing-agent
 galera
-geoip-database
 git
 glance-api
 glance-common
@@ -75,21 +72,14 @@ iputils-arping
 ipmitool
 kdump-tools
 keystone
-krb5-locales
 language-pack-en
 language-pack-en-base
 language-pack-gnome-en
 language-pack-gnome-en-base
-laptop-detect
-libalgorithm-diff-xs-perl
-libalgorithm-merge-perl
 libapache2-mod-fastcgi
 libapache2-mod-wsgi
 libguestfs-tools
-libhtml-template-perl
 libnss3-tools
-libparse-debianchangelog-perl
-libsasl2-modules
 libssl0.9.8
 linux-firmware
 linux-firmware-nonfree
@@ -174,7 +164,6 @@ openvswitch-switch
 os-prober
 pacemaker
 percona-toolkit
-powermgmt-base
 pssh
 puppet
 python-carrot
@@ -184,7 +173,6 @@ python-ceph
 python-daemon
 python-daemonize
 python-dateutil
-python-debian
 python-dingus
 python-ethtool
 python-feedparser
@@ -246,11 +234,8 @@ ruby-rethtool
 ruby-stomp
 sahara
 screen
-sgml-base
-sharutils
 socat
 ssh-import-id
-ssl-cert
 swift
 swift-account
 swift-container
@@ -261,7 +246,6 @@ sysstat
 sheepdog
 snmp
 tasksel
-tcpd
 tmux
 traceroute
 tcptraceroute
@@ -273,9 +257,7 @@ vim
 virt-what
 vlan
 wireless-regdb
-xauth
 xinetd
-xml-core
 xz-utils
 percona-xtrabackup
 zabbix-server-mysql
