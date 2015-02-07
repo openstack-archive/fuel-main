@@ -103,12 +103,12 @@ CENTOS_MINOR:=5
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
 CENTOS_IMAGE_RELEASE:=$(CENTOS_MAJOR)$(CENTOS_MINOR)
-UBUNTU_RELEASE:=precise
-UBUNTU_MAJOR:=12
+UBUNTU_RELEASE:=trusty
+UBUNTU_MAJOR:=14
 UBUNTU_MINOR:=04
 UBUNTU_RELEASE_NUMBER:=$(UBUNTU_MAJOR).$(UBUNTU_MINOR)
 UBUNTU_KERNEL_FLAVOR?=lts-trusty
-UBUNTU_NETBOOT_FLAVOR?=trusty-netboot
+UBUNTU_NETBOOT_FLAVOR?=netboot
 UBUNTU_ARCH:=amd64
 UBUNTU_IMAGE_RELEASE:=$(UBUNTU_MAJOR)$(UBUNTU_MINOR)
 SEPARATE_IMAGES?=/boot,ext2 /,ext4
@@ -236,7 +236,11 @@ MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
 MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-stable/centos/
+ifeq (precise,$(strip $(UBUNTU_RELEASE)))
 MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-stable/reprepro
+else
+MIRROR_FUEL_UBUNTU?=http://obs-1.mirantis.com:82/$(UBUNTU_RELEASE)-fuel-$(PRODUCT_VERSION)-stable/reprepro
+endif
 
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
 REQUIRED_DEBS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-deb.txt)
