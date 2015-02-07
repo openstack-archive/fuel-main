@@ -10,7 +10,7 @@ Homepage: mirantis.com
 
 Package: nailgun-agent
 Architecture: all
-Depends: ruby-ohai (<7),
+Depends: ohai (<< 7),
   ruby-httpclient,
   ruby-rethtool,
   ruby-cstruct,
