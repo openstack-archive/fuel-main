@@ -36,7 +36,6 @@ debconf-utils
 devscripts
 debhelper
 dhcp-checker
-diffutils
 discover
 discover-data
 disktype
@@ -57,10 +56,8 @@ git
 glance-api
 glance-common
 glance-registry
-grep
 grub-pc
 guestmount
-gzip
 haproxy
 heat-api
 heat-api-cfn
@@ -69,7 +66,6 @@ heat-common
 heat-engine
 heat-docker
 hicolor-icon-theme
-hostname
 htop
 ifenslave-2.6
 installation-report
@@ -104,7 +100,6 @@ linux-firmware-nonfree
 lksctp-tools
 lldpad
 lockfile-progs
-login
 manpages-dev
 mc
 mcelog
@@ -123,7 +118,6 @@ mysql-server-wsrep-5.6
 nailgun-agent
 nailgun-mcagents
 nailgun-net-check
-ncurses-base
 neutron-dhcp-agent
 neutron-l3-agent
 neutron-lbaas-agent
