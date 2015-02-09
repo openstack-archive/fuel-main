@@ -115,7 +115,7 @@ INTERFACES = {
 # May be one of virtio, e1000, pcnet, rtl8139
 INTERFACE_MODEL = os.environ.get('INTERFACE_MODEL', 'virtio')
 
-POOL_DEFAULT = os.environ.get('POOL_DEFAULT', '10.108.0.0/16:24')
+POOL_DEFAULT = os.environ.get('POOL_DEFAULT', '10.108.0.0/15:24')
 POOL_ADMIN = os.environ.get('POOL_ADMIN', POOL_DEFAULT)
 POOL_PUBLIC = os.environ.get('POOL_PUBLIC', POOL_DEFAULT)
 POOL_MANAGEMENT = os.environ.get('POOL_MANAGEMENT', POOL_DEFAULT)
@@ -163,7 +163,7 @@ if MULTIPLE_NETWORKS:
 
     INTERFACES['admin2'] = 'eth5'
 
-    POOL_DEFAULT2 = os.environ.get('POOL_DEFAULT2', '10.108.0.0/16:24')
+    POOL_DEFAULT2 = os.environ.get('POOL_DEFAULT2', '10.108.0.0/15:24')
     POOL_ADMIN2 = os.environ.get('POOL_ADMIN2', POOL_DEFAULT2)
     POOL_PUBLIC2 = os.environ.get('POOL_PUBLIC2', POOL_DEFAULT2)
     POOL_MANAGEMENT2 = os.environ.get('POOL_MANAGEMENT', POOL_DEFAULT2)
