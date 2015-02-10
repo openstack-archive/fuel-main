@@ -1,0 +1,11 @@
+Verified+2: Jenkins
+Code-Review+2: tatyana-leontovich <tleontovich@mirantis.com>
+Code-Review+2: Nastya Urlapova <aurlapova@mirantis.com>
+Workflow+1: Nastya Urlapova <aurlapova@mirantis.com>
+Code-Review+1: Eugene Korekin <ekorekin@mirantis.com>
+Code-Review+1: okosse <okosse@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 10 Feb 2015 16:27:19 +0000
+Reviewed-on: https://review.openstack.org/152653
+Project: stackforge/fuel-main
+Branch: refs/heads/stable/5.1
