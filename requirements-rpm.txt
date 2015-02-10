@@ -171,6 +171,8 @@ kernel-headers
 kernel-lt
 kernel-lt-devel
 kernel-lt-headers
+kernel-plus
+kernel-plus-headers
 leveldb-1.7.0-2.el6
 libaio-0.3.107-10.el6
 libcephfs1
