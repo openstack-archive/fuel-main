@@ -168,6 +168,8 @@ kernel
 kernel-devel
 kernel-firmware
 kernel-headers
+kernel-3.10.0-123
+kernel-headers-3.10.0-123
 kernel-lt
 kernel-lt-devel
 kernel-lt-headers
