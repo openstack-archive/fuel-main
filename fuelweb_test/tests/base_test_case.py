@@ -83,6 +83,7 @@ class SetupEnvironment(TestBasic):
 
     @test(depends_on=[prepare_release],
           groups=["prepare_slaves_1"])
+    @log_snapshot_on_error
     def prepare_slaves_1(self):
         """Bootstrap 1 slave nodes
 
