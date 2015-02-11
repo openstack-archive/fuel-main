@@ -228,10 +228,10 @@ $(BUILD_DIR)/iso/isoroot.done: \
 ########################
 
 ifeq ($(filter mirantis,$(FEATURE_GROUPS)),mirantis)
-ISO_VOLUME_ID:="Mirantis Fuel"
+ISO_VOLUME_ID:="Mirantis_Fuel"
 ISO_VOLUME_PREP:="Mirantis Inc."
 else
-ISO_VOLUME_ID:="OpenStack Fuel"
+ISO_VOLUME_ID:="OpenStack_Fuel"
 ISO_VOLUME_PREP:="Fuel team"
 endif
 
@@ -248,11 +248,14 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 	sudo sed -r -i -e "s/netmask=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/netmask=$(MASTER_NETMASK)/" $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
 	sudo sed -r -i -e "s/gw=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/gw=$(MASTER_GW)/" $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
 	sudo sed -r -i -e "s/will_be_substituted_with_PRODUCT_VERSION/$(PRODUCT_VERSION)/" $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
+	sudo sed -r -i -e 's/will_be_substituted_with_ISO_VOLUME_ID/$(ISO_VOLUME_ID)/g' $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
+	sudo sed -r -i -e 's/will_be_substituted_with_ISO_VOLUME_ID/$(ISO_VOLUME_ID)/g' $(BUILD_DIR)/iso/isoroot/ks.cfg
 	mkisofs -r -V $(ISO_VOLUME_ID) -p $(ISO_VOLUME_PREP) \
 		-J -T -R -b isolinux/isolinux.bin \
 		-no-emul-boot \
 		-boot-load-size 4 -boot-info-table \
 		-x "lost+found" -o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
+	isohybrid $@
 	implantisomd5 $@
 
 # IMGSIZE is calculated as a sum of iso size plus
