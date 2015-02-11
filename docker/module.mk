@@ -13,7 +13,7 @@ DOCKER_DEP_FILE:=$(call find-files,$(DEPS_DIR_CURRENT)/$(DOCKER_ART_NAME))
 ifdef DOCKER_DEP_FILE
 $(BUILD_DIR)/docker/build.done: \
 		$(DOCKER_DEP_FILE) \
-		$(BUILD_DIR)/docker/sources.done
+		$(BUILD_DIR)/docker/sources.done \
 	mkdir -p $(@D)
 	cp $(DOCKER_DEP_FILE) $(BUILD_DIR)/docker/$(DOCKER_ART_NAME)
 	$(ACTION.TOUCH)
@@ -21,7 +21,7 @@ else
 # Lrzip all containers into single archive
 $(BUILD_DIR)/docker/build.done: \
 		$(BUILD_DIR)/docker/fuel-centos.done \
-		$(BUILD_DIR)/docker/sources.done
+		$(BUILD_DIR)/docker/sources.done \
 	sudo docker save fuel/centos busybox `for cnt in $(containers); do echo -n "fuel/$${cnt}_$(PRODUCT_VERSION) "; done` | xz -zc -T0 -4 > $(BUILD_DIR)/docker/$(DOCKER_ART_NAME)
 	$(ACTION.TOUCH)
 endif
