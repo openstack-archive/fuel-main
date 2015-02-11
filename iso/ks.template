@@ -26,10 +26,12 @@ skipx
 drives=""
 removable_drives=""
 for drv in `ls -1 /sys/block | grep "sd\|hd\|vd\|cciss"`; do
-    if (grep -q 0 /sys/block/${drv}/removable); then
-        drives="${drives} ${drv}"
-    else
-        removable_drives="${removable_drives} ${drv}"
+    if !(blkid | grep -q "${drv}.*Fuel"); then
+      if (grep -q 0 /sys/block/${drv}/removable); then
+          drives="${drives} ${drv}"
+      else
+          removable_drives="${removable_drives} ${drv}"
+      fi
     fi
 done
 default_drive=`echo ${drives} ${removable_drives} | awk '{print $1}'`
@@ -175,7 +177,9 @@ fi
 tgtdrive=$(echo $tgtdrive | sed -e 's/!/\//')
 
 # source
-if test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
+if test -e /dev/disk/by-label/will_be_substituted_with_ISO_VOLUME_ID; then
+    echo "harddrive --partition=LABEL=will_be_substituted_with_ISO_VOLUME_ID --dir=/" > /tmp/source.ks
+elif test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
     echo "harddrive --partition=UUID=will_be_substituted_with_actual_uuid --dir=/" > /tmp/source.ks
 else
     echo "cdrom" > /tmp/source.ks
@@ -285,6 +289,8 @@ echo -e "* soft core unlimited\n* hard core unlimited" >> /etc/security/limits.c
 %post --nochroot --log=/mnt/sysimage/root/anaconda-post-before-chroot.log
 #!/bin/sh
 
+set -x
+
 SOURCE="/mnt/sysimage/tmp/source"
 
 for I in `cat /proc/cmdline`; do case "$I" in *=*) eval $I;; esac ; done
@@ -368,7 +374,9 @@ echo
 mkdir -p ${SOURCE}
 mkdir -p ${FS}
 
-if test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
+if test -e /dev/disk/by-label/will_be_substituted_with_ISO_VOLUME_ID; then
+    mount /dev/disk/by-label/will_be_substituted_with_ISO_VOLUME_ID ${SOURCE}
+elif test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
     mount /dev/disk/by-uuid/will_be_substituted_with_actual_uuid ${FS}
     mount -o loop ${FS}/nailgun.iso ${SOURCE}
 fi
