@@ -240,6 +240,7 @@ daemonize
 dhcp
 docker-io
 fuelmenu
+fuel-docker-images
 gdisk
 lrzip
 lsof
@@ -443,9 +444,6 @@ popd
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 mkdir -p /var/lib/hiera
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
-
-# Deploy docker images and ctl tools if we built ISO with docker containers support
-[ -d "${SOURCE}/docker" ] && cp -r ${SOURCE}/docker ${wwwdir}/docker
 
 # Prepare local repository specification
 rm /etc/yum.repos.d/CentOS*.repo

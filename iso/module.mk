@@ -59,7 +59,8 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/mirror/make-changelog.done \
 		$(BUILD_DIR)/packages/build.done \
 		$(BUILD_DIR)/openstack/build.done \
-		$(BUILD_DIR)/iso/isoroot-dotfiles.done
+		$(BUILD_DIR)/iso/isoroot-dotfiles.done \
+		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done
 	mkdir -p $(ISOROOT)
 	rsync -rp $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(ISOROOT)
 	rsync -rp $(LOCAL_MIRROR)/centos-packages.changelog $(ISOROOT)
@@ -114,11 +115,8 @@ $(ISOROOT)/puppet-slave.tgz: $(BUILD_DIR)/puppet/$(PUPPET_ART_NAME)
 # DOCKER
 ########################
 # DOCKER_ART_NAME is defined in /docker/module.mk
-$(ISOROOT)/docker.done: $(BUILD_DIR)/docker/build.done
-	mkdir -p $(ISOROOT)/docker/images
-	cp $(BUILD_DIR)/docker/$(DOCKER_ART_NAME) $(ISOROOT)/docker/images/$(DOCKER_ART_NAME)
-	cp -a $(BUILD_DIR)/docker/sources $(ISOROOT)/docker/sources
-	cp -a $(BUILD_DIR)/docker/utils $(ISOROOT)/docker/utils
+$(ISOROOT)/docker.done: $(BUILD_DIR)/docker/build.done \
+		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done
 	$(ACTION.TOUCH)
 
 ########################
