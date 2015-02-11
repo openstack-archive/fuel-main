@@ -9,6 +9,7 @@ exactarch=1
 obsoletes=1
 gpgcheck=0
 plugins=1
+sslverify=0
 pluginpath=$(BUILD_DIR)/mirror/centos/etc/yum-plugins
 pluginconfpath=$(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d
 reposdir=$(BUILD_DIR)/mirror/centos/etc/yum.repos.d
