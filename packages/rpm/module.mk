@@ -23,6 +23,12 @@ $(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
 	sudo tar czf $@.tmp -C $(SANDBOX) .
 	mv $@.tmp $@
 
+define build_repo
+	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
+	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
+		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+endef
+
 # Usage:
 # (eval (call build_rpm,package_name))
 define build_rpm
@@ -82,9 +88,13 @@ $(eval $(foreach pkg,$(fuel_rpm_packages),$(call build_rpm,$(pkg))$(NEWLINE)))
 
 
 $(BUILD_DIR)/packages/rpm/repo.done:
-	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
-	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
-		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+	$(eval $(call build_repo))
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/packages/rpm/fuel-docker-images.done:
+	$(eval $(call prepare_file_source,fuel-docker-images,$(DOCKER_ART_NAME),$(BUILD_DIR)/docker/$(DOCKER_ART_NAME)))
+	$(eval $(call build_rpm,fuel-docker-images))
+	$(eval $(call build_repo))
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
