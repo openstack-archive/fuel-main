@@ -229,7 +229,8 @@ echo "cat /tmp/grub.script | chroot /mnt/sysimage /sbin/grub --no-floppy --batch
 
 %end
 
-%packages --nobase --excludedocs
+#TODO(mattymo): REMOVE --ignoremissing
+%packages --nobase --excludedocs --ignoremissing
 @Core
 authconfig
 bind-utils
@@ -240,6 +241,7 @@ daemonize
 dhcp
 docker-io
 fuelmenu
+fuel-docker-images
 gdisk
 lrzip
 lsof
@@ -446,6 +448,8 @@ touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
 # Deploy docker images and ctl tools if we built ISO with docker containers support
 [ -d "${SOURCE}/docker" ] && cp -r ${SOURCE}/docker ${wwwdir}/docker
+#TODO(mattymo): remove next line
+rm -rf ${wwwdir}/docker/images
 
 # Prepare local repository specification
 rm /etc/yum.repos.d/CentOS*.repo

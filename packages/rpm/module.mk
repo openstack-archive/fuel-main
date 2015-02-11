@@ -23,6 +23,7 @@ $(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
 	sudo tar czf $@.tmp -C $(SANDBOX) .
 	mv $@.tmp $@
 
+
 # Usage:
 # (eval (call build_rpm,package_name))
 define build_rpm
@@ -87,5 +88,28 @@ $(BUILD_DIR)/packages/rpm/repo.done:
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
+$(BUILD_DIR)/packages/rpm/fuel-docker-images.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/fuel-docker-images
+$(BUILD_DIR)/packages/rpm/fuel-docker-images.done: export SANDBOX_UP:=$(SANDBOX_UP)
+$(BUILD_DIR)/packages/rpm/fuel-docker-images.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
+
+$(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
+		$(BUILD_DIR)/repos/repos.done
+	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
+	mkdir -p $(SANDBOX) && \
+	sudo tar xzf $(BUILD_DIR)/packages/rpm/buildd.tar.gz -C $(SANDBOX) && \
+	sudo mount --bind /proc $(SANDBOX)/proc && \
+	sudo mount --bind /dev $(SANDBOX)/dev && \
+	mkdir -p $(SANDBOX)/tmp/SOURCES && \
+	sudo cp -r $(BUILD_DIR)/docker/$(DOCKER_ART_NAME) $(SANDBOX)/tmp/SOURCES && \
+	sudo cp $(SOURCE_DIR)/packages/rpm/specs/fuel-docker-images.spec $(SANDBOX)/tmp && \
+	sudo chroot $(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/fuel-docker-images.spec
+	cp $(SANDBOX)/tmp/RPMS/*/fuel-docker-images-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
+	sh -c "${SANDBOX_DOWN}"
+	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
+	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
+		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+	$(ACTION.TOUCH)
+
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
 	$(ACTION.TOUCH)
+
