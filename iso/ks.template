@@ -26,10 +26,12 @@ skipx
 drives=""
 removable_drives=""
 for drv in `ls -1 /sys/block | grep "sd\|hd\|vd\|cciss"`; do
-    if (grep -q 0 /sys/block/${drv}/removable); then
-        drives="${drives} ${drv}"
-    else
-        removable_drives="${removable_drives} ${drv}"
+    if !(blkid | grep -q "${drv}.*Fuel"); then
+      if (grep -q 0 /sys/block/${drv}/removable); then
+          drives="${drives} ${drv}"
+      else
+          removable_drives="${removable_drives} ${drv}"
+      fi
     fi
 done
 default_drive=`echo ${drives} ${removable_drives} | awk '{print $1}'`
