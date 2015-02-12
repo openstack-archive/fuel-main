@@ -790,7 +790,7 @@ class HeatHAOneController(TestBasic):
 
         os_conn = os_actions.OpenStackActions(
             self.fuel_web.get_public_vip(cluster_id),
-            data['password'], data['tenant'])
+            data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=5, networks_count=2, timeout=300)
 

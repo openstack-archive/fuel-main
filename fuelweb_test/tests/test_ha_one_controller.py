@@ -160,7 +160,7 @@ class HAOneControllerFlat(TestBasic):
         cluster_id = self.fuel_web.get_last_created_cluster()
         os = os_actions.OpenStackActions(
             self.fuel_web.get_public_vip(cluster_id),
-            data['password'], data['tenant'])
+            data['user'], data['password'], data['tenant'])
 
         remote = self.env.get_ssh_to_remote_by_name('slave-01')
         remote.execute("echo 'Hello World' > /root/test.txt")
