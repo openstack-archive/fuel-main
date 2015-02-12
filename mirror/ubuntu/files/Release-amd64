@@ -1,5 +1,5 @@
-Archive: precise
-Version: 12.04
+Archive: @@UBUNTU_RELEASE@@
+Version: @@UBUNTU_RELEASE_NUMBER@@
 Component: main
 Origin: Ubuntu
 Label: Ubuntu
