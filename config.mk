@@ -97,6 +97,14 @@ CENTOS_MINOR:=5
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
 UBUNTU_RELEASE:=precise
+UBUNTU_MAJOR:=12
+UBUNTU_MINOR:=04
+UBUNTU_RELEASE_NUMBER:=$(UBUNTU_MAJOR).$(UBUNTU_MINOR)
+UBUNTU_KERNEL_FLAVOR?=lts-saucy
+UBUNTU_NETBOOT_FLAVOR?=saucy-netboot
+UBUNTU_ARCH:=amd64
+UBUNTU_IMAGE_RELEASE:=$(UBUNTU_MAJOR)$(UBUNTU_MINOR)
+SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
 # Rebuld packages locally (do not use upstream versions)
 # This option is depricated, because there are no upstream versions
