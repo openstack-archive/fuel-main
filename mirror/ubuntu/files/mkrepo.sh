@@ -4,19 +4,52 @@ apt-get update
 #for pkg in $(cat /requirements-deb.txt | grep -Ev "^#"); do
 #	apt-get -dy install $pkg || exit 1
 #done
+ 
+if [ -z "$UBUNTU_RELEASE" ]; then
+	echo 'mkrepo.sh: UBUNTU_RELEASE is not defined'
+	exit 1
+fi
 
+if [ -z "$UBUNTU_INSTALLER_KERNEL_VERSION" ]; then
+	echo 'mkrepo.sh: UBUNTU_INSTALLER_KERNEL_VERSION is not defined'
+	exit 1
+fi
 
 mkdir -p /repo/download/
 
-cat /requirements-deb.txt | while read pkg; do apt-get --print-uris --yes install $pkg | grep ^\' | cut -d\' -f2 >/downloads_$pkg.list; done
+cat >> /requirements.txt << EOF
+linux-image-${UBUNTU_INSTALLER_KERNEL_VERSION}
+linux-headers-${UBUNTU_INSTALLER_KERNEL_VERSION}
+linux-headers-${UBUNTU_INSTALLER_KERNEL_VERSION}-generic
+EOF
+
+has_apt_errors=''
+rm -f /apt-errors.log
+while read pkg; do
+	downloads_list="/downloads_${pkg}.list"
+	if ! apt-get --print-uris --yes -qq install $pkg >"${downloads_list}" 2>>"/apt-errors.log"; then
+		echo "package $pkg can not be installed" >>/apt-errors.log
+		# run apt-get once more to get a verbose error message
+		apt-get --print-uris --yes install $pkg >>/apt-errors.log 2>&1 || true
+		has_apt_errors='yes'
+	fi
+	sed -i "${downloads_list}" -n -e "s/^'\([^']\+\)['].*$/\1/p"
+done < /requirements-deb.txt
+
+if [ -n "$has_apt_errors" ]; then
+	echo 'some packages are not installable' >&2
+	cat < /apt-errors.log >&2
+	exit 1
+fi
+
 cat /downloads_*.list | sort | uniq > /repo/download/download_urls.list
-rm /downloads_*.list
+rm /downloads_*.list /apt-errors.log
 (cat /repo/download/download_urls.list | xargs -n1 -P4 wget -P /repo/download/) || exit 1
 mv /var/cache/apt/archives/*deb /repo/download/
 # Make structure and mocks for multiarch
 for dir in binary-i386 binary-amd64; do 
-	mkdir -p /repo/dists/precise/main/$dir /repo/dists/precise/main/debian-installer/$dir
-	touch /repo/dists/precise/main/$dir/Packages /repo/dists/precise/main/debian-installer/$dir/Packages
+	mkdir -p /repo/dists/${UBUNTU_RELEASE}/main/$dir /repo/dists/${UBUNTU_RELEASE}/main/debian-installer/$dir
+	touch /repo/dists/${UBUNTU_RELEASE}/main/$dir/Packages /repo/dists/${UBUNTU_RELEASE}/main/debian-installer/$dir/Packages
 done
 mkdir -p /repo/pool/debian-installer /repo/pool/main
 cd /repo/pool/debian-installer
@@ -27,8 +60,8 @@ cd /repo/pool/debian-installer
 
 wrkdir=`dirname $(pwd)`/`basename $(pwd)`
 
-rm -f ${wrkdir}/UPackages.tmp ${wrkdir}/override.precise.main ${wrkdir}/override.precise.extra.main
-touch ${wrkdir}/UPackages.tmp ${wrkdir}/override.precise.main ${wrkdir}/override.precise.extra.main
+rm -f ${wrkdir}/UPackages.tmp ${wrkdir}/override.${UBUNTU_RELEASE}.main ${wrkdir}/override.${UBUNTU_RELEASE}.extra.main
+touch ${wrkdir}/UPackages.tmp ${wrkdir}/override.${UBUNTU_RELEASE}.main ${wrkdir}/override.${UBUNTU_RELEASE}.extra.main
 
 # Prepare temp apt dirs
 [ -d ${wrkdir}/apt.tmp ] && rm -rf ${wrkdir}/apt.tmp
@@ -56,28 +89,27 @@ for list in /etc/apt/sources.list.d/*.list; do
          wget -qO - $bz | sed -ne 's/^Package: //p' >> ${wrkdir}/UPackages.tmp
        fi
        # Getting indices
-       wget -O - ${repourl}/indices/override.${repodist}.${repo} >> ${wrkdir}/override.precise.main
-       wget -O - ${repourl}/indices/override.${repodist}.extra.${repo} >> ${wrkdir}/override.precise.extra.main
-       wget -O - ${repourl}/indices/override.${repodist}.${repo}.debian-installer >> ${wrkdir}/override.precise.main.debian-installer
+       wget -O - ${repourl}/indices/override.${repodist}.${repo} >> ${wrkdir}/override.${UBUNTU_RELEASE}.main
+       wget -O - ${repourl}/indices/override.${repodist}.extra.${repo} >> ${wrkdir}/override.${UBUNTU_RELEASE}.extra.main
+       wget -O - ${repourl}/indices/override.${repodist}.${repo}.debian-installer >> ${wrkdir}/override.${UBUNTU_RELEASE}.main.debian-installer
      done
   done
 done
 
-# linux-image-3.11.0-26 used for installer
-apt-get -dy install linux-image-3.11.0-26 || exit 1
+apt-get -dy install linux-image-${UBUNTU_INSTALLER_KERNEL_VERSION} || exit 1
 
 ## Get latest kernel version
 ## Exact kernel version specified in requirements-deb.txt
 ## and preseed template ubuntu-1204.preseed.erb
-#kernelver=`cat ${wrkdir}/override.precise.main | egrep "^linux\-image\-[0-9]+" | awk '{print $1}' | sort -rV | head -1 | egrep -o "[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+"`
+#kernelver=`cat ${wrkdir}/override.${UBUNTU_RELEASE}.main | egrep "^linux\-image\-[0-9]+" | awk '{print $1}' | sort -rV | head -1 | egrep -o "[0-9]+\.[0-9]+\.[0-9]+\-[0-9]+"`
 #apt-get -dy install --reinstall linux-image-$kernelver || exit 1
 #apt-get -dy install --reinstall linux-headers-$kernelver || exit 1
 
 # Collect all udebs except packages with suffux generic or virtual
 packages=`cat ${wrkdir}/UPackages.tmp | sort -u | egrep -v "generic|virtual"`
 
-# Find modules for 3.11.0-18 kernel (installer runs with this version)
-for package in `cat ${wrkdir}/UPackages.tmp | egrep "generic|virtual" | grep 3.11.0-18`; do
+# Find modules for ${UBUNTU_INSTALLER_KERNEL_VERSION} kernel (installer runs with this version)
+for package in `cat ${wrkdir}/UPackages.tmp | egrep "generic|virtual" | grep ${UBUNTU_INSTALLER_KERNEL_VERSION}`; do
   packages="$packages $package"
 done
 
@@ -110,10 +142,10 @@ cd /repo/pool/main
 for i in $(ls | grep %) ; do mv $i $(echo $i | echo -e $(sed 's/%/\\x/g')) ; done
 mkdir -p /repo/indices
 cd /repo/indices
-for idx in override.precise.main override.precise.extra.main override.precise.main.debian-installer; do
+for idx in override.${UBUNTU_RELEASE}.main override.${UBUNTU_RELEASE}.extra.main override.${UBUNTU_RELEASE}.main.debian-installer; do
   cat ${wrkdir}/$idx | sort -u > /repo/indices/$idx
 done
-rm -f ${wrkdir}/override.precise.main ${wrkdir}/override.precise.extra.main ${wrkdir}/override.precise.main.debian-installer
+rm -f ${wrkdir}/override.${UBUNTU_RELEASE}.main ${wrkdir}/override.${UBUNTU_RELEASE}.extra.main ${wrkdir}/override.${UBUNTU_RELEASE}.main.debian-installer
 cd /repo
 # Just because apt scan will produce crap
 cp -a Release-amd64 Release-i386
@@ -126,6 +158,6 @@ for i386dir in $(find . -name binary-i386) ; do
 done
 apt-ftparchive -c apt-ftparchive-release.conf generate apt-ftparchive-deb.conf
 apt-ftparchive -c apt-ftparchive-release.conf generate apt-ftparchive-udeb.conf
-apt-ftparchive -c apt-ftparchive-release.conf release dists/precise/ > dists/precise/Release
+apt-ftparchive -c apt-ftparchive-release.conf release dists/${UBUNTU_RELEASE}/ > dists/${UBUNTU_RELEASE}/Release
 # some cleanup...
 rm -rf apt-ftparchive*conf Release-amd64 Release-i386 mkrepo.sh preferences

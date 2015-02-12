@@ -1,3 +1,8 @@
+
+di_initrd_img:=$(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz
+di_kernel_modules_dir=$(shell zcat $(di_initrd_img) | cpio --list 'lib/modules/*/kernel')
+UBUNTU_INSTALLER_KERNEL_VERSION=$(strip $(patsubst lib/modules/%/kernel,%,$(di_kernel_modules_dir)))
+
 $(BUILD_DIR)/mirror/ubuntu/createchroot.done: 
 	mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot
 	mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc
@@ -73,6 +78,7 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	sudo cp /etc/resolv.conf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/resolv.conf
 	sudo mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo
 	sudo rsync -a $(SOURCE_DIR)/mirror/ubuntu/files/ $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/
-	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "chmod +x /repo/mkrepo.sh && /repo/mkrepo.sh"
+	sudo chmod +x $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/mkrepo.sh
+	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "export UBUNTU_RELEASE='$(UBUNTU_RELEASE)' UBUNTU_INSTALLER_KERNEL_VERSION='$(UBUNTU_INSTALLER_KERNEL_VERSION)'; /repo/mkrepo.sh"
 	sudo rsync -a --delete $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/* $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ && sudo rm -rf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/
 	$(ACTION.TOUCH)
