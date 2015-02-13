@@ -161,7 +161,7 @@ httpd-2.2.15-15.el6.1
 httpd-tools-2.2.15-15.el6.1
 iperf
 iperf3
-iproute-2.6.32-130.el6.netns.2.mira1
+iproute
 json-c
 keepalived-1.2.4-1.el6
 kernel
