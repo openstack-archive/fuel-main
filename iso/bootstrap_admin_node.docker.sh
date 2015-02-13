@@ -60,8 +60,8 @@ if [ -f /root/.build_images ]; then
   trap fail EXIT
 
   echo "Loading Fuel base image for Docker..."
-  docker load -i /var/www/nailgun/docker/images/fuel-centos.tar.xz
-  docker load -i /var/www/nailgun/docker/images/busybox.tar.xz
+  lrzip -d -o /var/www/nailgun/docker/images/fuel-images.tar /var/www/nailgun/docker/images/fuel-images.tar.lrz
+  docker load -i /var/www/nailgun/docker/images/fuel-images.tar
 
   echo "Building Fuel Docker images..."
   RANDOM_PORT=$(shuf -i 9000-65000 -n 1)
@@ -100,16 +100,10 @@ else
   pushd $images_dir &>/dev/null
 
   echo "Extracting and loading docker images. (This may take a while)"
-  lrzip -d -o fuel-images.tar fuel-images.tar.lrz && tar -xf fuel-images.tar && rm -f fuel-images.tar
+  lrzip -d -o /var/www/nailgun/docker/images/fuel-images.tar /var/www/nailgun/docker/images/fuel-images.tar.lrz
+  docker load -i /var/www/nailgun/docker/images/fuel-images.tar
   popd &>/dev/null
 
-  # load docker images
-  for image in $images_dir/*tar ; do
-      echo "Loading docker image ${image}..."
-      docker load -i "$image"
-      # clean up extracted image
-      rm -f "$image"
-  done
 fi
 
 # apply puppet
