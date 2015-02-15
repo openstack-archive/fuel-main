@@ -21,6 +21,9 @@ from devops.helpers.helpers import _wait
 from devops.helpers.helpers import SSHClient
 from devops.helpers.helpers import wait
 from devops.manager import Manager
+#Note(xarses): remove with devops 2.9
+from devops.manager import Network, Interface
+
 from ipaddr import IPNetwork
 from keystoneclient import exceptions
 from paramiko import Agent
@@ -100,7 +103,7 @@ class EnvironmentModel(object):
     def node_roles(self):
         return NodeRoles(
             admin_names=['admin'],
-            other_names=['slave-%02d' % x for x in range(1, int(
+            other_names=['slave' for x in range(1, int(
                 settings.NODES_COUNT))]
         )
 
@@ -215,6 +218,44 @@ class EnvironmentModel(object):
             self.get_virtual_environment().node_by_name(name),
             devops_node_names)
 
+    #Note(xarses): remove with devops 2.9
+    def _rename_with_mac(self, node):
+        name = node.name
+        node.name = "{0}_{1}".format(
+            name,
+            self._ren_interface_get(
+                node=node,
+                network=self._ren_network_get(
+                    environment=self.get_virtual_environment(),
+                    name=self.admin_net)
+                ).mac_address[-5:]) or name
+        node.save()
+        return node.name
+
+    #Note(xarses): remove with devops 2.9
+    def _ren_interface_get(self, network=None, node=None, mac_address=None):
+        """
+        :rtype : Interface
+        """
+        if mac_address:
+            return Interface.objects.get(mac_address=mac_address)
+        elif network and node:
+            return Interface.objects.get(network=network, node=node)
+        else:
+            return None
+
+    #Note(xarses): remove with devops 2.9
+    def _ren_network_get(self, name=None, environment=None, ip_network=None):
+        """
+        :rtype : Network
+        """
+        if ip_network:
+            return Network.objects.get(ip_network=ip_network)
+        elif name and environment:
+            return Network.objects.get(name=name, environment=environment)
+        else:
+            return None
+
     @logwrap
     def describe_admin_node(self, name, networks):
         node = self.add_node(
@@ -252,6 +293,7 @@ class EnvironmentModel(object):
             memory=settings.HARDWARE.get("slave_node_memory", 1024),
             vcpu=settings.HARDWARE.get("slave_node_cpu", 1))
         self.create_interfaces(networks, node)
+        name = self._rename_with_mac(node)
         self.add_empty_volume(node, name + '-system')
 
         if settings.USE_ALL_DISKS:
@@ -746,7 +788,7 @@ class Nodes(object):
         for node_name in node_roles.admin_names:
             self.admins.append(environment.node_by_name(node_name))
         for node_name in node_roles.other_names:
-            self.others.append(environment.node_by_name(node_name))
+            self.others.append(set(environment.nodes) - set(self.admins))
         self.slaves = self.others
         self.all = self.slaves + self.admins
         self.admin = self.admins[0]
