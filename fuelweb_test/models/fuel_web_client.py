@@ -982,6 +982,30 @@ class FuelWebClient(object):
 
         return ip_ranges, expected_ips
 
+    def warm_shutdown_nodes(self, devops_nodes):
+        logger.info('Shutting down (warm) nodes %s',
+                    [n.name for n in devops_nodes])
+        for node in devops_nodes:
+            logger.debug('Shutdown node %s', node.name)
+            remote = self.get_ssh_for_node(node.name)
+            remote.check_call('/sbin/shutdown -Ph now')
+
+        for node in devops_nodes:
+            logger.info('Wait a %s node offline status', node.name)
+            wait(
+                lambda: not self.get_nailgun_node_by_devops_node(node)[
+                    'online'], timeout=60 * 10)
+            node.destroy()
+
+    def warm_start_nodes(self, devops_nodes):
+        for node in devops_nodes:
+            node.create()
+        for node in devops_nodes:
+            wait(
+                lambda: self.get_nailgun_node_by_devops_node(node)['online'],
+                timeout=60 * 10)
+            logger.debug('Node {0} became online.'.format(node.name))
+
     def warm_restart_nodes(self, devops_nodes):
         logger.info('Reboot (warm restart) nodes %s',
                     [n.name for n in devops_nodes])
