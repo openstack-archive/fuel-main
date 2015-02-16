@@ -35,9 +35,9 @@ $(BUILD_DIR)/docker/build.done: $(BUILD_DIR)/docker/$1.done
 endif
 $(eval RANDOM_PORT:=$(shell echo $$(($(RANDOM_PORT)+1))))
 $(BUILD_DIR)/docker/$1.done: \
-		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/mirror/centos/build.done \
 		$(BUILD_DIR)/repos/repos.done \
-		$(BUILD_DIR)/packages/build.done \
+		$(BUILD_DIR)/packages/rpm/build.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
 		$(BUILD_DIR)/docker/base-images.done
 	(cd $(LOCAL_MIRROR_CENTOS) && python $(SOURCE_DIR)/utils/simple_http_daemon.py $(RANDOM_PORT) /tmp/simple_http_daemon_$(RANDOM_PORT).pid)
