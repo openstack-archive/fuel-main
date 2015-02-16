@@ -480,7 +480,7 @@ class MuranoHA(TestBasic):
         self.env.make_snapshot("deploy_murano_ha_with_gre")
 
 
-class CeilometerOSTFTestsRun(TestBasic):
+class OSTFCeilometerHelper(TestBasic):
 
     def run_tests(self, cluster_id):
         """Method run smoke, sanity and platform Ceilometer tests."""
@@ -498,7 +498,12 @@ class CeilometerOSTFTestsRun(TestBasic):
                            'test_ceilometer.'
                            'CeilometerApiPlatformTests')
         tests_names = ['test_check_alarm_state',
-                       'test_create_sample']
+                       'test_create_sample',
+                       'test_check_volume_notifications',
+                       'test_check_glance_notifications',
+                       'test_check_keystone_notifications',
+                       'test_check_neutron_notifications',
+                       'test_check_sahara_notifications']
 
         test_classes = []
 
@@ -506,14 +511,18 @@ class CeilometerOSTFTestsRun(TestBasic):
             test_classes.append('{0}.{1}'.format(test_class_main,
                                                  test_name))
 
+        all_tests = [test['id'] for test
+                     in self.fuel_web.client.get_ostf_tests(cluster_id)]
+
         for test_name in test_classes:
-            self.fuel_web.run_single_ostf_test(
-                cluster_id=cluster_id, test_sets=['platform_tests'],
-                test_name=test_name, timeout=60 * 20)
+            if test_name in all_tests:
+                self.fuel_web.run_single_ostf_test(
+                    cluster_id=cluster_id, test_sets=['platform_tests'],
+                    test_name=test_name, timeout=60 * 20)
 
 
 @test(groups=["services", "services.ceilometer", "services_ha_one_controller"])
-class CeilometerHAOneControllerMongo(CeilometerOSTFTestsRun):
+class CeilometerHAOneControllerMongo(OSTFCeilometerHelper):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_ceilometer_ha_one_controller_with_mongo"])
@@ -639,7 +648,7 @@ class CeilometerHAOneControllerMongo(CeilometerOSTFTestsRun):
 
 
 @test(groups=["services", "services.ceilometer", "services_ha"])
-class CeilometerHAMongo(CeilometerOSTFTestsRun):
+class CeilometerHAMongo(OSTFCeilometerHelper):
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_ceilometer_ha_with_mongo"])
     @log_snapshot_on_error
