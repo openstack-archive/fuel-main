@@ -239,7 +239,8 @@ MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-s
 ifeq (precise,$(strip $(UBUNTU_RELEASE)))
 MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-stable/reprepro
 else
-MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/$(UBUNTU_RELEASE)-fuel-$(PRODUCT_VERSION)-stable/reprepro
+#MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/$(UBUNTU_RELEASE)-fuel-$(PRODUCT_VERSION)-stable/reprepro
+MIRROR_FUEL_UBUNTU?=http://obs-1.mirantis.com:82/trusty-fuel-6.1-stable/ubuntu
 endif
 
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
