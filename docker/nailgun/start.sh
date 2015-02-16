@@ -7,8 +7,6 @@ rpm --rebuilddb
 
 #Workaround so nailgun can see version.yaml
 ln -sf /etc/fuel/version.yaml /etc/nailgun/version.yaml
-#Run puppet to apply custom config
-puppet apply -v /etc/puppet/modules/nailgun/examples/nailgun-only.pp
-
-service supervisord stop
+/usr/local/bin/nailgun_syncdb
+/usr/local/bin/nailgun_fixtures
 /usr/bin/supervisord -n
