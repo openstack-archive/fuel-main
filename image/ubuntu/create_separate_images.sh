@@ -110,6 +110,7 @@ for idx in $(seq 0 $((${#MOUNTPOINTS[@]} - 1)) ); do
         sudo mkfs.ext3 -F ${LOOP_DEV} || die "Couldn't create filesystem"
     elif [ "$FS_TYPE" == "ext4" ]; then
         sudo mkfs.ext4 -F ${LOOP_DEV} || die "Couldn't create filesystem"
+	sudo tune2fs -O ^has_journal "${LOOP_DEV}" || die "Failed to configure filesystem"
     else
         echo "Unsupported fs type $FS_TYPE. Exitting now!"
         exit 1
@@ -221,7 +222,14 @@ for idx in $(seq $((${#MOUNTPOINTS[@]} - 1)) -1 0); do
 
     if [ "$FS_TYPE" == "ext2" ] || [ "$FS_TYPE" == "ext3" ] || [ "$FS_TYPE" == "ext4" ]; then
         sudo e2fsck -yf ${LOOP_DEV} || die "Couldn't check filesystem"
-        sudo resize2fs -F -M ${LOOP_DEV} || die "Couldn't resize filesystem"
+	case "$FS_TYPE" in 
+		ext4)
+			if ! sudo tune2fs -O has_journal "${LOOP_DEV}"; then
+				die "Re-adding journal for ext4 filesystem on ${LOOP_DEV}"
+			fi
+			;;
+	esac
+        sudo resize2fs -M ${LOOP_DEV} || die "Couldn't resize filesystem"
         # calculate fs size precisely
         BLOCK_COUNT=$(sudo dumpe2fs -h ${LOOP_DEV} | grep 'Block count' | awk '{print $3}')
         BLOCK_SIZE=$(sudo dumpe2fs -h ${LOOP_DEV} | grep 'Block size' | awk '{print $3}')
