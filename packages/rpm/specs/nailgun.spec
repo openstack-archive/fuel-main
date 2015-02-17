@@ -48,6 +48,7 @@ Requires:    python-wsgiref >= 0.1.2
 Requires:    PyYAML >= 3.10
 Requires:    python-novaclient >= 2.17.0
 Requires:    python-networkx-core >= 1.8.0
+Requires:    python-cinderclient >= 1.0.7
 # Workaroud for babel bug
 Requires:    pytz
 
