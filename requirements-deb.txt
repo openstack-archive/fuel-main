@@ -115,7 +115,7 @@ mlnx-ofed-light
 mongodb-clients
 mongodb-server
 monit
-murano-api
+murano
 murano-dashboard
 murano-apps
 mysql-client
