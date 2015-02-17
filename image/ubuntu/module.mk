@@ -105,6 +105,7 @@ $(BUILD_DIR)/images/$(TARGET_UBUNTU_IMG_ART_NAME):
 	    UBUNTU_MINOR=$(UBUNTU_MINOR) \
 	    UBUNTU_ARCH=$(UBUNTU_ARCH) \
 	    UBUNTU_RELEASE=$(UBUNTU_RELEASE) \
+	    PRODUCT_VERSION=$(PRODUCT_VERSION) \
 	    $(SOURCE_DIR)/image/ubuntu/create_separate_images.sh
 	find $(BUILD_DIR)/image/ubuntu -name '*img' -exec gzip -f {} \;
 	tar cf $@ -C $(BUILD_DIR)/image/ubuntu .

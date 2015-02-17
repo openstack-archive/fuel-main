@@ -27,7 +27,7 @@ MOUNTPOINTS=( $(
     done | sort) )
 
 # create additional loop_devices
-FUEL_DEVICE_PREFIX=loop_devices_fuel_build
+FUEL_DEVICE_PREFIX=loop_devices_fuel_${PRODUCT_VERSION}_build
 TMP_BUILD_DIR=${TMP_BUILD_DIR:-/tmp/fuel_img}
 TMP_BUILD_IMG_DIR=${TMP_BUILD_IMG_DIR:-$TMP_BUILD_DIR/imgs}
 TMP_CHROOT_DIR=${TMP_CHROOT_DIR:-$TMP_BUILD_DIR/chroot}
