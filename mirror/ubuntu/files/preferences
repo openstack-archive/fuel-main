@@ -85,25 +85,25 @@ Package: python-wsme
 Pin: release o=ubuntu
 Pin-Priority: 1100
 
-Package: librados*
-Pin: release o=ubuntu
-Pin-Priority: 1100
+#Package: librados*
+#Pin: release o=ubuntu
+#Pin-Priority: 1100
 
-Package: radosgw
-Pin: release o=ubuntu
-Pin-Priority: 1100
+#Package: radosgw
+#Pin: release o=ubuntu
+#Pin-Priority: 1100
 
-Package: librbd*
-Pin: release o=ubuntu
-Pin-Priority: 1100
+#Package: librbd*
+#Pin: release o=ubuntu
+#Pin-Priority: 1100
 
-Package: ceph*
-Pin: release o=ubuntu
-Pin-Priority: 1100
+#Package: ceph*
+#Pin: release o=ubuntu
+#Pin-Priority: 1100
 
-Package: python-ceph
-Pin: release o=ubuntu
-Pin-Priority: 1100
+#Package: python-ceph
+#Pin: release o=ubuntu
+#Pin-Priority: 1100
 
 Package: pacemaker*
 Pin: release o=ubuntu
