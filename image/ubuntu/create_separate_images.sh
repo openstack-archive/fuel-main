@@ -69,7 +69,7 @@ for idx in $(seq $((${#MOUNTPOINTS[@]} - 1)) -1 0); do
 
     IMG_FILE_NAME=${TMP_BUILD_IMG_DIR}/${IMG_PREFIX}_${IMG_SUFFIX}$(echo $MOUNT_POINT | tr '/' '-').${IMG_ENDING}
     SPARSE_FILE_NAME=${IMG_FILE_NAME}.${SPARSE_IMG_FILE_SUFFIX}
-    LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${idx}
+    LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${PRODUCT_VERSION}${idx}
     if mount | grep -q "${TMP_CHROOT_DIR}${MOUNT_POINT}"; then
         sudo umount ${TMP_CHROOT_DIR}${MOUNT_POINT}
         if [ $? -ne 0 ]; then
@@ -95,7 +95,7 @@ for idx in $(seq 0 $((${#MOUNTPOINTS[@]} - 1)) ); do
     IMG_FILE_NAME=${TMP_BUILD_IMG_DIR}/${IMG_PREFIX}_${IMG_SUFFIX}$(echo $MOUNT_POINT | tr '/' '-').${IMG_ENDING}
     SPARSE_FILE_NAME=${IMG_FILE_NAME}.${SPARSE_IMG_FILE_SUFFIX}
     MOUNT_POINT=${MOUNTPOINTS[$idx]}
-    LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${idx}
+    LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${PRODUCT_VERSION}${idx}
 
     truncate -s ${SPARSE_FILE_INITIAL_SIZE} ${SPARSE_FILE_NAME} || die "Couldn't create sparse file"
 
@@ -118,7 +118,7 @@ done
 
 for idx in $(seq 0 $((${#MOUNTPOINTS[@]} - 1)) ); do
     MOUNT_POINT=${MOUNTPOINTS[$idx]}
-    LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${idx}
+    LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${PRODUCT_VERSION}${idx}
     sudo mkdir -p ${TMP_CHROOT_DIR}${MOUNT_POINT} || die "Could create directory"
     sudo mount ${LOOP_DEV} ${TMP_CHROOT_DIR}${MOUNT_POINT} || die "Couldn't mount mountpoint"
 done
@@ -212,7 +212,7 @@ for idx in $(seq $((${#MOUNTPOINTS[@]} - 1)) -1 0); do
     IMG_FILE_NAME=${TMP_BUILD_IMG_DIR}/${IMG_PREFIX}_${IMG_SUFFIX}$(echo $MOUNT_POINT | tr '/' '-').${IMG_ENDING}
     MOUNT_POINT=${MOUNTPOINTS[$idx]}
     SPARSE_FILE_NAME=${IMG_FILE_NAME}.${SPARSE_IMG_FILE_SUFFIX}
-    LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${idx}
+    LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${PRODUCT_VERSION}${idx}
     FS_TYPE=${MOUNT_DICT[$MOUNT_POINT]}
 
     if ! umount_try_harder "${TMP_CHROOT_DIR}${MOUNT_POINT}"; then
