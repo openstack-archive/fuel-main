@@ -5,7 +5,7 @@ make-changelog: $(BUILD_DIR)/mirror/make-changelog.done
 
 clean: clean-mirror
 
-clean-mirror:
+clean-mirror: clean-ubuntu
 	sudo rm -rf $(BUILD_DIR)/mirror
 
 include $(SOURCE_DIR)/mirror/centos/module.mk
