@@ -355,5 +355,5 @@ $(overrides_dl): $(LOCAL_MIRROR_UBUNTU)/indices/%:
 	mkdir -p "$(dir $@)" && \
 	rm -f "$@.tmp" && \
 	wget -nv -O "$@.tmp" "$(MIRROR_UBUNTU)/indices/$*" && \
-	mv $@.tmp
+	mv $@.tmp $@
 endif
