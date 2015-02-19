@@ -42,6 +42,7 @@ gcc\
 gdisk\
 grub-pc\
 grub-pc-bin\
+hpvsa-dkms\
 iptables\
 linux-firmware\
 linux-firmware-nonfree\
@@ -72,6 +73,7 @@ bridge-utils\
 bsdmainutils\
 cloud-init\
 debconf-utils\
+hpvsa-dkms\
 libaugeas-ruby\
 libstomp-ruby1.8\
 libshadow-ruby1.8\
