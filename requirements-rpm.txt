@@ -338,6 +338,7 @@ openstack-swift-proxy
 openstack-utils
 openvswitch
 openpgm
+kmod-hpvsa
 kmod-openvswitch
 pacemaker
 parted
