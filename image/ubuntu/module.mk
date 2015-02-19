@@ -42,6 +42,7 @@ gcc\
 gdisk\
 grub-pc\
 grub-pc-bin\
+hpvsa-dkms\
 iptables\
 linux-firmware\
 linux-firmware-nonfree\
