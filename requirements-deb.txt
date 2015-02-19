@@ -68,6 +68,8 @@ heat-common
 heat-engine
 hicolor-icon-theme
 hostname
+hpvsa-3.13.0-32-generic
+hpvsa-dkms
 htop
 ifenslave-2.6
 installation-report
