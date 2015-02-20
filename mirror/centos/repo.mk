@@ -69,13 +69,13 @@ endif
 $(BUILD_DIR)/mirror/centos/rpm-download.done: $(BUILD_DIR)/mirror/centos/urls.list
 	dst="$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages"; \
 	mkdir -p "$$dst" && \
-	xargs -n1 -P4 wget -nv -P "$$dst" < $< 
+	xargs -n1 -P4 wget --unlink -nv -P "$$dst" < $< 
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/centos/src-rpm-download.done: $(BUILD_DIR)/mirror/centos/src_urls.list
 	dst="$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Sources"; \
 	mkdir -p "$$dst" && \
-	xargs --no-run-if-empty -n1 -P4 wget -nv -P "$$dst" < $<
+	xargs --no-run-if-empty -n1 -P4 wget --unlink -nv -P "$$dst" < $<
 	$(ACTION.TOUCH)
 
 rpm_download_lists:=$(REQUIRED_RPMS:%=$(BUILD_DIR)/mirror/centos/lists/%.list)
