@@ -141,6 +141,7 @@ kernel-firmware
 grub
 dracut
 make
+mlnx-ofed-light
 mlocate
 nailgun-net-check
 ntp
