@@ -1,4 +1,4 @@
-.PHONY: all iso img version-yaml centos-repo ubuntu-repo
+.PHONY: all iso img version-yaml centos-repo
 .DELETE_ON_ERROR: $(ISO_PATH) $(IMG_PATH)
 
 all: iso img version-yaml
@@ -70,36 +70,6 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 endif
 
 ########################
-# UBUNTU MIRROR ARTIFACT
-########################
-ubuntu-repo: $(ARTS_DIR)/$(UBUNTU_REPO_ART_NAME)
-
-$(ARTS_DIR)/$(UBUNTU_REPO_ART_NAME): $(BUILD_DIR)/iso/isoroot-ubuntu.done
-	mkdir -p $(@D)
-	tar cf $@ -C $(ISOROOT)/ubuntu --xform s:^./:ubuntu-repo/: .
-
-UBUNTU_DEP_FILE:=$(call find-files,$(DEPS_DIR_CURRENT)/$(UBUNTU_REPO_ART_NAME))
-
-ifdef UBUNTU_DEP_FILE
-$(BUILD_DIR)/iso/isoroot-ubuntu.done: \
-		$(BUILD_DIR)/iso/isoroot-dotfiles.done
-	mkdir -p $(ISOROOT)/ubuntu
-	tar xf $(UBUNTU_DEP_FILE) -C $(ISOROOT)/ubuntu --xform s:^ubuntu-repo/::
-	$(ACTION.TOUCH)
-else
-$(BUILD_DIR)/iso/isoroot-ubuntu.done: \
-		$(BUILD_DIR)/mirror/build.done \
-		$(BUILD_DIR)/mirror/make-changelog.done \
-		$(BUILD_DIR)/packages/build.done \
-		$(BUILD_DIR)/iso/isoroot-dotfiles.done
-	mkdir -p $(ISOROOT)/ubuntu
-	rsync -rp $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ $(ISOROOT)/ubuntu/
-	rsync -rp $(LOCAL_MIRROR)/ubuntu-packages.changelog $(ISOROOT)
-	cat $(ISOROOT)/ubuntu/dists/$(UBUNTU_RELEASE)/main/binary-amd64/Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $(ISOROOT)/ubuntu/ubuntu-versions.yaml
-	$(ACTION.TOUCH)
-endif
-
-########################
 # PUPPET
 ########################
 # PUPPET_ART_NAME is defined in /puppet/module.mk
@@ -146,7 +116,6 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/version.yaml \
 		$(ISOROOT)/openstack_version \
 		$(ISOROOT)/centos-versions.yaml \
-		$(ISOROOT)/ubuntu-versions.yaml \
 		$(ISOROOT)/puppet-slave.tgz
 	$(ACTION.TOUCH)
 
@@ -173,10 +142,6 @@ $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/nailgun.done
 
 $(ISOROOT)/centos-versions.yaml: $(BUILD_DIR)/iso/isoroot-centos.done
 #	here we don't need to do anything because we unpack centos repo in $(ISOROOT) and it already contains centos-versions.yaml
-	$(ACTION.TOUCH)
-
-$(ISOROOT)/ubuntu-versions.yaml: $(BUILD_DIR)/iso/isoroot-ubuntu.done
-	cp $(ISOROOT)/ubuntu/ubuntu-versions.yaml $@
 	$(ACTION.TOUCH)
 
 ifeq ($(PRODUCTION),docker)
@@ -207,7 +172,6 @@ $(ISOROOT)/bootstrap/bootstrap.rsa: $(SOURCE_DIR)/bootstrap/ssh/id_rsa ;
 $(BUILD_DIR)/iso/isoroot-image.done: $(BUILD_DIR)/image/build.done
 	mkdir -p $(ISOROOT)/targetimages
 	tar xf $(ARTS_DIR)/$(TARGET_CENTOS_IMG_ART_NAME) -C $(ISOROOT)/targetimages
-	tar xf $(ARTS_DIR)/$(TARGET_UBUNTU_IMG_ART_NAME) -C $(ISOROOT)/targetimages
 	$(ACTION.TOUCH)
 
 ########################
@@ -216,7 +180,6 @@ $(BUILD_DIR)/iso/isoroot-image.done: $(BUILD_DIR)/image/build.done
 
 $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
-		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-files.done \
 		$(BUILD_DIR)/iso/isoroot-bootstrap.done \
 		$(BUILD_DIR)/iso/isoroot-image.done

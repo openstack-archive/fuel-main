@@ -75,14 +75,11 @@ BOOTSTRAP_ART_NAME?=bootstrap.tar.gz
 DOCKER_ART_NAME?=fuel-images.tar.lrz
 VERSION_YAML_ART_NAME?=version.yaml
 CENTOS_REPO_ART_NAME?=centos-repo.tar
-UBUNTU_REPO_ART_NAME?=ubuntu-repo.tar
 # actual name for a diff repo will be
 # $(DIFF_CENTOS_REPO_ART_BASE)-NEWVERSION-OLDVERSION.tar
 DIFF_CENTOS_REPO_ART_BASE?=diff-centos-repo
-DIFF_UBUNTU_REPO_ART_BASE?=diff-ubuntu-repo
 PUPPET_ART_NAME?=puppet.tgz
 OPENSTACK_YAML_ART_NAME?=openstack.yaml
-TARGET_UBUNTU_IMG_ART_NAME?=ubuntu_target_images.tar
 TARGET_CENTOS_IMG_ART_NAME?=centos_target_images.tar
 
 
@@ -103,22 +100,10 @@ CENTOS_MINOR:=5
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
 CENTOS_IMAGE_RELEASE:=$(CENTOS_MAJOR)$(CENTOS_MINOR)
-UBUNTU_RELEASE:=precise
-UBUNTU_MAJOR:=12
-UBUNTU_MINOR:=04
-UBUNTU_RELEASE_NUMBER:=$(UBUNTU_MAJOR).$(UBUNTU_MINOR)
-UBUNTU_KERNEL_FLAVOR?=lts-trusty
-UBUNTU_NETBOOT_FLAVOR?=trusty-netboot
-UBUNTU_ARCH:=amd64
-UBUNTU_IMAGE_RELEASE:=$(UBUNTU_MAJOR)$(UBUNTU_MINOR)
 SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
-BUILD_DEB_PACKAGES?=1
-ifeq (0,$(strip BUILD_PACKAGES))
-BUILD_DEB_PACKAGES?=0
-endif
 
 # Build OpenStack packages from external sources (do not use prepackaged versions)
 # Enter the comma-separated list of OpenStack packages to build, or '0' otherwise.
@@ -253,13 +238,6 @@ YUM_REPOS?=official fuel subscr_manager
 # Repos must be separated by space.
 # Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm bar,ftp://repo.foo"
 EXTRA_RPM_REPOS?=
-
-# Additional Ubunutu repos.
-# Each repo must consist of an url, dist and section parts.
-# Repos must be separated by bar.
-# Example:
-# EXTRA_DEB_REPOS="http://mrr.lcl raring main|http://mirror.yandex.ru/ubuntu precise main"'
-EXTRA_DEB_REPOS?=
 
 # Comma or space separated list. Available feature groups:
 #   experimental - allow experimental options
