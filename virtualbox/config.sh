@@ -22,22 +22,28 @@ iso_path=`ls -1t iso/*.iso 2>/dev/null | head -1`
 # Every Mirantis OpenStack machine name will start from this prefix
 vm_name_prefix=fuel-
 
-# Host interfaces to bridge VMs interfaces with
-# VirtualBox has different virtual NIC naming convention and index base
-# between Windows and Linux/MacOS
-idx=0
+# By default, all available network interfaces vboxnet won't be removed,
+# if their IP addresses don't match with fuel_master_ips (10.20.0.1 172.16.0.1
+# 172.16.1.1)
+# If you want to remove all existing vbox interfaces, then use rm_network=1
+# 0 - don't remove all vbox networks. Remove only fuel networks if they exist
+# 1 - remove all vbox networks
+rm_network=0
+
 # Please add the IPs accordingly if you going to create non-default NICs number
 # 10.20.0.1/24   - Mirantis OpenStack Admin network
 # 172.16.0.1/24  - OpenStack Public/External/Floating network
 # 172.16.1.1/24  - OpenStack Fixed/Internal/Private network
 # 192.168.0.1/24 - OpenStack Management network
 # 192.168.1.1/24 - OpenStack Storage network (for Ceph, Swift etc)
-for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
-# VirtualBox for Windows has different virtual NICs naming and indexing.
-# Define the type of operating system and the number of processor cores for the fuel master node.
+fuel_master_ips="10.20.0.1 172.16.0.1 172.16.1.1"
+
+# Network mask for fuel interfaces
+mask="255.255.255.0"
+
+# Determining the type of operating system and adding CPU core to the master node
   case "$(uname)" in
     Linux)
-      host_nic_name[$idx]=vboxnet$idx
       os_type="linux"
       if [ "$(nproc)" -gt "1" ]; then
         vm_master_cpu_cores=2
@@ -46,7 +52,6 @@ for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
       fi
     ;;
     Darwin)
-      host_nic_name[$idx]=vboxnet$idx
       os_type="darwin"
       mac_nproc=`sysctl -a | grep machdep.cpu.thread_count | sed 's/^machdep.cpu.thread_count\:[ \t]*//'`
       if [ "$mac_nproc" -gt "1" ]; then
@@ -56,11 +61,6 @@ for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
       fi
     ;;
     CYGWIN*)
-      if [ $idx -eq 0 ]; then
-        host_nic_name[$idx]='VirtualBox Host-Only Ethernet Adapter'
-      else
-        host_nic_name[$idx]='VirtualBox Host-Only Ethernet Adapter #'$((idx+1))
-      fi
       os_type="cygwin"
       if [ "$(nproc)" -gt "1" ]; then
         vm_master_cpu_cores=2
@@ -73,10 +73,6 @@ for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
       exit 1
     ;;
   esac
-  host_nic_ip[$idx]=$ip
-  host_nic_mask[$idx]=255.255.255.0
-  idx=$((idx+1))
-done
 
 # Master node settings
 vm_master_memory_mb=1536

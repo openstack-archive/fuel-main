@@ -248,8 +248,6 @@ enable_outbound_network_for_product_vm() {
         send "sed \"s/DNS_UPSTREAM:.*/DNS_UPSTREAM: \\\$(grep \'^nameserver\' /etc/dnsmasq.upstream | cut -d \' \' -f2)/g\" -i /etc/fuel/astute.yaml\r"
         expect "$prompt"
         send "dockerctl restart cobbler >/dev/null 2>&1\r"
-        expect "$prompt"
-        send "dockerctl check cobbler >/dev/null 2>&1\r"
         expect "*ready*"
         expect "$prompt"
         send "service network restart >/dev/null 2>&1\r"
