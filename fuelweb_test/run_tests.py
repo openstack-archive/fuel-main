@@ -25,6 +25,7 @@ def run_tests():
     from tests.plugins.plugin_glusterfs import test_plugin_glusterfs  # noqa
     from tests.plugins.plugin_lbaas import test_plugin_lbaas  # noqa
     from tests import test_multiple_networks  # noqa
+    from tests import test_vcenter60
 
     # Run Proboscis and exit.
     TestProgram().run_and_exit()
