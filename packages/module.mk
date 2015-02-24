@@ -76,20 +76,15 @@ $(eval $(call prepare_file_source,nailgun-redhat-license,get_redhat_licenses,$(S
 $(eval $(call prepare_ruby21_source,ruby21-rubygem-astute,astute-$(PACKAGE_VERSION).gem,$(BUILD_DIR)/repos/astute))
 
 include $(SOURCE_DIR)/packages/rpm/module.mk
-include $(SOURCE_DIR)/packages/deb/module.mk
 
 .PHONY: packages
 
 ifneq ($(BUILD_PACKAGES),0)
 $(BUILD_DIR)/packages/build.done: \
-		$(BUILD_DIR)/packages/rpm/build.done \
-		$(BUILD_DIR)/packages/deb/build.done
+		$(BUILD_DIR)/packages/rpm/build.done
 endif
 
 $(BUILD_DIR)/packages/build.done:
 	$(ACTION.TOUCH)
 
 packages: $(BUILD_DIR)/packages/build.done
-
-packages-deb: $(BUILD_DIR)/packages/deb/build.done
-packages-rpm: $(BUILD_DIR)/packages/rpm/build.done

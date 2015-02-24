@@ -108,7 +108,7 @@ fi
 # Install software
 sudo apt-get update
 sudo apt-get -y install build-essential make git $GEMPKG debootstrap createrepo \
-  python-setuptools yum yum-utils libmysqlclient-dev isomd5sum bc \
+  python-setuptools yum yum-utils libmysqlclient-dev isomd5sum bc debmirror \
   python-nose libvirt-bin python-ipaddr python-paramiko python-yaml \
   python-pip kpartx extlinux unzip genisoimage \
   lrzip python-daemon python-dev
