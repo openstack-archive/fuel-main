@@ -5,6 +5,12 @@
 rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
+# Because /var/lib/pgsql is mounted as a volume, reinstall if its files are
+# missing
+if rpm -V postgresql-server | grep -v missing; then
+  yum reinstall -q -y reistall postgres-server
+fi
+
 puppet apply -v /etc/puppet/modules/nailgun/examples/postgres-only.pp
 if [ -f '/etc/init.d/postgresql' ]; then
   service postgresql stop
