@@ -14,3 +14,7 @@ AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
 AcceptEnv XMODIFIERS
 
 Subsystem	sftp	/usr/libexec/openssh/sftp-server
+
+# Secure Ciphers and MACs
+Ciphers aes256-ctr,aes192-ctr,aes128-ctr,arcfour256,arcfour128
+MACs hmac-sha2-512,hmac-sha2-256,hmac-ripemd160,hmac-sha1
