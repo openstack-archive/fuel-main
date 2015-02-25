@@ -23,6 +23,7 @@ cinder-volume
 cirros-testvm
 cirros-testvmware
 cloud-init
+conntrackd
 corosync
 cpu-checker
 cpufrequtils
@@ -133,8 +134,8 @@ neutron-vpn-agent
 nfs-common
 nginx
 nmap
-node-less
 nodejs
+node-less
 nova-api
 nova-cert
 nova-compute-kvm
