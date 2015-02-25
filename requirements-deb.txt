@@ -25,6 +25,7 @@ cirros-testvm
 cirros-testvm-mellanox
 cirros-testvmware
 cloud-init
+conntrackd
 corosync
 cpu-checker
 cpufrequtils

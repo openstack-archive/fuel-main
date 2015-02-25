@@ -50,6 +50,7 @@ cluster-glue-libs-1.0.11-59.1
 cman
 cobbler
 cobbler-web
+conntrack-tools
 corosync
 cpufreq-init
 crmsh
