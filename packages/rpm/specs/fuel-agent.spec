@@ -14,7 +14,8 @@ License: Apache
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
-BuildRequires:  python-setuptools
+BuildRequires: python-setuptools
+BuildRequires: python-pbr
 BuildArch: noarch
 
 Requires:    python
@@ -25,10 +26,10 @@ Requires:    python-oslo-config
 Requires:    python-iso8601
 Requires:    python-six
 Requires:    python-stevedore
-Requires:    python-pbr
 Requires:    python-jinja2
 Requires:    python-requests
 Requires:    python-argparse
+Requires:    python-pbr
 Requires:    tar
 Requires:    gzip
 Requires:    bzip2
