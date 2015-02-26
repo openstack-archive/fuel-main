@@ -644,6 +644,7 @@ zlib-devel-1.2.3-29.el6
 python-pypcap
 nailgun
 fuel-ostf
+fuel-tasks-valiadator
 shotgun
 fuelmenu
 nailgun-agent
