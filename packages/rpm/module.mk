@@ -73,6 +73,7 @@ python-tasklib \
 nailgun \
 shotgun \
 fuel-ostf \
+fuel-tasks-validator \
 nailgun-agent \
 nailgun-redhat-license \
 python-fuelclient \

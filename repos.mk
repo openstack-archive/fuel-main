@@ -31,6 +31,7 @@ $(eval $(call build_repo,python-fuelclient,$(PYTHON_FUELCLIENT_REPO),$(PYTHON_FU
 $(eval $(call build_repo,astute,$(ASTUTE_REPO),$(ASTUTE_COMMIT),$(ASTUTE_GERRIT_URL),$(ASTUTE_GERRIT_COMMIT)))
 $(eval $(call build_repo,fuellib,$(FUELLIB_REPO),$(FUELLIB_COMMIT),$(FUELLIB_GERRIT_URL),$(FUELLIB_GERRIT_COMMIT)))
 $(eval $(call build_repo,ostf,$(OSTF_REPO),$(OSTF_COMMIT),$(OSTF_GERRIT_URL),$(OSTF_GERRIT_COMMIT)))
+$(eval $(call build_repo,fuel-tasks-validator,$(FUEL_TASKS_VALIDATIOR_REPO),$(FUEL_TASKS_VALIDATIOR_COMMIT),$(FUEL_TASKS_VALIDATIOR_GERRIT_URL),$(FUEL_TASKS_VALIDATIOR_GERRIT_COMMIT)))
 
 $(BUILD_DIR)/repos/repos.done:
 	version_yaml=$(BUILD_DIR)/repos/version.yaml; \
