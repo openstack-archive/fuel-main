@@ -13,10 +13,12 @@ Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
-BuildRequires:  python-setuptools
+BuildRequires: python-pbr
+BuildRequires: python-setuptools
 Requires: PyYAML
 Requires: python-keystoneclient >= 1:0.4.1
 Requires: python-cliff
+Requires: python-pbr
 
 %description
 Summary: Console utility for working with fuel rest api
