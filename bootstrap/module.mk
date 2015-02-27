@@ -189,6 +189,7 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 	# Disabling mail server (it have been installed as a dependency)
 	-sudo chroot $(INITRAMROOT) chkconfig exim off
 	-sudo chroot $(INITRAMROOT) chkconfig postfix off
+	-sudo chroot $(INITRAMROOT) chown smmsp:smmsp /var/spool/clientmqueue
 
 	# Installing kernel modules
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
