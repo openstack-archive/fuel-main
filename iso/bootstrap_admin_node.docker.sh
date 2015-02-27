@@ -64,14 +64,12 @@ if [ -f /root/.build_images ]; then
   docker load -i /var/www/nailgun/docker/images/fuel-images.tar
 
   echo "Building Fuel Docker images..."
-  RANDOM_PORT=$(shuf -i 9000-65000 -n 1)
   WORKDIR=$(mktemp -d /tmp/docker-buildXXX)
   SOURCE=/var/www/nailgun/docker
-  REPODIR="$WORKDIR/repo"
   FUEL_RELEASE=$(grep release: /etc/fuel/version.yaml | cut -d: -f2 | tr -d '" ')
-  mkdir -p $REPODIR/os
-  ln -s /var/www/nailgun/centos/x86_64 $REPODIR/os/x86_64
-  (cd $REPODIR && /var/www/nailgun/docker/utils/simple_http_daemon.py ${RANDOM_PORT} /tmp/simple_http_daemon_${RANDOM_PORT}.pid 5000)
+  REPO_CONT_ID=$(docker -D run -d -p 80 -v /var/www/nailgun:/var/www/nailgun fuel/centos sh -c 'mkdir /var/www/html/os;ln -sf /var/www/nailgun/centos/x86_64 /var/www/html/os/x86_64;/usr/sbin/apachectl -DFOREGROUND')
+  RANDOM_PORT=$(docker port $REPO_CONT_ID 80 | cut -d':' -f2)
+
   for imagesource in /var/www/nailgun/docker/sources/*; do
     if ! [ -f "$imagesource/Dockerfile" ]; then
       echo "Skipping ${imagesource}..."
@@ -85,7 +83,7 @@ if [ -f /root/.build_images ]; then
     sed -e 's/production:.*/production: "docker-build"/' -i $WORKDIR/$image/etc/fuel/version.yaml
     docker build -t fuel/${image}_${FUEL_RELEASE} $WORKDIR/$image
   done
-  kill `cat /tmp/simple_http_daemon_${RANDOM_PORT}.pid`
+  docker rm -f $REPO_CONT_ID
   rm -rf "$WORKDIR"
 
   #Remove trap for normal deployment
