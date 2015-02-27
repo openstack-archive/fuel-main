@@ -1,5 +1,7 @@
 .PHONY: clean clean-rpm
 
+$(info: packages/rpm/module.mk included)
+
 clean: clean-rpm
 
 clean-rpm:
