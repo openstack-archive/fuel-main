@@ -75,7 +75,11 @@ $(eval $(call prepare_python_source,shotgun,shotgun-$(PACKAGE_VERSION).tar.gz,$(
 $(eval $(call prepare_file_source,nailgun-redhat-license,get_redhat_licenses,$(SOURCE_DIR)/packages/rpm/nailgun-redhat-license/get_redhat_licenses))
 $(eval $(call prepare_ruby21_source,ruby21-rubygem-astute,astute-$(PACKAGE_VERSION).gem,$(BUILD_DIR)/repos/astute))
 
+ifeq ($(USE_MOCK),Y)
+include $(SOURCE_DIR)/packages/rpm/module_mock.mk
+else
 include $(SOURCE_DIR)/packages/rpm/module.mk
+endif
 include $(SOURCE_DIR)/packages/deb/module.mk
 
 .PHONY: packages
