@@ -1,10 +1,9 @@
-#!/bin/bash
+#!/bin/bash -xe
 #
 # This script imports a raw image into Docker.  It takes two
 # arguments: the name of the image file, and the tag to assign to the
 # Docker image that it creates.
 
-set -e
 usage() {
     echo "usage: $(basename $0) <image> <tag>"
     exit 1
