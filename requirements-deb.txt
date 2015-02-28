@@ -48,7 +48,6 @@ ethtool
 fakeroot
 fuel-utils
 fence-agents
-fencing-agent
 galera
 geoip-database
 git
@@ -112,7 +111,6 @@ murano-dashboard
 murano-apps
 mysql-client
 mysql-server-wsrep-5.6
-nailgun-agent
 nailgun-mcagents
 nailgun-net-check
 neutron-dhcp-agent
@@ -168,6 +166,7 @@ nova-scheduler
 novnc
 ntp
 openhpid
+ohai
 openssh-server
 openstack-dashboard
 openvswitch-switch
@@ -239,7 +238,6 @@ ruby-i18n
 ruby-ipaddress
 ruby-json
 ruby-netaddr
-ruby-ohai
 ruby-openstack
 ruby-rethtool
 ruby-stomp
