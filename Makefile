@@ -87,7 +87,6 @@ include $(SOURCE_DIR)/sandbox.mk
 include $(SOURCE_DIR)/repos.mk
 include $(SOURCE_DIR)/image/module.mk
 include $(SOURCE_DIR)/mirror/module.mk
-include $(SOURCE_DIR)/puppet/module.mk
 include $(SOURCE_DIR)/packages/module.mk
 include $(SOURCE_DIR)/packages/openstack/module.mk
 include $(SOURCE_DIR)/docker/module.mk
