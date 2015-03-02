@@ -4,13 +4,32 @@ name=Mirantis mirror
 baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 gpgcheck=0
 enabled=1
+priority=1
 endef
-
+define yum_upstream_repo
+[upstream]
+name=Upstream mirror
+baseurl=http://mirrors-local-msk.msk.mirantis.net/centos-6.1/6.5/os/x86_64/
+gpgcheck=0
+priority=2
+[upstream-updates]
+name=Upstream mirror
+baseurl=http://mirrors-local-msk.msk.mirantis.net/centos-6.1/6.5/updates/x86_64/
+gpgcheck=0
+priority=2
+endef
+define yum_epel_repo
+[epel]
+name=epel mirror
+baseurl=http://mirror.yandex.ru/epel/6/x86_64/
+gpgcheck=0
+priority=3
+endef
 define sandbox_yum_conf
 [main]
 cachedir=$(SANDBOX)/cache
 keepcache=0
-debuglevel=6
+debuglevel=2
 logfile=$(SANDBOX)/yum.log
 exclude=*.i686.rpm
 exactarch=1
@@ -22,7 +41,7 @@ pluginconfpath=$(SANDBOX)/etc/yum/pluginconf.d
 reposdir=$(SANDBOX)/etc/yum.repos.d
 endef
 
-SANDBOX_PACKAGES:=bash
+SANDBOX_PACKAGES:=bash yum
 
 define SANDBOX_UP
 echo "Starting SANDBOX up"
@@ -32,6 +51,8 @@ $(sandbox_yum_conf)
 EOF
 cp /etc/resolv.conf $(SANDBOX)/etc/resolv.conf
 cat > $(SANDBOX)/etc/yum.repos.d/base.repo <<EOF
+$(yum_upstream_repo)
+$(yum_epel_repo)
 $(yum_local_repo)
 EOF
 sudo rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
