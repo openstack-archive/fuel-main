@@ -1,0 +1,49 @@
+From 09efec567e6b0baa835c1921c222a5a967cf193a Mon Sep 17 00:00:00 2001
+From: Dennis Dmitriev <ddmitriev@mirantis.com>
+Date: Tue, 19 Aug 2014 18:31:33 +0300
+Subject: [PATCH] Allow correctly parcing indices/override.* files
+
+Allow parcing indices/override.* files when architecture
+prefixes are used in package names there. It allows to use
+dpkg-scanpackages with Ubuntu repositories.
+
+Originally, dpkg-scanpackages just skip the following lines because it
+compares package names without any modification, and cannot find the
+apropriate package because 'a2jmidid' != 'a2jmidid/amd64'
+For example, several lines from override.precise.extra.main:
+...
+a2jmidid        Bugs    https://bugs.launchpad.net/ubuntu/+filebug
+a2jmidid        Origin  Ubuntu
+a2jmidid/amd64  Task    ubuntustudio-generation, ubuntustudio-recording
+a2jmidid/armel  Task    ubuntustudio-generation, ubuntustudio-recording
+a2jmidid/armhf  Task    ubuntustudio-generation, ubuntustudio-recording
+a2jmidid/i386   Task    ubuntustudio-generation, ubuntustudio-recording
+a2jmidid/powerpc        Task    ubuntustudio-generation, ubuntustudio-recording
+...
+
+Related-Bug: 1358785
+---
+ scripts/dpkg-scanpackages.pl | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/scripts/dpkg-scanpackages.pl b/scripts/dpkg-scanpackages.pl
+index 9a3d59c..3d6724b 100755
+--- a/scripts/dpkg-scanpackages.pl
++++ b/scripts/dpkg-scanpackages.pl
+@@ -143,7 +143,12 @@ sub load_override_extra
+ 	s/\s+$//;
+ 	next unless $_;
+ 
+-	my ($p, $field, $value) = split(/\s+/, $_, 3);
++	my ($pr, $field, $value) = split(/\s+/, $_, 3);
++
++        my ($p, $parch) = split(/\//, $pr, 2);
++        if (defined($options{arch}) and defined($parch)) {
++            next unless ($options{arch} eq $parch);
++        }
+ 
+ 	next unless defined($packages{$p});
+ 
+-- 
+1.8.5.5
+
