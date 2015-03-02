@@ -46,12 +46,12 @@ $(BUILD_DIR)/docker/$1.done: \
 	rm -rf $(BUILD_DIR)/docker/$1
 	cp -a $(SOURCE_DIR)/docker/$1 $(BUILD_DIR)/docker/$1
 	sed -e "s/_PORT_/$(RANDOM_PORT)/" -i $(BUILD_DIR)/docker/$1/Dockerfile
-	mkdir -p $(BUILD_DIR)/docker/$1/etc/puppet/modules/
+#mkdir -p $(BUILD_DIR)/docker/$1/etc/puppet/modules/
 	mkdir -p $(BUILD_DIR)/docker/$1/etc/fuel
 	cp $(BUILD_DIR)/iso/isoroot/version.yaml $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml
 	sed -e 's/production:.*/production: "docker-build"/' -i $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml
 	cp $(SOURCE_DIR)/docker/docker-astute.yaml $(BUILD_DIR)/docker/$1/etc/fuel/astute.yaml
-	rsync -a $(BUILD_DIR)/repos/fuellib/deployment/puppet/* $(BUILD_DIR)/docker/$1/etc/puppet/modules/
+#rsync -a $(BUILD_DIR)/repos/fuellib/deployment/puppet/* $(BUILD_DIR)/docker/$1/etc/puppet/modules/
 	sudo docker build --force-rm -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
 	kill `cat /tmp/simple_http_daemon_$(RANDOM_PORT).pid`
 	$$(ACTION.TOUCH)
