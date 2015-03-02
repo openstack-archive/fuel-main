@@ -23,12 +23,6 @@ $(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
 $(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
 $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
-ifeq ($1,nailgun)
-	mkdir -p $(BUILD_DIR)/npm-cache
-	cd $3 && npm --cache $(BUILD_DIR)/npm-cache install && ./node_modules/.bin/gulp build --static-dir=compressed_static
-	rm -rf $3/static
-	mv $3/compressed_static $3/static
-endif
 	cd $3 && python setup.py sdist -d $(BUILD_DIR)/packages/sources/$1
 endef
 
@@ -56,31 +50,33 @@ $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	cd $3 && gem build *.gemspec && cp $2 $(BUILD_DIR)/packages/sources/$1/$2
 endef
 
+define prepare_git_source
+$(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
+$(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
+$(BUILD_DIR)/packages/sources/$1/$2:
+	mkdir -p $(BUILD_DIR)/packages/sources/$1
+	cd $3 && git archive --format tar --worktree-attributes $4 > $(BUILD_DIR)/packages/sources/$1/$1.tar\
+		&& git rev-parse $4 > $(BUILD_DIR)/packages/sources/$1/version.txt
+	cd $(BUILD_DIR)/packages/sources/$1 && tar -rf $1.tar version.txt
+	cd $(BUILD_DIR)/packages/sources/$1 && gzip -9 $1.tar && mv $1.tar.gz $2
+endef
+
 PACKAGE_VERSION=6.0.0
 $(BUILD_DIR)/packages/source_%.done:
 	$(ACTION.TOUCH)
 
-$(eval $(call prepare_file_source,fencing-agent,fencing-agent.rb,$(BUILD_DIR)/repos/nailgun/bin/fencing-agent.rb))
-$(eval $(call prepare_file_source,fencing-agent,fencing-agent.cron,$(BUILD_DIR)/repos/nailgun/bin/fencing-agent.cron))
-$(eval $(call prepare_python_source,fuel-agent,fuel-agent-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/fuel_agent))
-$(eval $(call prepare_file_source,fuel-provisioning-scripts,download-debian-installer,$(BUILD_DIR)/repos/nailgun/bin/download-debian-installer))
-$(eval $(call prepare_file_source,fuel-agent,fuel-agent.conf,$(BUILD_DIR)/repos/nailgun/fuel_agent/etc/fuel-agent/fuel-agent.conf.sample))
-$(eval $(call prepare_python_source,fuel-package-updates,fuel-package-updates-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/fuel_upgrade_system/fuel_package_updates))
-$(eval $(call prepare_tgz_source,fuel-agent,fuel-agent-cloud-init-templates.tar.gz,$(BUILD_DIR)/repos/nailgun/fuel_agent/cloud-init-templates))
-$(eval $(call prepare_tgz_source,fuel-image,fuel-image-$(PACKAGE_VERSION).tar.gz,$(SOURCE_DIR)/image/ubuntu/build_on_masternode))
-$(eval $(call prepare_python_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/ostf))
-$(eval $(call prepare_python_source,fuelmenu,fuelmenu-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/fuelmenu))
-$(eval $(call prepare_file_source,nailgun-agent,agent,$(BUILD_DIR)/repos/nailgun/bin/agent))
-$(eval $(call prepare_file_source,nailgun-agent,nailgun-agent.cron,$(BUILD_DIR)/repos/nailgun/bin/nailgun-agent.cron))
-$(eval $(call prepare_tgz_source,nailgun-mcagents,mcagents.tar.gz,$(BUILD_DIR)/repos/astute/mcagents))
-$(eval $(call prepare_tgz_source,ruby21-nailgun-mcagents,nailgun-mcagents.tar.gz,$(BUILD_DIR)/repos/astute/mcagents))
-$(eval $(call prepare_python_source,nailgun-net-check,nailgun-net-check-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/network_checker))
-$(eval $(call prepare_python_source,python-tasklib,tasklib-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/tasklib))
-$(eval $(call prepare_python_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/nailgun))
-$(eval $(call prepare_python_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient))
-$(eval $(call prepare_python_source,shotgun,shotgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/shotgun))
-$(eval $(call prepare_file_source,nailgun-redhat-license,get_redhat_licenses,$(SOURCE_DIR)/packages/rpm/nailgun-redhat-license/get_redhat_licenses))
-$(eval $(call prepare_ruby21_source,ruby21-rubygem-astute,astute-$(PACKAGE_VERSION).gem,$(BUILD_DIR)/repos/astute))
+#NAILGUN_PKGS
+$(eval $(call prepare_git_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun,HEAD))
+#FUEL_OSTF_PKGS
+$(eval $(call prepare_git_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-ostf,HEAD))
+#ASTUTE_PKGS
+$(eval $(call prepare_git_source,astute,astute-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/astute,HEAD))
+#FUELLIB_PKGS
+$(eval $(call prepare_git_source,fuel-library,fuel-library-6.1-6.1-1.tar.gz,$(BUILD_DIR)/repos/fuel-library,HEAD))
+#FUEL_PYTHON_PKGS
+$(eval $(call prepare_git_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient,HEAD))
+#FUEL-IMAGE PKGS
+$(eval $(call prepare_git_source,fuel-main,fuel-main-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD))
 
 include $(SOURCE_DIR)/packages/rpm/module.mk
 
