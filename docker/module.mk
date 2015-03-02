@@ -46,12 +46,12 @@ $(BUILD_DIR)/docker/$1.done: \
 	cp -a $(SOURCE_DIR)/docker/$1 $(BUILD_DIR)/docker/$1 && \
 	REPO_PORT=`sudo docker port $(REPO_CONTAINER) 80 | cut -d':' -f2` && \
 	sed -e "s/_PORT_/$$$${REPO_PORT}/" -i $(BUILD_DIR)/docker/$1/Dockerfile && \
-	mkdir -p $(BUILD_DIR)/docker/$1/etc/puppet/modules/ && \
+	#mkdir -p $(BUILD_DIR)/docker/$1/etc/puppet/modules/ && \
 	mkdir -p $(BUILD_DIR)/docker/$1/etc/fuel && \
 	cp $(BUILD_DIR)/iso/isoroot/version.yaml $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml && \
 	sed -e 's/production:.*/production: "docker-build"/' -i $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml && \
 	cp $(SOURCE_DIR)/docker/docker-astute.yaml $(BUILD_DIR)/docker/$1/etc/fuel/astute.yaml && \
-	rsync -a $(BUILD_DIR)/repos/fuellib/deployment/puppet/* $(BUILD_DIR)/docker/$1/etc/puppet/modules/ && \
+	#rsync -a $(BUILD_DIR)/repos/fuellib/deployment/puppet/* $(BUILD_DIR)/docker/$1/etc/puppet/modules/ && \
 	sudo docker build --force-rm -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
 	$$(ACTION.TOUCH)
 endef
