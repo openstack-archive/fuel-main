@@ -108,9 +108,9 @@ endif
 # we need to repack puppet artifact because artifact
 # has puppet directory packed into it but we need to have an
 # archive of puppet modules packed into it
-$(ISOROOT)/puppet-slave.tgz: $(BUILD_DIR)/puppet/$(PUPPET_ART_NAME)
-	tar zxf $(BUILD_DIR)/puppet/$(PUPPET_ART_NAME) -C $(BUILD_DIR)/iso
-	tar zcf $(ISOROOT)/puppet-slave.tgz -C $(BUILD_DIR)/iso/puppet .
+#$(ISOROOT)/puppet-slave.tgz: $(BUILD_DIR)/puppet/$(PUPPET_ART_NAME)
+#	tar zxf $(BUILD_DIR)/puppet/$(PUPPET_ART_NAME) -C $(BUILD_DIR)/iso
+#	tar zcf $(ISOROOT)/puppet-slave.tgz -C $(BUILD_DIR)/iso/puppet .
 
 ########################
 # DOCKER
@@ -143,8 +143,7 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/version.yaml \
 		$(ISOROOT)/openstack_version \
 		$(ISOROOT)/centos-versions.yaml \
-		$(ISOROOT)/ubuntu-versions.yaml \
-		$(ISOROOT)/puppet-slave.tgz
+		$(ISOROOT)/ubuntu-versions.yaml 
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)

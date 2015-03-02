@@ -41,6 +41,7 @@ $(BUILD_DIR)/packages/rpm/$1.done: $(SOURCE_DIR)/packages/rpm/specs/$1.spec
 	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	mkdir -p $$(SANDBOX) && \
 	sudo tar xzf $(BUILD_DIR)/packages/rpm/buildd.tar.gz -C $$(SANDBOX) && \
+	sudo chroot $$(SANDBOX) bash -c "(mkdir -p '$$$${TEMP}'; mkdir -p /tmp/user/0)" 
 	sudo mount --bind /proc $$(SANDBOX)/proc && \
 	sudo mount --bind /dev $$(SANDBOX)/dev && \
 	mkdir -p $$(SANDBOX)/tmp/SOURCES && \
@@ -62,6 +63,7 @@ fencing-agent \
 fuel-agent \
 fuel-image \
 fuel-provisioning-scripts \
+fuel-library \
 fuelmenu \
 nailgun-mcagents \
 ruby21-nailgun-mcagents \
