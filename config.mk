@@ -38,6 +38,7 @@ CURRENT_VERSION:=$(PRODUCT_VERSION)
 # If it is set then diff $(BASE_VERSION)->$(CURRENT_VERSION)
 BASE_VERSION:=6.0
 
+PACKAGE_VERSION=6.0.0
 # UPGRADE_VERSIONS?=\
 #	6.0:5.1 \
 #	5.1 \
@@ -252,6 +253,13 @@ MIRROR_UBUNTU_SECTION?=main,restricted
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 endif
+
+
+#This suffix is used to generate path
+#to ubuntu mirror inside mirror
+#DocumentRoot
+
+MIRROR_UBUNTU_SUFFIX?=/pkgs/ubuntu
 
 YUM_DOWNLOAD_SRC?=
 
