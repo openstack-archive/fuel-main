@@ -72,6 +72,7 @@ cronie
 crontabs
 dnsmasq
 fence-agents
+fuel-library
 httpd
 logrotate
 nginx
