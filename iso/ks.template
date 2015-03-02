@@ -237,6 +237,7 @@ echo "cat /tmp/grub.script | chroot /mnt/sysimage /sbin/grub --no-floppy --batch
 
 %packages --nobase --excludedocs
 @Core
+fuel-library
 authconfig
 bind-utils
 cronie
@@ -429,11 +430,11 @@ mkdir -p /etc/puppet/${OPENSTACK_VERSION}/modules/
 rm -rf /etc/puppet/modules/
 
 # TODO(ikalnitsky): investigate why we need this
-cp ${SOURCE}/puppet-slave.tgz ${wwwdir}/
+#cp ${SOURCE}/puppet-slave.tgz ${wwwdir}/
 
 # place modules and manifests
-tar zxf ${SOURCE}/puppet-slave.tgz -C /etc/puppet/${OPENSTACK_VERSION}/modules
-cp /etc/puppet/${OPENSTACK_VERSION}/modules/osnailyfacter/examples/site.pp /etc/puppet/${OPENSTACK_VERSION}/manifests/site.pp
+#tar zxf ${SOURCE}/puppet-slave.tgz -C /etc/puppet/${OPENSTACK_VERSION}/modules
+#cp /etc/puppet/${OPENSTACK_VERSION}/modules/osnailyfacter/examples/site.pp /etc/puppet/${OPENSTACK_VERSION}/manifests/site.pp
 cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/${OPENSTACK_VERSION}/manifests/
 
 # make links for backward compatibility
