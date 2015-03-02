@@ -32,8 +32,19 @@ endef
 $(eval $(call build_repo,nailgun,$(NAILGUN_REPO),$(NAILGUN_COMMIT),$(NAILGUN_GERRIT_URL),$(NAILGUN_GERRIT_COMMIT)))
 $(eval $(call build_repo,python-fuelclient,$(PYTHON_FUELCLIENT_REPO),$(PYTHON_FUELCLIENT_COMMIT),$(PYTHON_FUELCLIENT_GERRIT_URL),$(PYTHON_FUELCLIENT_GERRIT_COMMIT)))
 $(eval $(call build_repo,astute,$(ASTUTE_REPO),$(ASTUTE_COMMIT),$(ASTUTE_GERRIT_URL),$(ASTUTE_GERRIT_COMMIT)))
-$(eval $(call build_repo,fuellib,$(FUELLIB_REPO),$(FUELLIB_COMMIT),$(FUELLIB_GERRIT_URL),$(FUELLIB_GERRIT_COMMIT)))
-$(eval $(call build_repo,ostf,$(OSTF_REPO),$(OSTF_COMMIT),$(OSTF_GERRIT_URL),$(OSTF_GERRIT_COMMIT)))
+$(eval $(call build_repo,fuel-library,$(FUELLIB_REPO),$(FUELLIB_COMMIT),$(FUELLIB_GERRIT_URL),$(FUELLIB_GERRIT_COMMIT)))
+$(eval $(call build_repo,fuel-ostf,$(OSTF_REPO),$(OSTF_COMMIT),$(OSTF_GERRIT_URL),$(OSTF_GERRIT_COMMIT)))
+
+$(BUILD_DIR)/repos/fuel-main.done: 
+	ln -s $(SOURCE_DIR) $(BUILD_DIR)/repos/fuel-main
+	$(ACTION.TOUCH)
+$(BUILD_DIR)/repos/repos.done: $(BUILD_DIR)/repos/fuel-main.done
+
+#FIXME(aglarendil): make repos generation uniform
+
+$(BUILD_DIR)/repos/fuel-library6.1.done: $(BUILD_DIR)/repos/fuel-library.done
+	ln -s $(BUILD_DIR)/repos/fuel-library $(BUILD_DIR)/repos/fuel-library6.1
+	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/repos/repos.done:
 	version_yaml=$(BUILD_DIR)/repos/version.yaml; \
