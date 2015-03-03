@@ -52,6 +52,14 @@ $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	cd $3 && gem build *.gemspec && cp $2 $(BUILD_DIR)/packages/sources/$1/$2
 endef
 
+define prepare_git_source
+$(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
+$(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
+$(BUILD_DIR)/packages/sources/$1/$2:
+	mkdir -p $(BUILD_DIR)/packages/sources/$1
+	(cd $3 && git archive --format tar --worktree-attributes $4 | gzip -c9 > $(BUILD_DIR)/packages/sources/$1/$2)
+endef
+
 PACKAGE_VERSION=6.0.0
 $(BUILD_DIR)/packages/source_%.done:
 	$(ACTION.TOUCH)
@@ -76,7 +84,7 @@ $(eval $(call prepare_tgz_source,nailgun-mcagents,mcagents.tar.gz,$(BUILD_DIR)/r
 $(eval $(call prepare_tgz_source,ruby21-nailgun-mcagents,nailgun-mcagents.tar.gz,$(BUILD_DIR)/repos/astute/mcagents))
 $(eval $(call prepare_ruby21_source,ruby21-rubygem-astute,astute-$(PACKAGE_VERSION).gem,$(BUILD_DIR)/repos/astute))
 #FUELLIB_PKGS
-$(eval $(call prepare_tgz_source,fuel-library,fuel-library-6.1-6.1-1.tar.gz,$(BUILD_DIR)/repos/fuellib))
+$(eval $(call prepare_git_source,fuel-library,fuel-library-6.1-6.1-1.tar.gz,$(BUILD_DIR)/repos/fuellib,$(FUELLIB_COMMIT)))
 #FUEL_PYTHON_PKGS
 $(eval $(call prepare_python_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient))
 
