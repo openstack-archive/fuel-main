@@ -175,7 +175,7 @@ nova-novncproxy
 nova-objectstore
 nova-scheduler
 novnc
-ntp=1:4.2.6.p3+dfsg-1ubuntu3.1
+ntp
 ntpdate
 openhpid
 openssh-server
