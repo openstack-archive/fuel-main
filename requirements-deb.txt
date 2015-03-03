@@ -161,6 +161,7 @@ nova-objectstore
 nova-scheduler
 novnc
 ntp
+ntpdate
 openhpid
 ohai
 openssh-server
