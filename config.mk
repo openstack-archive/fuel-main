@@ -257,8 +257,9 @@ EXTRA_RPM_REPOS?=
 # Additional Ubunutu repos.
 # Each repo must consist of an url, dist and section parts.
 # Repos must be separated by bar.
-# Example:
+# Examples:
 # EXTRA_DEB_REPOS="http://mrr.lcl raring main|http://mirror.yandex.ru/ubuntu precise main"'
+# EXTRA_DEB_REPOS="http://fuel-repository.mirantis.com/repos/ubuntu-fuel-5.1-stable-15955/ubuntu /"
 EXTRA_DEB_REPOS?=
 
 # Comma or space separated list. Available feature groups:
