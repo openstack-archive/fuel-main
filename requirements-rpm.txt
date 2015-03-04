@@ -636,8 +636,9 @@ wxGTK-gl-2.8.12-2.el6
 xfsprogs
 xinetd
 percona-xtrabackup
-yum-3.2.29-40.el6.centos
-yum-utils-1.1.30-14.el6
+yum
+yum-utils
+yum-plugin-versionlock
 zeromq
 zeromq3
 zlib-devel-1.2.3-29.el6
