@@ -20,6 +20,11 @@ DEPS_DIR?=$(TOP_DIR)/deps
 DEPS_DIR:=$(abspath $(DEPS_DIR))
 
 PRODUCT_VERSION:=6.1
+
+# This variable is used for naming of auxillary objects
+# related to product: repositories, mirrors etc
+PRODUCT_NAME:=mos
+
 # This variable is used mostly for
 # keeping things uniform. Some files
 # contain versions as a part of their paths
@@ -115,10 +120,6 @@ SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
-BUILD_DEB_PACKAGES?=1
-ifeq (0,$(strip BUILD_PACKAGES))
-BUILD_DEB_PACKAGES?=0
-endif
 
 # Build OpenStack packages from external sources (do not use prepackaged versions)
 # Enter the comma-separated list of OpenStack packages to build, or '0' otherwise.
@@ -189,7 +190,7 @@ ifeq ($(USE_MIRROR),ext)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_UBUNTU?=mirror.fuel-infra.org
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 endif
@@ -197,7 +198,7 @@ ifeq ($(USE_MIRROR),srt)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://osci-mirror-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_UBUNTU?=osci-mirror-srt.srt.mirantis.net
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 endif
@@ -205,7 +206,7 @@ ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://osci-mirror-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 endif
@@ -213,7 +214,7 @@ ifeq ($(USE_MIRROR),hrk)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://osci-mirror-kha.kha.mirantis.net/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=$(MIRROR_BASE)/ubuntu
+MIRROR_UBUNTU?=osci-mirror-kha.kha.mirantis.net
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 endif
@@ -224,6 +225,7 @@ MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSIO
 MIRROR_CENTOS_KERNEL?=http://mirror.centos.org/centos-6/6.6/
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 MIRROR_CENTOS_KERNEL_BASEURL?=$(MIRROR_CENTOS_KERNEL)/os/$(CENTOS_ARCH)
+# !!!! to be replaced with new Ubuntu mirror from DevOps
 MIRROR_UBUNTU?=http://mirrors-local-msk.msk.mirantis.net/ubuntu-$(PRODUCT_VERSION)/
 # Unfortunately security updates are handled in a manner incompatible with
 # Debian/Ubuntu. That is, instead of having ${UBUNTU_RELEASE}-updates
@@ -239,7 +241,7 @@ MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-s
 ifeq (precise,$(strip $(UBUNTU_RELEASE)))
 MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-stable/reprepro
 else
-MIRROR_FUEL_UBUNTU?=http://obs-1.mirantis.com:82/$(UBUNTU_RELEASE)-fuel-$(PRODUCT_VERSION)-stable/reprepro
+MIRROR_FUEL_UBUNTU?=obs-1.mirantis.com
 endif
 
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
@@ -257,14 +259,6 @@ YUM_REPOS?=official fuel subscr_manager
 # Repos must be separated by space.
 # Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm bar,ftp://repo.foo"
 EXTRA_RPM_REPOS?=
-
-# Additional Ubunutu repos.
-# Each repo must consist of an url, dist and section parts.
-# Repos must be separated by bar.
-# Examples:
-# EXTRA_DEB_REPOS="http://mrr.lcl raring main|http://mirror.yandex.ru/ubuntu precise main"'
-# EXTRA_DEB_REPOS="http://fuel-repository.mirantis.com/repos/ubuntu-fuel-5.1-stable-15955/ubuntu /"
-EXTRA_DEB_REPOS?=
 
 # Comma or space separated list. Available feature groups:
 #   experimental - allow experimental options
