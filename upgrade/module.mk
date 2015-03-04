@@ -85,7 +85,6 @@ $(BUILD_DIR)/upgrade/image-part.tar: \
 		$(BUILD_DIR)/image/build.done
 	mkdir -p $(BUILD_DIR)/upgrade/targetimages
 	tar xf $(ARTS_DIR)/$(TARGET_CENTOS_IMG_ART_NAME) -C $(BUILD_DIR)/upgrade/targetimages
-	tar xf $(ARTS_DIR)/$(TARGET_UBUNTU_IMG_ART_NAME) -C $(BUILD_DIR)/upgrade/targetimages
 	rm -f $@
 	tar cf $@ -C $(BUILD_DIR)/upgrade/targetimages . --xform s:^:upgrade/targetimages/:
 
