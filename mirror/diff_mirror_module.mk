@@ -93,22 +93,9 @@ endif
 $(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): BASEDIR=$(BUILD_DIR)/mirror/$(BASE_VERSION)/ubuntu-repo
 $(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): DIFFDIR=$(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)
 $(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME):
-#	unpacking old version ubuntu mirror
-	mkdir -p $(BUILD_DIR)/mirror/$(BASE_VERSION)
-	tar xf $(DEPS_DIR)/$(BASE_VERSION)/$(UBUNTU_REPO_ART_NAME) -C $(BUILD_DIR)/mirror/$(BASE_VERSION)
-#	copying packages which differ from those in old version
-	mkdir -p $(DIFFDIR)/pool/main
-	/bin/bash $(SOURCE_DIR)/mirror/create_diff_mirrors.sh $(CURDIR)/pool/main $(BASEDIR)/pool/main $(DIFFDIR)/pool/main
-#	creating diff mirror
-	rsync -av --include='*/' --exclude='*' $(CURDIR)/dists $(DIFFDIR)
-	cp $(CURDIR)/dists/$(UBUNTU_RELEASE)/Release $(DIFFDIR)/dists/$(UBUNTU_RELEASE)
-	cp -r $(CURDIR)/indices $(DIFFDIR)
-	$(SOURCE_DIR)/regenerate_ubuntu_repo.sh $(DIFFDIR) $(UBUNTU_RELEASE)
-#	these touch commands are necessary to make repository working
-	touch $(DIFFDIR)/dists/$(UBUNTU_RELEASE)/main/binary-i386/Packages
-	touch $(DIFFDIR)/dists/$(UBUNTU_RELEASE)/main/debian-installer/binary-i386/Packages
-	touch $(DIFFDIR)/dists/$(UBUNTU_RELEASE)/main/debian-installer/binary-amd64/Packages
-	cat $(DIFFDIR)/dists/$(UBUNTU_RELEASE)/main/binary-amd64/Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)/ubuntu-versions.yaml
+	mkdir -p $(DIFFDIR)
+	rsync -av $(CURDIR)/* $(DIFFDIR)
+	zcat $(DIFFDIR)/dists/$(UBUNTU_RELEASE)/main/binary-amd64/Packages.gz | $(SOURCE_DIR)/iso/pkg-versions.awk > $(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)/ubuntu-versions.yaml
 	tar cf $@ -C $(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION) --xform s:^:ubuntu_updates-$(CURRENT_VERSION)-$(BASE_VERSION)/: .
 endif # ifneq ($(DIFF_UBUNTU_REPO_DEP_FILE),)
 endif # ifneq ($(BASE_VERSION),)

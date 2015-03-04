@@ -97,7 +97,7 @@ $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 	mkdir -p $(ISOROOT)/ubuntu
 	rsync -rp $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ $(ISOROOT)/ubuntu/
 	rsync -rp $(LOCAL_MIRROR)/ubuntu-packages.changelog $(ISOROOT)
-	cat $(ISOROOT)/ubuntu/dists/$(UBUNTU_RELEASE)/main/binary-amd64/Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $(ISOROOT)/ubuntu/ubuntu-versions.yaml
+	zcat $(ISOROOT)/ubuntu/dists/$(PRODUCT_NAME)$(PRODUCT_VERSION)/main/binary-amd64/Packages.gz | $(SOURCE_DIR)/iso/pkg-versions.awk > $(ISOROOT)/ubuntu/ubuntu-versions.yaml
 	$(ACTION.TOUCH)
 endif
 
@@ -181,22 +181,13 @@ $(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/docker.done
 endif
 
 ########################
-# Target images
-########################
-$(BUILD_DIR)/iso/isoroot-image.done: $(BUILD_DIR)/image/build.done
-	mkdir -p $(ISOROOT)/targetimages
-	tar xf $(ARTS_DIR)/$(TARGET_UBUNTU_IMG_ART_NAME) -C $(ISOROOT)/targetimages
-	$(ACTION.TOUCH)
-
-########################
 # Iso image root file system.
 ########################
 
 $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
 		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
-		$(BUILD_DIR)/iso/isoroot-files.done \
-		$(BUILD_DIR)/iso/isoroot-image.done
+		$(BUILD_DIR)/iso/isoroot-files.done
 	$(ACTION.TOUCH)
 
 
