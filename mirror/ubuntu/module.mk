@@ -1,24 +1,17 @@
 .PHONY: mirror-ubuntu
-# This module downloads ubuntu installation images.
-include $(SOURCE_DIR)/mirror/ubuntu/boot.mk
 
 mirror-ubuntu: $(BUILD_DIR)/mirror/ubuntu/build.done
 
-$(BUILD_DIR)/mirror/ubuntu/repo.done: $(BUILD_DIR)/ubuntu_installer_kernel_version.mk
-	$(MAKE) -f $(SOURCE_DIR)/mirror/ubuntu/repo.mk \
-		MIRROR_UBUNTU=$(MIRROR_UBUNTU) \
-		MIRROR_FUEL_UBUNTU=$(MIRROR_FUEL_UBUNTU) \
-		EXTRA_DEB_REPOS='$(EXTRA_DEB_REPOS)' \
-		UBUNTU_RELEASE=$(UBUNTU_RELEASE) \
-		UBUNTU_RELEASE_NUMBER=$(UBUNTU_RELEASE_NUMBER) \
-		UBUNTU_ARCH=$(UBUNTU_ARCH) \
-		UBUNTU_KERNEL_FLAVOR=$(UBUNTU_KERNEL_FLAVOR) \
-		LOCAL_MIRROR_UBUNTU=$(LOCAL_MIRROR_UBUNTU) \
-		SOURCE_DIR=$(SOURCE_DIR) \
-		BUILD_DIR=$(BUILD_DIR)
-	$(ACTION.TOUCH)
-
-$(BUILD_DIR)/mirror/ubuntu/build.done: \
-		$(BUILD_DIR)/mirror/ubuntu/boot.done \
-		$(BUILD_DIR)/mirror/ubuntu/repo.done
+# Two operation modes:
+# USE_MIRROR=none - mirroring mode, rsync full mirror from internal build server
+# USE_MIRROR=<any_other_value> - ISO building mode, get repository for current product release only
+$(BUILD_DIR)/mirror/ubuntu/build.done:
+	mkdir -p $(LOCAL_MIRROR_UBUNTU)
+ifeq (none,$(strip $(USE_MIRROR)))
+	set -ex; rsync -aPtvz $(MIRROR_FUEL_UBUNTU)::$(PRODUCT_NAME)-ubuntu $(LOCAL_MIRROR_UBUNTU)/
+else
+	set -ex; debmirror --method=http --progress --checksums --nocleanup --host=$(MIRROR_UBUNTU) --root=/$(PRODUCT_NAME)/ubuntu/ --arch=$(UBUNTU_ARCH) \
+	--dist=$(PRODUCT_NAME)$(PRODUCT_VERSION) --nosource --exclude=".*-dbg_.*\.deb\$$" --ignore-release-gpg --rsync-extra=none $(LOCAL_MIRROR_UBUNTU)/
+	rm -rf $(LOCAL_MIRROR_UBUNTU)/.temp $(LOCAL_MIRROR_UBUNTU)/project
+endif
 	$(ACTION.TOUCH)
