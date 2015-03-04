@@ -93,6 +93,7 @@ endif
 $(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): BASEDIR=$(BUILD_DIR)/mirror/$(BASE_VERSION)/ubuntu-repo
 $(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME): DIFFDIR=$(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)
 $(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME):
+ifneq ($(UBUNTU_RELEASE),trusty)
 #	unpacking old version ubuntu mirror
 	mkdir -p $(BUILD_DIR)/mirror/$(BASE_VERSION)
 	tar xf $(DEPS_DIR)/$(BASE_VERSION)/$(UBUNTU_REPO_ART_NAME) -C $(BUILD_DIR)/mirror/$(BASE_VERSION)
@@ -109,6 +110,12 @@ $(BUILD_DIR)/mirror/$(DIFF_UBUNTU_REPO_ART_NAME):
 	touch $(DIFFDIR)/dists/$(UBUNTU_RELEASE)/main/debian-installer/binary-i386/Packages
 	touch $(DIFFDIR)/dists/$(UBUNTU_RELEASE)/main/debian-installer/binary-amd64/Packages
 	cat $(DIFFDIR)/dists/$(UBUNTU_RELEASE)/main/binary-amd64/Packages | $(SOURCE_DIR)/iso/pkg-versions.awk > $(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)/ubuntu-versions.yaml
+else
+#	creating diff mirror
+	mkdir -p $(DIFFDIR)
+	rsync -av $(CURDIR)/* $(DIFFDIR)
+	zcat $(DIFFDIR)/dists/$(UBUNTU_RELEASE)/main/binary-amd64/Packages.gz | $(SOURCE_DIR)/iso/pkg-versions.awk > $(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION)/ubuntu-versions.yaml
+endif # ifneq ($(UBUNTU_RELEASE),trusty)
 	tar cf $@ -C $(DIFF_MIRROR_UBUNTU_BASE)-$(CURRENT_VERSION)-$(BASE_VERSION) --xform s:^:ubuntu_updates-$(CURRENT_VERSION)-$(BASE_VERSION)/: .
 endif # ifneq ($(DIFF_UBUNTU_REPO_DEP_FILE),)
 endif # ifneq ($(BASE_VERSION),)
