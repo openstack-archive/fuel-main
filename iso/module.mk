@@ -58,6 +58,7 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/mirror/make-changelog.done \
 		$(BUILD_DIR)/packages/build.done \
+		$(BUILD_DIR)/packages/build-late.done \
 		$(BUILD_DIR)/openstack/build.done \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)
@@ -186,19 +187,11 @@ endif
 ########################
 # BOOTSTRAP
 ########################
-# BOOTSTRAP_ART_NAME is defined in /bootstrap/module.mk
-BOOTSTRAP_FILES:=initramfs.img linux
-$(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES)): \
-		$(BUILD_DIR)/bootstrap/build.done
-	@mkdir -p $(@D)
-	cp $(BUILD_DIR)/bootstrap/$(@F) $@
-
 $(BUILD_DIR)/iso/isoroot-bootstrap.done: \
 		$(ISOROOT)/bootstrap/bootstrap.rsa \
-		$(addprefix $(ISOROOT)/bootstrap/, $(BOOTSTRAP_FILES))
 	$(ACTION.TOUCH)
 
-$(ISOROOT)/bootstrap/bootstrap.rsa: $(SOURCE_DIR)/bootstrap/ssh/id_rsa ;
+$(ISOROOT)/bootstrap/bootstrap.rsa: $(SOURCE_DIR)/bootstrap/ssh/id_rsa
 	$(ACTION.COPY)
 
 ########################
