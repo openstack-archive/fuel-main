@@ -243,6 +243,7 @@ curl
 daemonize
 dhcp
 docker-io
+fuel-bootstrap-image
 fuelmenu
 gdisk
 lrzip
@@ -411,11 +412,6 @@ cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/a
 # make links for backward compatibility
 ln -s ${repodir}/centos ${wwwdir}/centos
 ln -s ${repodir}/ubuntu ${wwwdir}/ubuntu
-
-# Copying bootstrap image
-mkdir -p ${wwwdir}/bootstrap
-cp -r ${SOURCE}/bootstrap/initramfs.img ${wwwdir}/bootstrap
-cp -r ${SOURCE}/bootstrap/linux ${wwwdir}/bootstrap
 
 # Copying target images
 cp -r ${SOURCE}/targetimages ${wwwdir}
