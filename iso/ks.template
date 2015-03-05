@@ -405,8 +405,15 @@ cp -r ${SOURCE}/ubuntu/db ${repodir}/ubuntu/x86_64
 cp -r ${SOURCE}/ubuntu/dists ${repodir}/ubuntu/x86_64
 cp -r ${SOURCE}/ubuntu/indices ${repodir}/ubuntu/x86_64
 cp -r ${SOURCE}/ubuntu/pool ${repodir}/ubuntu/x86_64
-cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/linux ${repodir}/ubuntu/x86_64/images
-cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/amd64/initrd.gz ${repodir}/ubuntu/x86_64/images
+
+# As far as we are not allowed to re-distribute ubuntu
+# debian-installer kernel and initrd we are going to download
+# these files just before starting actual provisioning.
+# But we still need to be able to create ubuntu cobbler distro
+# which requires kernel and initrd to be available. So, we
+# just touch these files to work around cobbler's limitation.
+touch ${repodir}/ubuntu/x86_64/images/linux
+touch ${repodir}/ubuntu/x86_64/images/initrd.gz
 
 # make links for backward compatibility
 ln -s ${repodir}/centos ${wwwdir}/centos
