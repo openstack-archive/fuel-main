@@ -1,9 +1,13 @@
 # Usage:
-# (eval (call prepare_file_source,package_name,file_name,source_path))
+# (eval (call prepare_file_source,package_name,file_name,source_path,optional_prerequisite))
 # Note: dependencies for deb targets are also specified here to make
 # sure the source is ready before the build is started.
 define prepare_file_source
+ifeq ($4,)
 $(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
+else
+$(BUILD_DIR)/packages/sources/$1/$2: $4
+endif
 $(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
 $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
@@ -78,7 +82,7 @@ $(eval $(call prepare_ruby21_source,ruby21-rubygem-astute,astute-$(PACKAGE_VERSI
 include $(SOURCE_DIR)/packages/rpm/module.mk
 include $(SOURCE_DIR)/packages/deb/module.mk
 
-.PHONY: packages
+.PHONY: packages packages-deb packages-rpm
 
 ifneq ($(BUILD_PACKAGES),0)
 $(BUILD_DIR)/packages/build.done: \
@@ -90,6 +94,26 @@ $(BUILD_DIR)/packages/build.done:
 	$(ACTION.TOUCH)
 
 packages: $(BUILD_DIR)/packages/build.done
-
 packages-deb: $(BUILD_DIR)/packages/deb/build.done
 packages-rpm: $(BUILD_DIR)/packages/rpm/build.done
+
+
+###################################
+#### LATE PACKAGES ################
+###################################
+$(eval $(call prepare_file_source,fuel-bootstrap-image,linux,$(BUILD_DIR)/bootstrap/linux,$(BUILD_DIR)/bootstrap/linux))
+$(eval $(call prepare_file_source,fuel-bootstrap-image,initramfs.img,$(BUILD_DIR)/bootstrap/initramfs.img,$(BUILD_DIR)/bootstrap/initramfs.img))
+$(eval $(call prepare_file_source,fuel-bootstrap-image,bootstrap.rsa,$(SOURCE_DIR)/bootstrap/ssh/id_rsa,$(SOURCE_DIR)/bootstrap/ssh/id_rsa))
+
+.PHONY: packages-late packages-rpm-late
+
+ifneq ($(BUILD_PACKAGES),0)
+$(BUILD_DIR)/packages/build-late.done: \
+		$(BUILD_DIR)/packages/rpm/build-late.done
+endif
+
+$(BUILD_DIR)/packages/build-late.done:
+	$(ACTION.TOUCH)
+
+packages-late: $(BUILD_DIR)/packages/build-late.done
+packages-rpm-late: $(BUILD_DIR)/packages/rpm/build-late.done
