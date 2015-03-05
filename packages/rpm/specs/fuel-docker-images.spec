@@ -1,7 +1,11 @@
-Name:      fuel-docker-images
-Summary:   Fuel Docker images
-Version:   1.0
-Release:   1
+%define name fuel-docker-images
+%define version 6.1.0
+%define release 1
+
+Name:    %{name}
+Summary:  Fuel Docker images
+Version: %{version}
+Release: %{release}
 License:   Apache 2.0
 BuildRoot: %{_tmppath}/%{name}-%{version}
 Source0:   fuel-images.tar.lrz
