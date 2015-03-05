@@ -33,6 +33,7 @@ Requires:    python-markupsafe >= 0.18
 Requires:    python-netaddr >= 0.7.10
 Requires:    python-netifaces >= 0.8
 Requires:    python-oslo-config >= 1:1.2.1
+Requires:    python-oslo-serialization >= 1.0.0
 Requires:    python-paste >= 1.7.5.1
 Requires:    python-ply >= 3.4
 Requires:    python-psycopg2 >= 2.5.1
