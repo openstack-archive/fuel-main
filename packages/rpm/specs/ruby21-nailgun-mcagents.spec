@@ -1,7 +1,7 @@
 %define srcname nailgun-mcagents
 Name:      ruby21-nailgun-mcagents
 Summary:   MCollective Agents
-Version:   6.0.0
+Version:   6.1.0
 Release:   1
 License:   GPLv2
 Source0:   %{srcname}.tar.gz
