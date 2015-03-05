@@ -61,7 +61,7 @@ $(BUILD_DIR)/packages/sources/$1/$2:
 	cd $(BUILD_DIR)/packages/sources/$1 && gzip -9 $1.tar && mv $1.tar.gz $2
 endef
 
-PACKAGE_VERSION=6.0.0
+PACKAGE_VERSION=6.1.0
 $(BUILD_DIR)/packages/source_%.done:
 	$(ACTION.TOUCH)
 

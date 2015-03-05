@@ -64,8 +64,7 @@ BASE_VERSION:=6.0
 #
 UPGRADE_VERSIONS?=\
 	$(CURRENT_VERSION):$(BASE_VERSION) \
-	5.1.1:5.1 \
-	5.0.2
+	6.0.1:6.0
 
 # Path to pre-built artifacts
 DEPS_DIR_CURRENT?=$(DEPS_DIR)/$(CURRENT_VERSION)
