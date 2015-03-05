@@ -16,7 +16,6 @@ $(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=ruby rpm-build tar py
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/buildd
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
-
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
 	sh -c "$${SANDBOX_UP}"
 	sh -c "$${SANDBOX_DOWN}"
@@ -27,24 +26,18 @@ $(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
 # Usage:
 # (eval (call build_rpm,package_name))
 define build_rpm
-$(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/packages/rpm/$1.done
-$(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/packages/rpm/$1-repocleanup.done
+$(BUILD_DIR)/packages/rpm/repo$2.done: $(BUILD_DIR)/packages/rpm/$1.done
+$(BUILD_DIR)/packages/rpm/repo$2.done: $(BUILD_DIR)/packages/rpm/$1-repocleanup.done
 
 # You can use package name as a target, for example: make ruby21-rubygem-astute
 # It will build astute rpm package
 $1: $(BUILD_DIR)/packages/rpm/$1.done
 
-$(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/mirror/centos/repo.done
+$(BUILD_DIR)/packages/rpm/$1.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/$1
+$(BUILD_DIR)/packages/rpm/$1.done: export SANDBOX_DOWN:=$$(SANDBOX_DOWN)
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/source_$1.done
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/rpm/buildd.tar.gz
-
-
-$(BUILD_DIR)/packages/rpm/$1.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/$1
-$(BUILD_DIR)/packages/rpm/$1.done: export SANDBOX_UP:=$$(SANDBOX_UP)
-$(BUILD_DIR)/packages/rpm/$1.done: export SANDBOX_DOWN:=$$(SANDBOX_DOWN)
-$(BUILD_DIR)/packages/rpm/$1.done: \
-		$(SOURCE_DIR)/packages/rpm/specs/$1.spec \
-		$(BUILD_DIR)/repos/repos.done
+$(BUILD_DIR)/packages/rpm/$1.done: $(SOURCE_DIR)/packages/rpm/specs/$1.spec
 	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	mkdir -p $$(SANDBOX) && \
 	sudo tar xzf $(BUILD_DIR)/packages/rpm/buildd.tar.gz -C $$(SANDBOX) && \
@@ -62,6 +55,7 @@ $(BUILD_DIR)/packages/rpm/$1-repocleanup.done: $(BUILD_DIR)/mirror/centos/repo.d
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages -regex '.*/$1-[^-]+-[^-]+' -delete
 	$$(ACTION.TOUCH)
 endef
+
 
 fuel_rpm_packages:=\
 fencing-agent \
@@ -82,7 +76,6 @@ python-fuelclient \
 ruby21-rubygem-astute
 
 $(eval $(foreach pkg,$(fuel_rpm_packages),$(call build_rpm,$(pkg))$(NEWLINE)))
-
 
 $(BUILD_DIR)/packages/rpm/repo.done:
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
@@ -112,4 +105,30 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
+	$(ACTION.TOUCH)
+
+
+#######################################
+# This section is for building container
+# packages that depend on other packages.
+# For example, bootstrap image package
+# assumes passing through the following build stages
+# 1) upstream mirror
+# 2) fuel packages
+# 3) bootstrap image (depends on 1 and 2)
+# 4) bootstrap image package (depends on 3)
+#######################################
+
+fuel_rpm_packages_late:=\
+fuel-bootstrap-image
+
+$(eval $(foreach pkg,$(fuel_rpm_packages_late),$(call build_rpm,$(pkg),-late)$(NEWLINE)))
+
+$(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/packages/rpm/repo.done
+	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u --target-directory $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages {} +
+	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
+		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/packages/rpm/build-late.done: $(BUILD_DIR)/packages/rpm/repo-late.done
 	$(ACTION.TOUCH)

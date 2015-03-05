@@ -245,6 +245,7 @@ curl
 daemonize
 dhcp
 docker-io
+fuel-bootstrap-image
 fuelmenu
 fuel-docker-images
 gdisk
@@ -415,18 +416,8 @@ cp -r ${SOURCE}/ubuntu/installer-amd64/current/images/netboot/ubuntu-installer/a
 ln -s ${repodir}/centos ${wwwdir}/centos
 ln -s ${repodir}/ubuntu ${wwwdir}/ubuntu
 
-# Copying bootstrap image
-mkdir -p ${wwwdir}/bootstrap
-cp -r ${SOURCE}/bootstrap/initramfs.img ${wwwdir}/bootstrap
-cp -r ${SOURCE}/bootstrap/linux ${wwwdir}/bootstrap
-
 # Copying target images
 cp -r ${SOURCE}/targetimages ${wwwdir}
-
-mkdir -p /root/.ssh
-chmod 700 /root/.ssh
-cp ${SOURCE}/bootstrap/bootstrap.rsa /root/.ssh
-chmod 600 /root/.ssh/bootstrap.rsa
 
 # --------------------------
 # UNPACKING PUPPET MANIFESTS
