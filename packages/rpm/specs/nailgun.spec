@@ -1,5 +1,5 @@
 %define name nailgun
-%define version 6.0.0
+%define version 6.0.1
 %define release 1
 
 Summary: Nailgun package
