@@ -1,3 +1,9 @@
+fencing-agent (6.0.1-1) precise; urgency=low
+
+  * Update code from upstream
+
+ -- Dmitry Pyzhov <dpyzhov@mirantis.com>  Thu, 05 Mar 2015 03:23:32 +0300
+
 python-tasklib (6.0.0-1) precise; urgency=low
 
   * Update code from upstream

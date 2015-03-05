@@ -1,5 +1,5 @@
 %define rbname astute
-%define version 6.0.0
+%define version 6.0.1
 %define release 1
 %global gemdir %(ruby -rubygems -e 'puts Gem::dir' 2>/dev/null)
 %global geminstdir %{gemdir}/gems/%{gemname}-%{version}
@@ -76,8 +76,8 @@ install -d -m 755 %{buildroot}%{_localstatedir}/log/astute
 %dir %attr(0755, naily, naily) %{_localstatedir}/log/%{rbname}
 %config(noreplace) %{_bindir}/astuted
 
-%doc %{gemdir}/doc/astute-6.0.0
-%{gemdir}/cache/astute-6.0.0.gem
-%{gemdir}/specifications/astute-6.0.0.gemspec
+%doc %{gemdir}/doc/astute-%{version}
+%{gemdir}/cache/astute-%{version}.gem
+%{gemdir}/specifications/astute-%{version}.gemspec
 
 %changelog
