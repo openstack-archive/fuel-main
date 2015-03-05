@@ -67,6 +67,7 @@ fuel_rpm_packages:=\
 fencing-agent \
 fuel-agent \
 fuel-image \
+fuel-provisioning-scripts \
 fuelmenu \
 nailgun-mcagents \
 ruby21-nailgun-mcagents \
@@ -112,4 +113,3 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
 	$(ACTION.TOUCH)
-
