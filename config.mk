@@ -224,12 +224,12 @@ MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSIO
 MIRROR_CENTOS_KERNEL?=http://mirror.centos.org/centos-6/6.6/
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 MIRROR_CENTOS_KERNEL_BASEURL?=$(MIRROR_CENTOS_KERNEL)/os/$(CENTOS_ARCH)
-MIRROR_UBUNTU?=http://mirrors-local-msk.msk.mirantis.net/ubuntu-$(PRODUCT_VERSION)/
+MIRROR_UBUNTU?=http://osci-mirror-msk.msk.mirantis.net/pkgs/ubuntu/
 # Unfortunately security updates are handled in a manner incompatible with
 # Debian/Ubuntu. That is, instead of having ${UBUNTU_RELEASE}-updates
 # directory there's a different APT repo with security updates residing
 # in ${UBUNTU_RELEASE}/main
-MIRROR_UBUNTU_SECURITY?=http://mirrors-local-msk.msk.mirantis.net/ubuntu-security-$(PRODUCT_VERSION)/
+MIRROR_UBUNTU_SECURITY?=http://osci-mirror-msk.msk.mirantis.net/pkgs/ubuntu/
 MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
