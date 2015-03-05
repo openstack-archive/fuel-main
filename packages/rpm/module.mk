@@ -67,6 +67,7 @@ fuel_rpm_packages:=\
 fencing-agent \
 fuel-agent \
 fuel-image \
+fuel-download-debian-installer \
 fuelmenu \
 nailgun-mcagents \
 ruby21-nailgun-mcagents \
