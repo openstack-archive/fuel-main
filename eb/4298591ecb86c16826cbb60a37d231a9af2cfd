@@ -1,0 +1,20 @@
+Verified+2: Jenkins
+Code-Review+1: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Code-Review+1: Aleksandr Gordeev <agordeev@mirantis.com>
+Code-Review+1: Lukasz Oles <loles@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+1: Dmitry Burmistrov <dburmistrov@mirantis.com>
+Code-Review+2: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Workflow+1: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Code-Review+1: Alexander Kislitsky <akislitsky@mirantis.com>
+Code-Review+1: Kamil Sambor <ksambor@mirantis.com>
+Code-Review+1: Ivan Kliuk <ikliuk@mirantis.com>
+Code-Review+1: Przemyslaw Kaminski <pkaminski@mirantis.com>
+Code-Review+1: Artem Silenkov <asilenkov@mirantis.com>
+Code-Review+1: Bart?omiej Piotrowski <bpiotrowski@mirantis.com>
+Code-Review+1: Igor Gnatenko <i.gnatenko.brain@gmail.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 05 Mar 2015 12:40:04 +0000
+Reviewed-on: https://review.openstack.org/158674
+Project: stackforge/fuel-main
+Branch: refs/heads/master
