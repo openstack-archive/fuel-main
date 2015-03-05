@@ -52,7 +52,7 @@ $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	cd $3 && gem build *.gemspec && cp $2 $(BUILD_DIR)/packages/sources/$1/$2
 endef
 
-PACKAGE_VERSION=6.0.0
+PACKAGE_VERSION=6.1.0
 $(BUILD_DIR)/packages/source_%.done:
 	$(ACTION.TOUCH)
 
