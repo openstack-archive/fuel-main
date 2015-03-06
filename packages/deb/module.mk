@@ -10,11 +10,17 @@ clean-deb:
 	done
 	sudo rm -rf $(BUILD_DIR)/packages/deb
 
+ifeq ($(BUILD_PACKAGES_WITH_UPSTREAM),1)
+$(BUILD_DIR)/packages/deb/buildd.tar.gz: SANDBOX_MIRROR_TO_USE:=$(MIRROR_UBUNTU_OS_BASEURL)
+else
+$(BUILD_DIR)/packages/deb/buildd.tar.gz: SANDBOX_MIRROR_TO_USE:=file://$(LOCAL_MIRROR_UBUNTU_OS_BASEURL)
+$(BUILD_DIR)/packages/deb/buildd.tar.gz: $(BUILD_DIR)/mirror/ubuntu/build.done
+endif
 $(BUILD_DIR)/packages/deb/buildd.tar.gz: SANDBOX_DEB_PKGS:=wget bzip2 apt-utils build-essential python-setuptools devscripts debhelper fakeroot
 $(BUILD_DIR)/packages/deb/buildd.tar.gz: SANDBOX_UBUNTU:=$(BUILD_DIR)/packages/deb/chroot
 $(BUILD_DIR)/packages/deb/buildd.tar.gz: export SANDBOX_UBUNTU_UP:=$(SANDBOX_UBUNTU_UP)
 $(BUILD_DIR)/packages/deb/buildd.tar.gz: export SANDBOX_UBUNTU_DOWN:=$(SANDBOX_UBUNTU_DOWN)
-$(BUILD_DIR)/packages/deb/buildd.tar.gz: $(BUILD_DIR)/mirror/ubuntu/build.done
+$(BUILD_DIR)/packages/deb/buildd.tar.gz:
 	sh -c "$${SANDBOX_UBUNTU_UP}"
 	sh -c "$${SANDBOX_UBUNTU_DOWN}"
 	sudo rm -f $(SANDBOX_UBUNTU)/var/cache/apt/archives/*.deb
@@ -25,8 +31,10 @@ $(BUILD_DIR)/packages/deb/buildd.tar.gz: $(BUILD_DIR)/mirror/ubuntu/build.done
 # (eval (call build_deb,package_name))
 define build_deb
 $(BUILD_DIR)/packages/deb/repo.done: $(BUILD_DIR)/packages/deb/$1.done
+ifeq ($(BUILD_PACKAGES_WITH_UPSTREAM),0)
 $(BUILD_DIR)/packages/deb/repo.done: $(BUILD_DIR)/packages/deb/$1-repocleanup.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/mirror/ubuntu/build.done
+endif
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/source_$1.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/deb/buildd.tar.gz
 $(BUILD_DIR)/packages/deb/$1.done: SANDBOX_UBUNTU:=$(BUILD_DIR)/packages/deb/SANDBOX/$1
@@ -39,10 +47,12 @@ $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/repos/repos.done
 	if [ ! -e "$$(SANDBOX_UBUNTU)/etc/debian_version" ]; then \
 		sudo tar xaf $(BUILD_DIR)/packages/deb/buildd.tar.gz -C $$(SANDBOX_UBUNTU); \
 	fi
+ifeq ($(BUILD_PACKAGES_WITH_UPSTREAM),0)
 	if ! mountpoint -q $$(SANDBOX_UBUNTU)/tmp/apt; then \
 		sudo mount -o bind $(LOCAL_MIRROR_UBUNTU) $$(SANDBOX_UBUNTU)/tmp/apt; \
 		sudo mount -o remount,ro,bind $$(SANDBOX_UBUNTU)/tmp/apt; \
 	fi
+endif
 	mountpoint -q $$(SANDBOX_UBUNTU)/proc || sudo mount -t proc sandbox_ubuntu_proc $$(SANDBOX_UBUNTU)/proc
 	sudo mkdir -p $$(SANDBOX_UBUNTU)/tmp/$1
 ifeq ($1,$(filter $1,nailgun-net-check python-tasklib))
@@ -67,14 +77,19 @@ endef
 fuel_debian_packages:=fencing-agent nailgun-mcagents nailgun-net-check nailgun-agent python-tasklib
 $(eval $(foreach pkg,$(fuel_debian_packages),$(call build_deb,$(pkg))$(NEWLINE)))
 
+ifeq ($(BUILD_PACKAGES_WITH_UPSTREAM),0)
 $(BUILD_DIR)/packages/deb/repo.done:
 	sudo find $(BUILD_DIR)/packages/deb/packages -name '*.deb' -exec cp -u {} $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/pool/main \;
 	echo "Applying fix for upstream bug in dpkg..."
 	-sudo patch -N /usr/bin/dpkg-scanpackages < $(SOURCE_DIR)/packages/dpkg.patch
 	sudo $(SOURCE_DIR)/regenerate_ubuntu_repo.sh $(LOCAL_MIRROR_UBUNTU_OS_BASEURL) $(UBUNTU_RELEASE)
 	$(ACTION.TOUCH)
-
-ifneq (0,$(strip $(BUILD_DEB_PACKAGES)))
-$(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/repo.done
+else
+$(BUILD_DIR)/packages/deb/repo.done:
+	$(ACTION.TOUCH)
 endif
+ifneq (0,$(strip $(BUILD_DEB_PACKAGES)))
 
+$(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/repo.done
+	$(ACTION.TOUCH)
+endif

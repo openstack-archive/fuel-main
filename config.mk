@@ -113,6 +113,9 @@ UBUNTU_ARCH:=amd64
 UBUNTU_IMAGE_RELEASE:=$(UBUNTU_MAJOR)$(UBUNTU_MINOR)
 SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
+# build packages with upstream mirror
+BUILD_PACKAGES_WITH_UPSTREAM?=0
+
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
 BUILD_DEB_PACKAGES?=1
