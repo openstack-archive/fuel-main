@@ -119,7 +119,8 @@ $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
 #######################################
 
 fuel_rpm_packages_late:=\
-fuel-bootstrap-image
+fuel-bootstrap-image \
+fuel-target-centos-images
 
 $(eval $(foreach pkg,$(fuel_rpm_packages_late),$(call build_rpm,$(pkg),-late)$(NEWLINE)))
 
