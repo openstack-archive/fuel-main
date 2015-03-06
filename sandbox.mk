@@ -1,7 +1,7 @@
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
-baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+baseurl=$(MIRROR_TO_USE)
 gpgcheck=0
 enabled=1
 endef
