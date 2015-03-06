@@ -1,7 +1,7 @@
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
-baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+baseurl=$(MIRROR_TO_USE)
 gpgcheck=0
 enabled=1
 endef
@@ -34,7 +34,11 @@ cp /etc/resolv.conf $(SANDBOX)/etc/resolv.conf
 cat > $(SANDBOX)/etc/yum.repos.d/base.repo <<EOF
 $(yum_local_repo)
 EOF
-sudo rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
+# download centos-release
+yumdownloader --resolve --archlist=$(CENTOS_ARCH) \
+-c $(SANDBOX)/etc/yum.conf \
+--destdir=$(BUILD_DIR)/packages/rpm/ centos-release
+sudo rpm -i --root=$(SANDBOX) `find $(BUILD_DIR)/packages/rpm/ -maxdepth 1 -name "centos-release*rpm" | head -1` || \
 echo "centos-release already installed"
 sudo rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
 echo 'Rebuilding RPM DB'
