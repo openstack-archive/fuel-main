@@ -244,6 +244,7 @@ daemonize
 dhcp
 docker-io
 fuel-bootstrap-image
+fuel-target-centos-images
 fuelmenu
 gdisk
 lrzip
