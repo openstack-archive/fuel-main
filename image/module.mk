@@ -17,7 +17,9 @@ $(BUILD_DIR)/image/ubuntu/build.done: $(ARTS_DIR)/$(TARGET_UBUNTU_IMG_ART_NAME)
 $(BUILD_DIR)/image/centos/build.done: $(ARTS_DIR)/$(TARGET_CENTOS_IMG_ART_NAME)
 	$(ACTION.TOUCH)
 
+# We are going to build ubuntu images on the master node.
+# That is the reason why only centos images are set here
+# as a prerequisite.
 $(BUILD_DIR)/image/build.done: \
-	$(BUILD_DIR)/image/ubuntu/build.done \
 	$(BUILD_DIR)/image/centos/build.done
 	$(ACTION.TOUCH)
