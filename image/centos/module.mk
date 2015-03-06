@@ -19,6 +19,7 @@ ifdef TARGET_CENTOS_DEP_FILE
 $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): $(TARGET_CENTOS_DEP_FILE)
 	$(ACTION.COPY)
 else
+$(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): SANDBOX_MIRROR_TO_USE:=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): $(BUILD_DIR)/mirror/centos/build.done
 $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): $(BUILD_DIR)/packages/rpm/build.done
 $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): SANDBOX:=$(BUILD_DIR)/image/centos/SANDBOX
@@ -26,7 +27,8 @@ $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): export SANDBOX_UP:=$(SANDBOX_
 $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): export SANDBOX_DOWN:=$(SANDBOX_DOWN)
 $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME):
 	@mkdir -p $(@D)
-	mkdir -p $(BUILD_DIR)/image/centos
+	mkdir -p $(SANDBOX)
+	sudo mount -n -t tmpfs -o size=4096M buildd_chroot $(SANDBOX)
 	sudo sh -c "$${SANDBOX_UP}"
 	sudo yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install tar python-setuptools git python-imgcreate python-argparse PyYAML
 	sudo cp /etc/mtab $(SANDBOX)/etc/mtab
@@ -42,4 +44,5 @@ $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME):
 	gzip -f $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)*.img
 	sudo sh -c "$${SANDBOX_DOWN}"
 	tar cf $@ -C $(BUILD_DIR)/image/centos . --exclude SANDBOX
+	sudo umount $(SANDBOX)
 endif
