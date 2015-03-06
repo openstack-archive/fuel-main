@@ -12,12 +12,18 @@ clean-rpm:
 
 RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
 
+ifeq ($(BUILD_PACKAGES_WITH_UPSTREAM),1)
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_MIRROR_TO_USE:=$(MIRROR_CENTOS_OS_BASEURL)
+else
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_MIRROR_TO_USE:=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
+endif
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=ruby rpm-build tar python-setuptools python-pbr
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/buildd
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
 
-$(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz:
 	sh -c "$${SANDBOX_UP}"
 	sh -c "$${SANDBOX_DOWN}"
 	sudo tar czf $@.tmp -C $(SANDBOX) .
@@ -27,13 +33,17 @@ $(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
 # (eval (call build_rpm,package_name))
 define build_rpm
 $(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/packages/rpm/$1.done
+ifeq ($(BUILD_PACKAGES_WITH_UPSTREAM),0)
 $(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/packages/rpm/$1-repocleanup.done
+endif
 
 # You can use package name as a target, for example: make ruby21-rubygem-astute
 # It will build astute rpm package
 $1: $(BUILD_DIR)/packages/rpm/$1.done
 
+ifeq ($(BUILD_PACKAGES_WITH_UPSTREAM),0)
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/mirror/centos/repo.done
+endif
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/source_$1.done
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/rpm/buildd.tar.gz
 
@@ -82,10 +92,14 @@ $(eval $(foreach pkg,$(fuel_rpm_packages),$(call build_rpm,$(pkg))$(NEWLINE)))
 
 
 $(BUILD_DIR)/packages/rpm/repo.done:
+ifeq ($(BUILD_PACKAGES_WITH_UPSTREAM),0)
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
+else
+	$(ACTION.TOUCH)
+endif
 
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
 	$(ACTION.TOUCH)

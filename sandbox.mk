@@ -1,7 +1,7 @@
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
-baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+baseurl=$(SANDBOX_MIRROR_TO_USE)
 gpgcheck=0
 enabled=1
 endef
@@ -34,7 +34,11 @@ cp /etc/resolv.conf $(SANDBOX)/etc/resolv.conf
 cat > $(SANDBOX)/etc/yum.repos.d/base.repo <<EOF
 $(yum_local_repo)
 EOF
-sudo rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
+# download centos-release
+yumdownloader --resolve --archlist=$(CENTOS_ARCH) \
+-c $(SANDBOX)/etc/yum.conf \
+--destdir=$(BUILD_DIR)/packages/rpm/ centos-release
+sudo rpm -i --root=$(SANDBOX) `find $(BUILD_DIR)/packages/rpm/ -maxdepth 1 -name "centos-release*rpm" | head -1` || \
 echo "centos-release already installed"
 sudo rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
 echo 'Rebuilding RPM DB'
@@ -63,10 +67,12 @@ chmod 755 $(SANDBOX_UBUNTU)/usr/sbin/policy-rc.d
 mkdir -p $(SANDBOX_UBUNTU)/etc/init.d
 touch $(SANDBOX_UBUNTU)/etc/init.d/.legacy-bootordering
 echo "Running debootstrap"
-sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) file://$(LOCAL_MIRROR)/ubuntu
+sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) $(SANDBOX_MIRROR_TO_USE)
 sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
 echo "Generating utf8 locale"
 sudo chroot $(SANDBOX_UBUNTU) /bin/sh -c 'locale-gen en_US.UTF-8; dpkg-reconfigure locales'
+
+if [[ $(BUILD_PACKAGES_WITH_UPSTREAM) -eq 0 ]]; then
 echo "Preparing directory for chroot local mirror"
 sudo mkdir -p $(SANDBOX_UBUNTU)/tmp/apt
 echo "Bind mounting local Ubuntu mirror to $(SANDBOX_UBUNTU)/tmp/apt"
@@ -74,6 +80,8 @@ sudo mount -o bind $(LOCAL_MIRROR)/ubuntu $(SANDBOX_UBUNTU)/tmp/apt
 sudo mount -o remount,ro,bind $(SANDBOX_UBUNTU)/tmp/apt
 echo "Configuring apt sources.list: deb file:///tmp/apt $(UBUNTU_RELEASE) main"
 echo "deb file:///tmp/apt $(UBUNTU_RELEASE) main" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/sources.list
+fi
+
 echo "Allowing using unsigned repos"
 echo "APT::Get::AllowUnauthenticated 1;" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
 echo "Updating apt package database"
