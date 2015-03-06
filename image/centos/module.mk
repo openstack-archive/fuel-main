@@ -35,11 +35,10 @@ $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME):
 	sudo cp $(SOURCE_DIR)/image/centos/centos.ks $(SANDBOX)/centos.ks
 	sudo mkdir -p $(SANDBOX)/mirror
 	sudo mount -o bind $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(SANDBOX)/mirror
-	sudo chroot $(SANDBOX) python build_centos_image.py -k centos.ks -n centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH) -s "$(SEPARATE_IMAGES)"
+	sudo chroot $(SANDBOX) python build_centos_image.py -k centos.ks -n centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH) -s "$(SEPARATE_IMAGES)" -O centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH).yaml
 	sudo umount $(SANDBOX)/mirror
-	sudo mv $(SANDBOX)/profile.yaml $(BUILD_DIR)/image/centos/
-	sudo mv $(SANDBOX)/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)*.img $(BUILD_DIR)/image/centos/
+	sudo mv $(SANDBOX)/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)* $(BUILD_DIR)/image/centos/
 	gzip -f $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)*.img
 	sudo sh -c "$${SANDBOX_DOWN}"
-	tar cf $@ -C $(BUILD_DIR)/image/centos . --exclude SANDBOX
+	tar cf $@ $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)* --xform s:^:/: --xform s:$(BUILD_DIR)/image/centos/::
 endif
