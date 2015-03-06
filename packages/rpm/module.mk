@@ -12,15 +12,24 @@ clean-rpm:
 
 RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
 
+ifeq ($(BUILD_PACKAGES_WITH_UPSTREAM),1)
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_MIRROR_TO_USE:=$(MIRROR_CENTOS_OS_BASEURL)
+else
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_MIRROR_TO_USE:=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
+endif
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=ruby rpm-build tar python-setuptools python-pbr
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/buildd
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
 
-$(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz:
+	mkdir -p $(SANDBOX)
+	sudo mount -n -t tmpfs -o size=768M buildd_chroot $(SANDBOX)
 	sh -c "$${SANDBOX_UP}"
 	sh -c "$${SANDBOX_DOWN}"
 	sudo tar czf $@.tmp -C $(SANDBOX) .
+	sudo umount $(SANDBOX)
 	mv $@.tmp $@
 
 
@@ -28,13 +37,17 @@ $(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
 # (eval (call build_rpm,package_name))
 define build_rpm
 $(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/packages/rpm/$1.done
+ifeq ($(BUILD_PACKAGES_WITH_UPSTREAM),0)
 $(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/packages/rpm/$1-repocleanup.done
+endif
 
 # You can use package name as a target, for example: make ruby21-rubygem-astute
 # It will build astute rpm package
 $1: $(BUILD_DIR)/packages/rpm/$1.done
 
+ifeq ($(BUILD_PACKAGES_WITH_UPSTREAM),0)
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/mirror/centos/repo.done
+endif
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/source_$1.done
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/rpm/buildd.tar.gz
 
@@ -46,7 +59,7 @@ $(BUILD_DIR)/packages/rpm/$1.done: \
 		$(SOURCE_DIR)/packages/rpm/specs/$1.spec \
 		$(BUILD_DIR)/repos/repos.done
 	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
-	mkdir -p $$(SANDBOX) && \
+	mkdir -p $$(SANDBOX) && sudo mount -n -t tmpfs -o size=768M $1_chroot "$$(SANDBOX)" && \
 	sudo tar xzf $(BUILD_DIR)/packages/rpm/buildd.tar.gz -C $$(SANDBOX) && \
 	sudo mount --bind /proc $$(SANDBOX)/proc && \
 	sudo mount --bind /dev $$(SANDBOX)/dev && \
@@ -56,6 +69,7 @@ $(BUILD_DIR)/packages/rpm/$1.done: \
 	sudo chroot $$(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/$1.spec
 	cp $$(SANDBOX)/tmp/RPMS/*/$1-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	sudo sh -c "$$$${SANDBOX_DOWN}"
+	sudo umount "$$(SANDBOX)"
 	$$(ACTION.TOUCH)
 
 $(BUILD_DIR)/packages/rpm/$1-repocleanup.done: $(BUILD_DIR)/mirror/centos/repo.done
@@ -82,12 +96,16 @@ ruby21-rubygem-astute
 
 $(eval $(foreach pkg,$(fuel_rpm_packages),$(call build_rpm,$(pkg))$(NEWLINE)))
 
-
+ifeq ($(BUILD_PACKAGES_WITH_UPSTREAM),0)
 $(BUILD_DIR)/packages/rpm/repo.done:
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
+else
+$(BUILD_DIR)/packages/rpm/repo.done:
+	$(ACTION.TOUCH)
+endif
 
 $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/fuel-docker-images
 $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
@@ -112,4 +130,3 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
 	$(ACTION.TOUCH)
-
