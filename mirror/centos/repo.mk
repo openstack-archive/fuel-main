@@ -62,7 +62,6 @@ $(BUILD_DIR)/mirror/centos/src-rpm-download.done: $(BUILD_DIR)/mirror/centos/src
 	xargs --no-run-if-empty -n1 -P4 wget -nv -P "$$dst" < $<
 	$(ACTION.TOUCH)
 
-mirantis_rpms_list:=$(BUILD_DIR)/mirror/centos/mirantis_rpms.list
 
 $(BUILD_DIR)/mirror/centos/urls.list: $(SOURCE_DIR)/requirements-rpm.txt \
 		$(BUILD_DIR)/mirror/centos/yum-config.done
@@ -86,49 +85,25 @@ $(BUILD_DIR)/mirror/centos/urls.list: $(SOURCE_DIR)/requirements-rpm.txt \
 	sort -u < $@.pre > $@.tmp
 	mv $@.tmp $@
 
-
-$(BUILD_DIR)/mirantis_rpm_pkgs_list.mk: $(BUILD_DIR)/mirror/centos/urls.list
-	sed -rne '/$(subst /,\/,$(MIRROR_FUEL))/ s/^.*[/]([^/]+)\.($(CENTOS_ARCH)|noarch)\.rpm$$/\1\\/p' < $< > $@.pre.list
-	sort -u < $@.pre.list > $@.list && \
-	echo 'mirantis_rpm_pkgs_list:=\\' > $@.tmp && \
-	cat $@.list >> $@.tmp && \
-	echo '$$(empty)' >> $@.tmp && \
+$(BUILD_DIR)/mirror/centos/mirantis_rpms.list: $(BUILD_DIR)/mirror/centos/urls.list
+	sed -rne '/$(subst /,\/,$(MIRROR_FUEL))/ s/^.*[/]([^/]+)\.($(CENTOS_ARCH)|noarch)\.rpm$$/\1/p' < $< > $@.pre && \
+	sort -u < $@.pre > $@.tmp && \
 	mv $@.tmp $@
 
-ifneq (,$(strip $(YUM_DOWNLOAD_SRC)))
-ifeq (,$(findstring clean,$(MAKECMDGOALS)))
-include $(BUILD_DIR)/mirantis_rpm_pkgs_list.mk
-endif
-
-mirantis_src_rpm_urls_list:=$(mirantis_rpm_pkgs_list:%=$(BUILD_DIR)/mirror/centos/src_lists/%.list)
-
-$(mirantis_src_rpm_urls_list): $(BUILD_DIR)/mirror/centos/src_lists/%.list: \
-		$(BUILD_DIR)/mirror/centos/yum-config.done \
-		$(SOURCE_DIR)/requirements-rpm.txt
-	tmp_installchroot=$(dir $(centos_empty_installroot))installchroot-src-$*; \
-	cp -al "$(centos_empty_installroot)" "$$tmp_installchroot" && \
+$(BUILD_DIR)/mirror/centos/src_urls.list: $(BUILD_DIR)/mirror/centos/mirantis_rpms.list
 	mkdir -p "$(@D)" && \
 	env \
-		TMPDIR="$$tmp_installchroot/cache" \
-		TMP="$$tmp_installchroot/cache" \
+		TMPDIR="$(centos_empty_installroot)/cache" \
+		TMP="$(centos_empty_installroot)/cache" \
 	yumdownloader -q --urls \
 		--archlist=src --source \
-		--installroot="$$tmp_installchroot" \
+		--installroot="$(centos_empty_installroot)" \
 		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
 		--cacheonly \
-		 $* > $@.tmp 2>$@.log && \
-	rm -rf "$$tmp_installchroot" && \
-	mv $@.tmp $@
-
-$(BUILD_DIR)/mirror/centos/src_urls.list: $(mirantis_src_rpm_urls_list)
-	mkdir -p "$(@D)" && \
-	cat $^ > $@.pre && \
+		`cat $<` > $@.pre 2>$@.log
 	sed -rne '/\.rpm$$/ {p}' -i $@.pre && \
-	sort -u $@.pre > $@.tmp && \
+	sort -u < $@.pre > $@.tmp && \
 	mv $@.tmp $@
-
-endif
-# YUM_DOWNLOAD_SRC
 
 show-yum-urls-centos: $(BUILD_DIR)/mirror/centos/urls.list
 	cat $<
