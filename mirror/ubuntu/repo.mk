@@ -159,7 +159,11 @@ $(nonconflicting_urls_list): $(workdir)/requirements-deb.txt $(apt_setup_done)
 		mv "$(conflicting_pkgs_list).tmp" "$(conflicting_pkgs_list)" && \
 		mv "$@.tmp" "$@"; \
 	else \
-		cp "$(SOURCE_DIR)/requirements_deb.txt" "$(conflicting_pkgs_list)" && \
+		echo 'repo.mk: WARNING: too many conflicting packages. Broken packages/mirror?' >&2; \
+		cat $(workdir)/apt_*.out $(workdir)/apt_*.log >&2; \
+		( echo 'sources.list:'; cat '$(apt_altstate)/etc/apt/sources.list' ) >&2; \
+		echo 'Trying to process packages one by one (this is slow)' >&2; \
+		cp "$(workdir)/requirements-deb.txt" "$(conflicting_pkgs_list)" && \
 		echo '$(extra_deb_pkgs)' >> "$(conflicting_pkgs_list)" && \
 		touch "$@"; \
 	fi
