@@ -29,7 +29,6 @@ BOOTSTRAP_RPMS:=\
 	ql2100-firmware \
 	ql2200-firmware \
 	ql23xx-firmware \
-	cronie-noanacron \
 	crontabs \
 	dhclient \
 	dmidecode \
@@ -42,6 +41,7 @@ BOOTSTRAP_RPMS:=\
 	openssh-clients \
 	openssh-server \
 	pciutils \
+	plymouth \
 	rsyslog \
 	scapy \
 	tcpdump \
