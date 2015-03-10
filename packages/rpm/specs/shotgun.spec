@@ -22,6 +22,7 @@ Requires:    tar
 Requires:    gzip
 Requires:    bzip2
 Requires:    openssh-clients
+Requires:    PyYAML >= 3.10
 
 %description
 Shotgun package
