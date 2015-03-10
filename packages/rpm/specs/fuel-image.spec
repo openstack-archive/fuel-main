@@ -1,5 +1,5 @@
 %define name fuel-image
-%define version 6.1.0
+%define version 6.0.0
 %define release 1
 
 Summary: Fuel-image package
