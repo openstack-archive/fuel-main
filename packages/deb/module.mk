@@ -76,5 +76,6 @@ $(BUILD_DIR)/packages/deb/repo.done:
 
 ifneq (0,$(strip $(BUILD_DEB_PACKAGES)))
 $(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/repo.done
+	$(ACTION.TOUCH)
 endif
 
