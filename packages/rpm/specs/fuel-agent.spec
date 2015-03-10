@@ -30,6 +30,7 @@ Requires:    python-stevedore
 Requires:    python-jinja2
 Requires:    python-requests
 Requires:    python-urllib3
+Requires:    PyYAML
 Requires:    python-argparse
 Requires:    python-pbr
 Requires:    tar
