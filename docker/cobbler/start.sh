@@ -10,6 +10,12 @@ mkdir -p /var/log/cobbler/{anamon,kicklog,syslog,tasks}
 # reset authorized_keys file so puppet can a write new one
 rm -f /etc/cobbler/authorized_keys
 
+# Because /var/lib/cobbler is mounted as a volume, reinstall if its files are
+# missing
+if rpm -V cobbler | grep -q missing; then
+  yum reinstall -q -y cobbler
+fi
+
 # Make sure services are not running (no pids, etc), puppet will
 # configure and bring them up.
 /etc/init.d/httpd stop
