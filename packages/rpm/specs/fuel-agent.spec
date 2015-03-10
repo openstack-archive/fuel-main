@@ -29,6 +29,7 @@ Requires:    python-six
 Requires:    python-stevedore
 Requires:    python-jinja2
 Requires:    python-requests
+Requires:    python-urllib3
 Requires:    python-argparse
 Requires:    python-pbr
 Requires:    tar
