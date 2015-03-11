@@ -15,10 +15,14 @@ BuildRequires:  python-setuptools
 BuildArch: noarch
 
 # fuel_health_reqs
+Requires:    python-amqplib >= 1.0.2
+Requires:    python-anyjson >= 0.3.3
+Requires:    python-argparse >= 1.2.1
 Requires:    python-oslo-config >= 1.1.1
 Requires:    python-ceilometerclient >= 1.0.9
 Requires:    python-cinderclient >= 1.0.6
 Requires:    python-keystoneclient >= 0.11
+Requires:    python-kombu >= 1:3.0.16
 Requires:    python-novaclient >= 1:2.15.0
 Requires:    python-heatclient >= 0.2.5
 Requires:    python-muranoclient >= 0.2.11
