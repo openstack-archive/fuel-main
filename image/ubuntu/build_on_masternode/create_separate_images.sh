@@ -266,13 +266,13 @@ function apt_get_download_try_harder {
 function setup_apt_mirrors {
     rm -f ${TMP_CHROOT_DIR}/etc/apt/sources.list
     rm -f ${TMP_CHROOT_DIR}/etc/apt/preferences
-    for ent in $(echo "$UBUNTU_MIRRORS"| tr ',' '\n'); do
+    for ent in $(echo "$UBUNTU_MIRRORS"| tr ' ' '{' | tr ',' '\n'); do
         # expecting 'suite:section:priority:uri'
-        local suite=$(echo $ent | cut -d ':' -f1)
-        local section=$(echo $ent | cut -d ':' -f2)
-        local priority=$(echo $ent | cut -d ':' -f3)
-        local uri=$(echo $ent | cut -d ':' -f4-)
-        local host=$(echo $uri | cut -d '/' -f3 | cut -d ':' -f1)
+        local suite=$(echo $ent | cut -d ':' -f1 | tr '{' ' ')
+        local section=$(echo $ent | cut -d ':' -f2 | tr '{' ' ')
+        local priority=$(echo $ent | cut -d ':' -f3 | tr '{' ' ')
+        local uri=$(echo $ent | cut -d ':' -f4- | tr '{' ' ')
+        local host=$(echo $uri | cut -d '/' -f3 | cut -d ':' -f1 | tr '{' ' ')
         /bin/sh -c "echo deb ${uri} ${suite} ${section} >> ${TMP_CHROOT_DIR}/etc/apt/sources.list"
         /bin/sh -c "echo \"Package: *\" >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
         /bin/sh -c "echo \"Pin: origin \"${host}\"\" >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
