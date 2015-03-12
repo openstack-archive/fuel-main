@@ -208,7 +208,9 @@ echo "partition pv.001 --ondisk=${tgtdrive} --size=30000 --grow" >> /tmp/partiti
 echo "volgroup os pv.001" >> /tmp/partition.ks
 echo "logvol swap --vgname=os --recommended --name=swap" >> /tmp/partition.ks
 echo "logvol / --vgname=os --size=10000 --name=root --fstype=ext4" >> /tmp/partition.ks
-echo "logvol /var --vgname=os --size=1 --grow --name=var --fstype=xfs" >> /tmp/partition.ks
+echo "logvol /var --vgname=os --size=10000 --percent 60 --grow --name=var --fstype=ext4" >> /tmp/partition.ks
+echo "logvol /var/log --vgname=os --size=4096 --percent 40 --grow --name=varlog --fstype=ext4" >> /tmp/partition.ks
+
 
 # bootloader
 echo "bootloader --location=mbr --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
