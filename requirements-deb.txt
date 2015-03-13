@@ -133,8 +133,8 @@ neutron-vpn-agent
 nfs-common
 nginx
 nmap
-node-less
 nodejs
+node-less
 nova-api
 nova-cert
 nova-compute-kvm
@@ -154,6 +154,7 @@ openstack-dashboard
 openvswitch-switch
 os-prober
 pacemaker
+pcs
 percona-toolkit
 percona-xtrabackup
 pssh
