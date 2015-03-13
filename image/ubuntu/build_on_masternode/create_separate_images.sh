@@ -266,22 +266,31 @@ function apt_get_download_try_harder {
 function setup_apt_mirrors {
     rm -f ${TMP_CHROOT_DIR}/etc/apt/sources.list
     rm -f ${TMP_CHROOT_DIR}/etc/apt/preferences
-    for ent in $(echo "$UBUNTU_MIRRORS"| tr ' ' '{' | tr ',' '\n'); do
+    IFS=','
+    set -- $UBUNTU_MIRRORS
+    unset IFS
+    for ent; do
         # expecting 'suite:section:priority:uri'
-        local suite=$(echo $ent | cut -d ':' -f1 | tr '{' ' ')
-        local section=$(echo $ent | cut -d ':' -f2 | tr '{' ' ')
-        local priority=$(echo $ent | cut -d ':' -f3 | tr '{' ' ')
-        local uri=$(echo $ent | cut -d ':' -f4- | tr '{' ' ')
-        local host=$(echo $uri | cut -d '/' -f3 | cut -d ':' -f1 | tr '{' ' ')
+        IFS=':'
+        set -- $ent
+        unset IFS
+        local suite="$1"
+        local section="$2"
+        local priority="$3"
+        shift; shift; shift
+        local uri="$@"
+        uri=${uri// /:}
+        local section_str=""
         /bin/sh -c "echo deb ${uri} ${suite} ${section} >> ${TMP_CHROOT_DIR}/etc/apt/sources.list"
-        /bin/sh -c "echo \"Package: *\" >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
-        /bin/sh -c "echo \"Pin: origin \"${host}\"\" >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
-        /bin/sh -c "echo \"Pin: release n=${UBUNTU_RELEASE}\" >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
         for sec in $(echo ${section}); do
-            /bin/sh -c "echo \"Pin: release c=${sec}\" >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
+            section_str+=",c=${sec}"
         done
-        /bin/sh -c "echo \"Pin-Priority: ${priority}\" >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
-        /bin/sh -c "echo >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
+        cat >> ${TMP_CHROOT_DIR}/etc/apt/preferences <<-EOF
+Package: *
+Pin: release n=${suite}${section_str}
+Pin-Priority: ${priority}
+
+EOF
     done
     return 0
 }
