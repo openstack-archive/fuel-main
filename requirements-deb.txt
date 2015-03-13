@@ -169,6 +169,7 @@ openstack-dashboard
 openvswitch-switch
 os-prober
 pacemaker
+pcs
 percona-toolkit
 powermgmt-base
 pssh
@@ -204,7 +205,6 @@ python-openstackclient
 python-pam
 python-passlib
 python-pastescript
-python-pcs
 python-pycurl
 python-pypcap
 python-pylibmc
