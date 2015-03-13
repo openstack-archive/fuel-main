@@ -15,6 +15,9 @@ rm -f /etc/cobbler/authorized_keys
 if rpm -V cobbler | grep -q missing; then
   yum reinstall -q -y cobbler
 fi
+if rpm -V cobbler-web | grep -q missing; then
+  yum reinstall -q -y cobbler-web
+fi
 
 # Make sure services are not running (no pids, etc), puppet will
 # configure and bring them up.
