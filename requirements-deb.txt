@@ -154,8 +154,10 @@ openstack-dashboard
 openvswitch-switch
 os-prober
 pacemaker
+pcs
 percona-toolkit
 percona-xtrabackup
+postgresql
 pssh
 puppet
 python-carrot
