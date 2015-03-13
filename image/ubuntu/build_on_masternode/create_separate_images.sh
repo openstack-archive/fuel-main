@@ -276,7 +276,7 @@ function setup_apt_mirrors {
         /bin/sh -c "echo deb ${uri} ${suite} ${section} >> ${TMP_CHROOT_DIR}/etc/apt/sources.list"
         /bin/sh -c "echo \"Package: *\" >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
         /bin/sh -c "echo \"Pin: origin \"${host}\"\" >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
-        /bin/sh -c "echo \"Pin: release n=${UBUNTU_RELEASE}\" >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
+        /bin/sh -c "echo \"Pin: release n=${suite}\" >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
         for sec in $(echo ${section}); do
             /bin/sh -c "echo \"Pin: release c=${sec}\" >> ${TMP_CHROOT_DIR}/etc/apt/preferences"
         done
