@@ -124,3 +124,7 @@ $(BUILD_DIR)/packages/build-late.done:
 
 packages-late: $(BUILD_DIR)/packages/build-late.done
 packages-rpm-late: $(BUILD_DIR)/packages/rpm/build-late.done
+
+.PHONY: sources
+
+sources: $(packages_list:%=$(BUILD_DIR)/packages/source_%.done)
