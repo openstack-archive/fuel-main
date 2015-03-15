@@ -124,3 +124,25 @@ $(BUILD_DIR)/packages/build-late.done:
 
 packages-late: $(BUILD_DIR)/packages/build-late.done
 packages-rpm-late: $(BUILD_DIR)/packages/rpm/build-late.done
+
+.PHONY: sources
+
+packages_list:=\
+fencing-agent \
+fuel-agent \
+fuel-image \
+fuel-provisioning-scripts \
+fuelmenu \
+nailgun-mcagents \
+ruby21-nailgun-mcagents \
+nailgun-net-check \
+python-tasklib \
+nailgun \
+shotgun \
+fuel-ostf \
+nailgun-agent \
+nailgun-redhat-license \
+python-fuelclient \
+ruby21-rubygem-astute
+
+sources: $(packages_list:%=$(BUILD_DIR)/packages/source_%.done)
