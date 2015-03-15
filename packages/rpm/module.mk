@@ -1,4 +1,4 @@
-.PHONY: clean clean-rpm
+.PHONY: clean clean-rpm sources
 
 clean: clean-rpm
 
@@ -113,3 +113,5 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
 	$(ACTION.TOUCH)
+
+sources: $(BUILD_DIR)/packages/source_fuelmenu.done
