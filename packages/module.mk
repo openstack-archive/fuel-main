@@ -84,7 +84,11 @@ $(eval $(call prepare_ruby21_source,ruby21-rubygem-astute,astute-$(PACKAGE_VERSI
 include $(SOURCE_DIR)/packages/rpm/module.mk
 include $(SOURCE_DIR)/packages/deb/module.mk
 
-.PHONY: packages packages-deb packages-rpm
+.PHONY: packages packages-deb packages-rpm sources clean-sources
+
+clean-sources:
+	rm -rf $(BUILD_DIR)/packages
+	rm -rf $(BUILD_DIR)/repos
 
 ifneq ($(BUILD_PACKAGES),0)
 $(BUILD_DIR)/packages/build.done: \
@@ -124,3 +128,20 @@ $(BUILD_DIR)/packages/build-late.done:
 
 packages-late: $(BUILD_DIR)/packages/build-late.done
 packages-rpm-late: $(BUILD_DIR)/packages/rpm/build-late.done
+
+sources: $(BUILD_DIR)/packages/source_fencing-agent.done \
+	$(BUILD_DIR)/packages/source_fuel-agent.done \
+	$(BUILD_DIR)/packages/source_fuel-image.done \
+	$(BUILD_DIR)/packages/source_fuel-provisioning-scripts.done \
+	$(BUILD_DIR)/packages/source_fuelmenu.done \
+	$(BUILD_DIR)/packages/source_nailgun-mcagents.done \
+	$(BUILD_DIR)/packages/source_ruby21-nailgun-mcagents.done \
+	$(BUILD_DIR)/packages/source_nailgun-net-check.done \
+	$(BUILD_DIR)/packages/source_python-tasklib.done \
+	$(BUILD_DIR)/packages/source_nailgun.done \
+	$(BUILD_DIR)/packages/source_shotgun.done \
+	$(BUILD_DIR)/packages/source_fuel-ostf.done \
+	$(BUILD_DIR)/packages/source_nailgun-agent.done \
+	$(BUILD_DIR)/packages/source_nailgun-redhat-license.done \
+	$(BUILD_DIR)/packages/source_python-fuelclient.done \
+	$(BUILD_DIR)/packages/source_ruby21-rubygem-astute.done
