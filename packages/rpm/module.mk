@@ -1,6 +1,10 @@
-.PHONY: clean clean-rpm
+.PHONY: clean clean-rpm sources clean-sources
 
 clean: clean-rpm
+
+clean-sources:
+	rm -rf $(BUILD_DIR)/packages
+	rm -rf $(BUILD_DIR)/repos
 
 clean-rpm:
 	-mount | grep '$(BUILD_DIR)/packages/rpm/SANDBOX' | while read entry; do \
@@ -113,3 +117,20 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
 	$(ACTION.TOUCH)
+
+sources: $(BUILD_DIR)/packages/source_fencing-agent.done \
+	$(BUILD_DIR)/packages/source_fuel-agent.done \
+	$(BUILD_DIR)/packages/source_fuel-image.done \
+	$(BUILD_DIR)/packages/source_fuel-provisioning-scripts.done \
+	$(BUILD_DIR)/packages/source_fuelmenu.done \
+	$(BUILD_DIR)/packages/source_nailgun-mcagents.done \
+	$(BUILD_DIR)/packages/source_ruby21-nailgun-mcagents.done \
+	$(BUILD_DIR)/packages/source_nailgun-net-check.done \
+	$(BUILD_DIR)/packages/source_python-tasklib.done \
+	$(BUILD_DIR)/packages/source_nailgun.done \
+	$(BUILD_DIR)/packages/source_shotgun.done \
+	$(BUILD_DIR)/packages/source_fuel-ostf.done \
+	$(BUILD_DIR)/packages/source_nailgun-agent.done \
+	$(BUILD_DIR)/packages/source_nailgun-redhat-license.done \
+	$(BUILD_DIR)/packages/source_python-fuelclient.done \
+	$(BUILD_DIR)/packages/source_ruby21-rubygem-astute.done
