@@ -172,10 +172,28 @@ def create_yaml_profile(json_data):
     filename = None
     if 'image_data' in json_data:
         for k, v in json_data['image_data'].items():
+            filename = os.path.basename(urlparse.urlsplit(v['uri'])[2])
+            abs_path = os.path.join(json_data['output'], filename)
+            stdout = execute('gunzip', '-ql', abs_path)[0]
+            try:
+                size = int(stdout.split()[1])
+            except (ValueError, KeyError) as e:
+                size = None
+            stdout = execute('gunzip', '-qc', abs_path, '|', 'md5sum')[0]
+            try:
+                md5 = stdout.split()[0]
+            except (ValueError, KeyError) as e:
+                md5 = None
+            if not md5 or not size:
+                raise Exception("Either md5 or size of %s couldn't be "
+                                "calculated" % abs_path)
             data.append({k: {
-                'filename': os.path.basename(urlparse.urlsplit(v['uri'])[2]),
+                'md5': md5,
+                'size': size,
+                'filename': filename,
                 'container': v['container'],
                 'format': v['format']}})
+        data.append({'repos': json_data['repos']})
     else:
         raise Exception("Couldn't find any information about images")
     filename = os.path.basename(
@@ -207,9 +225,10 @@ def main():
     else:
         expose_env_params(json_data)
         if check_images_do_not_exist(json_data):
-            create_yaml_profile(json_data)
             (stdout, stderr, ret_code) = execute('bash', '-x',
                                                  'create_separate_images.sh')
+            if ret_code == 0:
+                create_yaml_profile(json_data)
             #FIXME: do logging
             print stdout
             print stderr
