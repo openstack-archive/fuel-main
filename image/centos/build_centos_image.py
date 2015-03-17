@@ -15,7 +15,6 @@
 # This script is partly based on https://github.com/katzj/ami-creator
 
 import argparse
-import hashlib
 import logging
 import os
 import shutil
@@ -23,12 +22,11 @@ import sys
 import tempfile
 
 import imgcreate
-from imgcreate.errors import CreatorError
 from imgcreate.errors import MountError
 from imgcreate.fs import BindChrootMount
 from imgcreate.fs import ExtDiskMount
-from imgcreate.fs import makedirs
 from imgcreate.fs import SparseLoopbackDisk
+from imgcreate.fs import makedirs
 from imgcreate.kickstart import FirewallConfig
 import yaml
 # this monkey patch is for avoiding anaconda bug with firewall configuring
@@ -203,24 +201,13 @@ drivers+=' %(modules)s '
         self.__write_fstab()
 
     def _yaml_data(self):
-        def md5sum(filename, blocksize=1024 * 1024):
-            hash = hashlib.md5()
-            with open(filename, "rb") as f:
-                for block in iter(lambda: f.read(blocksize), ""):
-                    hash.update(block)
-            return hash.hexdigest()
-
         data = []
         for disk in self.__separate_images_disks:
             filename = os.path.basename(disk.disk.lofile)
-            abs_path = os.path.join(self._outdir, filename)
-            size = os.path.getsize(abs_path)
-            md5 = md5sum(abs_path)
             mountpoint = filename[len(self.name):-4].replace('-', '/')
             if not mountpoint:
                 mountpoint = '/'
             data.append({mountpoint: {'filename': filename + '.gz',
-                                      'size': size, 'md5': md5,
                                       'container': 'gzip',
                                       'format': disk.fstype}})
         with open(self.__output_file, 'wb') as f:
