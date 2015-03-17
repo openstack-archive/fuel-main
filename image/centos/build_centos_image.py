@@ -213,9 +213,8 @@ drivers+=' %(modules)s '
         data = []
         for disk in self.__separate_images_disks:
             filename = os.path.basename(disk.disk.lofile)
-            abs_path = os.path.join(self._outdir, filename)
-            size = os.path.getsize(abs_path)
-            md5 = md5sum(abs_path)
+            size = os.path.getsize(disk.disk.lofile)
+            md5 = md5sum(disk.disk.lofile)
             mountpoint = filename[len(self.name):-4].replace('-', '/')
             if not mountpoint:
                 mountpoint = '/'
