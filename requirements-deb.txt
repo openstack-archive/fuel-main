@@ -188,7 +188,6 @@ python-openstack-auth
 python-openstackclient
 python-passlib
 python-pastescript
-python-pcs
 python-pexpect
 python-pycurl
 python-pylibmc
