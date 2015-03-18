@@ -19,6 +19,7 @@ Requires: PyYAML
 Requires: python-keystoneclient >= 1:0.4.1
 Requires: python-cliff
 Requires: python-pbr
+Requires: python-oslo-concurrency
 
 %description
 Summary: Console utility for working with fuel rest api
