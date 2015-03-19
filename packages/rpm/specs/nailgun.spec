@@ -60,13 +60,11 @@ Nailgun package
 
 %prep
 %setup -cq -n %{name}-%{version} 
-npm install -g inherits@2.0.0
-npm install -g grunt-cli
-npm install -g grunt
+npm install -g gulp
 
 %build
 mkdir -p %{_builddir}/%{name}-%{version}/nailgun/npm-cache
-cd %{_builddir}/%{name}-%{version}/nailgun && npm --cache %{_builddir}/%{name}-%{version}/nailgun/npm-cache install && grunt build --static-dir=compressed_static
+cd %{_builddir}/%{name}-%{version}/nailgun && npm --cache %{_builddir}/%{name}-%{version}/nailgun/npm-cache install && gulp build --static-dir=compressed_static
 [ -n %{_builddir} ] && rm -rf %{_builddir}/%{name}-%{version}/nailgun/static
 mv %{_builddir}/%{name}-%{version}/nailgun/compressed_static %{_builddir}/%{name}-%{version}/nailgun/static
 cd %{_builddir}/%{name}-%{version}/nailgun && python setup.py build
