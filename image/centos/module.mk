@@ -8,6 +8,12 @@ clean_centos_image:
 	-sudo umount $(BUILD_DIR)/image/centos/SANDBOX/mirror
 	-sudo umount $(BUILD_DIR)/image/centos/SANDBOX/proc
 	-sudo umount $(BUILD_DIR)/image/centos/SANDBOX/dev
+	-mount | grep '$(BUILD_DIR)/image/centos/SANDBOX' | sort -r | \
+		while read entry; do \
+			set -- $$entry; \
+			mntpt="$$3"; \
+			sudo umount $$mntpt; \
+		done
 	sudo rm -rf $(BUILD_DIR)/image/centos
 
 $(ARTS_DIR)/$(TARGET_CENTOS_IMG_ART_NAME): $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME)
