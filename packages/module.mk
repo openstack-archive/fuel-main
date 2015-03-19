@@ -23,12 +23,6 @@ $(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
 $(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
 $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
-ifeq ($1,nailgun)
-	mkdir -p $(BUILD_DIR)/npm-cache
-	cd $3 && npm --cache $(BUILD_DIR)/npm-cache install && grunt build --static-dir=compressed_static
-	rm -rf $3/static
-	mv $3/compressed_static $3/static
-endif
 	cd $3 && python setup.py sdist -d $(BUILD_DIR)/packages/sources/$1
 endef
 
@@ -61,7 +55,10 @@ $(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
 $(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
 $(BUILD_DIR)/packages/sources/$1/$2:
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
-	(cd $3 && git archive --format tar --worktree-attributes $4 | gzip -c9 > $(BUILD_DIR)/packages/sources/$1/$2)
+	cd $3 && git archive --format tar --worktree-attributes $4 > $(BUILD_DIR)/packages/sources/$1/$1.tar\
+		&& git rev-parse $4 > $(BUILD_DIR)/packages/sources/$1/version.txt
+	cd $(BUILD_DIR)/packages/sources/$1 && tar -rf $1.tar version.txt
+	cd $(BUILD_DIR)/packages/sources/$1 && gzip -9 $1.tar && mv $1.tar.gz $2
 endef
 
 PACKAGE_VERSION=6.0.0
@@ -82,7 +79,10 @@ $(eval $(call prepare_file_source,nailgun-agent,agent,$(BUILD_DIR)/repos/nailgun
 $(eval $(call prepare_file_source,nailgun-agent,nailgun-agent.cron,$(BUILD_DIR)/repos/nailgun/bin/nailgun-agent.cron))
 $(eval $(call prepare_python_source,nailgun-net-check,nailgun-net-check-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/network_checker))
 $(eval $(call prepare_python_source,python-tasklib,tasklib-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/tasklib))
-$(eval $(call prepare_python_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/nailgun))
+$(eval $(call prepare_git_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun,$(NAILGUN_COMMIT)))
+
+
+
 $(eval $(call prepare_python_source,shotgun,shotgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/shotgun))
 #FUEL_OSTF_PKGS
 $(eval $(call prepare_python_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/ostf))
