@@ -45,7 +45,7 @@ $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/repos/repos.done
 	fi
 	mountpoint -q $$(SANDBOX_UBUNTU)/proc || sudo mount -t proc sandbox_ubuntu_proc $$(SANDBOX_UBUNTU)/proc
 	sudo mkdir -p $$(SANDBOX_UBUNTU)/tmp/$1
-ifeq ($1,$(filter $1,nailgun-net-check python-tasklib))
+ifeq ($1,$(filter $1,nailgun-net-check))
 	tar zxf $(BUILD_DIR)/packages/sources/$1/$(subst python-,,$1)*.tar.gz -C $(BUILD_DIR)/packages/deb/sources
 	sudo cp -r $(BUILD_DIR)/packages/deb/sources/$(subst python-,,$1)*/* $$(SANDBOX_UBUNTU)/tmp/$1/
 endif
@@ -64,7 +64,7 @@ $(BUILD_DIR)/packages/deb/$1-repocleanup.done: $(BUILD_DIR)/mirror/ubuntu/build.
 endef
 
 
-fuel_debian_packages:=fencing-agent nailgun-mcagents nailgun-net-check nailgun-agent python-tasklib
+fuel_debian_packages:=fencing-agent nailgun-mcagents nailgun-net-check nailgun-agent
 $(eval $(foreach pkg,$(fuel_debian_packages),$(call build_deb,$(pkg))$(NEWLINE)))
 
 $(BUILD_DIR)/packages/deb/repo.done:
