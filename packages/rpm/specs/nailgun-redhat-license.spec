@@ -1,6 +1,6 @@
 Name:      nailgun-redhat-license
 Summary:   Getting redhat licenses
-Version:   6.0.0
+Version:   %{version}
 Release:   1
 License:   Apache License 2.0
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-build

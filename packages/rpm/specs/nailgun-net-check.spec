@@ -1,5 +1,4 @@
 %define name nailgun-net-check
-%define version 6.0.0
 %define release 1
 
 Name:      %{name}

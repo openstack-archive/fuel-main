@@ -1,6 +1,6 @@
 Name:      nailgun-mcagents
 Summary:   MCollective Agents
-Version:   6.0.0
+Version:   %{version}
 Release:   1
 License:   GPLv2
 Source0:   mcagents.tar.gz

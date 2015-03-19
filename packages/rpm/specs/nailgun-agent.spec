@@ -1,6 +1,6 @@
 Name:      nailgun-agent
 Summary:   Nailgun starup agent
-Version:   6.0.0
+Version:   %{version}
 Release:   1
 License:   GPLv2
 BuildRoot: %{_tmppath}/%{name}-%{version}

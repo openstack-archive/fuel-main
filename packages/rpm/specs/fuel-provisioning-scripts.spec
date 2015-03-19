@@ -1,5 +1,4 @@
 %define name fuel-provisioning-scripts
-%define version 6.1.0
 %define release 1
 
 Summary: %{name} package
