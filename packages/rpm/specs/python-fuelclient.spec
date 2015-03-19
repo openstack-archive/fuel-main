@@ -1,6 +1,6 @@
 %define name python-fuelclient
 %define unmangled_name python-fuelclient
-%define version 6.1.0
+%define version 6.0.0
 %define release 1
 
 Summary: Console utility for working with fuel rest api
