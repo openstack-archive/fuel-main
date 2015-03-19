@@ -73,8 +73,6 @@ python-tasklib \
 nailgun \
 shotgun \
 fuel-ostf \
-nailgun-agent \
-nailgun-redhat-license \
 python-fuelclient \
 ruby21-rubygem-astute
 
