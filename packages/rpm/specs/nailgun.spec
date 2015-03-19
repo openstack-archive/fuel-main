@@ -69,11 +69,12 @@ cd %{_builddir}/%{name}-%{version}/nailgun && npm --cache %{_builddir}/%{name}-%
 mv %{_builddir}/%{name}-%{version}/nailgun/compressed_static %{_builddir}/%{name}-%{version}/nailgun/static
 cd %{_builddir}/%{name}-%{version}/nailgun && python setup.py build
 cd %{_builddir}/%{name}-%{version}/network_checker && python setup.py build
+cd %{_builddir}/%{name}-%{version}/shotgun && python setup.py build
 
 %install
 cd %{_builddir}/%{name}-%{version}/nailgun && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/nailgun/INSTALLED_FILES
 cd %{_builddir}/%{name}-%{version}/network_checker && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/network_checker/INSTALLED_FILES
-
+cd %{_builddir}/%{name}-%{version}/shotgun && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/shotgun/INSTALLED_FILES
 mkdir -p %{buildroot}/opt/nailgun/bin
 mkdir -p %{buildroot}/etc/cron.d
 install -m 755 %{_builddir}/%{name}-%{version}/bin/agent %{buildroot}/opt/nailgun/bin/agent
@@ -135,3 +136,28 @@ between hosts in network.
 %files -n nailgun-net-check -f %{_builddir}/%{name}-%{version}/network_checker/INSTALLED_FILES
 %defattr(-,root,root)
 
+%package -n shotgun
+
+Summary: Shotgun package
+Version: %{version}
+Release: %{release}
+URL:     http://mirantis.com
+License: Apache
+Group: Development/Libraries
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Prefix: %{_prefix}
+BuildArch: noarch
+Requires:    postgresql
+Requires:    python-fabric >= 1.10.0
+Requires:    python-argparse
+Requires:    tar
+Requires:    gzip
+Requires:    bzip2
+Requires:    openssh-clients
+Requires:    xz
+
+%description -n shotgun
+Shotgun package. 
+
+%files -n shotgun -f  %{_builddir}/%{name}-%{version}/shotgun/INSTALLED_FILES
+%defattr(-,root,root)
