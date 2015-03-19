@@ -65,11 +65,9 @@ fuel-agent \
 fuel-image \
 fuel-provisioning-scripts \
 fuel-library \
-fuelmenu \
 nailgun-mcagents \
 ruby21-nailgun-mcagents \
 nailgun \
-shotgun \
 fuel-ostf \
 python-fuelclient \
 ruby21-rubygem-astute
