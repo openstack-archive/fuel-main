@@ -68,8 +68,6 @@ fuel-library \
 fuelmenu \
 nailgun-mcagents \
 ruby21-nailgun-mcagents \
-nailgun-net-check \
-python-tasklib \
 nailgun \
 shotgun \
 fuel-ostf \
