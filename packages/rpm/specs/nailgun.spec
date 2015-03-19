@@ -71,9 +71,38 @@ cd %{_builddir}/%{name}-%{version}/nailgun && python setup.py build
 
 %install
 cd %{_builddir}/%{name}-%{version}/nailgun && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/nailgun/INSTALLED_FILES
+mkdir -p %{buildroot}/opt/nailgun/bin
+mkdir -p %{buildroot}/etc/cron.d
+install -m 755 %{_builddir}/%{name}-%{version}/bin/agent %{buildroot}/opt/nailgun/bin/agent
+install -m 644 %{_builddir}/%{name}-%{version}/bin/nailgun-agent.cron %{buildroot}/etc/cron.d/nailgun-agent
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files -f %{_builddir}/%{name}-%{version}/nailgun/INSTALLED_FILES
 %defattr(0755,root,root)
+
+
+%package -n nailgun-agent
+
+Summary:   Nailgun startup agent
+Version:   6.0.0
+Release:   1
+License:   GPLv2
+BuildRoot: %{_tmppath}/%{name}-%{version}
+URL:       http://mirantis.com
+Requires:  rubygem-rethtool
+Requires:  rubygem-ohai
+Requires:  rubygem-httpclient
+Requires:  rubygem-ipaddress
+Requires:  rubygem-json
+Requires:  rubygems
+
+%description -n nailgun-agent
+Nailgun startup agent that register node at Nailgun and make a little setup
+of other services.
+
+%files -n nailgun-agent
+/etc/cron.d/nailgun-agent
+/opt/nailgun/bin/agent
+
