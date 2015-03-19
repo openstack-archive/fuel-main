@@ -70,9 +70,12 @@ cd %{_builddir}/%{name}-%{version}/nailgun && npm --cache %{_builddir}/%{name}-%
 [ -n %{_builddir} ] && rm -rf %{_builddir}/%{name}-%{version}/nailgun/static
 mv %{_builddir}/%{name}-%{version}/nailgun/compressed_static %{_builddir}/%{name}-%{version}/nailgun/static
 cd %{_builddir}/%{name}-%{version}/nailgun && python setup.py build
+cd %{_builddir}/%{name}-%{version}/network_checker && python setup.py build
 
 %install
 cd %{_builddir}/%{name}-%{version}/nailgun && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/nailgun/INSTALLED_FILES
+cd %{_builddir}/%{name}-%{version}/network_checker && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/network_checker/INSTALLED_FILES
+
 mkdir -p %{buildroot}/opt/nailgun/bin
 mkdir -p %{buildroot}/etc/cron.d
 install -m 755 %{_builddir}/%{name}-%{version}/bin/agent %{buildroot}/opt/nailgun/bin/agent
@@ -107,4 +110,30 @@ of other services.
 %files -n nailgun-agent
 /etc/cron.d/nailgun-agent
 /opt/nailgun/bin/agent
+
+%package -n nailgun-net-check
+
+Summary:   Network checking package for CentOS6.x
+Version:   %{version}
+Release:   %{release}
+License:   GPLv2
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+URL:       http://github.com/Mirantis
+Requires:  vconfig
+Requires:  scapy
+Requires:  python-argparse
+Requires:  python-pypcap
+Requires:  python-cliff-tablib
+Requires:  python-stevedore
+Requires:  python-daemonize
+Requires:  python-yaml
+Requires:  tcpdump
+
+
+%description -n nailgun-net-check
+This is a network tool that helps to verify networks connectivity
+between hosts in network.
+
+%files -n nailgun-net-check -f %{_builddir}/%{name}-%{version}/network_checker/INSTALLED_FILES
+%defattr(-,root,root)
 
