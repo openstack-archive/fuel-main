@@ -11,9 +11,8 @@ License: Apache
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
-BuildRequires:  python-setuptools
+BuildRequires:  python-setuptools git
 BuildArch: noarch
-
 Requires:    python-alembic >= 0.6.2
 Requires:    python-amqplib >= 1.0.2
 Requires:    python-anyjson >= 0.3.3
@@ -53,21 +52,29 @@ Requires:    python-cinderclient >= 1.0.7
 Requires:    pydot-ng >= 1.0.0
 # Workaroud for babel bug
 Requires:    pytz
+BuildRequires: nodejs
 
 %description
 Nailgun package
 
 %prep
-%setup -n %{name}-%{version} -n %{name}-%{version}
+%setup -cq -n %{name}-%{version} 
+npm install -g inherits@2.0.0
+npm install -g grunt-cli
+npm install -g grunt
 
 %build
-python setup.py build
+mkdir -p %{_builddir}/%{name}-%{version}/nailgun/npm-cache
+cd %{_builddir}/%{name}-%{version}/nailgun && npm --cache %{_builddir}/%{name}-%{version}/nailgun/npm-cache install && grunt build --static-dir=compressed_static
+[ -n %{_builddir} ] && rm -rf %{_builddir}/%{name}-%{version}/nailgun/static
+mv %{_builddir}/%{name}-%{version}/nailgun/compressed_static %{_builddir}/%{name}-%{version}/nailgun/static
+cd %{_builddir}/%{name}-%{version}/nailgun && python setup.py build
 
 %install
-python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
+cd %{_builddir}/%{name}-%{version}/nailgun && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/nailgun/INSTALLED_FILES
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%files -f INSTALLED_FILES
+%files -f %{_builddir}/%{name}-%{version}/nailgun/INSTALLED_FILES
 %defattr(0755,root,root)
