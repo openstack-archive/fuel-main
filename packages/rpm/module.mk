@@ -12,7 +12,7 @@ clean-rpm:
 
 RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
 
-$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=ruby rpm-build tar python-setuptools python-pbr
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=ruby rpm-build tar python-setuptools python-pbr nodejs npm yum yum-utils git 
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/buildd
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
@@ -46,7 +46,8 @@ $(BUILD_DIR)/packages/rpm/$1.done: $(SOURCE_DIR)/packages/rpm/specs/$1.spec
 	sudo mount --bind /dev $$(SANDBOX)/dev && \
 	mkdir -p $$(SANDBOX)/tmp/SOURCES && \
 	sudo cp -r $(BUILD_DIR)/packages/sources/$1/* $$(SANDBOX)/tmp/SOURCES && \
-	sudo cp $(SOURCE_DIR)/packages/rpm/specs/$1.spec $$(SANDBOX)/tmp && \
+    sudo cp $(SOURCE_DIR)/packages/rpm/specs/$1.spec $$(SANDBOX)/tmp && \
+	sudo /bin/sh -c 'export TMPDIR=$$(SANDBOX)/tmp/yum TMP=$$(SANDBOX)/tmp/yum; yum-builddep -y -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) $$(SANDBOX)/tmp/$1.spec' && \
 	sudo chroot $$(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/$1.spec
 	cp $$(SANDBOX)/tmp/RPMS/*/$1-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	sudo sh -c "$$$${SANDBOX_DOWN}"
