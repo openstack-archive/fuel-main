@@ -1,6 +1,4 @@
-def run_tests():
-    from proboscis import TestProgram  # noqa
-
+def import_tests():
     from tests import test_admin_node  # noqa
     from tests import test_ceph  # noqa
     from tests import test_environment_action  # noqa
@@ -8,9 +6,8 @@ def run_tests():
     from tests import test_neutron  # noqa
     from tests import test_pullrequest  # noqa
     from tests import test_services  # noqa
-    from tests import test_simple  # noqa
+    from tests import test_ha_one_controller  # noqa
     from tests import test_vcenter  # noqa
-    from tests.tests_os_patching import test_os_patching  # noqa
     from tests.tests_strength import test_failover  # noqa
     from tests.tests_strength import test_master_node_failover  # noqa
     from tests.tests_strength import test_ostf_repeatable_tests  # noqa
@@ -25,6 +22,11 @@ def run_tests():
     from tests.plugins.plugin_glusterfs import test_plugin_glusterfs  # noqa
     from tests.plugins.plugin_lbaas import test_plugin_lbaas  # noqa
     from tests import test_multiple_networks  # noqa
+
+
+def run_tests():
+    from proboscis import TestProgram  # noqa
+    import_tests()
 
     # Run Proboscis and exit.
     TestProgram().run_and_exit()
