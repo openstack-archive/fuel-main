@@ -12,3 +12,4 @@ python-cinderclient>=1.0.5
 python-neutronclient>=2.0
 Jinja2
 AllPairs==2.0.1
+launchpadlib
