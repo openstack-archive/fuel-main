@@ -51,6 +51,7 @@ Requires:    python-novaclient >= 2.17.0
 Requires:    python-networkx-core >= 1.8.0
 Requires:    python-cinderclient >= 1.0.7
 Requires:    pydot-ng >= 1.0.0
+Requires:    python-ordereddict >= 1.1
 # Workaroud for babel bug
 Requires:    pytz
 
