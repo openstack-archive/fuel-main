@@ -66,8 +66,6 @@ $(BUILD_DIR)/packages/source_%.done:
 	$(ACTION.TOUCH)
 
 #NAILGUN_PKGS
-$(eval $(call prepare_file_source,fuel-provisioning-scripts,download-debian-installer,$(BUILD_DIR)/repos/nailgun/bin/download-debian-installer))
-$(eval $(call prepare_tgz_source,fuel-image,fuel-image-$(PACKAGE_VERSION).tar.gz,$(SOURCE_DIR)/image/ubuntu/build_on_masternode))
 $(eval $(call prepare_git_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun,$(NAILGUN_COMMIT)))
 #FUEL_OSTF_PKGS
 $(eval $(call prepare_python_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/ostf))
@@ -79,6 +77,8 @@ $(eval $(call prepare_ruby21_source,ruby21-rubygem-astute,astute-$(PACKAGE_VERSI
 $(eval $(call prepare_git_source,fuel-library,fuel-library-6.1-6.1-1.tar.gz,$(BUILD_DIR)/repos/fuellib,$(FUELLIB_COMMIT)))
 #FUEL_PYTHON_PKGS
 $(eval $(call prepare_python_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient))
+#FUEL-IMAGE PKGS
+$(eval $(call prepare_tgz_source,fuel-image,fuel-image-$(PACKAGE_VERSION).tar.gz,$(SOURCE_DIR)/image/ubuntu/build_on_masternode))
 
 include $(SOURCE_DIR)/packages/rpm/module.mk
 
