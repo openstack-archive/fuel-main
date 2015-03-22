@@ -2,6 +2,10 @@
 %define version 6.0.0
 %define release 1
 
+#FIXME(aglarendil): actually, we should have one version
+#everywhere, but we will fix it a little bit later
+%define new_version 6.1.0
+
 Summary: Nailgun package
 Name: %{name}
 Version: %{version}
@@ -90,6 +94,7 @@ install -m 755 %{_builddir}/%{name}-%{version}/bin/agent %{buildroot}/opt/nailgu
 install -m 644 %{_builddir}/%{name}-%{version}/bin/nailgun-agent.cron %{buildroot}/etc/cron.d/nailgun-agent
 install -d -m 755 %{buildroot}%{_sysconfdir}/fuel-agent
 install -p -D -m 644 %{_builddir}/%{name}-%{version}/fuel_agent/etc/fuel-agent/fuel-agent.conf.sample  %{buildroot}%{_sysconfdir}/fuel-agent/fuel-agent.conf
+install -p -D -m 755 %{_builddir}/%{name}-%{version}/bin/download-debian-installer %{buildroot}%{_bindir}/download-debian-installer
 
 # Install template file
 install -d -m 755 %{buildroot}%{_datadir}/fuel-agent/cloud-init-templates
@@ -262,3 +267,24 @@ Fuel-agent package
 %defattr(-,root,root)
 %config(noreplace) %{_sysconfdir}/fuel-agent/fuel-agent.conf
 %{_datadir}/fuel-agent/cloud-init-templates/*
+
+%package -n fuel-provisioning-scripts
+
+Summary: Fuel provisioning scripts
+Version: %{new_version}
+Release: %{release}
+URL:     http://mirantis.com
+License: Apache
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Prefix: %{_prefix}
+BuildArch: noarch
+Requires:    wget
+
+%description -n fuel-provisioning-scripts
+Fuel provisioning scripts package.
+This is a part of Fuel All-in-one Controle plane
+for Openstack. For more info go to http://wiki.openstack.org/Fuel
+
+%files -n fuel-provisioning-scripts
+%defattr(-,root,root)
+%{_bindir}/download-debian-installer

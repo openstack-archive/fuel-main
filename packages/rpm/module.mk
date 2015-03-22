@@ -61,7 +61,6 @@ endef
 
 fuel_rpm_packages:=\
 fuel-image \
-fuel-provisioning-scripts \
 fuel-library \
 nailgun-mcagents \
 ruby21-nailgun-mcagents \
