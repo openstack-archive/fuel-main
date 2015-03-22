@@ -71,12 +71,14 @@ cd %{_builddir}/%{name}-%{version}/nailgun && python setup.py build
 cd %{_builddir}/%{name}-%{version}/network_checker && python setup.py build
 cd %{_builddir}/%{name}-%{version}/shotgun && python setup.py build
 cd %{_builddir}/%{name}-%{version}/fuelmenu && python setup.py build
+cd ${_builddir}/%{name}-%{version}/fuel_agent && python setup.py build
 
 %install
 cd %{_builddir}/%{name}-%{version}/nailgun && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/nailgun/INSTALLED_FILES
 cd %{_builddir}/%{name}-%{version}/network_checker && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/network_checker/INSTALLED_FILES
 cd %{_builddir}/%{name}-%{version}/shotgun && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/shotgun/INSTALLED_FILES
 cd %{_builddir}/%{name}-%{version}/fuelmenu && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/fuelmenu/INSTALLED_FILES
+cd %{_builddir}/%{name}-%{version}/fuel_agent && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/fuel_agent/INSTALLED_FILES
 mkdir -p %{buildroot}/opt/nailgun/bin
 mkdir -p %{buildroot}/etc/cron.d
 mkdir -p %{buildroot}/etc/fuel
@@ -84,6 +86,13 @@ install -d -m 755 %{buildroot}/etc/fuel
 install -m 600 %{_builddir}/%{name}-%{version}/fuelmenu/fuelmenu/settings.yaml %{buildroot}/etc/fuel/astute.yaml
 install -m 755 %{_builddir}/%{name}-%{version}/bin/agent %{buildroot}/opt/nailgun/bin/agent
 install -m 644 %{_builddir}/%{name}-%{version}/bin/nailgun-agent.cron %{buildroot}/etc/cron.d/nailgun-agent
+install -d -m 755 %{buildroot}%{_sysconfdir}/fuel-agent
+install -p -D -m 644 %{_builddir}/%{name}-%{version}/fuel_agent/etc/fuel-agent/fuel-agent.conf.sample  %{buildroot}%{_sysconfdir}/fuel-agent/fuel-agent.conf
+
+# Install template file
+install -d -m 755 %{buildroot}%{_datadir}/fuel-agent/cloud-init-templates
+install -p -D -m 644 %{_builddir}/%{name}-%{version}/fuel_agent/cloud-init-templates/* %{buildroot}%{_datadir}/fuel-agent/cloud-init-templates
+
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -197,4 +206,57 @@ Summary: Console utility for pre-configuration of Fuel server
 %config(noreplace) /etc/fuel/astute.yaml
 
 
+%package -n fuel-agent
 
+Summary: Fuel-agent package
+Version: %{version}
+Release: %{release}
+URL:     http://mirantis.com
+License: Apache
+Group: Development/Libraries
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Prefix: %{_prefix}
+BuildRequires: python-setuptools
+BuildRequires: python-pbr
+BuildArch: noarch
+
+Requires:    python
+Requires:    python-babel
+Requires:    python-eventlet
+Requires:    python-jsonschema
+Requires:    python-oslo-config
+Requires:    python-oslo-serialization >= 1.0.0
+Requires:    python-iso8601
+Requires:    python-six
+Requires:    python-stevedore
+Requires:    python-jinja2
+Requires:    python-requests
+Requires:    python-urllib3
+Requires:    PyYAML
+Requires:    python-argparse
+Requires:    python-pbr
+Requires:    tar
+Requires:    gzip
+Requires:    bzip2
+Requires:    openssh-clients
+Requires:    mdadm
+Requires:    util-linux-ng
+Requires:    udev
+Requires:    lvm2
+Requires:    dmidecode
+Requires:    parted
+Requires:    cloud-utils
+Requires:    e2fsprogs
+Requires:    gdisk
+Requires:    genisoimage
+Requires:    xfsprogs
+Requires:    pciutils
+Requires:    ethtool
+
+%description -n fuel-agent
+Fuel-agent package
+
+%files -n fuel-agent -f %{_builddir}/%{name}-%{version}/fuel_agent/INSTALLED_FILES
+%defattr(-,root,root)
+%config(noreplace) %{_sysconfdir}/fuel-agent/fuel-agent.conf
+%{_datadir}/fuel-agent/cloud-init-templates/*

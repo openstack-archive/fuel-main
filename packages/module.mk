@@ -66,24 +66,9 @@ $(BUILD_DIR)/packages/source_%.done:
 	$(ACTION.TOUCH)
 
 #NAILGUN_PKGS
-$(eval $(call prepare_file_source,fencing-agent,fencing-agent.rb,$(BUILD_DIR)/repos/nailgun/bin/fencing-agent.rb))
-$(eval $(call prepare_file_source,fencing-agent,fencing-agent.cron,$(BUILD_DIR)/repos/nailgun/bin/fencing-agent.cron))
-$(eval $(call prepare_python_source,fuel-agent,fuel-agent-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/fuel_agent))
 $(eval $(call prepare_file_source,fuel-provisioning-scripts,download-debian-installer,$(BUILD_DIR)/repos/nailgun/bin/download-debian-installer))
-$(eval $(call prepare_file_source,fuel-agent,fuel-agent.conf,$(BUILD_DIR)/repos/nailgun/fuel_agent/etc/fuel-agent/fuel-agent.conf.sample))
-$(eval $(call prepare_tgz_source,fuel-agent,fuel-agent-cloud-init-templates.tar.gz,$(BUILD_DIR)/repos/nailgun/fuel_agent/cloud-init-templates))
 $(eval $(call prepare_tgz_source,fuel-image,fuel-image-$(PACKAGE_VERSION).tar.gz,$(SOURCE_DIR)/image/ubuntu/build_on_masternode))
-$(eval $(call prepare_python_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/ostf))
-$(eval $(call prepare_python_source,fuelmenu,fuelmenu-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/fuelmenu))
-$(eval $(call prepare_file_source,nailgun-agent,agent,$(BUILD_DIR)/repos/nailgun/bin/agent))
-$(eval $(call prepare_file_source,nailgun-agent,nailgun-agent.cron,$(BUILD_DIR)/repos/nailgun/bin/nailgun-agent.cron))
-$(eval $(call prepare_python_source,nailgun-net-check,nailgun-net-check-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/network_checker))
-$(eval $(call prepare_python_source,python-tasklib,tasklib-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/tasklib))
 $(eval $(call prepare_git_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun,$(NAILGUN_COMMIT)))
-
-
-
-$(eval $(call prepare_python_source,shotgun,shotgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/shotgun))
 #FUEL_OSTF_PKGS
 $(eval $(call prepare_python_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/ostf))
 #ASTUTE_PKGS

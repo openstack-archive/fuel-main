@@ -60,8 +60,6 @@ endef
 
 
 fuel_rpm_packages:=\
-fencing-agent \
-fuel-agent \
 fuel-image \
 fuel-provisioning-scripts \
 fuel-library \
