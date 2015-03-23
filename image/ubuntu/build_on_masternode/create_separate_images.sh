@@ -45,7 +45,7 @@ UBUNTU_RELEASE=${UBUNTU_RELEASE:-precise}
 TMP_BUILD_DIR=${TMP_BUILD_DIR:-/tmp/fuel_img}
 TMP_BUILD_IMG_DIR=${TMP_BUILD_IMG_DIR:-$TMP_BUILD_DIR/imgs}
 TMP_CHROOT_DIR=${TMP_CHROOT_DIR:-$TMP_BUILD_DIR/chroot}
-BASE_MIRROR_URL=$(echo "$UBUNTU_BASE_MIRROR" | cut -d ':' -f4-)
+BASE_MIRROR_URL=$(echo "$UBUNTU_BASE_MIRROR" | cut -d '|' -f4-)
 DST_DIR=${DST_DIR:-/var/www/nailgun}
 SPARSE_FILE_INITIAL_SIZE=2G
 SPARSE_IMG_FILE_SUFFIX=sparse_img
@@ -270,8 +270,8 @@ function setup_apt_mirrors {
     set -- $UBUNTU_MIRRORS
     unset IFS
     for ent; do
-        # expecting 'suite:section:priority:uri'
-        IFS=':'
+        # expecting 'suite|section|priority|uri'
+        IFS='|'
         set -- $ent
         unset IFS
         local suite="$1"
@@ -279,19 +279,24 @@ function setup_apt_mirrors {
         local priority="$3"
         shift; shift; shift
         local uri="$@"
-        # since URI contains colon marks, it should be reconstructed by replacing spaces by colons
-        uri=${uri// /:}
-        local section_str=""
-        echo "deb ${uri} ${suite} ${section}" >> "${TMP_CHROOT_DIR}/etc/apt/sources.list"
-        for sec in $section; do
-            section_str+=",c=${sec}"
-        done
-        cat >> ${TMP_CHROOT_DIR}/etc/apt/preferences <<-EOF
+        if [ -n "$section" ]; then
+            echo "deb ${uri} ${suite} ${section}" >> "${TMP_CHROOT_DIR}/etc/apt/sources.list"
+            for sec in $section; do
+                cat >> ${TMP_CHROOT_DIR}/etc/apt/preferences <<-EOF
 Package: *
-Pin: release n=${suite}${section_str}
+Pin: release a=${suite},c=${sec}
 Pin-Priority: ${priority}
 
 EOF
+            done
+        else
+            cat >> ${TMP_CHROOT_DIR}/etc/apt/preferences <<-EOF
+Package: *
+Pin: release a=${suite}
+Pin-Priority: ${priority}
+
+EOF
+        fi
     done
     return 0
 }
