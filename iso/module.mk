@@ -25,6 +25,9 @@ $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(BUILD_DIR)/repos/repos.done
 	$(foreach group,$(FEATURE_GROUPS),echo "    - $(group)" >> $@;)
 	echo "  production: \"$(PRODUCTION)\"" >> $@
 	echo "  release: \"$(PRODUCT_VERSION)\"" >> $@
+	echo -n "  openstack_release: \"" >> $@
+	cat $(ISOROOT)/openstack_version | tr -d '\n' >> $@
+	echo "\"" >> $@
 	echo "  api: \"1.0\"" >> $@
 ifdef BUILD_NUMBER
 	echo "  build_number: \"$(BUILD_NUMBER)\"" >> $@
