@@ -288,7 +288,7 @@ function setup_apt_mirrors {
         done
         cat >> ${TMP_CHROOT_DIR}/etc/apt/preferences <<-EOF
 Package: *
-Pin: release n=${suite}${section_str}
+Pin: release a=${suite}${section_str}
 Pin-Priority: ${priority}
 
 EOF
