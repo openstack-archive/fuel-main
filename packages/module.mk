@@ -66,7 +66,7 @@ $(BUILD_DIR)/packages/source_%.done:
 	$(ACTION.TOUCH)
 
 #NAILGUN_PKGS
-$(eval $(call prepare_git_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun,$(NAILGUN_COMMIT)))
+$(eval $(call prepare_git_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun,HEAD))
 #FUEL_OSTF_PKGS
 $(eval $(call prepare_python_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/ostf))
 #ASTUTE_PKGS
@@ -74,7 +74,7 @@ $(eval $(call prepare_tgz_source,nailgun-mcagents,mcagents.tar.gz,$(BUILD_DIR)/r
 $(eval $(call prepare_tgz_source,ruby21-nailgun-mcagents,nailgun-mcagents.tar.gz,$(BUILD_DIR)/repos/astute/mcagents))
 $(eval $(call prepare_ruby21_source,ruby21-rubygem-astute,astute-$(PACKAGE_VERSION).gem,$(BUILD_DIR)/repos/astute))
 #FUELLIB_PKGS
-$(eval $(call prepare_git_source,fuel-library,fuel-library-6.1-6.1-1.tar.gz,$(BUILD_DIR)/repos/fuellib,$(FUELLIB_COMMIT)))
+$(eval $(call prepare_git_source,fuel-library,fuel-library-6.1-6.1-1.tar.gz,$(BUILD_DIR)/repos/fuellib,HEAD))
 #FUEL_PYTHON_PKGS
 $(eval $(call prepare_python_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient))
 #FUEL-IMAGE PKGS
