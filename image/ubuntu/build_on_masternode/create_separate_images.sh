@@ -281,17 +281,15 @@ function setup_apt_mirrors {
         local uri="$@"
         # since URI contains colon marks, it should be reconstructed by replacing spaces by colons
         uri=${uri// /:}
-        local section_str=""
         echo "deb ${uri} ${suite} ${section}" >> "${TMP_CHROOT_DIR}/etc/apt/sources.list"
         for sec in $section; do
-            section_str+=",c=${sec}"
-        done
-        cat >> ${TMP_CHROOT_DIR}/etc/apt/preferences <<-EOF
+            cat >> ${TMP_CHROOT_DIR}/etc/apt/preferences <<-EOF
 Package: *
-Pin: release n=${suite}${section_str}
+Pin: release a=${suite},c=${sec}
 Pin-Priority: ${priority}
 
 EOF
+        done
     done
     return 0
 }
