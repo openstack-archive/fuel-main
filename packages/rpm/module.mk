@@ -62,12 +62,10 @@ endef
 fuel_rpm_packages:=\
 fuel-image \
 fuel-library \
-nailgun-mcagents \
-ruby21-nailgun-mcagents \
+astute \
 nailgun \
 fuel-ostf \
-python-fuelclient \
-ruby21-rubygem-astute
+python-fuelclient 
 
 $(eval $(foreach pkg,$(fuel_rpm_packages),$(call build_rpm,$(pkg))$(NEWLINE)))
 
