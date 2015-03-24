@@ -1,5 +1,4 @@
 %define name python-fuelclient
-%define unmangled_name python-fuelclient
 %define version 6.0.0
 %define release 1
 
@@ -7,7 +6,7 @@ Summary: Console utility for working with fuel rest api
 Name: %{name}
 Version: %{version}
 Release: %{release}
-Source0: %{unmangled_name}-%{version}.tar.gz
+Source0: %{name}-%{version}.tar.gz
 License: Apache
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
@@ -24,16 +23,16 @@ Requires: python-pbr
 Summary: Console utility for working with fuel rest api
 
 %prep
-%setup -n %{unmangled_name}-%{version}
+%setup -cq -n %{name}-%{version}
 
 %build
-python setup.py build
+cd %{_builddir}/%{name}-%{version} && python setup.py build
 
 %install
-python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
+cd %{_builddir}/%{name}-%{version} && python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=%{_builddir}/%{name}-%{version}/INSTALLED_FILES
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%files -f INSTALLED_FILES
+%files -f %{_builddir}/%{name}-%{version}/INSTALLED_FILES
 %defattr(-,root,root)
