@@ -47,6 +47,7 @@ class TestBasic(object):
 @test
 class SetupEnvironment(TestBasic):
     @test(groups=["setup"])
+    @log_snapshot_on_error
     def setup_master(self):
         """Create environment and set up master node
 
@@ -58,6 +59,7 @@ class SetupEnvironment(TestBasic):
         self.env.make_snapshot("empty", is_make=True)
 
     @test(depends_on=[setup_master])
+    @log_snapshot_on_error
     def prepare_release(self):
         """Prepare master node
 
