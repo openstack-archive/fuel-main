@@ -25,7 +25,7 @@ npm install
 ./manage.py loaddata nailgun/fixtures/sample_environment.json
 
 # Compressing javascript
-grunt build --static-dir=static_compressed
+./node_modules/.bin/gulp build --static-dir=static_compressed
 
 # Replace static path with the one pointing to compressed static content folder
 STATIC_DIR=$WORKSPACE/build/repos/nailgun/nailgun/static_compressed

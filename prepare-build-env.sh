@@ -115,7 +115,7 @@ sudo apt-get -y install build-essential make git $GEMPKG debootstrap createrepo 
 sudo gem install bundler -v 1.2.1
 sudo gem install builder
 sudo pip install xmlbuilder jinja2 pbr
-sudo npm install -g grunt-cli
+sudo npm install -g gulp
 sudo chown -R `whoami`.`id -gn` `npm config get cache`
 
 # Add account to sudoers
