@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #    Copyright 2013 Mirantis, Inc.
 #
@@ -14,7 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# add VirtualBox directory to PATH
+# Add VirtualBox directory to PATH
 case "$(uname)" in
     CYGWIN*)
         vbox_path_registry=`cat /proc/registry/HKEY_LOCAL_MACHINE/SOFTWARE/Oracle/VirtualBox/InstallDir`
@@ -25,17 +25,16 @@ case "$(uname)" in
       ;;
 esac
 
-
 # Prepare the host system
 ./actions/prepare-environment.sh || exit 1
 
 # Check available memory on the host system
 ./actions/check-available-memory.sh || exit 1
 
-# clean previous installation if exists
+# Сlean previous installation if exists
 ./actions/clean-previous-installation.sh || exit 1
 
-# create host-only interfaces
+# Сreate host-only interfaces
 ./actions/create-interfaces.sh || exit 1
 
 # Create and launch master node
@@ -43,4 +42,3 @@ esac
 
 # Create and launch slave nodes
 ./actions/slave-nodes-create-and-boot.sh || exit 1
-
