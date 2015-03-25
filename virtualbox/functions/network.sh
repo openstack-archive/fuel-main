@@ -20,11 +20,33 @@ get_hostonly_interfaces() {
   echo -e `VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`
 }
 
+get_fuel_ifaces() {
+  local fuel_iface
+  fuel_ifaces=""
+  for ip in $fuel_master_ips; do
+    fuel_iface=`VBoxManage list hostonlyifs | grep -B5 $ip | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`
+    fuel_ifaces+="$fuel_iface"
+  done
+  echo $fuel_ifaces
+}
+
+get_fuel_name_ifaces() {
+  fuel_ifaces=$(get_fuel_ifaces)
+  IFS=","
+  set -- $fuel_ifaces
+  j=0
+  for i in $fuel_ifaces; do
+    host_nic_name[$j]=$i
+    j=$((j+1));
+  done
+  unset IFS
+}
+
 is_hostonly_interface_present() {
   name=$1
-# String comparison with IF works different in Cygwin, probably due to encoding.
-# So, reduced Case is used. since it works the same way.
-# Default divider character change is mandatory for Cygwin.
+  # String comparison with IF works different in Cygwin, probably due to encoding.
+  # So, reduced Case is used. since it works the same way.
+  # Default divider character change is mandatory for Cygwin.
   case "$(uname)" in
     CYGWIN*)
       OIFS=$IFS
@@ -65,7 +87,7 @@ check_if_iface_settings_applied() {
     *)
       ;;
     esac
-  local new_name=(`VBoxManage list hostonlyifs | egrep -A9 "Name:            $name\$" | awk '/Name/ { $1 = ""; print substr($0, 2) }'`)
+  local new_name=(`VBoxManage list hostonlyifs | egrep -A9 "Name:            $name\$" | awk '/Name/ { $1 = ""; print substr($0, 2) }'`)  
   case "$(uname)" in
     CYGWIN*)
       IFS=$OIFS
@@ -97,26 +119,18 @@ check_if_iface_settings_applied() {
   return 0
 }
 
-create_hostonly_interface() {
-  name=$1
-  ip=$2
-  mask=$3
-  echo "Creating host-only interface (name ip netmask): $name  $ip  $mask"
-
-  # Exit if the interface already exists (deleting it here is not safe, as VirtualBox creates hostonly adapters sequentially)
-  if is_hostonly_interface_present "$name"; then
-    echo "Fatal error. Interface $name cannot be created because it already exists. Exiting"
-    exit 1
-  fi
-
-  VBoxManage hostonlyif create
-
+create_hostonly_interfaces() {
+  # Creating host-only interface
+  ip=$1
+  echo "Creating host-only interface"
+  id=`VBoxManage hostonlyif create | sed "s/'/_/g" | cut -d "_" -f2 | sed "s/^_//" | sed "s/_$//"`
   # If it does not exist after creation, let's abort
-  if ! is_hostonly_interface_present "$name"; then
-    echo "Fatal error. Interface $name does not exist after creation. Exiting"
+  if ! is_hostonly_interface_present "$id"; then
+    echo "Fatal error. Interface $id does not exist after creation. Exiting"
     exit 1
+  else
+    echo "Interface" $id "was successfully created"
   fi
-
   # Disable DHCP
   echo "Disabling DHCP server on interface: $name..."
   # These magic 1 second sleeps around DHCP config are required under Windows/Cygwin
@@ -124,14 +138,14 @@ create_hostonly_interface() {
   sleep 1s
   VBoxManage dhcpserver remove --ifname "$name" 2>/dev/null
   sleep 1s
-  set -x
   # Set up IP address and network mask
   echo "Configuring IP address $ip and network mask $mask on interface: $name..."
-  VBoxManage hostonlyif ipconfig "$name" --ip $ip --netmask $mask
+  set -x
+  VBoxManage hostonlyif ipconfig "$id" --ip $ip --netmask $mask
   set +x
   # Check what we have created actually.
   # Sometimes VBox occasionally fails to apply settings to the last IFace under Windows
-  if !(check_if_iface_settings_applied "$name" $ip $mask); then
+  if !(check_if_iface_settings_applied "$id" $ip $mask); then
     echo "Looks like VirtualBox failed to apply settings for interface $name"
     echo "Sometimes such error happens under Windows."
     echo "Please run launch.sh one more time."
@@ -141,12 +155,40 @@ create_hostonly_interface() {
   fi
 }
 
-delete_all_hostonly_interfaces() {
+# Checking that the interface has been removed
+check_removed_iface() {
+  iface=$1
+  if is_hostonly_interface_present "$iface"; then
+    echo "Host-only interface \"$iface\" was not removed. Aborting..."
+    exit 1
+  fi
+}
+
+delete_fuel_ifaces() {
+  # Only the interfaces that have IP addresses from the 'fuel_master_ips'
+  # variable in the config.sh scripts will be removed
+  fuel_ifaces=$(get_fuel_ifaces)
+  check_running_vms "$fuel_ifaces"
+  OIFS=$IFS
+  IFS=","
+  for interface in $fuel_ifaces; do
+    echo "Deleting host-only interface: $interface..."
+    VBoxManage hostonlyif remove "$interface"
+    check_removed_iface "$interface"
+  done
+  IFS=$OIFS
+}
+
+delete_all_hostonly_interfaces() {  
+  # All the hostonly interfaces will be removed
+  all_hostonly_interfaces=$(get_hostonly_interfaces)
+  # Checking that the running virtual machines don't use removable host-only interfaces
+  check_running_vms "$all_hostonly_interfaces"
   OIFS=$IFS;IFS=",";list=(`VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`);IFS=$OIFS
   # Delete every single hostonly interface in the system
   for interface in "${list[@]}"; do
     echo "Deleting host-only interface: $interface..."
     VBoxManage hostonlyif remove "$interface"
+    check_removed_iface "$interface"
   done
 }
-
