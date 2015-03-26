@@ -13,7 +13,7 @@ function die { echo "$@" 1>&2 ; exit 1; }
 SEPARATE_FS_IMAGES=${SEPARATE_FS_IMAGES:-"/boot,ext2 /,ext4"}
 
 declare -A MOUNT_DICT
-
+declare -a LOOP_DEVICES_LIST
 for ent in $(echo "$SEPARATE_FS_IMAGES"| tr ' ' '\n'); do
     # expecting '<mountpoint>,<fs_type>'
     arrEnt=(${ent//,/ })
@@ -36,13 +36,14 @@ MOUNTPOINTS=( $(
     done | sort) )
 
 # create additional loop_devices
-FUEL_DEVICE_PREFIX=loop_devices_fuel_build
+FUEL_DEVICE_PREFIX=loop
 MAX_DOWNLOAD_ATTEMPTS=${MAX_DOWNLOAD_ATTEMPTS:-10}
 UBUNTU_MAJOR=${UBUNTU_MAJOR:-12}
 UBUNTU_MINOR=${UBUNTU_MINOR:-04}
 UBUNTU_ARCH=${UBUNTU_ARCH:-amd64}
 UBUNTU_RELEASE=${UBUNTU_RELEASE:-precise}
-TMP_BUILD_DIR=${TMP_BUILD_DIR:-/tmp/fuel_img}
+TMP_BUILD_DIR=`mktemp -d`
+echo "${TMP_BUILD_DIR} is used as temprorary directory for building images"
 TMP_BUILD_IMG_DIR=${TMP_BUILD_IMG_DIR:-$TMP_BUILD_DIR/imgs}
 TMP_CHROOT_DIR=${TMP_CHROOT_DIR:-$TMP_BUILD_DIR/chroot}
 BASE_MIRROR_URL=$(echo "$UBUNTU_BASE_MIRROR" | cut -d ':' -f4-)
@@ -122,6 +123,21 @@ function make_dirs {
     return 0
 }
 
+function delete_dirs {
+    if [ -d "$TMP_CHROOT_DIR" ]; then
+        rm -fr "$TMP_CHROOT_DIR" || die_ret "Couldn't delete directory"
+    fi
+
+    if [ -d "$TMP_BUILD_IMG_DIR" ]; then
+        rm -fr "$TMP_BUILD_IMG_DIR" || die_ret "Couldn't delete directory"
+    fi
+
+    if [ -d "$TMP_BUILD_DIR" ]; then
+        rm -fr "$TMP_BUILD_DIR" || die_ret "Couldn't delete directory"
+    fi
+    return 0
+}
+
 function cleanup {
     clean_chroot
     if mountpoint -q ${TMP_CHROOT_DIR}/proc; then
@@ -137,23 +153,54 @@ function cleanup {
 
         IMG_FILE_NAME=${TMP_BUILD_IMG_DIR}/${IMG_PREFIX}_${IMG_SUFFIX}$(echo $MOUNT_POINT | tr '/' '-').${IMG_ENDING}
         SPARSE_FILE_NAME=${IMG_FILE_NAME}.${SPARSE_IMG_FILE_SUFFIX}
-        LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${idx}
-        if mount | grep -q "${TMP_CHROOT_DIR}${MOUNT_POINT}"; then
-            umount ${TMP_CHROOT_DIR}${MOUNT_POINT}
-            if [ $? -ne 0 ]; then
-                echo "Couldn't umnount old loop-device file, trying to perform lazy umnount"
-                umount -l ${TMP_CHROOT_DIR}${MOUNT_POINT} || echo "Couldn't unmount old loop-device file"
+        if [ ${#LOOP_DEVICES_LIST[@]} -gt 0 ]; then
+            LOOP_DEV=${LOOP_DEVICES_LIST[$idx]}
+            if mountpoint -q "${TMP_CHROOT_DIR}${MOUNT_POINT}"; then
+                if ! umount ${TMP_CHROOT_DIR}${MOUNT_POINT}; then
+                    echo "Couldn't umnount old loop-device file, trying to perform lazy umnount"
+                    if ! umount -l ${TMP_CHROOT_DIR}${MOUNT_POINT}; then
+                        die "Couldn't unmount old loop-device file"
+                    fi
+                fi
+            fi
+            if ! losetup -d "$LOOP_DEV"; then
+                echo "Warning: unable to detach loop device $LOOP_DEV"
             fi
         fi
-        if [ -e "$LOOP_DEV" ]; then
-            # try to remove if it exists, just dissociate first, ignore the errors.
-            losetup -d $LOOP_DEV
-            rm -f $LOOP_DEV || die_ret "Couldn't remove old loop-device file"
-        fi
         if [ -e "$SPARSE_FILE_NAME" ]; then
-            rm -f ${SPARSE_FILE_NAME} || die_ret "Could remove old sparce image"
+            rm -f ${SPARSE_FILE_NAME} || die_ret "Couldn't remove old sparce image"
         fi
     done
+    delete_dirs || die_ret "Couldn't remove dirs"
+    return 0
+}
+
+function precreate_loop_devices {
+    for x in $(seq 0 7); do
+        local loop_dev=/dev/${FUEL_DEVICE_PREFIX}${x}
+        if [ ! -e "$loop_dev" ]; then
+            mknod -m 660 ${loop_dev} b ${LOOP_DEVICES_MAJOR} ${x} || die_ret "Couldn't create loop-device file"
+        fi
+    done
+    return 0
+}
+
+function allocate_loop_device {
+    local sparse_file="$1"
+    local loop_count=8
+    local max_loop_count=255
+    local loop_dev=''
+    while [ -z "$loop_dev" ]; do
+        for minor in `seq 0 $loop_count`; do
+            local cur_loop="/dev/${FUEL_DEVICE_PREFIX}${minor}"
+            [ -b "$cur_loop" ] || mknod -m 660 "$cur_loop" b $LOOP_DEVICES_MAJOR $minor
+        done
+        [ $loop_count -ge $max_loop_count ] && die_ret "too many loopback devices"
+        loop_count=$((loop_count*2))
+        loop_dev=`losetup --find`
+    done
+    LOOP_DEVICES_LIST+=(${loop_dev})
+    losetup ${loop_dev} ${sparse_file} || die_ret "Couldn't associate loop-device file"
     return 0
 }
 
@@ -168,13 +215,12 @@ function create_loop_device_and_makefs {
         IMG_FILE_NAME=${TMP_BUILD_IMG_DIR}/${IMG_PREFIX}_${IMG_SUFFIX}$(echo $MOUNT_POINT | tr '/' '-').${IMG_ENDING}
         SPARSE_FILE_NAME=${IMG_FILE_NAME}.${SPARSE_IMG_FILE_SUFFIX}
         MOUNT_POINT=${MOUNTPOINTS[$idx]}
-        LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${idx}
 
         truncate -s ${SPARSE_FILE_INITIAL_SIZE} ${SPARSE_FILE_NAME} || die_ret "Couldn't create sparse file"
 
-        # create loop device
-        mknod -m 660 ${LOOP_DEV} b ${LOOP_DEVICES_MAJOR} $(( $LOOP_DEVICES_MINOR_INITIAL + $idx )) || die "Couldn't create loop-device file"
-        losetup ${LOOP_DEV} ${SPARSE_FILE_NAME} || die_ret "Couldn't associate loop-device file"
+        allocate_loop_device ${SPARSE_FILE_NAME} || die_ret "Couldn't allocate loop-device file"
+
+        LOOP_DEV=${LOOP_DEVICES_LIST[$idx]}
 
         FS_TYPE=${MOUNT_DICT[$MOUNT_POINT]}
         if [ "$FS_TYPE" == "ext2" ]; then
@@ -194,7 +240,7 @@ function create_loop_device_and_makefs {
 function do_mounts {
     for idx in $(seq 0 $((${#MOUNTPOINTS[@]} - 1)) ); do
         MOUNT_POINT=${MOUNTPOINTS[$idx]}
-        LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${idx}
+        LOOP_DEV=${LOOP_DEVICES_LIST[$idx]}
         mkdir -p ${TMP_CHROOT_DIR}${MOUNT_POINT} || die_ret "Could create directory"
         mount ${LOOP_DEV} ${TMP_CHROOT_DIR}${MOUNT_POINT} || die_ret "Couldn't mount mountpoint"
     done
@@ -380,7 +426,7 @@ function umount_resize_images {
         IMG_FILE_NAME=${TMP_BUILD_IMG_DIR}/${IMG_PREFIX}_${IMG_SUFFIX}$(echo $MOUNT_POINT | tr '/' '-').${IMG_ENDING}
         MOUNT_POINT=${MOUNTPOINTS[$idx]}
         SPARSE_FILE_NAME=${IMG_FILE_NAME}.${SPARSE_IMG_FILE_SUFFIX}
-        LOOP_DEV=/dev/${FUEL_DEVICE_PREFIX}${idx}
+        LOOP_DEV=${LOOP_DEVICES_LIST[$idx]}
         FS_TYPE=${MOUNT_DICT[$MOUNT_POINT]}
         FINAL_IMAGE_NAME=${IMAGES_NAMES_DICT[$MOUNT_POINT]}
         if ! umount_try_harder "${TMP_CHROOT_DIR}${MOUNT_POINT}"; then
@@ -388,8 +434,8 @@ function umount_resize_images {
         fi
 
         if [ "$FS_TYPE" == "ext2" ] || [ "$FS_TYPE" == "ext3" ] || [ "$FS_TYPE" == "ext4" ]; then
-            e2fsck -yf ${LOOP_DEV} || die "Couldn't check filesystem"
-            resize2fs -F -M ${LOOP_DEV} || die "Couldn't resize filesystem"
+            e2fsck -yf ${LOOP_DEV} || die_ret "Couldn't check filesystem"
+            resize2fs -F -M ${LOOP_DEV} || die_ret "Couldn't resize filesystem"
             # calculate fs size precisely
             BLOCK_COUNT=$(dumpe2fs -h ${LOOP_DEV} | grep 'Block count' | awk '{print $3}')
             BLOCK_SIZE=$(dumpe2fs -h ${LOOP_DEV} | grep 'Block size' | awk '{print $3}')
@@ -412,6 +458,7 @@ cleanup || die "Couldn't perform cleanup"
 
 function build_images {
     make_dirs || return 1
+    precreate_loop_devices || return 1
     create_loop_device_and_makefs || return 1
     do_mounts || return 1
     suppress_udev_start || return 1
@@ -427,10 +474,10 @@ function build_images {
 build_images
 if [ $? -ne 0 ]; then
     echo 'Building of images failed'
-    cleanup || die "Couldn't perform cleanup"
+    cleanup || die_ret "Couldn't perform cleanup"
     exit 1
 else
     echo 'Building of images finished successfuly'
-    cleanup || die "Couldn't perform cleanup"
+    cleanup || die_ret "Couldn't perform cleanup"
     exit 0
 fi
