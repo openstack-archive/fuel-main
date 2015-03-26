@@ -134,7 +134,6 @@ def expose_env_params(json_data=None):
     os.environ["UBUNTU_RELEASE"] = json_data.get('codename', 'precise')
     os.environ["UBUNTU_KERNEL_FLAVOR"] = json_data.get('ubuntu_kernel_flavor',
                                                        'lts-trusty')
-    os.environ["TMP_BUILD_DIR"] = json_data.get('tmp_dir', '/tmp')
     os.environ["DST_DIR"] = json_data.get('output', '/tmp/image')
     if 'image_data' in json_data:
         os.environ["SEPARATE_FS_IMAGES"] = " ".join(
