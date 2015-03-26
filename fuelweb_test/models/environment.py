@@ -469,8 +469,8 @@ class EnvironmentModel(object):
             logger.warning('Error occurred while synchronizing time on master'
                            ': {0}'.format(e))
         else:
-            self.execute_remote_cmd(remote, 'service ntpd stop && ntpd -dqg &&'
-                                            ' service ntpd start')
+            self.execute_remote_cmd(remote, 'service ntpd stop && '
+                                            'service ntpd start')
             self.execute_remote_cmd(remote, 'hwclock -w')
 
         remote_date = remote.execute('date')['stdout']
