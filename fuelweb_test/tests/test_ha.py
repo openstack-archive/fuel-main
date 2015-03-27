@@ -267,6 +267,79 @@ class TestHaFlatScalability(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.update_nodes(
+            cluster_id, {'slave-02': ['controller'],
+                         'slave-03': ['controller']},
+            True, False
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        for devops_node in self.env.nodes().slaves[:3]:
+            self.fuel_web.assert_pacemaker(
+                devops_node.name, self.env.nodes().slaves[:3], [])
+
+        self.fuel_web.update_nodes(
+            cluster_id, {'slave-04': ['controller'],
+                         'slave-05': ['controller']},
+            True, False
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        for devops_node in self.env.nodes().slaves[:5]:
+            self.fuel_web.assert_pacemaker(
+                devops_node.name, self.env.nodes().slaves[:5], [])
+            ret = self.fuel_web.get_pacemaker_status(devops_node.name)
+            assert_true(
+                re.search('vip__management\s+\(ocf::mirantis:ns_IPaddr2\):'
+                          '\s+Started node', ret), 'vip management started')
+            assert_true(
+                re.search('vip__public\s+\(ocf::mirantis:ns_IPaddr2\):'
+                          '\s+Started node', ret), 'vip public started')
+
+        self.fuel_web.security.verify_firewall(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['ha', 'sanity'])
+
+        self.env.make_snapshot("ha_flat_scalability")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["ha_flat_scalability_with_swift"])
+    @log_snapshot_on_error
+    def ha_flat_scalability_with_swift(self):
+        """Check HA mode on scalability with swift checks
+
+        Scenario:
+            1. Create cluster
+            2. Add 1 controller node
+            3. Deploy the cluster
+            4. Check swift ring rebalance
+            5. Add 2 controller nodes
+            6. Deploy changes
+            7. Check swift ring rebalance
+            8. Run network verification
+            9. Add 2 controller nodes
+            10. Deploy changes
+            11. Check swift ring rebalance
+            12. Run network verification
+            13. Run OSTF
+
+        Snapshot ha_flat_scalability_with_swift
+
+        """
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE_HA
+        )
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-01': ['controller']
+            }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
         devops_node = self.fuel_web.get_nailgun_primary_controller(
             self.env.nodes().slaves[0])
         logger.debug("devops node name is {0}".format(devops_node.name))
@@ -317,7 +390,7 @@ class TestHaFlatScalability(TestBasic):
             cluster_id=cluster_id,
             test_sets=['ha', 'sanity'])
 
-        self.env.make_snapshot("ha_flat_scalability")
+        self.env.make_snapshot("ha_flat_scalability_with_swift")
 
 
 @test(groups=["known_issues", "ha"])
