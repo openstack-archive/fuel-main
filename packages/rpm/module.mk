@@ -37,7 +37,7 @@ $(BUILD_DIR)/packages/rpm/$1.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/$1
 $(BUILD_DIR)/packages/rpm/$1.done: export SANDBOX_DOWN:=$$(SANDBOX_DOWN)
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/source_$1.done
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/rpm/buildd.tar.gz
-$(BUILD_DIR)/packages/rpm/$1.done: $(SOURCE_DIR)/packages/rpm/specs/$1.spec
+$(BUILD_DIR)/packages/rpm/$1.done: $(SOURCE_DIR)/build/repos/$1/specs/$1.spec
 	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	mkdir -p $$(SANDBOX) && \
 	sudo tar xzf $(BUILD_DIR)/packages/rpm/buildd.tar.gz -C $$(SANDBOX) && \
@@ -46,7 +46,7 @@ $(BUILD_DIR)/packages/rpm/$1.done: $(SOURCE_DIR)/packages/rpm/specs/$1.spec
 	sudo mount --bind /dev $$(SANDBOX)/dev && \
 	mkdir -p $$(SANDBOX)/tmp/SOURCES && \
 	sudo cp -r $(BUILD_DIR)/packages/sources/$1/* $$(SANDBOX)/tmp/SOURCES && \
-    sudo cp $(SOURCE_DIR)/packages/rpm/specs/$1.spec $$(SANDBOX)/tmp && \
+    sudo cp $(SOURCE_DIR)/build/repos/$1/specs/$1.spec $$(SANDBOX)/tmp && \
 	sudo /bin/sh -c 'export TMPDIR=$$(SANDBOX)/tmp/yum TMP=$$(SANDBOX)/tmp/yum; yum-builddep -y -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) $$(SANDBOX)/tmp/$1.spec' && \
 	sudo chroot $$(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/$1.spec
 	cp $$(SANDBOX)/tmp/RPMS/*/*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
@@ -60,7 +60,7 @@ endef
 
 
 fuel_rpm_packages:=\
-fuel-image \
+fuel-main \
 fuel-library \
 astute \
 nailgun \

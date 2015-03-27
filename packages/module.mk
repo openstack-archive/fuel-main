@@ -68,15 +68,15 @@ $(BUILD_DIR)/packages/source_%.done:
 #NAILGUN_PKGS
 $(eval $(call prepare_git_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun,HEAD))
 #FUEL_OSTF_PKGS
-$(eval $(call prepare_git_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/ostf,HEAD))
+$(eval $(call prepare_git_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-ostf,HEAD))
 #ASTUTE_PKGS
 $(eval $(call prepare_git_source,astute,astute-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/astute,HEAD))
 #FUELLIB_PKGS
-$(eval $(call prepare_git_source,fuel-library,fuel-library-6.1-6.1-1.tar.gz,$(BUILD_DIR)/repos/fuellib,HEAD))
+$(eval $(call prepare_git_source,fuel-library,fuel-library-6.1-6.1-1.tar.gz,$(BUILD_DIR)/repos/fuel-library,HEAD))
 #FUEL_PYTHON_PKGS
 $(eval $(call prepare_git_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient,HEAD))
 #FUEL-IMAGE PKGS
-$(eval $(call prepare_tgz_source,fuel-image,fuel-image-$(PACKAGE_VERSION).tar.gz,$(SOURCE_DIR)/image/ubuntu/build_on_masternode))
+$(eval $(call prepare_git_source,fuel-image,fuel-image-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main))
 
 include $(SOURCE_DIR)/packages/rpm/module.mk
 
