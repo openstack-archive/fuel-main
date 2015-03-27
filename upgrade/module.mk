@@ -73,7 +73,7 @@ $(BUILD_DIR)/upgrade/fuel-lrzip-part.tar: \
 	mkdir -p $(@D)
 	rm -f $@
 	mkdir -p $(BUILD_DIR)/upgrade/images
-	cd $(BUILD_DIR)/upgrade/images && lrzuntar -f $(BUILD_DIR)/docker/fuel-images.tar.lrz
+	lrzip -d $(BUILD_DIR)/docker/fuel-images.tar.lrz -O $(BUILD_DIR)/upgrade/images
 	tar cf $@ -C $(BUILD_DIR) upgrade/images
 	tar rf $@ -C $(BUILD_DIR)/iso/isoroot --xform s:^:upgrade/config/: version.yaml
 	tar rf $@ -C $(BUILD_DIR)/bootstrap --xform s:^:upgrade/bootstrap/: initramfs.img linux
