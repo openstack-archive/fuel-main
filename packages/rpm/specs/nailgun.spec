@@ -7,11 +7,13 @@ Name: %{name}
 Version: %{version}
 Release: %{release}
 Source0: %{name}-%{version}.tar.gz
+Source1: gulp.tgz
 License: Apache
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 BuildRequires:  python-setuptools
+BuildRequires:  nodejs
 BuildArch: noarch
 
 Requires:    python-alembic >= 0.6.2
@@ -60,8 +62,12 @@ Nailgun package
 
 %prep
 %setup -n %{name}-%{version} -n %{name}-%{version}
+%setup -c -b 1 -D
 
 %build
+./node_modules/.bin/gulp build --static-dir=compressed_static
+rm -rf static
+mv compressed_static static
 python setup.py build
 
 %install
