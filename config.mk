@@ -230,6 +230,28 @@ MIRROR_UBUNTU_SECTION?=main,restricted
 MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 endif
+ifeq ($(USE_MIRROR),usa)
+YUM_REPOS?=proprietary
+MIRROR_BASE?=http://mirror.seed-us1.fuel-infra.org/fwm/$(PRODUCT_VERSION)
+MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_UBUNTU?=mirror.seed-us1.fuel-infra.org
+MIRROR_UBUNTU_ROOT?=/$(PRODUCT_NAME)/ubuntu/
+MIRROR_UBUNTU_METHOD?=http
+MIRROR_UBUNTU_SECTION?=main,restricted
+MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
+endif
+ifeq ($(USE_MIRROR),cz)
+YUM_REPOS?=proprietary
+MIRROR_BASE?=http://mirror.seed-cz1.fuel-infra.org/fwm/$(PRODUCT_VERSION)
+MIRROR_CENTOS?=$(MIRROR_BASE)/centos
+MIRROR_UBUNTU?=mirror.seed-cz1.fuel-infra.org
+MIRROR_UBUNTU_ROOT?=/$(PRODUCT_NAME)/ubuntu/
+MIRROR_UBUNTU_METHOD?=http
+MIRROR_UBUNTU_SECTION?=main,restricted
+MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
+endif
 
 YUM_DOWNLOAD_SRC?=
 
