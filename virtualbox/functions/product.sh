@@ -288,8 +288,7 @@ print_no_internet_connectivity_banner() {
     echo "FAIL"
     echo "############################################################"
     echo "# WARNING: some of the Fuel features will not be supported #"
-    echo "#          (e.g. RHOS/RHEL integration) because there is   #"
-    echo "#          no Internet connectivity                        #"
+    echo "#          because there is no Internet connectivity       #"
     echo "############################################################"
 }
 
