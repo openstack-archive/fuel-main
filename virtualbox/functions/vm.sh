@@ -53,6 +53,24 @@ is_vm_present() {
     return 1
 }
 
+check_running_vms() {
+  OIFS=$IFS
+  IFS=","
+  hostonly_interfaces=$1
+  list_running_vms=`VBoxManage list runningvms | awk '{print $1}' | sed 's/"//g' | uniq | tr "\\n" ","`
+  for i in $list_running_vms; do
+    for j in $hostonly_interfaces; do
+      running_vm=`VBoxManage showvminfo $i | grep "$j"`
+      if [[ $? -eq 0 ]]; then
+        echo "The \"$i\" VM uses host-only interface \"$j\" and it cannot be removed...."
+        echo "You should turn off the \"$i\" virtual machine, run the script again and then the host-only interface will be deleted. Aborting..."
+        exit 1
+      fi
+    done
+  done
+  IFS=$OIFS
+}
+
 create_vm() {
     name=$1
     nic=$2
