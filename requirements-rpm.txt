@@ -98,6 +98,7 @@ mc
 mcollective
 mcollective-client
 mcollective-common
+megaraid_sas
 memcached-1.4.4-3.el6
 mlnx-ofed-light
 mod_fastcgi
