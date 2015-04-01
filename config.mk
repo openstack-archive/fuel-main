@@ -31,7 +31,7 @@ CURRENT_VERSION:=$(PRODUCT_VERSION)
 # This variable is used for building diff repos.
 # If it is not set then diff repo will not be built.
 # If it is set then diff $(BASE_VERSION)->$(CURRENT_VERSION)
-BASE_VERSION:=5.1
+BASE_VERSION:=6.0
 
 # UPGRADE_VERSIONS?=\
 #	6.0:5.1 \
@@ -58,9 +58,7 @@ BASE_VERSION:=5.1
 # available as an artifact from a previous build job.
 #
 UPGRADE_VERSIONS?=\
-	$(CURRENT_VERSION):$(BASE_VERSION) \
-	5.1.1:5.1 \
-	5.0.2
+	$(CURRENT_VERSION):$(BASE_VERSION)
 
 # Path to pre-built artifacts
 DEPS_DIR_CURRENT?=$(DEPS_DIR)/$(CURRENT_VERSION)

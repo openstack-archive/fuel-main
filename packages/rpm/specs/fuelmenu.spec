@@ -1,5 +1,5 @@
 %define name fuelmenu
-%define version 6.0.0
+%define version 6.0.1
 %define release 1
 
 Summary: Console utility for pre-configuration of Fuel server
