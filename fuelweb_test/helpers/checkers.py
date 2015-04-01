@@ -324,15 +324,3 @@ def check_mysql(remote, node_name):
     _wait(lambda: assert_equal(remote.execute(check_crm_cmd)['exit_code'], 0,
                                'MySQL resource is NOT running on {0}'.format(
                                    node_name)), timeout=60)
-
-
-def check_swift_ring(remote):
-    for ring in ['object', 'account', 'container']:
-        res = ''.join(remote.execute(
-            "swift-ring-builder /etc/swift/{0}.builder".format(
-                ring))['stdout'])
-        logger.debug("swift ring builder information is {0}".format(res))
-        balance = re.search('(\d+.\d+) balance', res).group(1)
-        assert_true(float(balance) == 0,
-                    "swift ring builder {1} is not ok,"
-                    " balance is {0}".format(balance, ring))

@@ -17,12 +17,10 @@ import re
 from proboscis.asserts import assert_true
 from proboscis import test
 
-from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
-from fuelweb_test import logger
 
 
 @test(groups=["thread_3", "ha", "bvt_2"])
@@ -73,11 +71,6 @@ class TestHaVLAN(TestBasic):
             'slave-01', smiles_count=16, networks_count=8, timeout=300)
 
         self.fuel_web.verify_network(cluster_id)
-        devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
-        logger.debug("devops node name is {0}".format(devops_node.name))
-        remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
-        checkers.check_swift_ring(remote)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
@@ -132,11 +125,6 @@ class TestHaFlat(TestBasic):
             'slave-01', smiles_count=16, networks_count=1, timeout=300)
 
         self.fuel_web.verify_network(cluster_id)
-        devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
-        logger.debug("devops node name is {0}".format(devops_node.name))
-        remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
-        checkers.check_swift_ring(remote)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
@@ -276,91 +264,3 @@ class TestHaFlatScalability(TestBasic):
                               'Check DNS resolution on compute node'])
 
         self.env.make_snapshot("ha_flat_scalability")
-
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["ha_flat_scalability_with_swift"])
-    @log_snapshot_on_error
-    def ha_flat_scalability_with_swift(self):
-        """Check HA mode on scalability with swift checks
-
-        Scenario:
-            1. Create cluster
-            2. Add 1 controller node
-            3. Deploy the cluster
-            4. Check swift ring rebalance
-            5. Add 2 controller nodes
-            6. Deploy changes
-            7. Check swift ring rebalance
-            8. Run network verification
-            9. Add 2 controller nodes
-            10. Deploy changes
-            11. Check swift ring rebalance
-            12. Run network verification
-            13. Run OSTF
-
-        Snapshot ha_flat_scalability_with_swift
-
-        """
-        self.env.revert_snapshot("ready_with_5_slaves")
-
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE_HA
-        )
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-01': ['controller']
-            }
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
-        logger.debug("devops node name is {0}".format(devops_node.name))
-        remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
-        checkers.check_swift_ring(remote)
-
-        self.fuel_web.update_nodes(
-            cluster_id, {'slave-02': ['controller'],
-                         'slave-03': ['controller']},
-            True, False
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        for devops_node in self.env.nodes().slaves[:3]:
-            self.fuel_web.assert_pacemaker(
-                devops_node.name, self.env.nodes().slaves[:3], [])
-
-        devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
-        logger.debug("devops node name is {0}".format(devops_node.name))
-        remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
-        checkers.check_swift_ring(remote)
-
-        self.fuel_web.update_nodes(
-            cluster_id, {'slave-04': ['controller'],
-                         'slave-05': ['controller']},
-            True, False
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        for devops_node in self.env.nodes().slaves[:5]:
-            ret = self.fuel_web.get_pacemaker_status(devops_node.name)
-            assert_true(
-                re.search('vip__management_old\s+\(ocf::mirantis:ns_IPaddr2\):'
-                          '\s+Started node', ret), 'vip management started')
-            assert_true(
-                re.search('vip__public_old\s+\(ocf::mirantis:ns_IPaddr2\):'
-                          '\s+Started node', ret), 'vip public started')
-
-        devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
-        logger.debug("devops node name is {0}".format(devops_node.name))
-        remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
-        checkers.check_swift_ring(remote)
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            test_sets=['ha', 'sanity'], should_fail=2,
-            failed_test_name=['Check internet connectivity from a compute',
-                              'Check DNS resolution on compute node'])
-
-        self.env.make_snapshot("ha_flat_scalability_with_swift")
