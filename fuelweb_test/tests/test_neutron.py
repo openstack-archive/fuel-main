@@ -15,13 +15,11 @@
 from proboscis.asserts import assert_equal
 from proboscis import test
 
-from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.decorators import log_snapshot_on_error
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
-from fuelweb_test import logger
 
 
 @test(groups=["thread_1", "neutron", "bvt_1"])
@@ -191,11 +189,6 @@ class NeutronGreHa(TestBasic):
         # assert_equal(str(cluster['net_segment_type']), segment_type)
 
         self.fuel_web.verify_network(cluster_id)
-        devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
-        logger.debug("devops node name is {0}".format(devops_node.name))
-        remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
-        checkers.check_swift_ring(remote)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
@@ -319,11 +312,6 @@ class NeutronVlanHa(TestBasic):
             cluster_id, self.env.get_ssh_to_remote_by_name('slave-01'))
 
         self.fuel_web.verify_network(cluster_id)
-        devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
-        logger.debug("devops node name is {0}".format(devops_node.name))
-        remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
-        checkers.check_swift_ring(remote)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
