@@ -65,6 +65,7 @@ $(eval $(call prepare_file_source,fencing-agent,fencing-agent.cron,$(BUILD_DIR)/
 $(eval $(call prepare_python_source,fuel-agent,fuel-agent-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/fuel_agent))
 $(eval $(call prepare_file_source,fuel-provisioning-scripts,download-debian-installer,$(BUILD_DIR)/repos/nailgun/bin/download-debian-installer))
 $(eval $(call prepare_file_source,fuel-agent,fuel-agent.conf,$(BUILD_DIR)/repos/nailgun/fuel_agent/etc/fuel-agent/fuel-agent.conf.sample))
+$(eval $(call prepare_python_source,fuel-package-updates,fuel-package-updates-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun/fuel_upgrade_system/fuel_package_updates))
 $(eval $(call prepare_tgz_source,fuel-agent,fuel-agent-cloud-init-templates.tar.gz,$(BUILD_DIR)/repos/nailgun/fuel_agent/cloud-init-templates))
 $(eval $(call prepare_tgz_source,fuel-image,fuel-image-$(PACKAGE_VERSION).tar.gz,$(SOURCE_DIR)/image/ubuntu/build_on_masternode))
 $(eval $(call prepare_python_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/ostf))
