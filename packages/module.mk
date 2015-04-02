@@ -61,7 +61,6 @@ $(BUILD_DIR)/packages/sources/$1/$2:
 	cd $(BUILD_DIR)/packages/sources/$1 && gzip -9 $1.tar && mv $1.tar.gz $2
 endef
 
-PACKAGE_VERSION=6.0.0
 $(BUILD_DIR)/packages/source_%.done:
 	$(ACTION.TOUCH)
 
@@ -79,12 +78,14 @@ $(eval $(call prepare_git_source,python-fuelclient,python-fuelclient-$(PACKAGE_V
 $(eval $(call prepare_git_source,fuel-main,fuel-main-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD))
 
 include $(SOURCE_DIR)/packages/rpm/module.mk
+include $(SOURCE_DIR)/packages/deb/module.mk
 
 .PHONY: packages packages-deb packages-rpm
 
 ifneq ($(BUILD_PACKAGES),0)
 $(BUILD_DIR)/packages/build.done: \
-		$(BUILD_DIR)/packages/rpm/build.done
+		$(BUILD_DIR)/packages/rpm/build.done \
+		$(BUILD_DIR)/packages/deb/build.done
 endif
 
 $(BUILD_DIR)/packages/build.done:
@@ -92,6 +93,7 @@ $(BUILD_DIR)/packages/build.done:
 
 packages: $(BUILD_DIR)/packages/build.done
 packages-rpm: $(BUILD_DIR)/packages/rpm/build.done
+packages-deb: $(BUILD_DIR)/packages/deb/build.done
 
 
 ###################################

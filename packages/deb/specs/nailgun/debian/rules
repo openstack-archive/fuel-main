@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+DH_VERBOSE=1
+
+topdir=$(shell pwd)
+
+%:
+	dh $@ --with python2
+
+override_dh_auto_install:
+	cd network_checker && python setup.py install -O0 --single-version-externally-managed --install-layout=deb  --root=$(topdir)/debian/nailgun-net-check
+	dh_auto_install
+override_dh_auto_build:
+	dh_clean
+	cd network_checker && python setup.py build
+	dh_auto_build
+override_dh_auto_clean:
+	cd network_checker && python setup.py clean
+	dh_auto_clean
