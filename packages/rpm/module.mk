@@ -31,7 +31,7 @@ $(BUILD_DIR)/packages/rpm/repo$2.done: $(BUILD_DIR)/packages/rpm/$1-repocleanup.
 
 # You can use package name as a target, for example: make ruby21-rubygem-astute
 # It will build astute rpm package
-$1: $(BUILD_DIR)/packages/rpm/$1.done
+$1-rpm: $(BUILD_DIR)/packages/rpm/$1.done
 
 $(BUILD_DIR)/packages/rpm/$1.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/$1
 $(BUILD_DIR)/packages/rpm/$1.done: export SANDBOX_DOWN:=$$(SANDBOX_DOWN)
