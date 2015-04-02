@@ -61,6 +61,7 @@ fuel_rpm_packages:=\
 fencing-agent \
 fuel-agent \
 fuel-image \
+fuel-package-updates \
 fuel-provisioning-scripts \
 fuelmenu \
 nailgun-mcagents \
