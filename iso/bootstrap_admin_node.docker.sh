@@ -99,8 +99,9 @@ else
   rm -f $images_dir/*tar
   pushd $images_dir &>/dev/null
 
-  echo "Extracting and loading docker images. (This may take a while)"
+  echo "Extracting docker images."
   lrzip -d -o /var/www/nailgun/docker/images/fuel-images.tar /var/www/nailgun/docker/images/fuel-images.tar.lrz
+  echo "Loading docker images. (This may take a while)"
   docker load -i /var/www/nailgun/docker/images/fuel-images.tar
   popd &>/dev/null
 
