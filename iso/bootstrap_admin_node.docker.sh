@@ -99,9 +99,12 @@ else
   rm -f $images_dir/*tar
   pushd $images_dir &>/dev/null
 
-  echo "Extracting and loading docker images. (This may take a while)"
+  echo "Installing pv"
+  yum -y install pv
+  echo "Extracting docker images."
   lrzip -d -o /var/www/nailgun/docker/images/fuel-images.tar /var/www/nailgun/docker/images/fuel-images.tar.lrz
-  docker load -i /var/www/nailgun/docker/images/fuel-images.tar
+  echo "Loading docker images. (This may take a while)"
+  pv /var/www/nailgun/docker/images/fuel-images.tar | docker load
   popd &>/dev/null
 
 fi
