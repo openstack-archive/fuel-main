@@ -1,16 +1,16 @@
-nailgun-net-check (6.0.0-1) precise; urgency=low
+astute (6.0.0-1) precise; urgency=low
 
   * Update code from upstream
 
  -- Igor Kalnitsky <ikalnitsky@mirantis.com>  Wed, 26 Nov 2014 19:49:00 +0200
 
-nailgun-net-check (0.2-ubuntu1) precise; urgency=low
+astute (0.0.1-ubuntu1) precise; urgency=low
 
   * Update code from upstream
 
- -- OSCI Jenkins <dburmistrov@mirantis.com>  Wed, 03 Sep 2014 15:18:56 +0400
+ -- OSCI Jenkins <dburmistrov@mirantis.com>  Wed, 03 Sep 2014 15:20:13 +0400
 
-nailgun-net-check (0.2-0) unstable; urgency=low
+astute (0.0.1) unstable; urgency=low
 
   * Initial release.
 
