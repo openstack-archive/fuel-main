@@ -12,7 +12,7 @@ ADD start.sh /usr/local/bin/start.sh
 RUN mkdir -p /var/lib/hiera && touch /etc/puppet/hiera.yaml /var/lib/hiera/common.yaml; /usr/bin/puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp; [[ $? == 0 || $? == 2 ]]
 
 #FIXME(mattymo): Workaround to make diagnostic snapshots work
-RUN yum install -y shotgun fuel-image fuel-provisioning-scripts; mkdir -p /opt/nailgun/bin /var/www/nailgun/dump; ln -s /usr/bin/nailgun_dump /opt/nailgun/bin/nailgun_dump
+RUN yum install -y shotgun fuel-image fuel-agent fuel-provisioning-scripts; mkdir -p /opt/nailgun/bin /var/www/nailgun/dump; ln -s /usr/bin/nailgun_dump /opt/nailgun/bin/nailgun_dump
 
 # let's disable some services and commands since we don't need them in our container
 RUN echo -e '#!/bin/bash\n#chkconfig: 345 20 80\nexit 0' > /etc/init.d/mcollective
