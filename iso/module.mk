@@ -18,13 +18,17 @@ $(ARTS_DIR)/$(VERSION_YAML_ART_NAME): $(ISOROOT)/$(VERSION_YAML_ART_NAME)
 
 $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,PRODUCT_VERSION)
 $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,FEATURE_GROUPS)
-$(ISOROOT)/$(VERSION_YAML_ART_NAME): $(BUILD_DIR)/repos/repos.done
+$(ISOROOT)/$(VERSION_YAML_ART_NAME): $(BUILD_DIR)/repos/repos.done \
+		$(ISOROOT)/openstack_version
 	mkdir -p $(@D)
 	echo "VERSION:" > $@
 	echo "  feature_groups:" >> $@
 	$(foreach group,$(FEATURE_GROUPS),echo "    - $(group)" >> $@;)
 	echo "  production: \"$(PRODUCTION)\"" >> $@
 	echo "  release: \"$(PRODUCT_VERSION)\"" >> $@
+	echo -n "  openstack_version: \"" >> $@
+	cat $(ISOROOT)/openstack_version | tr -d '\n' >> $@
+	echo "\"" >> $@
 	echo "  api: \"1.0\"" >> $@
 ifdef BUILD_NUMBER
 	echo "  build_number: \"$(BUILD_NUMBER)\"" >> $@
