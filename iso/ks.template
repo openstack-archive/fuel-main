@@ -212,8 +212,9 @@ echo "partition pv.001 --ondisk=${tgtdrive} --size=30000 --grow" >> /tmp/partiti
 echo "volgroup os pv.001" >> /tmp/partition.ks
 echo "logvol swap --vgname=os --recommended --name=swap" >> /tmp/partition.ks
 echo "logvol / --vgname=os --size=10000 --name=root --fstype=ext4" >> /tmp/partition.ks
-echo "logvol /var --vgname=os --size=10000 --percent 60 --grow --name=var --fstype=ext4" >> /tmp/partition.ks
-echo "logvol /var/log --vgname=os --size=4096 --percent 40 --grow --name=varlog --fstype=ext4" >> /tmp/partition.ks
+echo "logvol /var --vgname=os --size=10000 --percent 30 --grow --name=var --fstype=ext4" >> /tmp/partition.ks
+echo "logvol /var/lib/docker --size=17000 --vgname=os --percent 50 --grow --name=varlibdocker --fstype=ext4" >> /tmp/partition.ks
+echo "logvol /var/log --vgname=os --size=4096 --percent 20 --grow --name=varlog --fstype=ext4" >> /tmp/partition.ks
 
 
 # bootloader
