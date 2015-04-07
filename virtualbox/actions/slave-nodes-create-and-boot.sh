@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #    Copyright 2013 Mirantis, Inc.
 #
@@ -22,6 +22,10 @@
 # Include the handy functions to operate VMs
 source ./config.sh
 source ./functions/vm.sh
+source ./functions/network.sh
+
+# Get variables "host_nic_name" for the slave nodes
+get_fuel_name_ifaces
 
 # Create and start slave nodes
 for idx in $(eval echo {1..$cluster_size}); do
