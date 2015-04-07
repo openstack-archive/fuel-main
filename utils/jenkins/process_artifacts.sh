@@ -16,7 +16,7 @@ fi
 HOSTNAME=`hostname -f`
 
 [[ -z "${LOCAL_STORAGE}" ]] && LOCAL_STORAGE="/var/www/fuelweb-iso"
-[[ -z "${TRACKER_URL}" ]] && TRACKER_URL='http://seed-qa.msk.mirantis.net:8080/announce'
+[[ -z "${TRACKER_URL}" ]] && TRACKER_URL='http://tracker01-bud.infra.mirantis.net:8080/announce,http://tracker01-mnv.infra.mirantis.net:8080/announce,http://tracker01-msk.infra.mirantis.net:8080/announce'
 [[ -z "${HTTP_ROOT}" ]] && HTTP_ROOT="http://${HOSTNAME}/fuelweb-iso"
 
 
