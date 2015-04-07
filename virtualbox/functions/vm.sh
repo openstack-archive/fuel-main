@@ -53,6 +53,24 @@ is_vm_present() {
     return 1
 }
 
+check_running_vms() {
+  OIFS=$IFS
+  IFS=","
+  local hostonly_interfaces=$1
+  local list_running_vms=`VBoxManage list runningvms | awk '{print $1}' | sed 's/"//g' | uniq | tr "\\n" ","`
+  for i in $list_running_vms; do
+    for j in $hostonly_interfaces; do
+      running_vm=`VBoxManage showvminfo $i | grep "$j"`
+      if [[ $? -eq 0 ]]; then
+        echo "The \"$i\" VM uses host-only interface \"$j\" and it cannot be removed...."
+        echo "You should turn off the \"$i\" virtual machine, run the script again and then the host-only interface will be deleted. Aborting..."
+        exit 1
+      fi
+    done
+  done
+  IFS=$OIFS
+}
+
 create_vm() {
     name=$1
     nic=$2
@@ -93,7 +111,7 @@ add_hostonly_adapter_to_vm() {
     echo "Adding hostonly adapter to $name and bridging with host NIC $nic..."
 
     # Add Intel PRO/1000 MT Desktop (82540EM) card to VM. The card is 1Gbps.
-    VBoxManage modifyvm $name --nic${id} hostonly --hostonlyadapter${id} "$nic" --nictype${id} 82540EM \
+    VBoxManage modifyvm $name --nic${id} hostonly --hostonlyadapter${id} "$nic" --nictype${id} Am79C973 \
                         --cableconnected${id} on --macaddress${id} auto
     VBoxManage modifyvm  $name  --nicpromisc${id} allow-all
 }
@@ -105,7 +123,7 @@ add_nat_adapter_to_vm() {
     echo "Adding NAT adapter to $name for outbound network access through the host system..."
 
     # Add Intel PRO/1000 MT Desktop (82540EM) card to VM. The card is 1Gbps.
-    VBoxManage modifyvm $name --nic${id} nat --nictype${id} 82540EM \
+    VBoxManage modifyvm $name --nic${id} nat --nictype${id} Am79C973 \
                         --cableconnected${id} on --macaddress${id} auto --natnet${id} "${nat_network}"
     VBoxManage modifyvm  $name  --nicpromisc${id} allow-all
     VBoxManage controlvm $name setlinkstate${id} on
