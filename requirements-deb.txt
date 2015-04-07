@@ -171,6 +171,8 @@ python-ethtool
 python-feedparser
 python-gflags
 python-glance
+python-gobject
+python-gobject-2
 python-heatclient
 python-keyring
 python-keystone
