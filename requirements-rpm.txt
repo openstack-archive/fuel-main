@@ -455,6 +455,7 @@ whatmask-1.2-7.el6
 xfsprogs
 xinetd
 yum
+yum-plugin-priorities
 zabbix
 zabbix-agent
 zabbix-sender
