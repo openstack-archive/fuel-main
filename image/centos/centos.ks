@@ -130,6 +130,7 @@ ql2200-firmware
 ql23xx-firmware
 ql2400-firmware
 ql2500-firmware
+kmod-hpsa
 bind-utils
 cronie
 crontabs
