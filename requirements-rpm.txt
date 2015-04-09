@@ -11,6 +11,7 @@ MySQL-server-5.5.28-7
 MySQL-server-wsrep
 MySQL-shared-5.5.28-7
 MySQL-shared-wsrep
+megaraid_sas
 mongodb
 mongodb-server
 monit
@@ -155,6 +156,7 @@ haproxy
 hdparm
 hiera
 hivex
+hpsa
 htop
 http-parser-2.0-4.20121128gitcd01361.el6
 httpd-2.2.15-15.el6.1
