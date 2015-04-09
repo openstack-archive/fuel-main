@@ -45,7 +45,7 @@ get_alldevs() {
 set_interfaces_up_when_booted() {
     devs=$(get_alldevs)
     for name in $devs; do
-        content="DEVICE=$name\nBOOTPROTO=none\nONBOOT=yes\nLINKDELAY=30"
+        content="DEVICE=$name\nBOOTPROTO=none\nONBOOT=yes\nLINKDELAY=10"
         echo -e "$content" > "./ifcfg-$name"
     done
 }
