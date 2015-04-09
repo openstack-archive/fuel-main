@@ -11,6 +11,7 @@ MySQL-server-5.5.28-7
 MySQL-server-wsrep
 MySQL-shared-5.5.28-7
 MySQL-shared-wsrep
+megaraid_sas
 mongodb
 mongodb-server
 monit
@@ -338,6 +339,7 @@ openstack-swift-proxy
 openstack-utils
 openvswitch
 openpgm
+kmod-hpsa
 kmod-openvswitch
 pacemaker
 parted
