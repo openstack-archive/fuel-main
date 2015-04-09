@@ -81,6 +81,7 @@ kernel-headers
 kernel-lt
 kernel-lt-devel
 kernel-lt-headers
+kmod-hpsa
 kmod-openvswitch
 leveldb-1.7.0-2.el6
 libevent-devel-1.4.13-4.el6
