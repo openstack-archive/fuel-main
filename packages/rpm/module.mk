@@ -58,6 +58,7 @@ endef
 
 
 fuel_rpm_packages:=\
+fuel \
 fencing-agent \
 fuel-agent \
 fuel-image \
