@@ -247,6 +247,7 @@ dhcp
 docker-io
 fuel-bootstrap-image
 fuel-target-centos-images
+fuel-package-updates
 fuelmenu
 fuel-docker-images
 gdisk
