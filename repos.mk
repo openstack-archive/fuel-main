@@ -37,6 +37,12 @@ $(BUILD_DIR)/repos/fuel-main.done:
 	$(ACTION.TOUCH)
 $(BUILD_DIR)/repos/repos.done: $(BUILD_DIR)/repos/fuel-main.done
 
+#FIXME(aglarendil): make repos generation uniform
+
+$(BUILD_DIR)/repos/fuel-library6.1.done: $(BUILD_DIR)/repos/fuel-library.done
+	ln -s $(BUILD_DIR)/repos/fuel-library $(BUILD_DIR)/repos/fuel-library6.1
+	$(ACTION.TOUCH)
+
 $(BUILD_DIR)/repos/repos.done:
 	version_yaml=$(BUILD_DIR)/repos/version.yaml; \
 	for repo in $(strip $(fuel_components_repos)); do \

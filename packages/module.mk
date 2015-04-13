@@ -71,7 +71,7 @@ $(eval $(call prepare_git_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$
 #ASTUTE_PKGS
 $(eval $(call prepare_git_source,astute,astute-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/astute,HEAD))
 #FUELLIB_PKGS
-$(eval $(call prepare_git_source,fuel-library,fuel-library6.1-6.1-1.tar.gz,$(BUILD_DIR)/repos/fuel-library,HEAD))
+$(eval $(call prepare_git_source,fuel-library6.1,fuel-library6.1-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-library6.1,HEAD))
 #FUEL_PYTHON_PKGS
 $(eval $(call prepare_git_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient,HEAD))
 #FUEL-IMAGE PKGS
@@ -95,6 +95,10 @@ packages: $(BUILD_DIR)/packages/build.done
 packages-rpm: $(BUILD_DIR)/packages/rpm/build.done
 packages-deb: $(BUILD_DIR)/packages/deb/build.done
 
+#FIXME(aglarendil): make sources generation uniform
+$(BUILD_DIR)/packages/source_fuel-library.done: $(BUILD_DIR)/packages/source_fuel-library6.1.done
+	ln -s $(BUILD_DIR)/packages/sources/fuel-library6.1 $(BUILD_DIR)/packages/sources/fuel-library  
+	$(ACTION.TOUCH)
 
 ###################################
 #### LATE PACKAGES ################
