@@ -41,6 +41,14 @@ Fuel-image package
 install -p -D -m 755 %{_builddir}/%{name}-%{version}/image/ubuntu/build_on_masternode/build_ubuntu_image.py %{buildroot}%{_bindir}/build_ubuntu_image.py
 install -p -D -m 755 %{_builddir}/%{name}-%{version}/image/ubuntu/build_on_masternode/create_separate_images.sh %{buildroot}%{_bindir}/create_separate_images.sh
 
+mkdir -p %{buildroot}/etc/yum.repos.d/
+cat > %{buildroot}/etc/yum.repos.d/nailgun.repo << EOF
+[nailgun]
+name=Nailgun Local Repo
+baseurl=file:/var/www/nailgun/%{openstack_version}/centos/x86_64
+gpgcheck=0
+EOF
+
 %post
 ln -s %{_bindir}/build_ubuntu_image.py %{_bindir}/fuel-image
 
@@ -54,3 +62,30 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %{_bindir}/build_ubuntu_image.py
 %{_bindir}/create_separate_images.sh
+
+%package -n fuel-release
+Summary: Fuel for OpenStack
+Version: %{version}
+Release: %{release}
+License: Apache
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Prefix: %{_prefix}
+BuildArch: noarch
+Requires: fuel-bootstrap-image >= %{version}
+Requires: fuel-dockerctl >= %{version}
+Requires: fuel-docker-images >= %{version}
+Requires: fuel-library >= 6.1
+Requires: fuelmenu >= %{version}
+Requires: fuel-package-updates >= %{version}
+Requires: fuel-provisioning-scripts >= %{version}
+Requires: fuel-target-centos-images >= %{version}
+Requires: nailgun-net-check >= %{version}
+Requires: python-fuelclient >= %{version}
+Requires: yum
+
+%description -n fuel-release
+Fuel for OpenStack is a lifecycle management utility for 
+managing OpenStack.
+
+%files -n fuel-release
+%defattr(-,root,root)
