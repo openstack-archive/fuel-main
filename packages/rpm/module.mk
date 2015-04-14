@@ -57,7 +57,7 @@ $(BUILD_DIR)/packages/rpm/$1-repocleanup.done: $(BUILD_DIR)/mirror/centos/repo.d
 endef
 
 
-fuel_rpm_packages:=\
+packages_list:=\
 fencing-agent \
 fuel-agent \
 fuel-image \
@@ -76,7 +76,7 @@ nailgun-redhat-license \
 python-fuelclient \
 ruby21-rubygem-astute
 
-$(eval $(foreach pkg,$(fuel_rpm_packages),$(call build_rpm,$(pkg))$(NEWLINE)))
+$(eval $(foreach pkg,$(packages_list),$(call build_rpm,$(pkg))$(NEWLINE)))
 
 $(BUILD_DIR)/packages/rpm/repo.done:
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;

@@ -1,4 +1,7 @@
-.PHONY: repos
+.PHONY: repos clean-repos
+
+clean-repos:
+	rm -rf $(BUILD_DIR)/repos
 
 repos: $(BUILD_DIR)/repos/repos.done
 
