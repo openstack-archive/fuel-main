@@ -108,7 +108,6 @@ mongodb
 mongodb-server
 monit
 murano
-murano-apps
 murano-dashboard
 MySQL-client-wsrep
 MySQL-python
