@@ -201,6 +201,7 @@ postgresql-devel
 postgresql-libs
 postgresql-server
 puppet
+pv
 pydot-ng
 pygobject2-2.20.0-5.el6
 pyparsing
