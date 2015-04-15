@@ -32,6 +32,9 @@ esac
 # Check available memory on the host system
 ./actions/check-available-memory.sh || exit 1
 
+# Enable IP forwarding on host computer
+./actions/enable-ip-forwarding.sh || exit 1
+
 # clean previous installation if exists
 ./actions/clean-previous-installation.sh || exit 1
 
