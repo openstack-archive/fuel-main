@@ -1,12 +1,11 @@
 .PHONY: all upgrade-lrzip openstack-yaml upgrade_versions
 .DELETE_ON_ERROR: $(UPGRADE_TARBALL_PATH).lrz
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/common-part.tar
-.DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/fuel-lrzip-part.tar.tar
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/openstack-part.tar
 
 all: upgrade-lrzip openstack-yaml
 
-upgrade-lrzip: UPGRADERS ?= "host-system bootstrap docker openstack targetimages"
+upgrade-lrzip: UPGRADERS ?= "host-system docker openstack"
 upgrade-lrzip: $(UPGRADE_TARBALL_PATH).lrz
 
 ########################
@@ -14,15 +13,11 @@ upgrade-lrzip: $(UPGRADE_TARBALL_PATH).lrz
 ########################
 $(UPGRADE_TARBALL_PATH).lrz: \
 		$(BUILD_DIR)/upgrade/openstack-part.done \
-		$(BUILD_DIR)/upgrade/fuel-lrzip-part.tar \
-		$(BUILD_DIR)/upgrade/common-part.tar \
-		$(BUILD_DIR)/upgrade/image-part.tar
+		$(BUILD_DIR)/upgrade/common-part.tar
 	mkdir -p $(@D)
 	rm -f $(BUILD_DIR)/upgrade/upgrade-lrzip.tar
-	tar Af $(BUILD_DIR)/upgrade/upgrade-lrzip.tar $(BUILD_DIR)/upgrade/fuel-lrzip-part.tar
 	tar Af $(BUILD_DIR)/upgrade/upgrade-lrzip.tar $(BUILD_DIR)/upgrade/openstack-part.tar
 	tar Af $(BUILD_DIR)/upgrade/upgrade-lrzip.tar $(BUILD_DIR)/upgrade/common-part.tar
-	tar Af $(BUILD_DIR)/upgrade/upgrade-lrzip.tar $(BUILD_DIR)/upgrade/image-part.tar
 	lrzip -L2 -U -D -f $(BUILD_DIR)/upgrade/upgrade-lrzip.tar -o $@
 
 ########################
@@ -53,40 +48,14 @@ $(BUILD_DIR)/upgrade/deps.done: \
 # COMMON PART
 ########################
 $(BUILD_DIR)/upgrade/common-part.tar: \
-		$(BUILD_DIR)/repos/fuellib.done \
+		$(ARTS_DIR)/$(VERSION_YAML_ART_NAME) \
 		$(BUILD_DIR)/upgrade/deps.done
 	mkdir -p $(@D)
 	rm -f $@
-	tar cf $@ -C $(BUILD_DIR)/repos/fuellib/deployment --xform s:^puppet:upgrade/puppet/modules: puppet
-	tar rf $@ -C $(BUILD_DIR)/repos/fuellib/deployment/puppet/osnailyfacter/examples --xform s:^:upgrade/puppet/manifests/: site.pp
 	tar rf $@ -C $(BUILD_DIR)/upgrade --xform s:^:upgrade/: deps
 	sed 's/{{UPGRADERS}}/${UPGRADERS}/g' $(SOURCE_DIR)/upgrade/upgrade_template.sh > $(BUILD_DIR)/upgrade/upgrade.sh
 	tar rf $@ --mode=755 -C $(BUILD_DIR)/upgrade upgrade.sh
-
-########################
-# FUEL LRZIP PART
-########################
-$(BUILD_DIR)/upgrade/fuel-lrzip-part.tar: \
-		$(BUILD_DIR)/bootstrap/build.done \
-		$(ISOROOT)/version.yaml \
-		$(BUILD_DIR)/docker/build.done
-	mkdir -p $(@D)
-	rm -f $@
-	mkdir -p $(BUILD_DIR)/upgrade/images
-	lrzip -d $(BUILD_DIR)/docker/fuel-images.tar.lrz -O $(BUILD_DIR)/upgrade/images
-	tar cf $@ -C $(BUILD_DIR) upgrade/images
-	tar rf $@ -C $(BUILD_DIR)/iso/isoroot --xform s:^:upgrade/config/: version.yaml
-	tar rf $@ -C $(BUILD_DIR)/bootstrap --xform s:^:upgrade/bootstrap/: initramfs.img linux
-
-########################
-# IMAGE PART
-########################
-$(BUILD_DIR)/upgrade/image-part.tar: \
-		$(BUILD_DIR)/image/build.done
-	mkdir -p $(BUILD_DIR)/upgrade/targetimages
-	tar xf $(ARTS_DIR)/$(TARGET_CENTOS_IMG_ART_NAME) -C $(BUILD_DIR)/upgrade/targetimages
-	rm -f $@
-	tar cf $@ -C $(BUILD_DIR)/upgrade/targetimages . --xform s:^:upgrade/targetimages/:
+	tar rf $@ --mode=755 -C $(ARTS_DIR) -xform s:^:upgrade/config/: $(VERSION_YAML_ART_NAME)
 
 ########################
 # OPENSTACK PART
@@ -133,14 +102,12 @@ $(BUILD_DIR)/upgrade/openstack-$1-part.done: BASE=$(BUILD_DIR)/upgrade/openstack
 $(BUILD_DIR)/upgrade/openstack-$1-part.done: OPENSTACK_VERSION=$$(shell cat $(BUILD_DIR)/upgrade/openstack_version_$1)
 $(BUILD_DIR)/upgrade/openstack-$1-part.done: CENTOS_BASE=$$(BASE)/upgrade/repos/$$(OPENSTACK_VERSION)/centos/x86_64
 $(BUILD_DIR)/upgrade/openstack-$1-part.done: UBUNTU_BASE=$$(BASE)/upgrade/repos/$$(OPENSTACK_VERSION)/ubuntu/x86_64
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: PUPPET_BASE=$$(BASE)/upgrade/puppet/$$(OPENSTACK_VERSION)
 $(BUILD_DIR)/upgrade/openstack-$1-part.done: RELEASES_BASE=$$(BASE)/upgrade/releases
 $(BUILD_DIR)/upgrade/openstack-$1-part.done: RELEASE_VERSIONS_BASE=$$(BASE)/upgrade/release_versions
 $(BUILD_DIR)/upgrade/openstack-$1-part.done: \
 		$(BUILD_DIR)/upgrade/openstack_version_$1 \
 		$$(ARTS_DIR_$1)/$(OPENSTACK_YAML_ART_NAME) \
-		$$(ARTS_DIR_$1)/$(VERSION_YAML_ART_NAME) \
-		$$(ARTS_DIR_$1)/$(PUPPET_ART_NAME)
+		$$(ARTS_DIR_$1)/$(VERSION_YAML_ART_NAME)
 	rm -f $$@
 	mkdir -p $$(@D)
 #	CENTOS REPO
@@ -149,14 +116,6 @@ $(BUILD_DIR)/upgrade/openstack-$1-part.done: \
 #	UBUNTU REPO
 	mkdir -p $$(UBUNTU_BASE)
 	tar xf $$(ARTS_DIR_$1)/$$(UBUNTU_REPO_ART) -C $$(UBUNTU_BASE) --xform s:^$$(UBUNTU_REPO_ART_TOPDIR)/::
-#	PUPPET MODULES
-	mkdir -p $$(PUPPET_BASE)/modules
-	tar zxf $$(ARTS_DIR_$1)/$(PUPPET_ART_NAME) -C $$(PUPPET_BASE)/modules --xform s:^puppet/::
-#	PUPPET MANIFESTS
-	mkdir -p $$(PUPPET_BASE)/manifests
-	cp $$(PUPPET_BASE)/modules/osnailyfacter/examples/site.pp $$(PUPPET_BASE)/manifests
-	cp $$(CENTOS_BASE)/centos-versions.yaml $$(PUPPET_BASE)/manifests
-	cp $$(UBUNTU_BASE)/ubuntu-versions.yaml $$(PUPPET_BASE)/manifests
 #	OPENSTACK-YAML
 	mkdir -p $$(RELEASES_BASE)
 	cp $$(ARTS_DIR_$1)/$(OPENSTACK_YAML_ART_NAME) $$(RELEASES_BASE)/$$(OPENSTACK_VERSION).yaml
