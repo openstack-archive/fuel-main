@@ -208,6 +208,7 @@ else
 fi
 echo > /tmp/partition.ks
 echo "partition /boot --onpart=/dev/${bootdev}3" >> /tmp/partition.ks
+echo "partition /boot/efi --onpart=/dev/${bootdev}2" >> /tmp/partition.ks
 echo "partition pv.001 --ondisk=${tgtdrive} --size=41000 --grow" >> /tmp/partition.ks
 echo "volgroup os pv.001" >> /tmp/partition.ks
 echo "logvol swap --vgname=os --recommended --name=swap" >> /tmp/partition.ks
@@ -218,7 +219,7 @@ echo "logvol /var/log --vgname=os --size=4096 --percent 50 --grow --name=varlog 
 
 
 # bootloader
-echo "bootloader --location=mbr --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
+echo "bootloader --location=partition --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
 
 # Anaconda can not install grub 0.97 on disks which are >4T.
 # The reason is that grub does not support such large geometries
