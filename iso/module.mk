@@ -221,12 +221,35 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 	sudo sed -r -i -e "s/will_be_substituted_with_PRODUCT_VERSION/$(PRODUCT_VERSION)/" $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
 	sudo sed -r -i -e 's/will_be_substituted_with_ISO_VOLUME_ID/$(ISO_VOLUME_ID)/g' $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
 	sudo sed -r -i -e 's/will_be_substituted_with_ISO_VOLUME_ID/$(ISO_VOLUME_ID)/g' $(BUILD_DIR)/iso/isoroot-mkisofs/ks.cfg
-	mkisofs -r -V $(ISO_VOLUME_ID) -p $(ISO_VOLUME_PREP) \
-		-J -T -R -b isolinux/isolinux.bin \
-		-no-emul-boot \
-		-boot-load-size 4 -boot-info-table \
-		-x "lost+found" -o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
-	isohybrid $@
+
+	sudo mkdir -p $(BUILD_DIR)/iso/efi_image
+	sudo mount $(BUILD_DIR)/iso/isoroot-mkisofs/images/efiboot.img $(BUILD_DIR)/iso/efi_image
+	
+	echo > $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "default=0" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "splashimage=/EFI/BOOT/splash.xpm.gz" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "timeout 300" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "hiddenmenu" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "title DVD Fuel Install (Static IP)" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "  kernel /isolinux/vmlinuz biosdevname=0 ks=cdrom:/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "  initrd /isolinux/initrd.img" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "title USB Fuel Install (Static IP)" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "  kernel /isolinux/vmlinuz biosdevname=0 repo=hd:LABEL=\"$(ISO_VOLUME_ID)\":/ ks=hd:LABEL=\"$(ISO_VOLUME_ID)\":/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "  initrd /isolinux/initrd.img" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+
+	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf $(BUILD_DIR)/iso/efi_image/EFI/BOOT/
+	sudo umount $(BUILD_DIR)/iso/efi_image
+	sudo rmdir $(BUILD_DIR)/iso/efi_image
+
+	xorriso -as mkisofs \
+		-V $(ISO_VOLUME_ID) -p $(ISO_VOLUME_PREP) \
+		-J -R \
+		-graft-points \
+		-b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table \
+		-isohybrid-mbr /usr/lib/syslinux/isohdpfx.bin \
+		-eltorito-alt-boot -e images/efiboot.img -no-emul-boot \
+		-isohybrid-gpt-basdat \
+		-o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
 	implantisomd5 $@
 
 # IMGSIZE is calculated as a sum of iso size plus
