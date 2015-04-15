@@ -222,12 +222,36 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 	sudo sed -r -i -e "s/will_be_substituted_with_PRODUCT_VERSION/$(PRODUCT_VERSION)/" $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
 	sudo sed -r -i -e 's/will_be_substituted_with_ISO_VOLUME_ID/$(ISO_VOLUME_ID)/g' $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
 	sudo sed -r -i -e 's/will_be_substituted_with_ISO_VOLUME_ID/$(ISO_VOLUME_ID)/g' $(BUILD_DIR)/iso/isoroot-mkisofs/ks.cfg
+	
+	EFICONF = $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf 
+	echo > $(EFICONF)
+	echo "default=0" >> $(EFICONF)
+	echo "splashimage=/EFI/BOOT/splash.xpm.gz" >> $(EFICONF)
+	echo "timeout 300" >> $(EFICONF)
+	echo "hiddenmenu" >> $(EFICONF)
+	echo "title label DVD Fuel Install (Static IP)" >> $(EFICONF)
+	echo "  kernel /isolinux/vmlinuz biosdevname=0 ks=cdrom:/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(EFICONF)
+	echo "  initrd /isolinux/initrd.img" >> $(EFICONF)
+	echo "title label USB Fuel Install (Static IP)" >> $(EFICONF)
+	echo "  kernel /isolinux/vmlinuz biosdevname=0 repo=hd:LABEL=\"$(ISO_VOLUME_ID)\":/ ks=hd:LABEL=\"$(ISO_VOLUME_ID)\":/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(EFICONF)
+	echo "  initrd /isolinux/initrd.img" >> $(EFICONF)
+
+# we don't need mkisofs&isohybrid anymore, but read comments about xorriso below
 	mkisofs -r -V $(ISO_VOLUME_ID) -p $(ISO_VOLUME_PREP) \
-		-J -T -R -b isolinux/isolinux.bin \
-		-no-emul-boot \
-		-boot-load-size 4 -boot-info-table \
-		-x "lost+found" -o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
+    -J -T -R -b isolinux/isolinux.bin \
+    -no-emul-boot \
+    -boot-load-size 4 -boot-info-table \
+    -x "lost+found" -o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
 	isohybrid $@
+
+# xorriso is not in repo yet, will be uncommented a little later
+#	xorriso -as mkisofs \
+#		-J -R \
+#		-graft-points \
+#		-b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table \
+#		-isohybrid-mbr /usr/lib/syslinux/isohdpfx.bin \
+#		-eltorito-alt-boot -e images/efiboot.img -no-emul-boot \
+#		-o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
 	implantisomd5 $@
 
 # IMGSIZE is calculated as a sum of iso size plus
