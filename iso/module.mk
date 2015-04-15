@@ -221,12 +221,53 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 	sudo sed -r -i -e "s/will_be_substituted_with_PRODUCT_VERSION/$(PRODUCT_VERSION)/" $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
 	sudo sed -r -i -e 's/will_be_substituted_with_ISO_VOLUME_ID/$(ISO_VOLUME_ID)/g' $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/isolinux.cfg
 	sudo sed -r -i -e 's/will_be_substituted_with_ISO_VOLUME_ID/$(ISO_VOLUME_ID)/g' $(BUILD_DIR)/iso/isoroot-mkisofs/ks.cfg
-	mkisofs -r -V $(ISO_VOLUME_ID) -p $(ISO_VOLUME_PREP) \
-		-J -T -R -b isolinux/isolinux.bin \
-		-no-emul-boot \
-		-boot-load-size 4 -boot-info-table \
-		-x "lost+found" -o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
-	isohybrid $@
+
+	
+	mkdir -p $(BUILD_DIR)/iso/efi_tmp/efi_image
+	# We need to have a partition which will be pointed from ISO as efi partition
+	# vmlinuz + initrd + bootloader + conffile = about 38MB
+	dd bs=1M count=40 if=/dev/zero of=$(BUILD_DIR)/iso/efi_tmp/efiboot.img
+	# UEFI standard say to us that EFI partition should be some FAT-related filesystem
+	mkfs.vfat $(BUILD_DIR)/iso/efi_tmp/efiboot.img
+	sudo mount $(BUILD_DIR)/iso/efi_tmp/efiboot.img $(BUILD_DIR)/iso/efi_tmp/efi_image
+	
+	# This needs to be edited in place due to some strange implemntations of UEFI
+	# For example, Tianocore OVMF will not use efiboot.img. Instead, it looks for
+	# bootloader and it conffiles in /EFI/BOOT/* on main ISO partition (with ISO9660 fs)
+	echo > $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "default=0" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "splashimage=/EFI/BOOT/splash.xpm.gz" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "timeout 300" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "hiddenmenu" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "title DVD Fuel Install (Static IP)" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	# efiboot.img is a partition with filesystem now and /vmlinuz there will be pointed
+	# to root of it
+	echo "  kernel /vmlinuz biosdevname=0 ks=cdrom:/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "  initrd /initrd.img" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "title USB Fuel Install (Static IP)" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "  kernel /vmlinuz biosdevname=0 repo=hd:LABEL=\"$(ISO_VOLUME_ID)\":/ ks=hd:LABEL=\"$(ISO_VOLUME_ID)\":/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "  initrd /initrd.img" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+
+	# But many UEFI implementations will use our efiboot.img and if we want to boot from it,
+	# we also need to place kernel and initrd there (and bootloader and conffile to it too)
+	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/vmlinuz $(BUILD_DIR)/iso/efi_tmp/efi_image/
+	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/initrd.img $(BUILD_DIR)/iso/efi_tmp/efi_image/
+	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
+	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.efi $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
+	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/splash.xpm.gz $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
+	sudo umount $(BUILD_DIR)/iso/efi_tmp/efi_image
+	cp -f $(BUILD_DIR)/iso/efi_tmp/efiboot.img $(BUILD_DIR)/iso/isoroot-mkisofs/images/
+	sudo rm -rf $(BUILD_DIR)/iso/efi_tmp/
+
+	xorriso -as mkisofs \
+		-V $(ISO_VOLUME_ID) -p $(ISO_VOLUME_PREP) \
+		-J -R \
+		-graft-points \
+		-b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table \
+		-isohybrid-mbr /usr/lib/syslinux/isohdpfx.bin \
+		-eltorito-alt-boot -e images/efiboot.img -no-emul-boot \
+		-isohybrid-gpt-basdat \
+		-o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
 	implantisomd5 $@
 
 # IMGSIZE is calculated as a sum of iso size plus
