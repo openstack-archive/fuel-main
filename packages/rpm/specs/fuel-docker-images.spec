@@ -28,6 +28,18 @@ cp -R utils %{buildroot}/var/www/nailgun/docker/
 %clean
 rm -rf %{buildroot}
 
+%post
+# Load images if docker daemon is running
+if docker info &>/dev/null; then
+  TMPDIR=$(mktemp -d)
+  echo "Extracting Fuel Docker images..."
+  lrzip -d -o "${TMPDIR}/fuel-images.tar" /var/www/nailgun/docker/images/fuel-images.tar.lrz
+  echo "Loading Fuel Docker images..."
+  docker load -i "${TMPDIR}/fuel-images.tar"
+  rm -rf "${TMPDIR}"
+fi
+
+
 %files
 %defattr(-,root,root)
 /var/www/nailgun/docker/images/fuel-images.tar.lrz
