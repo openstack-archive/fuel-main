@@ -29,6 +29,9 @@ esac
 # Prepare the host system
 ./actions/prepare-environment.sh || exit 1
 
+# Enable IP forwarding on host computer
+./actions/enable_ip_forwarding.sh || exit 1
+
 # Check available memory on the host system
 ./actions/check-available-memory.sh || exit 1
 
