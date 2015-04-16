@@ -155,6 +155,7 @@ vim
 wget
 yum
 yum-utils
+yum-plugin-priorities
 perl
 daemonize
 rsync
