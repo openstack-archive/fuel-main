@@ -210,7 +210,7 @@ drivers+=' %(modules)s '
                     hash.update(block)
             return hash.hexdigest()
 
-        data = []
+        data = {'repos': None, 'packages': None}
         for disk in self.__separate_images_disks:
             filename = os.path.basename(disk.disk.lofile)
             abs_path = os.path.join('/', os.path.basename(disk.disk.lofile))
@@ -219,10 +219,16 @@ drivers+=' %(modules)s '
             mountpoint = filename[len(self.name):-4].replace('-', '/')
             if not mountpoint:
                 mountpoint = '/'
-            data.append({mountpoint: {'filename': filename + '.gz',
-                                      'size': size, 'md5': md5,
-                                      'container': 'gzip',
-                                      'format': disk.fstype}})
+
+            data.setdefault('images', []).append({
+                'raw_md5': md5,
+                'raw_size': size,
+                'raw_name': None,
+                'container_name': filename + '.gz',
+                'container_md5': None,
+                'container_size': None,
+                'container': 'gzip',
+                'format': disk.fstype})
         with open(self.__output_file, 'wb') as f:
             f.write(yaml.dump(data))
 
