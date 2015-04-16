@@ -68,6 +68,7 @@ haproxy
 hdparm
 hiera
 hivex
+hpsa
 htop
 httpd-2.2.15-15.el6.1
 http-parser-2.0-4.20121128gitcd01361.el6
