@@ -90,7 +90,6 @@ mongodb-clients
 mongodb-server
 monit
 murano
-murano-apps
 murano-dashboard
 mysql-client
 mysql-server-wsrep-5.6
