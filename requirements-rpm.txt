@@ -35,6 +35,7 @@ dhcp
 disktype
 #Django-1.3.4-1.el6
 Django14
+dkms
 dmidecode-2.11-2.el6
 dnsmasq
 dnsmasq-utils
