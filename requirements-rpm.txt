@@ -41,6 +41,7 @@ dnsmasq-utils
 docker-io
 dpkg
 dpkg-devel
+dkms
 dstat
 erlang-doc-R14B-04.8.el6
 erlang-R14B-04.8.el6
