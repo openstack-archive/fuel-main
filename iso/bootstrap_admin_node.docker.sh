@@ -60,7 +60,6 @@ if [ -f /root/.build_images ]; then
   trap fail EXIT
 
   echo "Loading Fuel base image for Docker..."
-  lrzip -d -o /var/www/nailgun/docker/images/fuel-images.tar /var/www/nailgun/docker/images/fuel-images.tar.lrz
   docker load -i /var/www/nailgun/docker/images/fuel-images.tar
 
   echo "Building Fuel Docker images..."
@@ -90,18 +89,8 @@ if [ -f /root/.build_images ]; then
   trap - EXIT
   set +e
 else
-  images_dir="/var/www/nailgun/docker/images"
-
-  # extract docker images
-  mkdir -p $images_dir $sources_dir
-  rm -f $images_dir/*tar
-  pushd $images_dir &>/dev/null
-
-  echo "Extracting and loading docker images. (This may take a while)"
-  lrzip -d -o /var/www/nailgun/docker/images/fuel-images.tar /var/www/nailgun/docker/images/fuel-images.tar.lrz
+  echo "Loading docker images. (This may take a while)"
   docker load -i /var/www/nailgun/docker/images/fuel-images.tar
-  popd &>/dev/null
-
 fi
 
 # apply puppet
