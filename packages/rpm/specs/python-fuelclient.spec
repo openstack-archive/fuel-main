@@ -15,8 +15,6 @@ Prefix: %{_prefix}
 BuildArch: noarch
 BuildRequires: python-setuptools
 
-BuildRequires: python-pbr >= 0.6
-BuildRequires: python-pbr < 0.7
 BuildRequires: python-pbr > 0.7
 BuildRequires: python-pbr < 1.0
 
