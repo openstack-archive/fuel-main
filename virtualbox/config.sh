@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #    Copyright 2013 Mirantis, Inc.
 #
@@ -32,7 +32,8 @@ idx=0
 # 172.16.1.1/24  - OpenStack Fixed/Internal/Private network
 # 192.168.0.1/24 - OpenStack Management network
 # 192.168.1.1/24 - OpenStack Storage network (for Ceph, Swift etc)
-for ip in 10.20.0.1 172.16.0.1 172.16.1.1 ; do
+fuel_master_ips="10.20.0.1 172.16.0.1 172.16.1.1"
+for ip in $fuel_master_ips; do
 # VirtualBox for Windows has different virtual NICs naming and indexing.
 # Define the type of operating system and the number of processor cores for the fuel master node.
   case "$(uname)" in
@@ -83,7 +84,7 @@ vm_master_memory_mb=1536
 vm_master_disk_mb=65535
 
 # Master node access to the internet through the host system, using VirtualBox NAT adapter
-vm_master_nat_network=192.168.200/24
+vm_master_nat_network=192.168.200.0/24
 vm_master_nat_gateway=192.168.200.2
 
 # These settings will be used to check if master node has installed or not.
@@ -184,7 +185,7 @@ else
 fi
 
 # Within demo cluster created by this script, all slaves (controller
-# and compute nodes) will have identical disk configuration. Each 
+# and compute nodes) will have identical disk configuration. Each
 # slave will have three disks with sizes defined by the variables below. In a disk configuration
 # dialog you will be able to allocate the whole disk or it's part for
 # operating system (Base OS), VMs (Virtual Storage), Ceph or other function,
