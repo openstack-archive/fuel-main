@@ -221,6 +221,9 @@ enable_outbound_network_for_product_vm() {
       echo "OK"
     fi
 
+    # Network to masquerade in iptables in the fuel master node. For ping from slave nodes
+    local host_nat_network0=(`echo $fuel_master_ips | awk '{print $1}' | sed 's/.$/0/'`)
+
     # Enable internet access on inside the VMs
     echo -n "Enabling outbound network/internet access for the product VM... "
 
@@ -246,6 +249,10 @@ enable_outbound_network_for_product_vm() {
         send "echo -e \"$nameserver\" > /etc/dnsmasq.upstream\r"
         expect "$prompt"
         send "sed \"s/DNS_UPSTREAM:.*/DNS_UPSTREAM: \\\$(grep \'^nameserver\' /etc/dnsmasq.upstream | cut -d \' \' -f2)/g\" -i /etc/fuel/astute.yaml\r"
+        expect "$prompt"
+        send "iptables -t nat -A POSTROUTING -o eth2 -s $host_nat_network0/24 -j MASQUERADE\r"
+        expect "$prompt"
+        send "service iptables save >/dev/null 2>&1\r"
         expect "$prompt"
         send "dockerctl restart cobbler >/dev/null 2>&1\r"
         expect "$prompt"
