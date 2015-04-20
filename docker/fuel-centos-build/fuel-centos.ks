@@ -151,6 +151,7 @@ uwsgi-plugin-python
 vim-minimal
 vim
 xinetd
+yum-plugin-priorities
 %end
 
 %post

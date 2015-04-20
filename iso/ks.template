@@ -276,6 +276,7 @@ vim-enhanced
 virt-what
 wget
 yum
+yum-plugin-priorities
 
 %include /tmp/post_partition.ks
 
