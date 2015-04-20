@@ -329,7 +329,7 @@ rst2pdf-0.16-1.el6
 rsyslog
 rsyslog-relp
 ruby-1.8.7.352-13.el6
-ruby-2.1.1
+ruby21
 ruby21-augeas
 ruby21-facter
 ruby21-hiera
