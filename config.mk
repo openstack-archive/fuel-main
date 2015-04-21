@@ -38,6 +38,7 @@ CURRENT_VERSION:=$(PRODUCT_VERSION)
 # If it is set then diff $(BASE_VERSION)->$(CURRENT_VERSION)
 BASE_VERSION:=6.0
 
+PACKAGE_VERSION=6.0.0
 # UPGRADE_VERSIONS?=\
 #	6.0:5.1 \
 #	5.1 \
@@ -253,6 +254,13 @@ MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 endif
 
+
+#This suffix is used to generate path
+#to ubuntu mirror inside mirror
+#DocumentRoot
+
+MIRROR_UBUNTU_SUFFIX?=/pkgs/ubuntu
+
 YUM_DOWNLOAD_SRC?=
 
 MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
@@ -313,3 +321,9 @@ DOCKER_PREBUILT_SOURCE?=http://srv11-msk.msk.mirantis.net/docker-test/fuel-image
 
 # Production variable (prod, dev, docker)
 PRODUCTION?=docker
+
+SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+SANDBOX_MIRROR_CENTOS_UPSTREAM_OS_BASEURL:=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/os/$(CENTOS_ARCH)/
+SANDBOX_MIRROR_CENTOS_UPDATES_OS_BASEURL:=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/updates/$(CENTOS_ARCH)/
+SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
+SANDBOX_MIRROR_EPEL_OS_BASEURL:=$(SANDBOX_MIRROR_EPEL)/$(CENTOS_MAJOR)/$(CENTOS_ARCH)/
