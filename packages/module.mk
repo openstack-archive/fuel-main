@@ -97,7 +97,7 @@ packages-deb: $(BUILD_DIR)/packages/deb/build.done
 
 #FIXME(aglarendil): make sources generation uniform
 #$(BUILD_DIR)/packages/source_fuel-library.done: $(BUILD_DIR)/packages/source_fuel-library6.1.done
-#	ln -s $(BUILD_DIR)/packages/sources/fuel-library6.1 $(BUILD_DIR)/packages/sources/fuel-library  
+#	ln -s $(BUILD_DIR)/packages/sources/fuel-library6.1 $(BUILD_DIR)/packages/sources/fuel-library
 #	$(ACTION.TOUCH)
 
 ###################################
