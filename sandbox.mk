@@ -78,13 +78,11 @@ deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_R
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE)-updates main universe multiverse restricted
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE)-security main universe multiverse restricted
 #MOS mirrors
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_BASE)/ubuntu $(PRODUCT_NAME)$(PRODUCT_VERSION) main restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_BASE)/ubuntu $(PRODUCT_NAME)$(PRODUCT_VERSION)-security main restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_BASE)/ubuntu $(PRODUCT_NAME)$(PRODUCT_VERSION)-proposed main restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_BASE)/ubuntu $(PRODUCT_NAME)$(PRODUCT_VERSION)-updates main restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_BASE)/ubuntu $(PRODUCT_NAME)$(PRODUCT_VERSION)-holdback main restricted
-#Extra repositories
-$(if $(EXTRA_DEB_REPOS),$(subst |,$(newline)deb ,deb $(EXTRA_DEB_REPOS)))
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION) main restricted
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-security main restricted
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-proposed main restricted
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-updates main restricted
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-holdback main restricted
 endef
 
 define apt_preferences
@@ -120,7 +118,7 @@ chmod 755 $(SANDBOX_UBUNTU)/usr/sbin/policy-rc.d
 mkdir -p $(SANDBOX_UBUNTU)/etc/init.d
 touch $(SANDBOX_UBUNTU)/etc/init.d/.legacy-bootordering
 echo "Running debootstrap"
-sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) http://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX)
+sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX)
 sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
 echo "Generating utf8 locale"
 sudo chroot $(SANDBOX_UBUNTU) /bin/sh -c 'locale-gen en_US.UTF-8; dpkg-reconfigure locales'
@@ -140,16 +138,15 @@ echo "Allowing using unsigned repos"
 sudo mkdir -p /etc/apt/apt.conf.d/
 echo "APT::Get::AllowUnauthenticated 1;" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
 echo "Updating apt package database"
-sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p '$${TEMP}'; mkdir -p /tmp/user/0)" 
+sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p '$${TEMP}'; mkdir -p /tmp/user/0)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get update
 echo "Installing additional packages: $(SANDBOX_DEB_PKGS)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get dist-upgrade --yes
 test -n "$(SANDBOX_DEB_PKGS)" && sudo chroot $(SANDBOX_UBUNTU) apt-get install --yes $(SANDBOX_DEB_PKGS)
 echo "SANDBOX_UBUNTU_UP: done"
 endef
-	
+
 define SANDBOX_UBUNTU_DOWN
 	if mountpoint -q $(SANDBOX_UBUNTU)/proc; then sudo umount $(SANDBOX_UBUNTU)/proc; fi
 	sudo umount $(SANDBOX_UBUNTU)/tmp/apt || true
 endef
-

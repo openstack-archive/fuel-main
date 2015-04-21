@@ -6,9 +6,7 @@ help:
 	@echo '  SOURCE_DIR:       $(SOURCE_DIR)'
 	@echo '  BUILD_DIR:        $(BUILD_DIR)'
 	@echo '  LOCAL_MIRROR:     $(LOCAL_MIRROR)'
-	@echo '  YUM_REPOS:        $(YUM_REPOS)'
 	@echo '  MIRROR_CENTOS:    $(MIRROR_CENTOS)'
-	@echo '  EXTRA_RPM_REPOS:  $(EXTRA_RPM_REPOS)'
 	@echo '  EXTRA_DEB_REPOS:  $(EXTRA_DEB_REPOS)'
 	@echo '  ISO_DIR/ISO_NAME: $(ISO_PATH)'
 	@echo '  ENV_NAME:         $(ENV_NAME)'
@@ -36,15 +34,6 @@ help:
 	@echo
 	@echo 'Moscow office:'
 	@echo 'make iso USE_MIRROR=msk'
-	@echo
-	@echo 'Custom location:'
-	@echo 'make iso YUM_REPOS=proprietary MIRROR_CENTOS=http://<your_mirror>/centos'
-	@echo
-	@echo 'Extra RPM repos:'
-	@echo 'make iso EXTRA_RPM_REPOS="<repo1_name>,http://<repo1> <repo2_name>,ftp://<repo2>"'
-	@echo
-	@echo 'Extra DEB repos:'
-	@echo 'make iso EXTRA_DEB_REPOS="http://<repo1>/ubuntu /|ftp://<repo2> precise main"'
 	@echo
 
 # Path to the sources.
