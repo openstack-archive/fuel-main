@@ -2,6 +2,9 @@ ISOLINUX_FILES:=boot.msg grub.conf initrd.img isolinux.bin memtest vesamenu.c32 
 IMAGES_FILES:=efiboot.img efidisk.img install.img
 EFI_FILES:=BOOTX64.conf BOOTX64.efi splash.xpm.gz
 
+# First repository is used to download boot and installer files.
+MIRROR_CENTOS_KERNEL_BASEURL?=$(shell echo $(MULTI_MIRROR_CENTOS) | awk '{print $$1}' | awk -F',' '{print $$3}')
+
 # centos isolinux files
 $(addprefix $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/isolinux/,$(ISOLINUX_FILES)):
 	@mkdir -p $(@D)
