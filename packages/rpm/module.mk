@@ -60,7 +60,6 @@ endef
 packages_list:=\
 fencing-agent \
 fuel-agent \
-fuel-image \
 fuel-package-updates \
 fuel-provisioning-scripts \
 fuelmenu \
