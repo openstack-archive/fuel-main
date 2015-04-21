@@ -1,4 +1,35 @@
-include $(SOURCE_DIR)/mirror/centos/yum_repos.mk
+define yum_conf
+[main]
+cachedir=$(BUILD_DIR)/mirror/centos/cache
+keepcache=0
+debuglevel=6
+logfile=$(BUILD_DIR)/mirror/centos/yum.log
+exclude=*.i686.rpm ntp-dev*
+exactarch=1
+obsoletes=1
+gpgcheck=0
+plugins=1
+pluginpath=$(BUILD_DIR)/mirror/centos/etc/yum-plugins
+pluginconfpath=$(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d
+reposdir=$(BUILD_DIR)/mirror/centos/etc/yum.repos.d
+endef
+
+# It's a callable object.
+# Usage: $(call create_repo,repo)
+# where:
+# repo=repo_name,repo_priority,http://path_to_the_repo
+# repo_priority is a number from 1 to 99
+define create_repo
+[$(shell  echo $($1) | awk -F',' '{print $$1}')]
+name = Repo "$(shell  echo $($1) | awk -F',' '{print $$1}')"
+baseurl = $(shell  echo $($1) | awk -F',' '{print $$3}')
+gpgcheck = 0
+enabled = 1
+priority = $(shell echo $($1) | awk -F',' '{print $$2}')
+endef
+
+# First repository is used to download comps.xml files.
+MIRROR_CENTOS_OS_BASEURL?=$(shell echo $(MULTI_MIRROR_CENTOS) | awk '{print $$1}' | awk -F',' '{print $$3}')
 
 .PHONY: show-yum-urls-centos
 
@@ -17,17 +48,10 @@ $(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d/priorities.conf:
 	mkdir -p $(@D)
 	/bin/echo -e "[main]\nenabled=1\ncheck_obsoletes=1\nfull_match=1" > $@
 
-$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: $(call depv,YUM_REPOS)
-$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: \
-		export contents:=$(foreach repo,$(YUM_REPOS),\n$(yum_repo_$(repo))\n)
-$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo:
-	@mkdir -p $(@D)
-	/bin/echo -e "$${contents}" > $@
-
-$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: $(call depv,EXTRA_RPM_REPOS)
-$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: \
-		export contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(call create_extra_repo,repo)\n)
-$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo:
+$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/all.repo: $(call depv,MULTI_MIRROR_CENTOS)
+$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/all.repo: \
+		export contents:=$(foreach repo,$(MULTI_MIRROR_CENTOS),\n$(call create_repo,repo)\n)
+$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/all.repo:
 	@mkdir -p $(@D)
 	/bin/echo -e "$${contents}" > $@
 
@@ -35,8 +59,7 @@ centos_empty_installroot:=$(BUILD_DIR)/mirror/centos/dummy_installroot
 
 $(BUILD_DIR)/mirror/centos/yum-config.done: \
 		$(BUILD_DIR)/mirror/centos/etc/yum.conf \
-		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo \
-		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo \
+		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/all.repo \
 		$(BUILD_DIR)/mirror/centos/etc/yum-plugins/priorities.py \
 		$(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d/priorities.conf
 	rm -rf $(centos_empty_installroot)
@@ -53,13 +76,13 @@ endif
 $(BUILD_DIR)/mirror/centos/rpm-download.done: $(BUILD_DIR)/mirror/centos/urls.list
 	dst="$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages"; \
 	mkdir -p "$$dst" && \
-	xargs -n1 -P4 wget -nv -P "$$dst" < $< 
+	xargs -n1 -P4 wget -nv -P "$$dst" < $<
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/centos/src-rpm-download.done: $(BUILD_DIR)/mirror/centos/src_urls.list
 	dst="$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Sources"; \
-	mkdir -p "$$dst" && \
-	xargs --no-run-if-empty -n1 -P4 wget -nv -P "$$dst" < $<
+		mkdir -p "$$dst" && \
+		xargs --no-run-if-empty -n1 -P4 wget -nv -P "$$dst" < $<
 	$(ACTION.TOUCH)
 
 
@@ -87,20 +110,20 @@ $(BUILD_DIR)/mirror/centos/urls.list: $(SOURCE_DIR)/requirements-rpm.txt \
 
 $(BUILD_DIR)/mirror/centos/mirantis_rpms.list: $(BUILD_DIR)/mirror/centos/urls.list
 	sed -rne '/$(subst /,\/,$(MIRROR_FUEL))/ s/^.*[/]([^/]+)\.($(CENTOS_ARCH)|noarch)\.rpm$$/\1/p' < $< > $@.pre && \
-	sort -u < $@.pre > $@.tmp && \
-	mv $@.tmp $@
+# 	sort -u < $@.pre > $@.tmp && \
+# 	mv $@.tmp $@
 
 $(BUILD_DIR)/mirror/centos/src_urls.list: $(BUILD_DIR)/mirror/centos/mirantis_rpms.list
 	mkdir -p "$(@D)" && \
 	env \
 		TMPDIR="$(centos_empty_installroot)/cache" \
 		TMP="$(centos_empty_installroot)/cache" \
-	yumdownloader -q --urls \
-		--archlist=src --source \
-		--installroot="$(centos_empty_installroot)" \
-		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
-		--cacheonly \
-		`cat $<` > $@.pre 2>$@.log
+		yumdownloader -q --urls \
+			--archlist=src --source \
+			--installroot="$(centos_empty_installroot)" \
+			-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
+			--cacheonly \
+			`cat $<` > $@.pre 2>$@.log
 	sed -rne '/\.rpm$$/ {p}' -i $@.pre && \
 	sort -u < $@.pre > $@.tmp && \
 	mv $@.tmp $@
