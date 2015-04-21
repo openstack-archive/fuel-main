@@ -36,6 +36,7 @@ BOOTSTRAP_RPMS:=\
 	logrotate \
 	mcollective \
 	mingetty \
+	nc \
 	net-tools \
 	ntp \
 	ntpdate \
