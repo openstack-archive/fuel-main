@@ -144,6 +144,7 @@ sudo debootstrap $DEBOOTSTRAP_PARAMS || die "Couldn't finish debootstrap success
 sudo sed -i 's%root:[\*,\!]%root:$6$IInX3Cqo$5xytL1VZbZTusOewFnG6couuF0Ia61yS3rbC6P5YbZP2TYclwHqMq9e3Tg8rvQxhxSlBXP1DZhdUamxdOBXK0.%' ${TMP_CHROOT_DIR}/etc/shadow
 
 echo 'APT::Get::AllowUnauthenticated 1;' | sudo tee ${TMP_CHROOT_DIR}/etc/apt/apt.conf.d/02mirantis-unauthenticated
+echo 'Acquire::ForceIPv4 "true"' | sudo tee ${TMP_CHROOT_DIR}/etc/apt/apt.conf.d/03force-ipv4
 
 #local mirror
 sudo mkdir -p ${TMP_CHROOT_DIR}/tmp/mirror
