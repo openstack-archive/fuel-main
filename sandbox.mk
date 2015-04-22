@@ -140,14 +140,14 @@ echo "Allowing using unsigned repos"
 sudo mkdir -p /etc/apt/apt.conf.d/
 echo "APT::Get::AllowUnauthenticated 1;" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
 echo "Updating apt package database"
-sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p '$${TEMP}'; mkdir -p /tmp/user/0)" 
+sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p '$${TEMP}'; mkdir -p /tmp/user/0)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get update
 echo "Installing additional packages: $(SANDBOX_DEB_PKGS)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get dist-upgrade --yes
 test -n "$(SANDBOX_DEB_PKGS)" && sudo chroot $(SANDBOX_UBUNTU) apt-get install --yes $(SANDBOX_DEB_PKGS)
 echo "SANDBOX_UBUNTU_UP: done"
 endef
-	
+
 define SANDBOX_UBUNTU_DOWN
 	if mountpoint -q $(SANDBOX_UBUNTU)/proc; then sudo umount $(SANDBOX_UBUNTU)/proc; fi
 	sudo umount $(SANDBOX_UBUNTU)/tmp/apt || true
