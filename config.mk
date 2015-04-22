@@ -33,40 +33,8 @@ PRODUCT_NAME:=mos
 # to come from DEPS_DIR "as is"
 CURRENT_VERSION:=$(PRODUCT_VERSION)
 
-# This variable is used for building diff repos.
-# If it is not set then diff repo will not be built.
-# If it is set then diff $(BASE_VERSION)->$(CURRENT_VERSION)
-BASE_VERSION:=6.0
-
 PACKAGE_VERSION=6.0.0
-# UPGRADE_VERSIONS?=\
-#	6.0:5.1 \
-#	5.1 \
-#	5.0.3:5.0
-#
-# It means we need to put into a tarball
-#
-# 0) 5.1 -> 6.0   diff mirror and other 6.0   files
-# 1) 5.1          full mirror and other 5.1   files
-# 2) 5.0 -> 5.0.3 diff mirror and other 5.0.3 files
-#
-# * It is prohibited to have multiple bundles for
-# a particular version. E.g. 6.0 bundle can be one of
-#   ** 6.0          full bundle
-#   ** X.Y.Z -> 6.0 diff bundle
-#
-# * If a key (version before colon) is
-# the same as $(CURRENT_VERSION) then
-# a mirror (full or diff) will be built.
-#
-# * If a key does not match $(CURRENT_VERSION) then
-# a mirror (full or diff) is supposed to be
-# available as an artifact from a previous build job.
-#
-UPGRADE_VERSIONS?=\
-	$(CURRENT_VERSION):$(BASE_VERSION) \
-	5.1.1:5.1 \
-	5.0.2
+UPGRADE_VERSIONS?=$(CURRENT_VERSION)
 
 # Path to pre-built artifacts
 DEPS_DIR_CURRENT?=$(DEPS_DIR)/$(CURRENT_VERSION)
@@ -82,10 +50,6 @@ DOCKER_ART_NAME?=fuel-images.tar.lrz
 VERSION_YAML_ART_NAME?=version.yaml
 CENTOS_REPO_ART_NAME?=centos-repo.tar
 UBUNTU_REPO_ART_NAME?=ubuntu-repo.tar
-# actual name for a diff repo will be
-# $(DIFF_CENTOS_REPO_ART_BASE)-NEWVERSION-OLDVERSION.tar
-DIFF_CENTOS_REPO_ART_BASE?=diff-centos-repo
-DIFF_UBUNTU_REPO_ART_BASE?=diff-ubuntu-repo
 PUPPET_ART_NAME?=puppet.tgz
 OPENSTACK_YAML_ART_NAME?=openstack.yaml
 TARGET_UBUNTU_IMG_ART_NAME?=ubuntu_target_images.tar
@@ -179,8 +143,6 @@ LOCAL_MIRROR_UBUNTU:=$(LOCAL_MIRROR)/ubuntu
 LOCAL_MIRROR_UBUNTU_OS_BASEURL:=$(LOCAL_MIRROR_UBUNTU)
 LOCAL_MIRROR_DOCKER:=$(LOCAL_MIRROR)/docker
 LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
-DIFF_MIRROR_CENTOS_BASE:=$(LOCAL_MIRROR)/centos_updates
-DIFF_MIRROR_UBUNTU_BASE:=$(LOCAL_MIRROR)/ubuntu_updates
 
 # Use download.mirantis.com mirror by default. Other possible values are
 # 'msk', 'srt', 'usa', 'hrk'.
