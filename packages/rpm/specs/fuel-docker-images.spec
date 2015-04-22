@@ -32,6 +32,10 @@ cp -R utils %{buildroot}/var/www/nailgun/docker/
 %clean
 rm -rf %{buildroot}
 
+%post
+rm -f /var/www/nailgun/docker/images/fuel-images.tar
+lrzip -d -o /var/www/nailgun/docker/images/fuel-images.tar /var/www/nailgun/docker/images/fuel-images.tar.lrz
+
 %files
 %defattr(-,root,root)
 /var/www/nailgun/docker/images/fuel-images.tar.lrz
