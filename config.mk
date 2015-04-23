@@ -265,8 +265,11 @@ MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSIO
 MIRROR_CENTOS_KERNEL?=http://mirror.centos.org/centos-6/6.6/
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 MIRROR_CENTOS_KERNEL_BASEURL?=$(MIRROR_CENTOS_KERNEL)/os/$(CENTOS_ARCH)
-MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net$(MIRROR_UBUNTU_SUFFIX)
+MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
 MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
+MIRROR_UBUNTU_METHOD?=http
+MIRROR_UBUNTU_ROOT?=$(MIRROR_UBUNTU_SUFFIX)
+MIRROR_UBUNTU_SECTION?=main,restricted
 MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
