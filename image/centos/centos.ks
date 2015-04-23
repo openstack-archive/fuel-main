@@ -45,6 +45,9 @@ gpgcheck=0
 EOF
 rpm -e --nodeps ruby
 yum install --exclude=ruby-2.1.1* -y ruby rubygems ruby-augeas ruby-devel rubygem-openstack rubygem-netaddr puppet mcollective nailgun-agent nailgun-mcagents
+
+# install fedora kernel
+yum install -y --skip-broken kernel-lt-devel kernel-lt-headers linux-firmware
 rm /etc/yum.repos.d/*
 
 
