@@ -248,6 +248,11 @@ else
 MIRROR_FUEL_UBUNTU?=obs-1.mirantis.com
 endif
 
+ifeq (master,$(strip $(mirror)))
+MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(mirror)/centos/
+MIRROR_FUEL_UBUNTU?=http://obs-1.mirantis.com
+endif
+
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
 REQUIRED_DEBS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-deb.txt)
 
