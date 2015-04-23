@@ -119,6 +119,9 @@ rm -rf /root/install.log
 rm -rf /root/install.log.syslog
 rm -rf /root/anaconda-ks.cfg
 rm -rf /var/log/anaconda*
+
+# install fedora kernel
+yum install -y --skip-broken kernel-lt-devel kernel-lt-headers linux-firmware
 %end
 
 %packages --nobase --ignoremissing
