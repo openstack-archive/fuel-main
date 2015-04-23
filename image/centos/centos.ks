@@ -139,6 +139,9 @@ gcc
 gdisk
 kernel
 kernel-firmware
+kernel-lt-devel
+kernel-lt-headers
+linux-firmware
 grub
 dracut
 make
