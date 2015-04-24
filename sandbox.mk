@@ -55,6 +55,15 @@ $(yum_upstream_repo)
 $(yum_epel_repo)
 $(yum_local_repo)
 EOF
+mkdir -p $(SANDBOX)/etc/yum/pluginconf.d/
+mkdir -p $(SANDBOX)/etc/yum-plugins/
+cp $(SOURCE_DIR)/mirror/centos/yum-priorities-plugin.py $(SANDBOX)/etc/yum-plugins/priorities.py
+tee $(SANDBOX)/etc/yum/pluginconf.d/priorities.conf << EOF
+[main]
+enabled=1
+check_obsoletes=1
+full_match=1
+EOF
 sudo rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
 echo "centos-release already installed"
 sudo rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
