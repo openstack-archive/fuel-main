@@ -34,37 +34,42 @@ ifneq ($(BUILD_PACKAGES),0)
     $(BUILD_DIR)/mirror/ubuntu/build.done:	$(BUILD_DIR)/mirror/ubuntu/repo.done
 endif
 
+REPREPRO_CONF_DIR?=$(BUILD_DIR)/mirror/ubuntu/reprepro/conf
+
 define config_reprepro
 #Generate reprepro distributions config
-cat > $(LOCAL_MIRROR_UBUNTU)/conf/distributions << EOF
+cat > $(REPREPRO_CONF_DIR)/distributions << EOF
 $(reprepro_dist_conf)
 EOF
 #Generate reprepro updates config
-cat > $(LOCAL_MIRROR_UBUNTU)/conf/updates << EOF
+cat > $(REPREPRO_CONF_DIR)/updates << EOF
 $(reprepro_updates_conf)
 EOF
 endef
 
-
-$(BUILD_DIR)/mirror/ubuntu/reprepro.done: export config_reprepro:=$(config_reprepro)
-$(BUILD_DIR)/mirror/ubuntu/reprepro.done: $(BUILD_DIR)/mirror/ubuntu/mirror.done
-	mkdir -p $(LOCAL_MIRROR_UBUNTU)/conf
+$(BUILD_DIR)/mirror/ubuntu/reprepro_config.done: export config_reprepro:=$(config_reprepro)
+$(BUILD_DIR)/mirror/ubuntu/reprepro_config.done:
+	mkdir -p $(REPREPRO_CONF_DIR)
 	sh -c "$${config_reprepro}"
-	#Import existing Ubuntu repository
-	cd $(LOCAL_MIRROR_UBUNTU) && reprepro --confdir=$(LOCAL_MIRROR_UBUNTU)/conf -V update
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/mirror/ubuntu/repo.done: $(BUILD_DIR)/mirror/ubuntu/mirror.done \
-	$(BUILD_DIR)/mirror/ubuntu/reprepro.done
-    #FIXME(aglarendil): do not touch upstream repo. instead - build new repo
-	#Import newly built packages
-	cd $(LOCAL_MIRROR_UBUNTU) && reprepro --confdir=$(LOCAL_MIRROR_UBUNTU)/conf -V includedeb $(PRODUCT_NAME)$(PRODUCT_VERSION) $(BUILD_DIR)/packages/deb/packages/*.deb
-	#Clean up reprepro data
-	rm -rf $(LOCAL_MIRROR_UBUNTU)/db
-	rm -rf $(LOCAL_MIRROR_UBUNTU)/lists
-	rm -rf $(LOCAL_MIRROR_UBUNTU)/conf
+$(BUILD_DIR)/mirror/ubuntu/reprepro.done: \
+		$(BUILD_DIR)/mirror/ubuntu/mirror.done \
+		$(BUILD_DIR)/mirror/ubuntu/reprepro_config.done
+	# Import existing Ubuntu repository
+	cd $(LOCAL_MIRROR_UBUNTU) && reprepro --confdir=$(REPREPRO_CONF_DIR) -V update
 	$(ACTION.TOUCH)
 
+$(BUILD_DIR)/mirror/ubuntu/repo.done: \
+		$(BUILD_DIR)/mirror/ubuntu/reprepro_config.done \
+		$(BUILD_DIR)/mirror/ubuntu/reprepro.done
+	# FIXME(aglarendil): do not touch upstream repo. instead - build new repo
+	# Import newly built packages
+	cd $(LOCAL_MIRROR_UBUNTU) && reprepro --confdir=$(REPREPRO_CONF_DIR) -V includedeb $(PRODUCT_NAME)$(PRODUCT_VERSION) $(BUILD_DIR)/packages/deb/packages/*.deb
+	# Clean up reprepro data
+	# rm -rf $(LOCAL_MIRROR_UBUNTU)/db
+	# rm -rf $(LOCAL_MIRROR_UBUNTU)/lists
+	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/ubuntu/mirror.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU)
