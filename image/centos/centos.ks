@@ -1,6 +1,6 @@
 #version=DEVEL
 # Firewall configuration
-# firewall --disabled
+firewall --disabled
 # repo --name="repo0" --baseurl=http://mirrors.kernel.org/centos/6/os/x86_64
 # repo --name="repo1" --baseurl=http://mirrors.kernel.org/centos/6/updates/x86_64
 # repo --name="repo2" --baseurl=http://mirrors.kernel.org/fedora-epel/6/x86_64
