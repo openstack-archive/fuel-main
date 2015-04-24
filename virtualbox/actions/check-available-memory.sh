@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #    Copyright 2014 Mirantis, Inc.
 #
@@ -15,7 +15,7 @@
 #    under the License.
 
 #
-# This script check availble memory on host PC for quality provision VMs via VirtualBox
+# This script check available memory on host PC for quality provision VMs via VirtualBox
 #
 
 source ./config.sh
