@@ -51,6 +51,7 @@ $(BUILD_DIR)/docker/$1.done: \
 	sed -e 's/production:.*/production: "docker-build"/' -i $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml && \
 	cp $(SOURCE_DIR)/docker/docker-astute.yaml $(BUILD_DIR)/docker/$1/etc/fuel/astute.yaml && \
 	sudo docker build --force-rm -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
+	sudo docker save fuel/$1_$(PRODUCT_VERSION) | sudo docker-squash -t fuel/$1_$(PRODUCT_VERSION) | sudo docker load
 	$$(ACTION.TOUCH)
 endef
 
