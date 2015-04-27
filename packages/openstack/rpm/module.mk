@@ -64,11 +64,11 @@ $(BUILD_DIR)/openstack/rpm/$1.done: \
 	sed "s/Version:.*/Version:\t`cat $(BUILD_DIR)/openstack/rpm/$1-version-tag`/" $(BUILD_DIR)/repos/$1-build/rpm/SPECS/*.spec > $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec
 	sed -i "s/Source0:.*/Source0:\t$1-`cat $(BUILD_DIR)/openstack/rpm/$1-version-tag`\.tar\.gz/" $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec
 	sudo cp $(BUILD_DIR)/openstack/rpm/sources/specs/openstack-$1.spec $$(SANDBOX)/tmp/
-	sudo chroot $$(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -bs /tmp/openstack-$1.spec
+	sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -bs /tmp/openstack-$1.spec
 	sudo sh -c "$$$${INSTALL_CENTOS_REPO}"
 	sudo yum-builddep -c $$(SANDBOX)/etc/yum.conf --enablerepo=centos --enablerepo=centos-master --installroot=$$(SANDBOX) -y --nogpgcheck $$(SANDBOX)/tmp/SRPMS/openstack-$1*.rpm
 	sudo rm -rf $$(SANDBOX)/tmp/RPMS
-	sudo chroot $$(SANDBOX) rpmbuild --nodeps -vv --define "_topdir /tmp" -ba /tmp/openstack-$1.spec
+	sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/openstack-$1.spec
 	cp $$(SANDBOX)/tmp/RPMS/*/*$1*.rpm $(BUILD_DIR)/openstack/rpm/RPMS/x86_64
 	sudo createrepo $$(SANDBOX)/tmp/RPMS/noarch/
 	sudo yumdownloader --resolve -c $$(SANDBOX)/etc/yum.conf --enablerepo=centos --enablerepo=centos-master --enablerepo=openstack-local --destdir=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages openstack-$1* | grep -v '^looking for' | tee $(BUILD_DIR)/openstack/yumdownloader.log
