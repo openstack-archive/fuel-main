@@ -67,6 +67,14 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	sed -i -e "s/@@UBUNTU_RELEASE@@/$(UBUNTU_RELEASE)/g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf
 	sed -i -e "s]@@MIRROR_UBUNTU@@]$(MIRROR_UBUNTU)]g" $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf
 	mount | grep -q $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc || sudo mount -t proc none $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/proc
+# Prevent the services from being started in a staging chroot
+	sudo mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/usr/sbin
+	sudo cp $(SOURCE_DIR)/mirror/ubuntu/files/policy-rc.d $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/usr/sbin
+	sudo chmod 755 $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/usr/sbin/policy-rc.d
+# Stop reordering the services startup sequence. Such reordering causes
+# multistrap to fail, and we don't need any daemons in the staging chroot.
+	sudo mkdir -p $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/init.d
+	sudo touch $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/etc/init.d/.legacy-bootordering
 	sudo multistrap -a amd64  -f $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/multistrap.conf -d $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "dpkg --configure -a || exit 0"
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot /bin/bash -c "rm -rf /var/run/*"
@@ -89,10 +97,18 @@ $(BUILD_DIR)/mirror/ubuntu/createchroot.done:
 	sudo rsync -a $(SOURCE_DIR)/mirror/ubuntu/files/ $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/
 	$(foreach f,$(APT_CONF_TEMPLATES),$(call insert_ubuntu_version,$(f)))
 	sudo chmod +x $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/mkrepo.sh
+# Pass HTTP_PROXY into chroot so apt and wget will use it
+	extra_env=""; \
+	if [ -n "$$http_proxy" ]; then \
+		extra_env="HTTP_PROXY=$$http_proxy http_proxy=$$http_proxy"; \
+	elif [ -n "$$HTTP_PROXY" ]; then \
+		extra_env="HTTP_PROXY=$$HTTP_PROXY http_proxy=$$HTTP_PROXY"; \
+	fi ; \
 	sudo chroot $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot env \
 		UBUNTU_RELEASE='$(UBUNTU_RELEASE)' \
 		UBUNTU_INSTALLER_KERNEL_VERSION='$(UBUNTU_INSTALLER_KERNEL_VERSION)' \
 		UBUNTU_KERNEL_FLAVOR='$(UBUNTU_KERNEL_FLAVOR)' \
+		$$extra_env \
 		/repo/mkrepo.sh
 	sudo rsync -a --delete $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/repo/* $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ && sudo rm -rf $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/chroot/
 	$(ACTION.TOUCH)
