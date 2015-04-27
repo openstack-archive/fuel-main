@@ -141,6 +141,11 @@ add_disk_to_vm() {
     disk_filename="${disk_name}.vdi"
     VBoxManage createhd --filename "$vm_disk_path/$disk_filename" --size $disk_mb --format VDI
     VBoxManage storageattach $vm_name --storagectl 'SATA' --port $port --device 0 --type hdd --medium "$vm_disk_path/$disk_filename"
+
+    # Add serial number of the disk
+    echo "Adding Serial Number of the disk $vm_name..."
+    VBoxManage setextradata $vm_name "VBoxInternal/Devices/ahci/0/Config/Port$port/SerialNumber" "VBOX-MIRANTIS-VHD$port"
+
 }
 
 delete_vm() {
