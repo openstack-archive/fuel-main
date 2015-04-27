@@ -104,6 +104,11 @@ else
   sudo apt-get update
   sudo apt-get -y install lxc-docker-1.5.0
 fi
+# Install docker-squash
+if [ ! -f /usr/local/bin/docker-squash ]; then
+  wget https://github.com/jwilder/docker-squash/releases/download/v0.0.11/docker-squash-linux-amd64-v0.0.11.tar.gz
+  sudo tar -C /usr/local/bin -xzvf docker-squash-linux-amd64-v0.0.11.tar.gz
+fi
 
 # Install software
 sudo apt-get update
