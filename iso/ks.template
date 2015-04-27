@@ -250,6 +250,7 @@ daemonize
 dhcp
 docker-io
 fuel-bootstrap-image
+fuel-createmirror
 fuel-target-centos-images
 fuel-package-updates
 fuelmenu
