@@ -57,6 +57,7 @@ $(BUILD_DIR)/packages/rpm/$1.done:
 	mkdir -p $$(SANDBOX)/tmp/SOURCES && \
 	sudo cp -r $(BUILD_DIR)/packages/sources/$1/* $$(SANDBOX)/tmp/SOURCES && \
     sudo cp $$(SPECFILE) $$(SANDBOX)/tmp && \
+    sudo sed -i "s]Release:.*]Release: $(shell git -C $(BUILD_DIR)/repos/$1 rev-list --no-merges HEAD | wc -l).1]" $$(SANDBOX)/tmp/$1.spec && \
 	sudo /bin/sh -c 'export TMPDIR=$$(SANDBOX)/tmp/yum TMP=$$(SANDBOX)/tmp/yum; yum-builddep -y -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) $$(SANDBOX)/tmp/$1.spec' && \
 	sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/$1.spec
 	cp $$(SANDBOX)/tmp/RPMS/*/*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64

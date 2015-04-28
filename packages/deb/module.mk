@@ -43,6 +43,11 @@ $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/repos/repos.done
 	fi
 	sudo tar zxf $(BUILD_DIR)/packages/sources/$1/$1-$(PACKAGE_VERSION).tar.gz -C $$(SANDBOX_UBUNTU)/tmp/$1/
 #sudo cp -r $(BUILD_DIR)/repos/$1/debian $$(SANDBOX_UBUNTU)/tmp/$1/
+	sudo DEBFULLNAME="$(shell git -C $(BUILD_DIR)/repos/$1 log -1 --pretty=format:%an)" \
+		DEBEMAIL="$(shell git -C $(BUILD_DIR)/repos/$1 log -1 --pretty=format:%ae)" \
+		dch -c $$(SANDBOX_UBUNTU)/tmp/$1/debian/changelog -b --force-distribution \
+		-v $(PACKAGE_VERSION)-$(shell git -C $(BUILD_DIR)/repos/$1 rev-list --no-merges HEAD | wc -l) \
+		"$(shell git -C $(BUILD_DIR)/repos/$1 log -1 --pretty=format:%B)" && \
 	dpkg-checkbuilddeps $(BUILD_DIR)/repos/$1/debian/control 2>&1 | sed 's/^dpkg-checkbuilddeps: Unmet build dependencies: //g' | sed 's/([^()]*)//g;s/|//g' | sudo tee $$(SANDBOX_UBUNTU)/tmp/$1.installdeps
 	sudo chroot $$(SANDBOX_UBUNTU) /bin/sh -c "cat /tmp/$1.installdeps | xargs apt-get -y install"
 	sudo chroot $$(SANDBOX_UBUNTU) /bin/sh -c "cd /tmp/$1 ; DEB_BUILD_OPTIONS=nocheck debuild -us -uc -b -d"
