@@ -149,4 +149,3 @@ delete_all_hostonly_interfaces() {
     VBoxManage hostonlyif remove "$interface"
   done
 }
-

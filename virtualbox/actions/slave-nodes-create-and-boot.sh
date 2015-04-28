@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #    Copyright 2013 Mirantis, Inc.
 #
@@ -20,19 +20,19 @@
 #
 
 # Include the handy functions to operate VMs
-source config.sh
-source functions/vm.sh
+source ./config.sh
+source ./functions/vm.sh
 
 # Create and start slave nodes
 for idx in $(eval echo {1..$cluster_size}); do
   name="${vm_name_prefix}slave-${idx}"
-  echo
-  delete_vm $name
   vm_ram=${vm_slave_memory_mb[$idx]}
   [ -z $vm_ram ] && vm_ram=$vm_slave_memory_default
   echo
-  create_vm $name "${host_nic_name[0]}" $vm_slave_cpu_cores $vm_ram $vm_slave_first_disk_mb
-
+  vm_cpu=${vm_slave_cpu[$idx]}
+  [ -z $vm_cpu ] && vm_cpu=$vm_slave_cpu_default
+  echo
+  create_vm $name "${host_nic_name[0]}" $vm_cpu $vm_ram $vm_slave_first_disk_mb
   # Add additional NICs to VM
   if [ ${#host_nic_name[*]} -gt 1 ]; then
     for nic in $(eval echo {1..$((${#host_nic_name[*]}-1))}); do
@@ -43,8 +43,9 @@ for idx in $(eval echo {1..$cluster_size}); do
   echo
   add_disk_to_vm $name 1 $vm_slave_second_disk_mb
   add_disk_to_vm $name 2 $vm_slave_third_disk_mb
-
   enable_network_boot_for_vm $name
+  # The delay required for downloading tftp boot image
+  sleep 10
   start_vm $name
 done
 
@@ -53,4 +54,3 @@ echo
 echo "Slave nodes have been created. They will boot over PXE and get discovered by the master node."
 echo "To access master node, please point your browser to:"
 echo "    http://${vm_master_ip}:8000/"
-
