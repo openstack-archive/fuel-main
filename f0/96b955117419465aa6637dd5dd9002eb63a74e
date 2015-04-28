@@ -1,0 +1,14 @@
+Verified+2: Jenkins
+Code-Review+1: Matthew Mosesohn <mmosesohn@mirantis.com>
+Code-Review+2: Dmitry Borodaenko <dborodaenko@mirantis.com>
+Workflow+1: Dmitry Borodaenko <dborodaenko@mirantis.com>
+Code-Review+1: Andrew Woodward <xarses@gmail.com>
+Code-Review+1: Miroslav Anashkin <manashkin@mirantis.com>
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+1: Stanislaw Bogatkin <sbogatkin@mirantis.com>
+Code-Review+1: Fabrizio Soppelsa <fsoppelsa@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 28 Apr 2015 21:18:26 +0000
+Reviewed-on: https://review.openstack.org/143861
+Project: stackforge/fuel-main
+Branch: refs/heads/stable/4.1
