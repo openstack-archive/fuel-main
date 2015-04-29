@@ -14,7 +14,7 @@ $(BUILD_DIR)/packages/deb/buildd.tar.gz: SANDBOX_DEB_PKGS:=wget bzip2 apt-utils 
 $(BUILD_DIR)/packages/deb/buildd.tar.gz: SANDBOX_UBUNTU:=$(BUILD_DIR)/packages/deb/chroot
 $(BUILD_DIR)/packages/deb/buildd.tar.gz: export SANDBOX_UBUNTU_UP:=$(SANDBOX_UBUNTU_UP)
 $(BUILD_DIR)/packages/deb/buildd.tar.gz: export SANDBOX_UBUNTU_DOWN:=$(SANDBOX_UBUNTU_DOWN)
-$(BUILD_DIR)/packages/deb/buildd.tar.gz: $(BUILD_DIR)/mirror/ubuntu/mirror.done
+$(BUILD_DIR)/packages/deb/buildd.tar.gz: $(BUILD_DIR)/mirror/ubuntu/reprepro.done
 	sh -c "$${SANDBOX_UBUNTU_UP}"
 	sh -c "$${SANDBOX_UBUNTU_DOWN}"
 	sudo rm -f $(SANDBOX_UBUNTU)/var/cache/apt/archives/*.deb
@@ -28,7 +28,7 @@ $1-deb: $(BUILD_DIR)/packages/deb/$1.done
 $(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/$1.done
 
 $(BUILD_DIR)/mirror/ubuntu/repo.done: $(BUILD_DIR)/packages/deb/$1.done
-$(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/mirror/ubuntu/mirror.done
+$(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/mirror/ubuntu/reprepro.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/source_$1.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/deb/buildd.tar.gz
 $(BUILD_DIR)/packages/deb/$1.done: SANDBOX_UBUNTU:=$(BUILD_DIR)/packages/deb/SANDBOX/$1
@@ -60,7 +60,7 @@ xargs -n1 -I{} reprepro --confdir=$(LOCAL_MIRROR_UBUNTU)/conf remove $(PRODUCT_N
 endef
 
 $(BUILD_DIR)/mirror/ubuntu/repo.done: $(BUILD_DIR)/packages/deb/repocleanup.done
-$(BUILD_DIR)/packages/deb/repocleanup.done: $(BUILD_DIR)/mirror/ubuntu/mirror.done
+$(BUILD_DIR)/packages/deb/repocleanup.done: $(BUILD_DIR)/mirror/ubuntu/reprepro.done
 $(BUILD_DIR)/packages/deb/repocleanup.done: sources
 	$(foreach pkg,$(fuel_debian_packages),$(call remove_deb,$(pkg)))
 	$(ACTION.TOUCH)
