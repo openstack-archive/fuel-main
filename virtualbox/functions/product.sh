@@ -153,11 +153,15 @@ enable_outbound_network_for_product_vm() {
         expect "$prompt"
         send "service dnsmasq restart >/dev/null 2>&1\r"
         expect "$prompt"
+        send "dockerctl restart cobbler >/dev/null 2>&1\r"
+        expect "$prompt"
+        send "dockerctl check cobbler >/dev/null 2>&1\r"
+        expect "*ready*"
+        expect "$prompt"
         send "for i in 1 2 3 4 5; do ping -c 2 google.com || ping -c 2 wikipedia.com || sleep 2; done\r"
         expect "$prompt"
 ENDOFEXPECT
     )
-
     # When you are launching command in a sub-shell, there are issues with IFS (internal field separator)
     # and parsing output as a set of strings. So, we are saving original IFS, replacing it, iterating over lines,
     # and changing it back to normal
