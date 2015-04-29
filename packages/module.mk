@@ -49,22 +49,32 @@ $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
 	cd $3 && gem build *.gemspec && cp $2 $(BUILD_DIR)/packages/sources/$1/$2
 endef
-
 define prepare_git_source
 $(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
 $(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
+$(BUILD_DIR)/packages/sources/$1/$2: VERSIONFILE:=$(BUILD_DIR)/packages/sources/$1/version
 $(BUILD_DIR)/packages/sources/$1/$2:
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
-	cd $3 && git archive --format tar --worktree-attributes $4 > $(BUILD_DIR)/packages/sources/$1/$1.tar\
-		&& git rev-parse $4 > $(BUILD_DIR)/packages/sources/$1/version.txt
-	cd $(BUILD_DIR)/packages/sources/$1 && tar -rf $1.tar version.txt
+	cd $3 && git archive --format tar --worktree-attributes $4 > $(BUILD_DIR)/packages/sources/$1/$1.tar
+	echo COMMITNUM=`cd $3 && git rev-list --no-merges $4 | wc -l` > $$(VERSIONFILE)
+	echo COMMITSHA=`cd $3 && git rev-parse --short $4` >> $$(VERSIONFILE)
+	echo GERRIT_CHANGE_ID=$(GERRIT_CHANGE_ID) >> $$(VERSIONFILE)
+	echo GERRIT_PATCHSET_NUMBER=$(GERRIT_PATCHSET_NUMBER) >> $$(VERSIONFILE)
+	cd $(BUILD_DIR)/packages/sources/$1 && tar -rf $1.tar version
 	cd $(BUILD_DIR)/packages/sources/$1 && gzip -9 $1.tar && mv $1.tar.gz $2
 endef
 
 $(BUILD_DIR)/packages/source_%.done:
 	$(ACTION.TOUCH)
 
-#NAILGUN_PKGS
+packages_list:=\
+fuel-main \
+fuel-library$(PRODUCT_VERSION) \
+astute \
+nailgun \
+fuel-ostf \
+python-fuelclient 
+
 $(eval $(call prepare_git_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun,HEAD))
 #FUEL_OSTF_PKGS
 $(eval $(call prepare_git_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-ostf,HEAD))
@@ -76,6 +86,10 @@ $(eval $(call prepare_git_source,fuel-library6.1,fuel-library6.1-$(PACKAGE_VERSI
 $(eval $(call prepare_git_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient,HEAD))
 #FUEL-IMAGE PKGS
 $(eval $(call prepare_git_source,fuel-main,fuel-main-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD))
+
+
+
+
 
 include $(SOURCE_DIR)/packages/rpm/module.mk
 include $(SOURCE_DIR)/packages/deb/module.mk
