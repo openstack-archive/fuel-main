@@ -83,7 +83,8 @@ pluginconfpath=$(BUILD_DIR)/bootstrap/etc/yum/pluginconf.d
 reposdir=$(BUILD_DIR)/bootstrap/etc/yum.repos.d
 endef
 
-YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --exclude=ruby-2.1.1 --installroot=$(INITRAMROOT) -y --nogpgcheck
+#FIXME Partial-Bug: #1403088
+YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --exclude=ruby-2.1.1  --exclude=ruby21 --installroot=$(INITRAMROOT) -y --nogpgcheck
 
 KERNEL_PATTERN:=kernel-lt-3.10.*
 KERNEL_FIRMWARE_PATTERN:=linux-firmware*
