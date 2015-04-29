@@ -28,6 +28,7 @@ Requires:    python-stevedore
 Requires:    python-pbr
 Requires:    python-jinja2
 Requires:    python-requests
+Requires:    python-urllib3
 Requires:    python-argparse
 Requires:    tar
 Requires:    gzip
