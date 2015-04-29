@@ -28,6 +28,7 @@ crmsh
 curl
 daemonize
 db4-cxx-4.7.25-18.el6_4
+debmirror
 debootstrap
 deltaiso-3.5-0.5.20090913git.el6
 deltarpm-3.5-0.5.20090913git.el6
