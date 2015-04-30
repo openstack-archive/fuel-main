@@ -1,9 +1,9 @@
-#TEMP fixme 
+#TEMP fixme
 %define repo_name fuel-main
 
 %define name fuel-image
 %define version 6.1.0
-%define release 1
+%{!?release: %define release 1}
 
 Summary: Fuel-image package
 Name: %{name}
