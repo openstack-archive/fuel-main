@@ -53,11 +53,15 @@ endef
 define prepare_git_source
 $(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
 $(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
+$(BUILD_DIR)/packages/sources/$1/$2: VERSIONFILE:=$(BUILD_DIR)/packages/sources/$1/version
 $(BUILD_DIR)/packages/sources/$1/$2:
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
-	cd $3 && git archive --format tar --worktree-attributes $4 > $(BUILD_DIR)/packages/sources/$1/$1.tar\
-		&& git rev-parse $4 > $(BUILD_DIR)/packages/sources/$1/version.txt
-	cd $(BUILD_DIR)/packages/sources/$1 && tar -rf $1.tar version.txt
+	cd $3 && git archive --format tar --worktree-attributes $4 > $(BUILD_DIR)/packages/sources/$1/$1.tar
+	echo -n `cd $3 && git rev-list --no-merges $4 | wc -l` > $$(VERSIONFILE)
+	echo -n "gerrit" >> $$(VERSIONFILE)
+	echo -n "GERRIT_PATCHSET.1." >> $$(VERSIONFILE)
+	echo -n git`cd $3 && git rev-parse --short $4` >> $$(VERSIONFILE)
+	cd $(BUILD_DIR)/packages/sources/$1 && tar -rf $1.tar version
 	cd $(BUILD_DIR)/packages/sources/$1 && gzip -9 $1.tar && mv $1.tar.gz $2
 endef
 
