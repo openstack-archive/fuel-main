@@ -53,11 +53,15 @@ endef
 define prepare_git_source
 $(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
 $(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
+$(BUILD_DIR)/packages/sources/$1/$2: VERSIONFILE:=$(BUILD_DIR)/packages/sources/$1/version
 $(BUILD_DIR)/packages/sources/$1/$2:
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
-	cd $3 && git archive --format tar --worktree-attributes $4 > $(BUILD_DIR)/packages/sources/$1/$1.tar\
-		&& git rev-parse $4 > $(BUILD_DIR)/packages/sources/$1/version.txt
-	cd $(BUILD_DIR)/packages/sources/$1 && tar -rf $1.tar version.txt
+	cd $3 && git archive --format tar --worktree-attributes $4 > $(BUILD_DIR)/packages/sources/$1/$1.tar
+	echo -n `cd $3 && git rev-list --no-merges $4 | wc -l` > $$(VERSIONFILE)
+	test $5 = "none" && echo -n ".1" >> $$(VERSIONFILE) \
+		|| echo -n ".0.gerrit"`echo $5 | sed 's].*\/.*\/\(.*\/.*\)]\1]' | sed 's/\//./'` >> $$(VERSIONFILE)
+	echo -n ".git`cd $3 && git rev-parse --short $4`" >> $$(VERSIONFILE)
+	cd $(BUILD_DIR)/packages/sources/$1 && tar -rf $1.tar version
 	cd $(BUILD_DIR)/packages/sources/$1 && gzip -9 $1.tar && mv $1.tar.gz $2
 endef
 
@@ -65,17 +69,17 @@ $(BUILD_DIR)/packages/source_%.done:
 	$(ACTION.TOUCH)
 
 #NAILGUN_PKGS
-$(eval $(call prepare_git_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun,HEAD))
+$(eval $(call prepare_git_source,nailgun,nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun,HEAD,$(NAILGUN_GERRIT_COMMIT)))
 #FUEL_OSTF_PKGS
-$(eval $(call prepare_git_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-ostf,HEAD))
+$(eval $(call prepare_git_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-ostf,HEAD,$(OSTF_GERRIT_COMMIT)))
 #ASTUTE_PKGS
-$(eval $(call prepare_git_source,astute,astute-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/astute,HEAD))
+$(eval $(call prepare_git_source,astute,astute-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/astute,HEAD,$(ASTUTE_GERRIT_COMMIT)))
 #FUELLIB_PKGS
-$(eval $(call prepare_git_source,fuel-library6.1,fuel-library6.1-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-library6.1,HEAD))
+$(eval $(call prepare_git_source,fuel-library6.1,fuel-library6.1-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-library6.1,HEAD,$(FUELLIB_GERRIT_COMMIT)))
 #FUEL_PYTHON_PKGS
-$(eval $(call prepare_git_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient,HEAD))
+$(eval $(call prepare_git_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient,HEAD,$(PYTHON_FUELCLIENT_GERRIT_COMMIT)))
 #FUEL-IMAGE PKGS
-$(eval $(call prepare_git_source,fuel-main,fuel-main-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD))
+$(eval $(call prepare_git_source,fuel-main,fuel-main-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD,none))
 
 include $(SOURCE_DIR)/packages/rpm/module.mk
 include $(SOURCE_DIR)/packages/deb/module.mk
