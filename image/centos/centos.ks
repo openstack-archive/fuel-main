@@ -44,7 +44,7 @@ baseurl=file:///mirror
 gpgcheck=0
 EOF
 rpm -e --nodeps ruby
-yum install --exclude=ruby-2.1.1* -y ruby rubygems ruby-augeas ruby-devel rubygem-openstack rubygem-netaddr puppet mcollective nailgun-agent nailgun-mcagents
+yum install --exclude=ruby-2.1.1* --exclude=ruby21* -y ruby rubygems ruby-augeas ruby-devel rubygem-openstack rubygem-netaddr puppet mcollective nailgun-agent nailgun-mcagents
 
 # install fedora kernel
 yum install -y --skip-broken kernel-lt kernel-lt-devel kernel-lt-headers linux-firmware
