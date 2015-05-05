@@ -50,6 +50,7 @@ linux-headers-generic-$(UBUNTU_KERNEL_FLAVOR)\
 lvm2\
 make\
 mdadm\
+i40e-dkms\
 mlocate\
 nailgun-agent\
 nailgun-mcagents\

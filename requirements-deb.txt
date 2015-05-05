@@ -69,6 +69,7 @@ heat-engine
 hicolor-icon-theme
 hostname
 htop
+i40e-dkms
 ifenslave-2.6
 installation-report
 intel-microcode
