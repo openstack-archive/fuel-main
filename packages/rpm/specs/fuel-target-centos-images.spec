@@ -1,6 +1,6 @@
 %define name fuel-target-centos-images
-%define version 6.1.0
-%define release 1
+%{!?version: %define version 6.1.0}
+%{!?release: %define release 1}
 
 Summary: Fuel target centos images package
 Name: %{name}

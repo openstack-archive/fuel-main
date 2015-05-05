@@ -1,6 +1,6 @@
 %define name fuel-bootstrap-image
-%define version 6.1.0
-%define release 1
+%{!?version: %define version 6.1.0}
+%{!?release: %define release 1}
 
 Summary: Fuel bootstrap image package
 Name: %{name}
