@@ -120,13 +120,13 @@ elif [[ "$(uname)" == "Darwin" ]]; then
     vboxnet=$(ifconfig | grep vboxnet | awk '{print $1}'| sed 's/.$//')
     # Check rules in /etc/pf.conf and informing the user about our next steps
     rules=0
-    cat /etc/pf.conf | grep -q "^nat on $IF inet from ! ($IF) to any -> ($IF)"  >/dev/null 2>&1
+    grep -q "^nat on $IF inet from ! ($IF) to any -> ($IF)" /etc/pf.conf >/dev/null 2>&1
     if [ $? -eq 1 ]; then
         rules=1
     fi
     for interface in $vboxnet; do
         vbox_iface="pass in on "$interface
-        cat /etc/pf.conf | grep -q "$vbox_iface"
+        grep -q "$vbox_iface" /etc/pf.conf
         if [ $? -eq 1 ]; then
             rules=1
         fi
@@ -135,7 +135,7 @@ elif [[ "$(uname)" == "Darwin" ]]; then
         echo "We need to add following rules into configuration file /etc/pf.conf to enable Internet access for the virtual machines:"
         echo "nat on $IF inet from ! ($IF) to any -> ($IF)"
         for interface in $vboxnet; do
-            cat /etc/pf.conf | grep -q $interface >/dev/null 2>&1
+            grep -q $interface /etc/pf.conf >/dev/null 2>&1 
             if [ $? -eq 1 ]; then
                 vbox_iface="pass in on "$interface
                 echo $vbox_iface
@@ -154,7 +154,7 @@ elif [[ "$(uname)" == "Darwin" ]]; then
                 exit 1
             fi
             # Add rules into configuration file /etc/pf.conf
-            cat /etc/pf.conf | grep -q "^nat on $IF inet from ! ($IF) to any -> ($IF)"  >/dev/null 2>&1
+            grep -q "^nat on $IF inet from ! ($IF) to any -> ($IF)" /etc/pf.conf >/dev/null 2>&1
             if [ $? -eq 1 ]; then
                 sed -i '' '/dummynet-anchor "com.apple\/\*"/a\
                 nat on '$IF' inet from ! ('$IF') to any -> ('$IF')
@@ -162,7 +162,7 @@ elif [[ "$(uname)" == "Darwin" ]]; then
             fi
             for interface in $vboxnet; do
                 vbox_iface="pass in on "$interface
-                cat /etc/pf.conf | grep -q "$vbox_iface" >/dev/null 2>&1
+                grep -q "$vbox_iface" /etc/pf.conf >/dev/null 2>&1
                 if [ $? -eq 1 ]; then
                     echo $vbox_iface >> /etc/pf.conf
                 fi
