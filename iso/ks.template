@@ -238,7 +238,7 @@ echo "cat /tmp/grub.script | chroot /mnt/sysimage /sbin/grub --no-floppy --batch
 
 %packages --nobase --excludedocs
 @Core
-fuel-release
+fuel
 fuel-library
 fuel-dockerctl
 authconfig
