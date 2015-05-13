@@ -48,7 +48,9 @@ git
 glance-api
 glance-common
 glance-registry
+grep
 grub-pc
+gzip
 haproxy
 heat-api
 heat-api-cfn
@@ -57,6 +59,7 @@ heat-common
 heat-docker
 heat-engine
 hicolor-icon-theme
+hostname
 htop
 ifenslave
 installation-report
@@ -73,13 +76,17 @@ language-pack-gnome-en
 language-pack-gnome-en-base
 libapache2-mod-fastcgi
 libapache2-mod-wsgi
+libc-bin
 libguestfs-tools
 libnss3-tools
 libssl0.9.8
 linux-firmware
 linux-firmware-nonfree
+linux-headers-generic-lts-trusty
+linux-image-generic-lts-trusty
 lksctp-tools
 lldpad
+login
 mc
 mcelog
 mcollective
