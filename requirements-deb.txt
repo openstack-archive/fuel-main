@@ -48,6 +48,7 @@ git
 glance-api
 glance-common
 glance-registry
+grep
 grub-pc
 haproxy
 heat-api
@@ -73,6 +74,7 @@ language-pack-gnome-en
 language-pack-gnome-en-base
 libapache2-mod-fastcgi
 libapache2-mod-wsgi
+libc-bin
 libguestfs-tools
 libnss3-tools
 libssl0.9.8
