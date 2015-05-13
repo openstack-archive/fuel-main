@@ -55,7 +55,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/build_ubuntu_image.py
 %{_bindir}/create_separate_images.sh
 
-%package -n fuel-release
+%package -n fuel
 Summary: Fuel for OpenStack
 Version: %{version}
 Release: %{release}
@@ -75,9 +75,9 @@ Requires: nailgun-net-check >= %{version}
 Requires: python-fuelclient >= %{version}
 Requires: yum
 
-%description -n fuel-release
+%description -n fuel
 Fuel for OpenStack is a lifecycle management utility for 
 managing OpenStack.
 
-%files -n fuel-release
+%files -n fuel
 %defattr(-,root,root)
