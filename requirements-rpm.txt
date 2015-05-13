@@ -459,15 +459,6 @@ xfsprogs
 xinetd
 yum
 yum-plugin-priorities
-zabbix
-zabbix-agent
-zabbix-sender
-zabbix-server
-zabbix-server-mysql
-zabbix-server-pgsql
-zabbix-web
-zabbix-web-mysql
-zabbix-web-pgsql
 zeromq
 zeromq3
 zlib-devel-1.2.3-29.el6
