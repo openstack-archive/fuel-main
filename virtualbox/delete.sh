@@ -1,0 +1,1 @@
+actions/clean-previous-installation.sh
