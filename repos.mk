@@ -21,10 +21,17 @@ $(BUILD_DIR)/repos/$1.done:
 	#Clone everything and checkout to branch (or hash)
 	git clone $2 $(BUILD_DIR)/repos/$1 && (cd $(BUILD_DIR)/repos/$1 && git checkout -q $3)
 
+ifeq ($(strip $(GERRIT_BRANCH)),)
 	# Pull gerrit commits if given
 	$(foreach var,$(filter-out none,$5),
 		( cd $(BUILD_DIR)/repos/$1 && git fetch $4 $(var) && git cherry-pick FETCH_HEAD ) ;
 	)
+	#FIXME(aglarendil): THIS IS A TEMPORARY FIX TO CHECK OUT CODE FOR PACKAGE BUILDING IN CI
+	#IT SHOULD BE REPLACED WITH ANOTHER APPROACH SOON
+else
+	( cd $(BUILD_DIR)/repos/$1 && git fetch $4 $5 && git checkout FETCH_HEAD ) ;
+endif
+
 	touch $$@
 endef
 
