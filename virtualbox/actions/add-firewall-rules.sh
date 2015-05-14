@@ -179,5 +179,10 @@ elif [[ "$(uname)" == "Darwin" ]]; then
     sysctl -w net.inet.ip.forwarding=1 >/dev/null 2>&1
     sysctl -w net.inet.ip.fw.enable=1 >/dev/null 2>&1
     # Activate PF rules
-    pfctl -ef /etc/pf.conf
+    sudo pfctl -s all | grep 'Disabled'
+    if [ $? -ne 1 ]; then
+        pfctl -ef /etc/pf.conf
+    else
+        pfctl -f /etc/pf.conf
+    fi
 fi
