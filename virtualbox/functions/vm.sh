@@ -57,8 +57,12 @@ check_running_vms() {
   OIFS=$IFS
   IFS=","
   local hostonly_interfaces=$1
-  local list_running_vms=`VBoxManage list runningvms | awk '{print $1}' | sed 's/"//g' | uniq | tr "\\n" ","`
-  for i in $list_running_vms; do
+  local list_running_vms=$(VBoxManage list runningvms | sed 's/\" {/\",{/g')
+  for vm_name in $list_running_vms; do
+    vm_name=$(echo $vm_name | grep "\"" | sed 's/"//g')
+    vm_names+="$vm_name,"
+  done
+  for i in $vm_names; do
     for j in $hostonly_interfaces; do
       running_vm=`VBoxManage showvminfo $i | grep "$j"`
       if [[ $? -eq 0 ]]; then
