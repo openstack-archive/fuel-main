@@ -21,9 +21,15 @@ get_hostonly_interfaces() {
 }
 
 get_fuel_ifaces() {
-  local fuel_iface
+  local fuel_network=""
+  local fuel_networks=""
+  local fuel_iface=""
   local fuel_ifaces=""
-  for ip in $fuel_master_ips; do
+  for i in $fuel_master_ips; do
+    fuel_network=$(echo "${i%.*}")
+    fuel_networks+="$fuel_network "
+  done
+  for ip in $fuel_networks; do
     fuel_iface=`VBoxManage list hostonlyifs | grep -B5 $ip | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`
     fuel_ifaces+="$fuel_iface"
   done

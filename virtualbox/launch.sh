@@ -37,9 +37,6 @@ esac
 # Сreate host-only interfaces
 ./actions/create-interfaces.sh || exit 1
 
-# Enable IP forwarding on host computer
-./actions/enable-ip-forwarding.sh || exit 1
-
 # Create and launch master node
 ./actions/master-node-create-and-install.sh || exit 1
 

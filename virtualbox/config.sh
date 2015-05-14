@@ -23,7 +23,7 @@ iso_path=`ls -1t iso/*.iso 2>/dev/null | head -1`
 vm_name_prefix=fuel-
 
 # By default, all available network interfaces vboxnet won't be removed,
-# if their IP addresses don't match with fuel_master_ips (10.20.0.1 172.16.0.1
+# if their IP addresses don't match with fuel_master_ips (10.20.0.1 172.16.0.254
 # 172.16.1.1)
 # If you want to remove all existing vbox interfaces, then use rm_network=1
 # 0 - don't remove all vbox networks. Remove only fuel networks if they exist
@@ -36,7 +36,7 @@ rm_network=0
 # 172.16.1.1/24  - OpenStack Fixed/Internal/Private network
 # 192.168.0.1/24 - OpenStack Management network
 # 192.168.1.1/24 - OpenStack Storage network (for Ceph, Swift etc)
-fuel_master_ips="10.20.0.1 172.16.0.1 172.16.1.1"
+fuel_master_ips="10.20.0.1 172.16.0.254 172.16.1.1"
 
 # Network mask for fuel interfaces
 mask="255.255.255.0"
@@ -99,8 +99,6 @@ if [ "$CONFIG_FOR" = "16GB" ]; then
   cluster_size=5
 elif [ "$CONFIG_FOR" = "8GB" ]; then
   cluster_size=3
-elif [ "$CONFIG_FOR" = "4GB" ]; then
-  cluster_size=2
 else
   # Section for custom configuration
   cluster_size=3
@@ -124,11 +122,6 @@ elif [ "$CONFIG_FOR" = "8GB" ]; then
   vm_slave_cpu[1]=1
   vm_slave_cpu[2]=1
   vm_slave_cpu[3]=1
-elif [ "$CONFIG_FOR" = "4GB" ]; then
-  vm_slave_cpu_default=1
-
-  vm_slave_cpu[1]=1
-  vm_slave_cpu[2]=1
 else
   # Section for custom configuration
   vm_slave_cpu_default=1
@@ -165,11 +158,6 @@ elif [ "$CONFIG_FOR" = "8GB" ]; then
   vm_slave_memory_mb[1]=1536
   vm_slave_memory_mb[2]=1536
   vm_slave_memory_mb[3]=1536
-elif [ "$CONFIG_FOR" = "4GB" ]; then
-  vm_slave_memory_default=1024
-
-  vm_slave_memory_mb[1]=1024
-  vm_slave_memory_mb[2]=1024
 else
   # Section for custom configuration
   vm_slave_memory_default=1024
