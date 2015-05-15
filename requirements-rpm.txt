@@ -195,6 +195,7 @@ mc
 mcollective
 mcollective-client
 mcollective-common
+megaraid_sas
 memcached-1.4.4-3.el6
 mlnx-ofed-light
 mlocate-0.22.2-4.el6
