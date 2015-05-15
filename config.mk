@@ -114,7 +114,7 @@ endef
 # Repos and versions
 FUELLIB_COMMIT?=master
 NAILGUN_COMMIT?=master
-PYTHON_FUELCLIENT_COMMIT?=master
+PYTHON_FUELCLIENT_COMMIT?=6.1.0
 ASTUTE_COMMIT?=master
 OSTF_COMMIT?=master
 
