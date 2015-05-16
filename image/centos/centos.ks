@@ -134,6 +134,7 @@ ql23xx-firmware
 ql2400-firmware
 ql2500-firmware
 megaraid_sas
+hpsa
 bind-utils
 cronie
 crontabs
