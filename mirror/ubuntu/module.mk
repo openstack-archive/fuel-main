@@ -55,6 +55,7 @@ $(BUILD_DIR)/mirror/ubuntu/reprepro_config.done:
 
 $(BUILD_DIR)/mirror/ubuntu/reprepro.done: \
 		$(BUILD_DIR)/mirror/ubuntu/mirror.done \
+		$(BUILD_DIR)/mirror/mirror-pkgs-changelog.done \
 		$(BUILD_DIR)/mirror/ubuntu/reprepro_config.done
 	# Import existing Ubuntu repository
 	cd $(LOCAL_MIRROR_UBUNTU) && reprepro --confdir=$(REPREPRO_CONF_DIR) -V update

@@ -1,6 +1,6 @@
 #!/bin/bash -e
-CENTOS_CHANGELOG=${LOCAL_MIRROR}/centos-packages.changelog
-UBUNTU_CHANGELOG=${LOCAL_MIRROR}/ubuntu-packages.changelog
+CENTOS_CHANGELOG=${LOCAL_MIRROR}/${CENTOS_FILE:-centos-packages.changelog}
+UBUNTU_CHANGELOG=${LOCAL_MIRROR}/${UBUNTU_FILE:-ubuntu-packages.changelog}
 [ -f ${CENTOS_CHANGELOG} ] && rm ${CENTOS_CHANGELOG}
 for packagename in `find ${LOCAL_MIRROR} -name \*.rpm | sort -u`; do
   echo ${packagename##*/} >> ${CENTOS_CHANGELOG}
