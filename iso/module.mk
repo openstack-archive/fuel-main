@@ -60,7 +60,6 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 else
 $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/mirror/build.done \
-		$(BUILD_DIR)/mirror/make-changelog.done \
 		$(BUILD_DIR)/packages/build.done \
 		$(BUILD_DIR)/packages/build-late.done \
 		$(BUILD_DIR)/openstack/build.done \
@@ -68,7 +67,6 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done
 	mkdir -p $(ISOROOT)
 	rsync -rp $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(ISOROOT)
-	rsync -rp $(LOCAL_MIRROR)/centos-packages.changelog $(ISOROOT)
 	createrepo -g $(ISOROOT)/comps.xml \
 		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	rpm -qi -p $(ISOROOT)/Packages/*.rpm | $(SOURCE_DIR)/iso/pkg-versions.awk > $(ISOROOT)/centos-versions.yaml
@@ -95,12 +93,10 @@ $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 else
 $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 		$(BUILD_DIR)/mirror/build.done \
-		$(BUILD_DIR)/mirror/make-changelog.done \
 		$(BUILD_DIR)/packages/build.done \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)/ubuntu
 	rsync -rp $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ $(ISOROOT)/ubuntu/
-	rsync -rp $(LOCAL_MIRROR)/ubuntu-packages.changelog $(ISOROOT)
 	zcat $(ISOROOT)/ubuntu/dists/$(PRODUCT_NAME)$(PRODUCT_VERSION)/main/binary-amd64/Packages.gz | $(SOURCE_DIR)/iso/pkg-versions.awk > $(ISOROOT)/ubuntu/ubuntu-versions.yaml
 	$(ACTION.TOUCH)
 endif
@@ -128,6 +124,14 @@ $(ISOROOT)/docker.done: $(BUILD_DIR)/docker/build.done \
 # Extra files
 ########################
 
+$(BUILD_DIR)/mirror/iso-pkgs-changelog.done:
+	bash -c "export LOCAL_MIRROR=$(LOCAL_MIRROR); \
+		export CENTOS_FILE=centos-iso-packages.changelog; \
+		export UBUNTU_FILE=ubuntu-iso-packages.changelog; \
+		$(SOURCE_DIR)/report-changelog.sh"
+	rsync -rp $(LOCAL_MIRROR)/*-iso-packages.changelog $(ISOROOT)
+	$(ACTION.TOUCH)
+
 $(BUILD_DIR)/iso/isoroot-dotfiles.done: \
 		$(ISOROOT)/.discinfo \
 		$(ISOROOT)/.treeinfo
@@ -137,6 +141,7 @@ $(ISOROOT)/openstack_version: $(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)
 	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $@
 
 $(BUILD_DIR)/iso/isoroot-files.done: \
+		$(BUILD_DIR)/mirror/iso-pkgs-changelog.done \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done \
 		$(ISOROOT)/isolinux/isolinux.cfg \
 		$(ISOROOT)/isolinux/splash.jpg \
@@ -147,7 +152,7 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/version.yaml \
 		$(ISOROOT)/openstack_version \
 		$(ISOROOT)/centos-versions.yaml \
-		$(ISOROOT)/ubuntu-versions.yaml 
+		$(ISOROOT)/ubuntu-versions.yaml
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
