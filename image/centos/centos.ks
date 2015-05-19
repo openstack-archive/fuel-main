@@ -157,6 +157,7 @@ telnet
 virt-what
 vim
 wget
+xfsprogs
 yum
 yum-utils
 yum-plugin-priorities
