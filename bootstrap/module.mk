@@ -49,7 +49,8 @@ BOOTSTRAP_RPMS:=\
 	tcpdump \
 	vconfig \
 	vim-minimal \
-	wget
+	wget \
+	xfsprogs
 
 
 BOOTSTRAP_RPMS_CUSTOM:=\
