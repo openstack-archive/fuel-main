@@ -85,6 +85,7 @@ kernel-lt
 kernel-lt-devel
 kernel-lt-headers
 kmod-openvswitch
+kmod-openvswitch-lt
 leveldb-1.7.0-2.el6
 libevent-devel-1.4.13-4.el6
 libmemcached
