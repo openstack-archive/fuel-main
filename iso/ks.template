@@ -470,6 +470,24 @@ sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/subscription-manager.conf
 # Disable GSSAPI in ssh server config
 sed -i -e "/^\s*GSSAPICleanupCredentials yes/d" -e "/^\s*GSSAPIAuthentication yes/d" /etc/ssh/sshd_config
 
+# Enable MOTD banner in sshd
+sed -i -e "s/^\s*PrintMotd no/PrintMotd yes/g" /etc/ssh/sshd_config
+
+# Add note regarding local repos creation to MOTD
+cat >> /etc/motd << EOF
+
+All environments use online repositories by default.
+Use the following commands to create local repositories
+on master node and change default repository settings:
+
+* CentOS: fuel-package-updates (see --help for options)
+* Ubuntu: fuel-createmirror (see --help for options)
+
+Please refer to the Ops Guide for more information:
+https://docs.mirantis.com/openstack/fuel/fuel-6.1/operations.html#external-ubuntu-ops
+
+EOF
+
 # Copying bootstrap_admin_node.sh, chmod it and
 # adding /etc/init/bootstrap_admin_node.conf
 cp ${SOURCE}/bootstrap_admin_node.sh /usr/local/sbin/bootstrap_admin_node.sh
