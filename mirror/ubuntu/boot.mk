@@ -3,8 +3,15 @@ ISOLINUX_FILES:=netboot.tar.gz
 LOCAL_NETBOOT_DIR:=$(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/installer-amd64/current/images/netboot
 LOCAL_NETBOOT_TGZ:=$(LOCAL_NETBOOT_DIR)/$(ISOLINUX_FILES)
 NETBOOT_URL:=$(MIRROR_UBUNTU)/installer-amd64/current/images/netboot/netboot.tar.gz
-ifeq ($(USE_MIRROR),none)
+#ifeq ($(USE_MIRROR),none)
+#	NETBOOT_URL:=$(MIRROR_UBUNTU)/ubuntu/dists/$(UBUNTU_RELEASE)-updates/main/installer-amd64/current/images/$(UBUNTU_NETBOOT_FLAVOR)/netboot.tar.gz
+#endif
+ifneq ($(CUSTOM_NETBOOT_LINK),none)
+	NETBOOT_URL:=$(CUSTOM_NETBOOT_LINK)
+else
+  ifeq ($(USE_MIRROR),none)
 	NETBOOT_URL:=$(MIRROR_UBUNTU)/ubuntu/dists/$(UBUNTU_RELEASE)-updates/main/installer-amd64/current/images/$(UBUNTU_NETBOOT_FLAVOR)/netboot.tar.gz
+  endif
 endif
 
 # debian isolinux files
