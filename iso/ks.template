@@ -373,7 +373,7 @@ domain=${hostname#*.}
 ip=$ip
 netmask=$netmask
 gw=$gw
-device="eth0"
+if [ -z ${device+x} ]; then device="eth0"; else device=$device ;fi # http://stackoverflow.com/questions/3601515/how-to-check-if-a-variable-is-set-in-bash
 hwaddr=`ifconfig $device | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
 dhcp_interface=$dhcp_interface
 build_images=$build_images
@@ -475,6 +475,7 @@ sed -i -e "/^\s*GSSAPICleanupCredentials yes/d" -e "/^\s*GSSAPIAuthentication ye
 cp ${SOURCE}/bootstrap_admin_node.sh /usr/local/sbin/bootstrap_admin_node.sh
 chmod 0777 /usr/local/sbin/bootstrap_admin_node.sh
 cp ${SOURCE}/bootstrap_admin_node.conf /etc/init/bootstrap_admin_node.conf
+sed -i s/eth0/$device/g /usr/local/sbin/bootstrap_admin_node.shs
 echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
 
 # Copying version.yaml file. It contains COMMIT_SHA of last commit.
