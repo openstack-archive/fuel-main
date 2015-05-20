@@ -81,8 +81,8 @@ endef
 
 YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --exclude=ruby-2.1.1 --installroot=$(INITRAMROOT) -y --nogpgcheck
 
-KERNEL_PATTERN:=kernel-lt-3.10.*
-KERNEL_FIRMWARE_PATTERN:=linux-firmware*
+KERNEL_PATTERN:=kernel-ml-3.18.*
+KERNEL_FIRMWARE_PATTERN:=kernel-firmware-2.6.32-504*
 
 clean: clean-bootstrap
 

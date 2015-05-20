@@ -24,8 +24,8 @@ mkdir -p /repo/download/
 cat >> /requirements-deb.txt << EOF
 linux-image-${UBUNTU_INSTALLER_KERNEL_VERSION}
 linux-headers-${UBUNTU_INSTALLER_KERNEL_VERSION}
-linux-image-generic-${UBUNTU_KERNEL_FLAVOR}
-linux-headers-generic-${UBUNTU_KERNEL_FLAVOR}
+linux-image-${UBUNTU_KERNEL_FLAVOR}
+linux-headers-${UBUNTU_KERNEL_FLAVOR}
 EOF
 
 
