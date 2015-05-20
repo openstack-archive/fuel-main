@@ -9,12 +9,14 @@ function countdown() {
   done
 }
 export LANG=en_US.UTF8
+export ADMIN_INTERFACE=eth0
+
 showmenu="no"
 if [ -f /root/.showfuelmenu ]; then
   . /root/.showfuelmenu
 fi
 echo -n "Applying default Fuel settings..."
-fuelmenu --save-only --iface=eth0
+fuelmenu --save-only --iface=$ADMIN_INTERFACE
 echo "Done!"
 if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
   fuelmenu
@@ -30,7 +32,7 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
     case "$key" in
       $'\e')  echo "Skipping Fuel Setup.."
               echo -n "Applying default Fuel setings..."
-              fuelmenu --save-only --iface=eth0
+              fuelmenu --save-only --iface=$ADMIN_INTERFACE
               echo "Done!"
               ;;
       *)      echo -e "\nEntering Fuel Setup..."
