@@ -19,7 +19,7 @@ LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 DEPS_DIR?=$(TOP_DIR)/deps
 DEPS_DIR:=$(abspath $(DEPS_DIR))
 
-PRODUCT_VERSION:=5.1.2
+PRODUCT_VERSION:=5.1
 # This variable is used mostly for
 # keeping things uniform. Some files
 # contain versions as a part of their paths
@@ -103,6 +103,11 @@ UBUNTU_RELEASE_NUMBER:=$(UBUNTU_MAJOR).$(UBUNTU_MINOR)
 UBUNTU_KERNEL_FLAVOR?=lts-trusty
 UBUNTU_NETBOOT_FLAVOR?=trusty-netboot
 UBUNTU_ARCH:=amd64
+# Used for non-standart ubuntu-installer kernel
+# if != none UBUNTU_NETBOOT_FLAVOR will be ignored
+# example: 
+#  CUSTOM_NETBOOT_LINK=http://ua.archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-amd64/current/images/netboot/netboot.tar.gz
+CUSTOM_NETBOOT_LINK?=none
 
 # Rebuld packages locally (do not use upstream versions)
 # This option is depricated, because there are no upstream versions
