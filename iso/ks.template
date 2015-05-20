@@ -373,7 +373,7 @@ domain=${hostname#*.}
 ip=$ip
 netmask=$netmask
 gw=$gw
-device="eth0"
+if [ -z ${device+x} ]; then device="eth0"; else device=$device ;fi # http://stackoverflow.com/questions/3601515/how-to-check-if-a-variable-is-set-in-bash
 hwaddr=`ifconfig $device | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
 dhcp_interface=$dhcp_interface
 build_images=$build_images
