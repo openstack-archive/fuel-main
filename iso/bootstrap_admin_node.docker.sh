@@ -16,13 +16,15 @@ function fail() {
 }
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 export LANG=en_US.UTF8
+export ADMIN_INTERFACE=eth0
+
 showmenu="no"
 if [ -f /root/.showfuelmenu ]; then
   . /root/.showfuelmenu
 fi
 
 echo -n "Applying default Fuel settings..."
-fuelmenu --save-only --iface=eth0
+fuelmenu --save-only --iface=$ADMIN_INTERFACE
 echo "Done!"
 
 # TODO(asheplyakov): reuse the check from fuelmenu/bootstrapimage

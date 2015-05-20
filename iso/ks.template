@@ -329,7 +329,7 @@ esac
 set -x
 
 function save_cfg {
-    scrFile="/etc/sysconfig/network-scripts/ifcfg-$device"
+    scrFile="/etc/sysconfig/network-scripts/ifcfg-$admin_interface"
     search="domain $domain\nsearch $domain"
     sed -i -e 's#^\(HOSTNAME=\).*$#\1'"$hostname"'#' /etc/sysconfig/network
     grep -q "^\s*$ip\s+$hostname" /etc/hosts || echo "$ip $hostname" >> /etc/hosts
@@ -339,7 +339,7 @@ function save_cfg {
     [ $dns2 ] && echo "nameserver $dns2" >> /etc/resolv.conf
     [ $dns2 ] && echo "nameserver $dns2" >> /etc/dnsmasq.upstream
 
-    echo DEVICE=$device > $scrFile
+    echo DEVICE=$admin_interface > $scrFile
     echo ONBOOT=yes >> $scrFile
     echo NM_CONTROLLED=no >> $scrFile
     echo HWADDR=$hwaddr >> $scrFile
@@ -354,7 +354,7 @@ function save_cfg {
     fi
     scrDHCPFile="/etc/sysconfig/network-scripts/ifcfg-$dhcp_interface"
     #Ignore gateway and set up DHCP if it is used, otherwise apply it
-    if [ $dhcp_interface ] && [ "$dhcp_interface" != "$device" ]; then
+    if [ $dhcp_interface ] && [ "$dhcp_interface" != "$admin_interface" ]; then
         echo "DEVICE=$dhcp_interface" > $scrDHCPFile
         echo "BOOTPROTO=dhcp" >> $scrDHCPFile
         echo "ONBOOT=yes" >> $scrDHCPFile
@@ -374,8 +374,8 @@ domain=${hostname#*.}
 ip=$ip
 netmask=$netmask
 gw=$gw
-device="eth0"
-hwaddr=`ifconfig $device | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
+admin_interface=${admin_interface:-"eth0"}
+hwaddr=`ifconfig $admin_interface | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
 dhcp_interface=$dhcp_interface
 build_images=$build_images
 save_cfg
@@ -494,6 +494,7 @@ EOF
 cp ${SOURCE}/bootstrap_admin_node.sh /usr/local/sbin/bootstrap_admin_node.sh
 chmod 0777 /usr/local/sbin/bootstrap_admin_node.sh
 cp ${SOURCE}/bootstrap_admin_node.conf /etc/init/bootstrap_admin_node.conf
+sed -i s/ADMIN_INTERFACE=eth0/ADMIN_INTERFACE=$admin_interface/g /usr/local/sbin/bootstrap_admin_node.sh
 echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
 
 # Copying version.yaml file. It contains COMMIT_SHA of last commit.
