@@ -29,7 +29,6 @@ BOOTSTRAP_RPMS:=\
 	ql2100-firmware \
 	ql2200-firmware \
 	ql23xx-firmware \
-	cronie-noanacron \
 	crontabs \
 	dhclient \
 	dmidecode \
@@ -37,11 +36,14 @@ BOOTSTRAP_RPMS:=\
 	logrotate \
 	mcollective \
 	mingetty \
+	nc \
 	net-tools \
 	ntp \
+	ntpdate \
 	openssh-clients \
 	openssh-server \
 	pciutils \
+	plymouth \
 	rsyslog \
 	scapy \
 	tcpdump \
@@ -53,7 +55,9 @@ BOOTSTRAP_RPMS:=\
 BOOTSTRAP_RPMS_CUSTOM:=\
 	nailgun-agent \
 	nailgun-mcagents \
-	nailgun-net-check
+	nailgun-net-check \
+	fuel-agent \
+	python-tasklib
 
 define yum_local_repo
 [mirror]
@@ -79,7 +83,8 @@ pluginconfpath=$(BUILD_DIR)/bootstrap/etc/yum/pluginconf.d
 reposdir=$(BUILD_DIR)/bootstrap/etc/yum.repos.d
 endef
 
-YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --exclude=ruby-2.1.1 --installroot=$(INITRAMROOT) -y --nogpgcheck
+#FIXME Partial-Bug: #1403088
+YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --exclude=ruby-2.1.1  --exclude=ruby21 --installroot=$(INITRAMROOT) -y --nogpgcheck
 
 KERNEL_PATTERN:=kernel-lt-3.10.*
 KERNEL_FIRMWARE_PATTERN:=linux-firmware*
@@ -96,7 +101,7 @@ $(BUILD_DIR)/bootstrap/initramfs.img: \
 	sudo sh -c "cd $(INITRAMROOT) && find . -xdev | cpio --create \
         --format='newc' | gzip -9 > $(BUILD_DIR)/bootstrap/initramfs.img"
 
-$(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/build.done
+$(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/centos/build.done
 	mkdir -p $(BUILD_DIR)/bootstrap
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		(cd $(BUILD_DIR)/bootstrap/; cpio -imd './boot/vmlinuz*')
@@ -112,7 +117,7 @@ $(BUILD_DIR)/bootstrap/etc/yum.conf $(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.
 
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: $(call depv,BOOTSTRAP_RPMS_CUSTOM)
 $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
-		$(BUILD_DIR)/packages/build.done \
+		$(BUILD_DIR)/packages/rpm/build.done \
 		$(BUILD_DIR)/bootstrap/prepare-initram-root.done \
 		$(call find-files,$(SOURCE_DIR)/bootstrap/sync) \
 		$(BUILD_DIR)/repos/nailgun.done \
@@ -159,7 +164,8 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: $(call depv,BOOTSTRAP_RPMS)
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
-		$(BUILD_DIR)/mirror/build.done \
+		$(BUILD_DIR)/mirror/centos/build.done \
+		$(BUILD_DIR)/packages/rpm/build.done \
 		$(BUILD_DIR)/bootstrap/etc/yum.conf \
 		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo
 
