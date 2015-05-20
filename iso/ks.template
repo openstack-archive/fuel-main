@@ -373,7 +373,7 @@ domain=${hostname#*.}
 ip=$ip
 netmask=$netmask
 gw=$gw
-device="eth0"
+device=${device:-"eth0"}
 hwaddr=`ifconfig $device | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
 dhcp_interface=$dhcp_interface
 build_images=$build_images
@@ -493,6 +493,7 @@ EOF
 cp ${SOURCE}/bootstrap_admin_node.sh /usr/local/sbin/bootstrap_admin_node.sh
 chmod 0777 /usr/local/sbin/bootstrap_admin_node.sh
 cp ${SOURCE}/bootstrap_admin_node.conf /etc/init/bootstrap_admin_node.conf
+sed -i s/eth0/$device/g /usr/local/sbin/bootstrap_admin_node.sh
 echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
 
 # Copying version.yaml file. It contains COMMIT_SHA of last commit.
