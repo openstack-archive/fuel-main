@@ -134,6 +134,7 @@ $(BUILD_DIR)/iso/isoroot-dotfiles.done: \
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/openstack_version: $(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)
+	mkdir -p $(@D)
 	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $@
 
 $(BUILD_DIR)/iso/isoroot-files.done: \
