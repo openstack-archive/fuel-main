@@ -20,7 +20,6 @@ $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,PRODUCT_VERSION)
 $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,FEATURE_GROUPS)
 $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(BUILD_DIR)/repos/repos.done \
 		$(ISOROOT)/openstack_version
-	mkdir -p $(@D)
 	echo "VERSION:" > $@
 	echo "  feature_groups:" >> $@
 	$(foreach group,$(FEATURE_GROUPS),echo "    - $(group)" >> $@;)
@@ -134,6 +133,7 @@ $(BUILD_DIR)/iso/isoroot-dotfiles.done: \
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/openstack_version: $(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)
+	mkdir -p $(@D)
 	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $@
 
 $(BUILD_DIR)/iso/isoroot-files.done: \
