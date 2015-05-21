@@ -93,6 +93,8 @@ is_product_vm_operational() {
         expect "$prompt"
         send "grep 'Fuel node deployment' /var/log/puppet/bootstrap_admin_node.log\r"
         expect "$prompt"
+        send "logout\r"
+        expect "$prompt"
 ENDOFEXPECT
     )
 
@@ -186,12 +188,10 @@ enable_outbound_network_for_product_vm() {
                 done
             else
                 print_no_internet_connectivity_banner
-                return 1
             fi
         ;;
         *)
             print_no_internet_connectivity_banner
-            return 1
         ;;
     esac
 
@@ -200,7 +200,6 @@ enable_outbound_network_for_product_vm() {
         echo "OK"
     else
         print_no_internet_connectivity_banner
-        return 1
     fi
 
     # Check host nameserver configuration
@@ -279,19 +278,41 @@ enable_outbound_network_for_product_vm() {
 ENDOFEXPECT
     )
 
-   result_inet=$(
-        expect << ENDOFEXPECT
-        spawn ssh $ssh_options $username@$ip
-        expect "connect to host" exit
-        expect "*?assword:*"
-        send "$password\r"
-        expect "$prompt"
-        send "rezult=$(for i in 1 2 3 4 5; do ping -c 2 google.com || ping -c 2 wikipedia.com || sleep 2; done)\r"
-        expect "$prompt"
-        send "echo $rezult\r"
-        expect "$prompt"
+    # Cygwin incorrectly handles the command "send "res=$(for i in 1 2 ...)"
+    if [[ "$(uname -s | cut -c1-6)" == "CYGWIN" ]]; then
+       result_inet=$(
+            expect << ENDOFEXPECT
+            spawn ssh $ssh_options $username@$ip
+            expect "connect to host" exit
+            expect "*?assword:*"
+            send "$password\r"
+            expect "$prompt"
+            send "for i in {1..5}; do ping -c 2 google.com || ping -c 2 wikipedia.com || sleep 2; done\r"
+            expect "*icmp*"
+            expect "$prompt"
+            send "exit\r"
 ENDOFEXPECT
-    )
+        )
+    elif [[ "$(uname)" == "Linux" ]] || [[ "$(uname)" == "Darwin" ]]  ; then
+        result_inet=$(
+            expect << ENDOFEXPECT
+            spawn ssh $ssh_options $username@$ip
+            expect "connect to host" exit
+            expect "*?assword:*"
+            send "$password\r"
+            expect "$prompt"
+            send "res=$(for i in {1..5}; do ping -c 2 google.com || ping -c 2 wikipedia.com || sleep 2; done)\r"
+            expect "$prompt"
+            send "echo $res\r"
+            expect "$prompt"
+            send "exit\r"
+ENDOFEXPECT
+        )
+    else
+        echo "$(uname) is not supported operating system."
+        exit 1
+    fi
+
 
     # When you are launching command in a sub-shell, there are issues with IFS (internal field separator)
     # and parsing output as a set of strings. So, we are saving original IFS, replacing it, iterating over lines,
