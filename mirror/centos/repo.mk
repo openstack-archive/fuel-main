@@ -24,6 +24,12 @@ $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo:
 	@mkdir -p $(@D)
 	/bin/echo -e "$${contents}" > $@
 
+$(BUILD_DIR)/bin/yumdownloader: $(SOURCE_DIR)/mirror/centos/yumdownloader-deps.patch
+	mkdir -p $(@D)
+	cp -a /usr/bin/yumdownloader $(BUILD_DIR)/yumdownloader
+	( cd $(BUILD_DIR) && patch -p0 ) < $<
+	cp -a $(BUILD_DIR)/yumdownloader $@
+
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: $(call depv,EXTRA_RPM_REPOS)
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: \
 		export contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(call create_extra_repo,repo)\n)
@@ -34,6 +40,7 @@ $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo:
 centos_empty_installroot:=$(BUILD_DIR)/mirror/centos/dummy_installroot
 
 $(BUILD_DIR)/mirror/centos/yum-config.done: \
+		$(BUILD_DIR)/bin/yumdownloader \
 		$(BUILD_DIR)/mirror/centos/etc/yum.conf \
 		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo \
 		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo \
@@ -62,20 +69,72 @@ $(BUILD_DIR)/mirror/centos/src-rpm-download.done: $(BUILD_DIR)/mirror/centos/src
 	xargs --no-run-if-empty -n1 -P4 wget -Nnv -P "$$dst" < $<
 	$(ACTION.TOUCH)
 
-
-$(BUILD_DIR)/mirror/centos/urls.list: $(SOURCE_DIR)/requirements-rpm.txt \
-		$(BUILD_DIR)/mirror/centos/yum-config.done
+# Strip the comments and sort the list alphabetically
+$(BUILD_DIR)/mirror/centos/requirements-rpm-0.txt: $(SOURCE_DIR)/requirements-rpm.txt
 	mkdir -p $(@D) && \
-	env \
-		TMPDIR="$(centos_empty_installroot)/cache" \
-		TMP="$(centos_empty_installroot)/cache" \
-	yumdownloader -q --urls \
-		--archlist=$(CENTOS_ARCH) \
-		--installroot="$(centos_empty_installroot)" \
-		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
-		--resolve \
-		`cat $(SOURCE_DIR)/requirements-rpm.txt` > "$@.out" 2>"$@.log"
-	# yumdownloader -q prints logs to stdout, filter them out
+	grep -v -e '^#' $< > $@.tmp && \
+	sort -u < $@.tmp > $@.pre && \
+	mv $@.pre $@
+
+$(BUILD_DIR)/mirror/centos/urls.list: $(BUILD_DIR)/mirror/centos/requirements-rpm-0.txt \
+		$(BUILD_DIR)/mirror/centos/yum-config.done
+	touch "$(BUILD_DIR)/mirror/centos/conflicting-packages-0.lst"
+# 1st pass - find out which packages conflict
+# 2nd pass - get the URLs of non-conflicting packages
+# 3rd pass (under the else clause) - process the conflicting rpms one by one
+	count=0; \
+	while true; do \
+		if [ $$count -gt 1 ]; then \
+			echo "Unable to resolve packages dependencies" >&2; \
+			echo 'See $(BUILD_DIR)/mirror/centos/yumdownloader-1.log for more details' >&2; \
+			exit 1; \
+		fi; \
+		requirements_rpm="$(BUILD_DIR)/mirror/centos/requirements-rpm-$${count}.txt"; \
+		requirements_rpm_next="$(BUILD_DIR)/mirror/centos/requirements-rpm-$$((count+1)).txt"; \
+		out="$(BUILD_DIR)/mirror/centos/yumdownloader-$${count}.out"; \
+		log="$(BUILD_DIR)/mirror/centos/yumdownloader-$${count}.log"; \
+		conflict_lst="$(BUILD_DIR)/mirror/centos/conflicting-packages-$${count}.lst"; \
+		conflict_lst_next="$(BUILD_DIR)/mirror/centos/conflicting-packages-$$((count+1)).lst"; \
+		if ! env \
+			TMPDIR="$(centos_empty_installroot)/cache" \
+			TMP="$(centos_empty_installroot)/cache" \
+			$(BUILD_DIR)/bin/yumdownloader -q --urls \
+				--archlist=$(CENTOS_ARCH) \
+				--installroot="$(centos_empty_installroot)" \
+				-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
+				--resolve \
+				`cat $${requirements_rpm}` > "$$out" 2>"$$log"; then \
+			sed -rne 's/^([a-zA-Z0-9_-]+)\s+(conflicts with).*$$/\1/p' < "$$out" > "$${conflict_lst_next}.pre" && \
+			cat "$${conflict_lst_next}.pre" "$$conflict_lst" | sort -u > "$$conflict_lst_next" && \
+			comm -23 "$$requirements_rpm" "$$conflict_lst_next" > "$${requirements_rpm}.new.pre" && \
+			sort -u < "$${requirements_rpm}.new.pre" > "$${requirements_rpm_next}"; \
+		else \
+			conflicting_pkgs_urls="$(BUILD_DIR)/mirror/centos/urls_conflicting.lst"; \
+			nonconflicting_pkgs="$$requirements_rpm"; \
+			# Now process conflicting packages one by one. There is a small problem: \
+			# in the original requirements-rpm.txt quite a number of packages are    \
+			# pinned to specific versions. These pins should be taken into account   \
+			# to avoid having several versions of the same package. For instance,    \
+			# zabbix-web-* depends on httpd, so the latest version of httpd gets     \
+			# installed along with the one listed in the requirements-rpm.txt.       \
+			# Therefore add the set of all nonconflicting packages to the package    \
+			# being processed to take into account version pins.                     \
+			for pkg in `cat $$conflict_lst`; do \
+				env \
+					TMPDIR="$(centos_empty_installroot)/cache" \
+					TMP="$(centos_empty_installroot)/cache" \
+					$(BUILD_DIR)/bin/yumdownloader -q --urls \
+						--archlist=$(CENTOS_ARCH) \
+						--installroot="$(centos_empty_installroot)" \
+						-c "$(BUILD_DIR)/mirror/centos/etc/yum.conf" \
+						--resolve $$pkg `cat $$nonconflicting_pkgs`; \
+			done > "$$conflicting_pkgs_urls" && \
+			cat "$$out" "$$conflicting_pkgs_urls" > "$@.out" && \
+			break; \
+		fi; \
+		count=$$((count+1)); \
+	done
+# yumdownloader -q prints logs to stdout, filter them out
 	sed -rne '/\.rpm$$/ {p}' < $@.out > $@.pre
 # yumdownloader selects i686 packages too. Remove them. However be
 # careful not to remove the syslinux-nolinux package (it contains
@@ -95,7 +154,7 @@ $(BUILD_DIR)/mirror/centos/src_urls.list: $(BUILD_DIR)/mirror/centos/mirantis_rp
 	env \
 		TMPDIR="$(centos_empty_installroot)/cache" \
 		TMP="$(centos_empty_installroot)/cache" \
-	yumdownloader -q --urls \
+	$(BUILD_DIR)/bin/yumdownloader -q --urls \
 		--archlist=src --source \
 		--installroot="$(centos_empty_installroot)" \
 		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
