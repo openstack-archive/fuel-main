@@ -437,7 +437,7 @@ scapy-2.0.0.10-5.el6
 screen-4.0.3-16.el6
 selinux-policy
 send2syslog-0.1-1.el6
-sheepdog
+#sheepdog
 shotgun
 snappy-1.0.5-1.el6
 socat-1.7.2.2-1.el6
