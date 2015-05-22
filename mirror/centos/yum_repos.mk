@@ -1,10 +1,32 @@
+
+# Problem: --archlist=x86_64 really means "x86_64 and i686". Therefore yum
+# tries to resolve dependencies of i686 packages. Sometimes this fails due
+# to an upgraded x86_64 only package available in the fuel repo. For 
+# instance, when yum is asked to download dmraid package it tries to resolve
+# the dependencies of i686 version. This fails since the upgraded
+# device-mapper-libs package (from the fuel repo) is x86_64 only:
+# Package: device-mapper-libs-1.02.79-8.el6.i686 (base)
+#   Requires: device-mapper = 1.02.79-8.el6
+#   Available: device-mapper-1.02.79-8.el6.x86_64 (base)
+#     device-mapper = 1.02.79-8.el6
+#   Installing: device-mapper-1.02.90-2.mira1.x86_64 (fuel)
+#        device-mapper = 1.02.90-2.mira1
+# The obvious solution is to exclude i686 packages. However syslinux
+# package depends on i686 package syslinux-nonlinux (which contians
+# the binaries that run in the syslinux environment). Since excluding
+# packages by regexp is impossible (only glob patterns are supported)
+# base and updates repos are "cloned". Those "cloned" repos contain
+# a few whitelisted i686 packages (for now only syslinux).
+# Note: these packages should be also excluded from base and updates.
+x86_rpm_packages_whitelist:=syslinux*
+
 define yum_conf
 [main]
 cachedir=$(BUILD_DIR)/mirror/centos/cache
 keepcache=0
 debuglevel=6
 logfile=$(BUILD_DIR)/mirror/centos/yum.log
-exclude=*.i686.rpm ntp-dev*
+exclude=ntp-dev*
 exactarch=1
 obsoletes=1
 gpgcheck=0
@@ -21,6 +43,7 @@ name=CentOS-$(CENTOS_RELEASE) - Base
 baseurl=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
+exclude=*i686 $(x86_rpm_packages_whitelist)
 priority=10
 
 [updates]
@@ -29,6 +52,25 @@ name=CentOS-$(CENTOS_RELEASE) - Updates
 baseurl=$(MIRROR_CENTOS)/updates/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
+exclude=*i686 $(x86_rpm_packages_whitelist)
+priority=10
+
+[base_i686_whitelisted]
+name=CentOS-$(CENTOS_RELEASE) - Base
+#mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=os
+baseurl=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
+gpgcheck=0
+enabled=1
+includepkgs=$(x86_rpm_packages_whitelist)
+priority=10
+
+[updates_i686_whitelisted]
+name=CentOS-$(CENTOS_RELEASE) - Updates
+#mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=updates
+baseurl=$(MIRROR_CENTOS)/updates/$(CENTOS_ARCH)
+gpgcheck=0
+enabled=1
+includepkgs=$(x86_rpm_packages_whitelist)
 priority=10
 
 [extras]
