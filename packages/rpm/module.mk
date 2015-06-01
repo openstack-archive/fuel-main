@@ -99,6 +99,7 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: export SANDBOX_DOWN:=$(SANDBO
 $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 		$(BUILD_DIR)/repos/repos.done \
 		$(BUILD_DIR)/packages/rpm/buildd.tar.gz \
+		$(BUILD_DIR)/packages/rpm/repo-late.done \
 		$(BUILD_DIR)/docker/build.done
 	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	mkdir -p $(SANDBOX) && \
@@ -114,10 +115,11 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
+$(BUILD_DIR)/packages/rpm/build.done:
+ifneq (0,$(strip $(BUILD_PACKAGES)))
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
+endif
 	$(ACTION.TOUCH)
-
-$(BUILD_DIR)/docker/build.done: $(BUILD_DIR)/packages/rpm/repo-late.done
 
 #######################################
 # This section is for building container
@@ -136,7 +138,12 @@ fuel-target-centos-images
 
 $(eval $(foreach pkg,$(fuel_rpm_packages_late),$(call build_rpm,$(pkg),-late)$(NEWLINE)))
 
+# BUILD_PACKAGES=0 - for late packages we need to be sure that centos mirror is ready
+# BUILD_PACKAGES=1 - for late packages we need to be sure that fuel-* packages was build beforehand
+$(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/mirror/centos/repo.done
+ifneq (0,$(strip $(BUILD_PACKAGES)))
 $(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/packages/rpm/repo.done
+endif
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u --target-directory $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages {} +
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
