@@ -38,6 +38,7 @@ $(BUILD_DIR)/docker/$1.done: \
 		$(BUILD_DIR)/mirror/centos/build.done \
 		$(BUILD_DIR)/repos/repos.done \
 		$(BUILD_DIR)/packages/rpm/build.done \
+		$(BUILD_DIR)/packages/rpm/repo-late.done \
 		$(BUILD_DIR)/docker/fuel-centos.done \
 		$(BUILD_DIR)/iso/isoroot/$(VERSION_YAML_ART_NAME) \
 		$(BUILD_DIR)/docker/repo-container-up.done
@@ -63,7 +64,7 @@ $(BUILD_DIR)/docker/fuel-centos.done: \
 		$(BUILD_DIR)/docker/base-images.done \
 		$(BUILD_DIR)/mirror/centos/build.done \
 		$(BUILD_DIR)/packages/rpm/build.done \
-		$(BUILD_DIR)/docker/base-images.done
+		$(BUILD_DIR)/packages/rpm/repo-late.done
 	rm -rf $(BUILD_DIR)/docker/fuel-centos-build && \
 	cp -a $(SOURCE_DIR)/docker/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build && \
 	sudo docker build -t fuel/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build && \
