@@ -42,6 +42,11 @@ dstat
 erlang-dev
 ethtool
 fence-agents
+fencing-agent
+fuel-agent
+fuel-ha-utils
+fuel-misc
+fuel-rabbit-fence
 fuel-utils
 galera
 git
@@ -93,6 +98,7 @@ murano
 murano-dashboard
 mysql-client
 mysql-server-wsrep-5.6
+nailgun-agent
 nailgun-mcagents
 nailgun-net-check
 neutron-common
