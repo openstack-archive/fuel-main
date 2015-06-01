@@ -114,10 +114,12 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
+ifneq ($(BUILD_PACKAGES),0)
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
-	$(ACTION.TOUCH)
+endif
 
-$(BUILD_DIR)/docker/build.done: $(BUILD_DIR)/packages/rpm/repo-late.done
+$(BUILD_DIR)/packages/rpm/build.done:
+	$(ACTION.TOUCH)
 
 #######################################
 # This section is for building container
@@ -136,7 +138,7 @@ fuel-target-centos-images
 
 $(eval $(foreach pkg,$(fuel_rpm_packages_late),$(call build_rpm,$(pkg),-late)$(NEWLINE)))
 
-$(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/packages/rpm/repo.done
+$(BUILD_DIR)/packages/rpm/repo-late.done:
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u --target-directory $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages {} +
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
