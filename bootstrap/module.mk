@@ -56,8 +56,7 @@ BOOTSTRAP_RPMS_CUSTOM:=\
 	nailgun-agent \
 	nailgun-mcagents \
 	nailgun-net-check \
-	fuel-agent \
-	python-tasklib
+	fuel-agent
 
 define yum_local_repo
 [mirror]
