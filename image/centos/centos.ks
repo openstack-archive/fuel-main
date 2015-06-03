@@ -43,11 +43,31 @@ name=local
 baseurl=file:///mirror
 gpgcheck=0
 EOF
+
+sleep_time="1"
+retry_count="10"
+
+yum_retry() {
+  retry="1"
+  while :; do
+    yum ${@}
+    if [ "${?}" -eq "0" ]; then
+      break
+    fi
+    retry=$((retry + 1))
+    if [ "${retry}" -gt "${retry_count}" ]; then
+      echo "Command failed: yum ${@}"
+      break
+    fi
+    sleep "${sleep_time}"
+  done
+}
+
 rpm -e --nodeps ruby
-yum install --exclude=ruby21* -y ruby rubygems ruby-augeas ruby-devel rubygem-openstack rubygem-netaddr puppet mcollective nailgun-agent nailgun-mcagents
+yum_retry install --exclude=ruby21* -y ruby rubygems ruby-augeas ruby-devel rubygem-openstack rubygem-netaddr puppet mcollective nailgun-agent nailgun-mcagents
 
 # install fedora kernel
-yum install -y --skip-broken kernel-lt kernel-lt-devel kernel-lt-headers linux-firmware
+yum_retry install -y --skip-broken kernel-lt kernel-lt-devel kernel-lt-headers linux-firmware
 rm /etc/yum.repos.d/*
 
 
