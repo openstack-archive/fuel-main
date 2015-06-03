@@ -136,7 +136,8 @@ $(eval $(call prepare_file_source,fuel-target-centos-images,fuel-target-centos-i
 
 ifneq ($(BUILD_PACKAGES),0)
 $(BUILD_DIR)/packages/build-late.done: \
-		$(BUILD_DIR)/packages/rpm/build-late.done
+		$(BUILD_DIR)/packages/rpm/build-late.done \
+		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done
 endif
 
 $(BUILD_DIR)/packages/build-late.done:
