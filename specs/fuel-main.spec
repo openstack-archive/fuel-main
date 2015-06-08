@@ -2,7 +2,7 @@
 %define repo_name fuel-main
 
 %define name fuel-image
-%{!?version: %define version 6.1.0}
+%{!?version: %define version 7.0.0}
 %{!?release: %define release 1}
 
 Summary: Fuel-image package
@@ -64,9 +64,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
 Requires: fuel-bootstrap-image >= %{version}
-Requires: fuel-dockerctl >= 6.1
+Requires: fuel-dockerctl >= 7.0
 Requires: fuel-docker-images >= %{version}
-Requires: fuel-library >= 6.1
+Requires: fuel-library >= 7.0
 Requires: fuelmenu >= %{version}
 Requires: fuel-package-updates >= %{version}
 Requires: fuel-provisioning-scripts >= %{version}
