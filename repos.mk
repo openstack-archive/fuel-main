@@ -47,12 +47,12 @@ $(eval $(call build_repo,fuel-ostf,$(OSTF_REPO),$(OSTF_COMMIT),$(OSTF_GERRIT_URL
 $(BUILD_DIR)/repos/fuel-main.done: 
 	ln -s $(SOURCE_DIR) $(BUILD_DIR)/repos/fuel-main
 	$(ACTION.TOUCH)
-$(BUILD_DIR)/repos/repos.done: $(BUILD_DIR)/repos/fuel-main.done $(BUILD_DIR)/repos/fuel-library6.1.done
+$(BUILD_DIR)/repos/repos.done: $(BUILD_DIR)/repos/fuel-main.done $(BUILD_DIR)/repos/fuel-library$(PRODUCT_VERSION).done
 
 #FIXME(aglarendil): make repos generation uniform
 
 $(BUILD_DIR)/repos/fuel-library6.1.done: $(BUILD_DIR)/repos/fuel-library.done
-	ln -s $(BUILD_DIR)/repos/fuel-library $(BUILD_DIR)/repos/fuel-library6.1
+	ln -s $(BUILD_DIR)/repos/fuel-library $(BUILD_DIR)/repos/fuel-library$(PRODUCT_VERSION)
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/repos/repos.done:

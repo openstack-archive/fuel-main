@@ -91,7 +91,7 @@ $(eval $(call prepare_git_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$
 #ASTUTE_PKGS
 $(eval $(call prepare_git_source,astute,astute-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/astute,HEAD,$(ASTUTE_GERRIT_COMMIT)))
 #FUELLIB_PKGS
-$(eval $(call prepare_git_source,fuel-library6.1,fuel-library6.1-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-library6.1,HEAD,$(FUELLIB_GERRIT_COMMIT)))
+$(eval $(call prepare_git_source,fuel-library$(PRODUCT_VERSION),fuel-library$(PRODUCT_VERSION)-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-library$(PRODUCT_VERSION),HEAD,$(FUELLIB_GERRIT_COMMIT)))
 #FUEL_PYTHON_PKGS
 $(eval $(call prepare_git_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient,HEAD,$(PYTHON_FUELCLIENT_GERRIT_COMMIT)))
 #FUEL-IMAGE PKGS
