@@ -1,2 +1,0 @@
-# motd test
-include motd
