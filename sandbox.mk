@@ -120,14 +120,16 @@ define SANDBOX_UBUNTU_UP
 echo "SANDBOX_UBUNTU_UP: start"
 mkdir -p $(SANDBOX_UBUNTU)
 mkdir -p $(SANDBOX_UBUNTU)/usr/sbin
-cat > $(SANDBOX_UBUNTU)/usr/sbin/policy-rc.d <<EOF
+cat > $(BUILD_DIR)/policy-rc.d << EOF
 #!/bin/sh
 # suppress services start in the staging chroots
 exit 101
 EOF
-chmod 755 $(SANDBOX_UBUNTU)/usr/sbin/policy-rc.d
+chmod 755 $(BUILD_DIR)/policy-rc.d
 mkdir -p $(SANDBOX_UBUNTU)/etc/init.d
 touch $(SANDBOX_UBUNTU)/etc/init.d/.legacy-bootordering
+mkdir -p $(SANDBOX_UBUNTU)/usr/sbin
+cp -a $(BUILD_DIR)/policy-rc.d $(SANDBOX_UBUNTU)/usr/sbin
 echo "Running debootstrap"
 sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) http://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX)
 sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
@@ -145,6 +147,7 @@ cat > $(BUILD_DIR)/mirror/ubuntu/sources.list << EOF
 $(apt_sources_list)
 EOF
 sudo cp $(BUILD_DIR)/mirror/ubuntu/sources.list $(SANDBOX_UBUNTU)/etc/apt/
+sudo cp $(BUILD_DIR)/policy-rc.d $(SANDBOX_UBUNTU)/usr/sbin
 echo "Allowing using unsigned repos"
 echo "APT::Get::AllowUnauthenticated 1;" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
 echo "Updating apt package database"
