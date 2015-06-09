@@ -33,7 +33,7 @@ zerombr
 # Partition clearing information
 clearpart --all
 # Disk partitioning information
-part / --fstype="ext4" --size=1324
+part / --fstype="ext4" --size=8192
 
 %post
 rm /etc/yum.repos.d/*
