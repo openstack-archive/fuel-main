@@ -19,7 +19,7 @@ LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 DEPS_DIR?=$(TOP_DIR)/deps
 DEPS_DIR:=$(abspath $(DEPS_DIR))
 
-PRODUCT_VERSION:=6.1
+PRODUCT_VERSION:=7.0
 
 # This variable is used for naming of auxillary objects
 # related to product: repositories, mirrors etc
@@ -33,7 +33,7 @@ PRODUCT_NAME:=mos
 # to come from DEPS_DIR "as is"
 CURRENT_VERSION:=$(PRODUCT_VERSION)
 
-PACKAGE_VERSION=6.1.0
+PACKAGE_VERSION=$(PRODUCT_VERSION).0
 UPGRADE_VERSIONS?=$(CURRENT_VERSION)
 
 # Path to pre-built artifacts
