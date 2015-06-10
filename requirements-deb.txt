@@ -228,6 +228,7 @@ swift-container
 swift-object
 swift-plugin-s3
 swift-proxy
+sysfsutils
 sysstat
 tasksel
 tcptraceroute
