@@ -273,7 +273,6 @@ ruby21-rubygem-netaddr
 ruby21-rubygem-openstack
 selinux-policy-targeted
 strace
-subscription-manager
 sysstat
 system-config-firewall-base
 tcpdump
