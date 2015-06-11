@@ -36,6 +36,7 @@ exactarch=1
 obsoletes=1
 gpgcheck=0
 plugins=1
+protected_multilib=false
 pluginpath=$(SANDBOX)/etc/yum-plugins
 pluginconfpath=$(SANDBOX)/etc/yum/pluginconf.d
 reposdir=$(SANDBOX)/etc/yum.repos.d
