@@ -73,12 +73,12 @@ $(BUILD_DIR)/mirror/ubuntu/repo.done: \
 
 $(BUILD_DIR)/mirror/ubuntu/mirror.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU)
-ifeq (none,$(strip $(USE_MIRROR)))
-	set -ex; rsync -aPtvz $(MIRROR_FUEL_UBUNTU)::$(PRODUCT_NAME)-ubuntu $(LOCAL_MIRROR_UBUNTU)/
-else
 	set -ex; debmirror --method=$(MIRROR_UBUNTU_METHOD) --progress --checksums --nocleanup --host=$(MIRROR_UBUNTU) --root=$(MIRROR_UBUNTU_ROOT) \
-	--arch=$(UBUNTU_ARCH) --dist=$(PRODUCT_NAME)$(PRODUCT_VERSION) --nosource --ignore-release-gpg --rsync-extra=none \
+	--arch=$(UBUNTU_ARCH) --dist=$(UBUNTU_RELEASE) --nosource --ignore-release-gpg --rsync-extra=none \
 	--section=$(MIRROR_UBUNTU_SECTION) $(LOCAL_MIRROR_UBUNTU)/
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/.temp $(LOCAL_MIRROR_UBUNTU)/project
-endif
+	mv $(LOCAL_MIRROR_UBUNTU)/dists/trusty $(LOCAL_MIRROR_UBUNTU)/dists/mos7.0
+	sed -i 's/trusty/mos7.0/g' $(LOCAL_MIRROR_UBUNTU)/dists/mos7.0/Release
+	rm -f $(LOCAL_MIRROR_UBUNTU)/dists/mos7.0/main/binary-amd64/*bz2
+	$(SOURCE_DIR)/regenerate_ubuntu_repo.sh $(LOCAL_MIRROR_UBUNTU)/ mos7.0
 	$(ACTION.TOUCH)
