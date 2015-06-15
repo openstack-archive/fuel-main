@@ -231,11 +231,11 @@ MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSIO
 MIRROR_CENTOS_KERNEL?=http://mirror.centos.org/centos-6/6.6/
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 MIRROR_CENTOS_KERNEL_BASEURL?=$(MIRROR_CENTOS_KERNEL)/os/$(CENTOS_ARCH)
-MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
+MIRROR_UBUNTU?=172.18.160.74
 MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
 MIRROR_UBUNTU_METHOD?=http
-MIRROR_UBUNTU_ROOT?=/$(PRODUCT_NAME)/ubuntu/
-MIRROR_UBUNTU_SECTION?=main,restricted
+MIRROR_UBUNTU_ROOT?=/osci/mos/7.0/cluster/base/trusty/
+MIRROR_UBUNTU_SECTION?=main
 MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
@@ -245,7 +245,7 @@ MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-$
 ifeq (precise,$(strip $(UBUNTU_RELEASE)))
 MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-$(MIRROR_POSTFIX)/reprepro
 else
-MIRROR_FUEL_UBUNTU?=obs-1.mirantis.com
+MIRROR_FUEL_UBUNTU?=172.18.160.74
 endif
 
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)

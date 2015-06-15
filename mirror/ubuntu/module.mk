@@ -73,12 +73,8 @@ $(BUILD_DIR)/mirror/ubuntu/repo.done: \
 
 $(BUILD_DIR)/mirror/ubuntu/mirror.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU)
-ifeq (none,$(strip $(USE_MIRROR)))
-	set -ex; rsync -aPtvz $(MIRROR_FUEL_UBUNTU)::$(PRODUCT_NAME)-ubuntu $(LOCAL_MIRROR_UBUNTU)/
-else
 	set -ex; debmirror --method=$(MIRROR_UBUNTU_METHOD) --progress --checksums --nocleanup --host=$(MIRROR_UBUNTU) --root=$(MIRROR_UBUNTU_ROOT) \
-	--arch=$(UBUNTU_ARCH) --dist=$(PRODUCT_NAME)$(PRODUCT_VERSION) --nosource --ignore-release-gpg --rsync-extra=none \
+	--arch=$(UBUNTU_ARCH) --dist=$(UBUNTU_RELEASE) --nosource --ignore-release-gpg --rsync-extra=none \
 	--section=$(MIRROR_UBUNTU_SECTION) $(LOCAL_MIRROR_UBUNTU)/
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/.temp $(LOCAL_MIRROR_UBUNTU)/project
-endif
 	$(ACTION.TOUCH)
