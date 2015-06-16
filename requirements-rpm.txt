@@ -57,6 +57,7 @@ fuel-createmirror
 fuelmenu
 fuel-ostf
 fuel-utils
+fuel-library
 fuse-libs-2.8.3-4.el6
 galera
 gcc
