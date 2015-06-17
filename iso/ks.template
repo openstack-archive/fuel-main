@@ -467,6 +467,7 @@ EOF
 sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/product-id.conf || :
 sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/subscription-manager.conf || :
 
+
 # Disable GSSAPI in ssh server config
 sed -i -e "/^\s*GSSAPICleanupCredentials yes/d" -e "/^\s*GSSAPIAuthentication yes/d" /etc/ssh/sshd_config
 
@@ -502,6 +503,22 @@ cp ${SOURCE}/version.yaml /etc/nailgun/version.yaml
 cp ${SOURCE}/version.yaml /etc/fuel/${RELEASE}/version.yaml
 ln -s /etc/fuel/${RELEASE}/version.yaml /etc/fuel/version.yaml
 cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_version`.yaml
+
+# Enable updates repository
+cat > /etc/yum.repos.d/mos${RELEASE}-updates.repo << EOF
+[mos${RELEASE]-updates]
+name=mos${RELEASE}-updates
+baseurl=http://mirror.fuel-infra.org/mos/centos-6/mos${RELEASE}/updates/
+gpgcheck=0
+skip_if_unavailable=1
+
+# Enable security repository
+cat > /etc/yum.repos.d/mos${RELEASE}-security.repo << EOF
+[mos${RELEASE]-security]
+name=mos${RELEASE}-security
+baseurl=http://mirror.fuel-infra.org/mos/centos-6/mos${RELEASE}/security/
+gpgcheck=0
+skip_if_unavailable=1
 
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid

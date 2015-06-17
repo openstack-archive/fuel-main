@@ -37,15 +37,25 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
     { kill "$pid"; wait $!; } 2>/dev/null
     case "$key" in
       $'\e')  echo "Skipping Fuel Setup.."
-              echo -n "Applying default Fuel setings..."
-              fuelmenu --save-only --iface=eth0
-              echo "Done!"
               ;;
       *)      echo -e "\nEntering Fuel Setup..."
               fuelmenu
               ;;
     esac
   fi
+fi
+
+#Attempt to apply updates if available
+reposerver=$(grep baseurl /etc/yum.repos.d/*updates* | cut -d'/' -f3 | head -1)
+if host "$reposerver" &>/dev/null; then
+  yum update -y
+  if [ $? -ne 0 ]; then
+    UPDATE_ISSUES=1
+  else
+    UPDATE_ISSUES=0
+  fi
+else
+  UPDATE_ISSUES=1
 fi
 
 #Reread /etc/sysconfig/network to inform puppet of changes
@@ -102,4 +112,14 @@ rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
 
 dockerctl check || fail
 bash /etc/rc.local
+if [ $UPDATE_ISSUES -eq 1 ]; then
+  warning="WARNING: There are issues connecting to Fuel update repository.\
+\nPlease fix your connection and run \`yum update\`"
+  echo
+  echo "*************************************************"
+  echo -e "$warning"
+  echo "*************************************************"
+  echo "Sending notification to Fuel UI..."
+  fuel notify --topic warning --send "$warning"
+fi
 echo "Fuel node deployment complete!"
