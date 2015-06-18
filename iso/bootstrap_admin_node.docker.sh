@@ -1,4 +1,5 @@
 #!/bin/bash
+FUEL_RELEASE=$(grep release: /etc/fuel/version.yaml | cut -d: -f2 | tr -d '" ')
 
 function countdown() {
   local i
@@ -37,15 +38,20 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
     { kill "$pid"; wait $!; } 2>/dev/null
     case "$key" in
       $'\e')  echo "Skipping Fuel Setup.."
-              echo -n "Applying default Fuel setings..."
-              fuelmenu --save-only --iface=eth0
-              echo "Done!"
               ;;
       *)      echo -e "\nEntering Fuel Setup..."
               fuelmenu
               ;;
     esac
   fi
+fi
+
+#Attempt to apply updates if repo is accessible
+repourl=$(grep baseurl /etc/yum.repos.d/*updates* | cut -d'=' -f2- | head -1)
+if urlaccesscheck check "$repourl" ; then
+  UPDATE_ISSUES=0
+else
+  UPDATE_ISSUES=1
 fi
 
 #Reread /etc/sysconfig/network to inform puppet of changes
@@ -65,7 +71,6 @@ if [ -f /root/.build_images ]; then
   echo "Building Fuel Docker images..."
   WORKDIR=$(mktemp -d /tmp/docker-buildXXX)
   SOURCE=/var/www/nailgun/docker
-  FUEL_RELEASE=$(grep release: /etc/fuel/version.yaml | cut -d: -f2 | tr -d '" ')
   REPO_CONT_ID=$(docker -D run -d -p 80 -v /var/www/nailgun:/var/www/nailgun fuel/centos sh -c 'mkdir /var/www/html/os;ln -sf /var/www/nailgun/centos/x86_64 /var/www/html/os/x86_64;/usr/sbin/apachectl -DFOREGROUND')
   RANDOM_PORT=$(docker port $REPO_CONT_ID 80 | cut -d':' -f2)
 
@@ -102,4 +107,44 @@ rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
 
 dockerctl check || fail
 bash /etc/rc.local
+
+# Enable updates repository
+cat > /etc/yum.repos.d/mos${FUEL_RELEASE}-updates.repo << EOF
+[mos${FUEL_RELEASE}-updates]
+name=mos${FUEL_RELEASE}-updates
+baseurl=http://mirror.fuel-infra.org/mos/centos-6/mos${FUEL_RELEASE}/updates/
+gpgcheck=0
+skip_if_unavailable=1
+EOF
+
+# Enable security repository
+cat > /etc/yum.repos.d/mos${FUEL_RELEASE}-security.repo << EOF
+[mos${FUEL_RELEASE}-security]
+name=mos${FUEL_RELEASE}-security
+baseurl=http://mirror.fuel-infra.org/mos/centos-6/mos${FUEL_RELEASE}/security/
+gpgcheck=0
+skip_if_unavailable=1
+EOF
+
+if [ $UPDATE_ISSUES -eq 1 ]; then
+  warning="WARNING: There are issues connecting to Fuel update repository.\
+\nPlease fix your connection and update this node with \`yum update\`\
+\nThen run \`dockerctl destroy all; bootstrap_admin_node.sh;\`\
+\nto repeat bootstrap on Fuel Master with the latest updates.\
+\nFor more information, check out Fuel documentation at:\
+\nhttp://docs.mirantis.com/fuel"
+else
+  warning="WARNING: There may be updates available for Fuel.\
+\nYou should update this node with \`yum update\`. If there are available\
+\n updates, run \`dockerctl destroy all; bootstrap_admin_node.sh;\`\
+\nto repeat bootstrap on Fuel Master with the latest updates.\
+\nFor more information, check out Fuel documentation at:\
+\nhttp://docs.mirantis.com/fuel"
+fi
+echo
+echo "*************************************************"
+echo -e "$warning"
+echo "*************************************************"
+echo "Sending notification to Fuel UI..."
+fuel notify --topic warning --send "$warning"
 echo "Fuel node deployment complete!"
