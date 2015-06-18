@@ -261,7 +261,7 @@ YUM_REPOS?=official fuel subscr_manager
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.
 # Repos must be separated by space.
-# Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm bar,ftp://repo.foo"
+# Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm,priority bar,ftp://repo.foo,priority"
 EXTRA_RPM_REPOS?=
 
 # Comma or space separated list. Available feature groups:

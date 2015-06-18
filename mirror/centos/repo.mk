@@ -32,7 +32,7 @@ $(BUILD_DIR)/bin/yumdownloader: $(SOURCE_DIR)/mirror/centos/yumdownloader-deps.p
 
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: $(call depv,EXTRA_RPM_REPOS)
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: \
-		export contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(call create_extra_repo,repo)\n)
+		export contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(call create_extra_repo,$(repo))\n)
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo:
 	@mkdir -p $(@D)
 	/bin/echo -e "$${contents}" > $@
