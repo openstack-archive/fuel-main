@@ -371,6 +371,7 @@ rubygem-bundler-1.3.4-1.el6
 rubygem-bunny-0.8.0-1.el6
 rubygem-cstruct-1.0.1-1.el6
 rubygem-daemons-1.0.10-2.el6
+rubygem-deep_merge
 rubygem-erubis-2.6.6-1.el6
 rubygem-eventmachine-0.12.10-4.el6
 rubygem-eventmachine-doc-0.12.10-4.el6
