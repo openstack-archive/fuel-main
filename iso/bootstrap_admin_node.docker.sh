@@ -46,13 +46,6 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
   fi
 fi
 
-#Attempt to apply updates if repo is accessible
-repourl=$(grep baseurl /etc/yum.repos.d/*updates* | cut -d'=' -f2- | head -1)
-if urlaccesscheck check "$repourl" ; then
-  UPDATE_ISSUES=0
-else
-  UPDATE_ISSUES=1
-fi
 
 #Reread /etc/sysconfig/network to inform puppet of changes
 . /etc/sysconfig/network
@@ -125,6 +118,15 @@ baseurl=http://mirror.fuel-infra.org/mos/centos-6/mos${FUEL_RELEASE}/security/
 gpgcheck=0
 skip_if_unavailable=1
 EOF
+
+#Check if repo is accessible
+echo "Checking for access to updates repository..."
+repourl=$(grep baseurl /etc/yum.repos.d/*updates* 2>/dev/null | cut -d'=' -f2- | head -1)
+if urlaccesscheck check "$repourl" ; then
+  UPDATE_ISSUES=0
+else
+  UPDATE_ISSUES=1
+fi
 
 if [ $UPDATE_ISSUES -eq 1 ]; then
   warning="WARNING: There are issues connecting to Fuel update repository.\
