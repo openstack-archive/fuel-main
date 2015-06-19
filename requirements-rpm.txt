@@ -254,6 +254,7 @@ ruby21-rubygem-systemu
 ruby-augeas
 ruby-devel
 rubygem-cstruct
+rubygem-deep_merge
 rubygem-extlib
 rubygem-httpclient
 rubygem-ipaddress
