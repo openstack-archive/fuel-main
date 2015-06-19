@@ -19,11 +19,6 @@ help:
 	@echo '  bootstrap  - build bootstrap'
 	@echo '  iso  - build iso image'
 	@echo '  img  - build flash stick image'
-	@echo '  test - run all tests'
-	@echo '  test-unit - run unit tests'
-	@echo '  test-integration - run integration tests'
-	@echo '  test-integration-env - prepares integration test environment'
-	@echo '  clean-integration-test - clean integration test environment'
 	@echo '  clean - remove build directory and resetting .done flags'
 	@echo '  deep_clean - clean + removing $(LOCAL_MIRROR) directory'
 	@echo '  distclean - cleans deep_clean + clean-integration-test'
@@ -53,8 +48,6 @@ SOURCE_DIR?=$(dir $(lastword $(MAKEFILE_LIST)))
 SOURCE_DIR:=$(abspath $(SOURCE_DIR))
 
 all: iso
-
-test: test-unit test-integration
 
 clean:
 	sudo rm -rf $(BUILD_DIR)
@@ -94,4 +87,3 @@ include $(SOURCE_DIR)/bootstrap/module.mk
 include $(SOURCE_DIR)/iso/module.mk
 include $(SOURCE_DIR)/upgrade/module.mk
 include $(SOURCE_DIR)/virtualbox.mk
-include $(SOURCE_DIR)/fuelweb_test/module.mk
