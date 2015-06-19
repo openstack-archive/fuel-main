@@ -361,6 +361,7 @@ ruby21-rubygem-shadow
 ruby21-rubygem-stomp
 ruby21-rubygem-symboltable
 ruby-augeas
+ruby-deep-merge
 ruby-devel
 ruby-extlib-0.9.13-5.el6
 rubygem-abstract-1.0.0-1.el6

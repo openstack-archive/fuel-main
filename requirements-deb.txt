@@ -209,6 +209,7 @@ rabbitmq-server
 radosgw
 ruby
 ruby-cstruct
+ruby-deep-merge
 ruby-dev
 ruby-httpclient
 ruby-i18n
