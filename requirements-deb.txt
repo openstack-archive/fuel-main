@@ -166,7 +166,6 @@ python-ceph
 python-daemon
 python-daemonize
 python-dingus
-python-ethtool
 python-feedparser
 python-gflags
 python-glance

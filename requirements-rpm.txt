@@ -240,7 +240,6 @@ python-django-horizon
 python-django-horizon-doc
 python-django-openstack-auth
 python-dmidecode-3.10.13-3.el6_4
-python-ethtool
 python-eventlet
 python-fuelclient
 python-funcparserlib-0.3.5-1
