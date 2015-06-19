@@ -273,7 +273,6 @@ ruby21-rubygem-netaddr
 ruby21-rubygem-openstack
 selinux-policy-targeted
 strace
-subscription-manager
 sysstat
 system-config-firewall-base
 tcpdump
@@ -464,8 +463,8 @@ gpgcheck=0
 EOF
 
 # Disable subscription-manager plugins
-sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/product-id.conf || :
-sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/subscription-manager.conf || :
+#sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/product-id.conf || :
+#sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/subscription-manager.conf || :
 
 # Disable GSSAPI in ssh server config
 sed -i -e "/^\s*GSSAPICleanupCredentials yes/d" -e "/^\s*GSSAPIAuthentication yes/d" /etc/ssh/sshd_config
