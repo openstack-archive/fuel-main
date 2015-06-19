@@ -1,4 +1,4 @@
-.PHONY: all clean test help deep_clean
+.PHONY: all clean help deep_clean
 
 help:
 	@echo 'Build directives (can be overrided by environment variables'
@@ -19,14 +19,8 @@ help:
 	@echo '  bootstrap  - build bootstrap'
 	@echo '  iso  - build iso image'
 	@echo '  img  - build flash stick image'
-	@echo '  test - run all tests'
-	@echo '  test-unit - run unit tests'
-	@echo '  test-integration - run integration tests'
-	@echo '  test-integration-env - prepares integration test environment'
-	@echo '  clean-integration-test - clean integration test environment'
 	@echo '  clean - remove build directory and resetting .done flags'
 	@echo '  deep_clean - clean + removing $(LOCAL_MIRROR) directory'
-	@echo '  distclean - cleans deep_clean + clean-integration-test'
 	@echo
 	@echo 'To build system using one of the proprietary mirrors use '
 	@echo 'the following commands:'
@@ -54,14 +48,10 @@ SOURCE_DIR:=$(abspath $(SOURCE_DIR))
 
 all: iso
 
-test: test-unit test-integration
-
 clean:
 	sudo rm -rf $(BUILD_DIR)
 deep_clean: clean
 	sudo rm -rf $(LOCAL_MIRROR)
-
-distclean: deep_clean clean-integration-test
 
 # Common configuration file.
 include $(SOURCE_DIR)/config.mk
@@ -94,4 +84,3 @@ include $(SOURCE_DIR)/bootstrap/module.mk
 include $(SOURCE_DIR)/iso/module.mk
 include $(SOURCE_DIR)/upgrade/module.mk
 include $(SOURCE_DIR)/virtualbox.mk
-include $(SOURCE_DIR)/fuelweb_test/module.mk
