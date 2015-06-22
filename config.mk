@@ -153,7 +153,7 @@ LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
 # 'msk', 'srt', 'usa', 'hrk'.
 # Setting any other value or removing of this variable will cause
 # download of all the packages directly from internet
-USE_MIRROR?=ext
+USE_MIRROR?=none
 ifeq ($(USE_MIRROR),ext)
 YUM_REPOS?=proprietary
 MIRROR_BASE?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)
@@ -245,7 +245,8 @@ MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
 MIRROR_POSTFIX?=stable
-MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-$(MIRROR_POSTFIX)/centos/
+MIRROR_FUEL?=http://172.18.160.74/osci/mos/7.0/fuel/base/centos6/ 
+#MIRROR_FUEL?=http://osci-obs.vm.mirantis.net:82/centos-fuel-$(PRODUCT_VERSION)-$(MIRROR_POSTFIX)/centos/
 ifeq (precise,$(strip $(UBUNTU_RELEASE)))
 MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-$(MIRROR_POSTFIX)/reprepro
 else
