@@ -21,7 +21,7 @@ name=CentOS-$(CENTOS_RELEASE) - Base
 baseurl=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
-priority=10
+priority=90
 
 [updates]
 name=CentOS-$(CENTOS_RELEASE) - Updates
@@ -29,7 +29,7 @@ name=CentOS-$(CENTOS_RELEASE) - Updates
 baseurl=$(MIRROR_CENTOS)/updates/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
-priority=10
+priority=90
 
 [extras]
 name=CentOS-$(CENTOS_RELEASE) - Extras
@@ -37,7 +37,7 @@ name=CentOS-$(CENTOS_RELEASE) - Extras
 baseurl=$(MIRROR_CENTOS)/extras/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=0
-priority=10
+priority=90
 
 [centosplus]
 name=CentOS-$(CENTOS_RELEASE) - Plus
@@ -45,7 +45,7 @@ name=CentOS-$(CENTOS_RELEASE) - Plus
 baseurl=$(MIRROR_CENTOS)/centosplus/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=0
-priority=10
+priority=90
 
 [contrib]
 name=CentOS-$(CENTOS_RELEASE) - Contrib
@@ -53,7 +53,7 @@ name=CentOS-$(CENTOS_RELEASE) - Contrib
 baseurl=$(MIRROR_CENTOS)/contrib/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=0
-priority=10
+priority=90
 endef
 
 define yum_repo_fuel
@@ -63,7 +63,7 @@ name=Mirantis OpenStack Custom Packages
 baseurl=$(MIRROR_FUEL)
 gpgcheck=0
 enabled=1
-priority=1
+priority=20
 endef
 
 define yum_repo_proprietary
@@ -72,18 +72,25 @@ name = CentOS $(CENTOS_RELEASE) - Proprietary
 baseurl = $(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 gpgcheck = 0
 enabled = 1
-priority=1
+priority=20
 endef
+
+# Accept EXTRA_RPM_REPOS in a form of a list of: name,url,priority
+# Accept EXTRA_RPM_REPOS in a form of list of (default priority=10): name,url
+get_repo_name=$(shell echo $1 | cut -d ',' -f 1)
+get_repo_url=$(shell echo $1 | cut -d ',' -f2)
+get_repo_priority=$(shell val=`echo $1 | cut -d ',' -f3`; echo $${val:-10})
 
 # It's a callable object.
 # Usage: $(call create_extra_repo,repo)
 # where:
-# repo="repo_name,http://path_to_the_repo another_name,http://awesome_repo"
+# repo=repo_name,http://path_to_the_repo,repo_priority
+# repo_priority is a number from 1 to 99
 define create_extra_repo
-[$(shell VAR=$($1); echo "$${VAR%%,*}")]
-name = Extra repo "$(shell VAR=$($1); echo "$${VAR%%,*}")"
-baseurl = $(shell VAR=$($1); echo "$${VAR#*,}")
+[$(call get_repo_name,$1)]
+name = Repo "$(call get_repo_name,$1)"
+baseurl = $(call get_repo_url,$1)
 gpgcheck = 0
 enabled = 1
-priority = 10
+priority = $(call get_repo_priority,$1)
 endef
