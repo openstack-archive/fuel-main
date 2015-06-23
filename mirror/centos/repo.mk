@@ -13,9 +13,15 @@ $(BUILD_DIR)/mirror/centos/etc/yum-plugins/priorities.py: \
 	mkdir -p $(@D)
 	cp $(SOURCE_DIR)/mirror/centos/yum-priorities-plugin.py $@
 
+#Disable full_match flag for  yum priorities plugin
+#This means that we choose package candidate not by full match
+#of version, reelase and arch. This may lead to downgrading of
+#packages (actually this is what we may want sometimes for
+#testing purposes). Please use priorities plugin carefully
+
 $(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d/priorities.conf:
 	mkdir -p $(@D)
-	/bin/echo -e "[main]\nenabled=1\ncheck_obsoletes=1\nfull_match=1" > $@
+	/bin/echo -e "[main]\nenabled=1\ncheck_obsoletes=1\nfull_match=0" > $@
 
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: $(call depv,YUM_REPOS)
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo: \
@@ -26,7 +32,7 @@ $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo:
 
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: $(call depv,EXTRA_RPM_REPOS)
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: \
-		export contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(call create_extra_repo,repo)\n)
+		export contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(call create_extra_repo,$(repo))\n)
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo:
 	@mkdir -p $(@D)
 	/bin/echo -e "$${contents}" > $@
