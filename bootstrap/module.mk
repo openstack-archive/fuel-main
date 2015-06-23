@@ -85,7 +85,7 @@ endef
 #FIXME Partial-Bug: #1403088
 YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --exclude=ruby-2.1.1  --exclude=ruby21 --installroot=$(INITRAMROOT) -y --nogpgcheck
 
-KERNEL_PATTERN:=kernel-lt-3.10.*
+KERNEL_PATTERN:=kernel-2.6.*
 KERNEL_FIRMWARE_PATTERN:=linux-firmware*
 
 clean: clean-bootstrap
