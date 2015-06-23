@@ -86,6 +86,10 @@ SEPARATE_IMAGES?=/boot,ext2 /,ext4
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
 
+# by default we are not allowed to downgrade rpm packages,
+# setting this flag to 0 will cause to use repo priorities only (!)
+DENY_RPM_DOWNGRADE?=1
+
 # Build OpenStack packages from external sources (do not use prepackaged versions)
 # Enter the comma-separated list of OpenStack packages to build, or '0' otherwise.
 # Example: BUILD_OPENSTACK_PACKAGES=neutron,keystone
@@ -261,7 +265,7 @@ YUM_REPOS?=official fuel subscr_manager
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.
 # Repos must be separated by space.
-# Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm bar,ftp://repo.foo"
+# Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm,priority bar,ftp://repo.foo,priority"
 EXTRA_RPM_REPOS?=
 
 # Comma or space separated list. Available feature groups:
