@@ -140,6 +140,7 @@ sudo chroot $(SANDBOX_UBUNTU) /bin/sh -c 'locale-gen en_US.UTF-8; dpkg-reconfigu
 echo "Preparing directory for chroot local mirror"
 sudo mkdir -p $(SANDBOX_UBUNTU)/etc/apt/preferences.d/
 echo "Generating pinning file for Ubuntu SandBox"
+mkdir -p $(BUILD_DIR)/mirror/ubuntu
 cat > $(BUILD_DIR)/mirror/ubuntu/preferences << EOF
 $(apt_preferences)
 EOF
