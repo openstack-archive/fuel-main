@@ -97,12 +97,14 @@ $(if $(EXTRA_DEB_REPOS),$(subst |,$(newline)deb ,deb $(EXTRA_DEB_REPOS)))
 endef
 
 define apt_preferences
-Package: *
-Pin: origin download.mirantis.com
-Pin-Priority: 1001
-
+# Apt repo @ obs-1 has Codename=trusty (which is OK)
+# However the one @ mirror.fuel-infra has Codename=mos6.1
 Package: *
 Pin: release o=Mirantis, n=$(UBUNTU_RELEASE)
+Pin-Priority: 1101
+
+Package: *
+Pin: release o=Mirantis, n=mos$(PRODUCT_VERSION)
 Pin-Priority: 1101
 
 # to install packages from unmerged fuel-infra requests
