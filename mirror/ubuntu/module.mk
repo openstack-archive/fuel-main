@@ -71,6 +71,25 @@ $(BUILD_DIR)/mirror/ubuntu/repo.done: \
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/lists
 	$(ACTION.TOUCH)
 
+define ubuntu_fuel_dist_conf
+Origin: Mirantis
+Label: $(PRODUCT_NAME)$(PRODUCT_VERSION)
+Suite: $(PRODUCT_NAME)$(PRODUCT_VERSION)
+Codename: $(PRODUCT_NAME)$(PRODUCT_VERSION)
+Description: Mirantis OpenStack - Fuel packages
+Architectures: $(UBUNTU_ARCH)
+Components: main
+DebIndices: Packages Release . .gz .bz2
+Update: - $(PRODUCT_NAME)$(PRODUCT_VERSION)
+endef
+
+$(BUILD_DIR)/mirror/fuel/ubuntu.done: export REPREPRO_DISTRO_CONF:=$(ubuntu_fuel_dist_conf)
+$(BUILD_DIR)/mirror/fuel/ubuntu.done: FUEL_REPO:=$(LOCAL_MIRROR)/fuel/ubuntu
+$(BUILD_DIR)/mirror/fuel/ubuntu.done:
+	mkdir -p $(FUEL_REPO)/conf
+	echo "$${REPREPRO_DISTRO_CONF}" > $(FUEL_REPO)/conf/distributions
+	cd $(FUEL_REPO) && reprepro -Vb. includedeb mos$(PRODUCT_VERSION) $(BUILD_DIR)/packages/deb/packages/*.deb
+
 $(BUILD_DIR)/mirror/ubuntu/mirror.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU)
 ifeq (none,$(strip $(USE_MIRROR)))
