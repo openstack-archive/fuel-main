@@ -28,6 +28,7 @@ $1-deb: $(BUILD_DIR)/packages/deb/$1.done
 $(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/$1.done
 
 $(BUILD_DIR)/mirror/ubuntu/repo.done: $(BUILD_DIR)/packages/deb/$1.done
+$(BUILD_DIR)/mirror/fuel/ubuntu.done: $(BUILD_DIR)/packages/deb/$1.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/source_$1.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/deb/buildd.tar.gz
 $(BUILD_DIR)/packages/deb/$1.done: SANDBOX_UBUNTU:=$(BUILD_DIR)/packages/deb/SANDBOX/$1
