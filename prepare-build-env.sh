@@ -111,6 +111,7 @@ sudo apt-get -y install build-essential make git $GEMPKG debootstrap createrepo 
   python-setuptools yum yum-utils libmysqlclient-dev isomd5sum bc \
   python-nose libvirt-bin python-ipaddr python-paramiko python-yaml \
   python-pip kpartx extlinux unzip genisoimage syslinux debmirror \
+  squashfs-tools \
   lrzip python-daemon python-dev libparse-debcontrol-perl reprepro devscripts
 sudo gem install bundler -v 1.2.1
 sudo gem install builder
