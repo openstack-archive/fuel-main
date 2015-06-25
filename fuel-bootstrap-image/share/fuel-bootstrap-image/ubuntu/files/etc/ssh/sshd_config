@@ -13,7 +13,7 @@ AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
 AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
 AcceptEnv XMODIFIERS
 
-Subsystem	sftp	/usr/libexec/openssh/sftp-server
+Subsystem	sftp	/usr/lib/openssh/sftp-server
 
 # Secure Ciphers and MACs
 Ciphers aes256-ctr,aes192-ctr,aes128-ctr,arcfour256,arcfour128
