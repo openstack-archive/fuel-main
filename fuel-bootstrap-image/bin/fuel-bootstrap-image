@@ -1,0 +1,340 @@
+#!/bin/sh
+set -ex
+
+bindir="${0%/*}"
+datadir="${bindir%/*}/share/fuel-bootstrap-image"
+
+global_conf="/etc/fuel-bootstrap-image.conf"
+[ -r "$global_conf" ] && . "$global_conf"
+
+[ -z "$MOS_VERSION" ] && MOS_VERSION="6.1"
+[ -z "$DISTRO_RELEASE" ] && DISTRO_RELEASE="trusty"
+[ -z "$MIRROR_DISTRO" ] && MIRROR_DISTRO="http://archive.ubuntu.com/ubuntu"
+[ -z "$MIRROR_MOS" ] && MIRROR_MOS="http://mirror.fuel-infra.org/mos/ubuntu"
+[ -z "$KERNEL_FLAVOR" ] && KERNEL_FLAVOR="-generic-lts-trusty"
+[ -z "$ARCH" ] && ARCH="amd64"
+[ -z "$DESTDIR" ] && DESTDIR="/var/www/nailgun/bootstrap"
+# Packages required for the master node to discover a bootstrap node
+BOOTSTRAP_FUEL_PKGS_DFLT="openssh-client openssh-server ntp mcollective nailgun-agent nailgun-mcagents nailgun-net-check fuel-agent"
+[ -z "$BOOTSTRAP_FUEL_PKGS" ] && BOOTSTRAP_FUEL_PKGS="$BOOTSTRAP_FUEL_PKGS_DFLT"
+
+if [ -n "$http_proxy" ]; then
+	export HTTP_PROXY="$http_proxy"
+elif [ -n "$HTTP_PROXY" ]; then
+	export http_proxy="$HTTP_PROXY"
+fi
+
+# Kernel, firmware, live boot
+BOOTSTRAP_PKGS="ubuntu-minimal live-boot live-boot-initramfs-tools linux-image${KERNEL_FLAVOR} linux-firmware linux-firmware-nonfree"
+# compress initramfs with xz, make squashfs root filesystem image
+BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS xz-utils squashfs-tools"
+# Smaller tools providing the standard ones.
+# - mdadm depends on mail-transport-agent, default one is postfix => use msmtp instead
+BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS msmtp-mta"
+
+apt_setup ()
+{
+	local root="$1"
+	local sources_list="${root}/etc/apt/sources.list"
+	local apt_prefs="${root}/etc/apt/preferences"
+	mkdir -p "${sources_list%/*}"
+
+	cat > "$sources_list" <<-EOF
+	deb $MIRROR_DISTRO ${DISTRO_RELEASE}         main universe multiverse restricted
+	deb $MIRROR_DISTRO ${DISTRO_RELEASE}-security main universe multiverse restricted
+	deb $MIRROR_DISTRO ${DISTRO_RELEASE}-updates  main universe multiverse restricted
+	deb $MIRROR_MOS mos${MOS_VERSION}             main restricted
+	deb $MIRROR_MOS mos${MOS_VERSION}-security    main restricted
+	deb $MIRROR_MOS mos${MOS_VERSION}-updates     main restricted
+	deb $MIRROR_MOS mos${MOS_VERSION}-holdback    main restricted
+	EOF
+	if [ -n "$EXTRA_DEB_REPOS" ]; then
+		l="$EXTRA_DEB_REPOS"
+		IFS='|'
+		set -- $l 
+		unset IFS
+		for repo; do
+			echo "$repo"
+		done >> "$sources_list"
+	fi
+
+	cat > "$apt_prefs" <<-EOF
+	Package: *
+	Pin: release o=Mirantis, n=mos${MOS_VERSION}
+	Pin-Priority: 1101
+	Package: *
+	Pin: release o=Mirantis, n=${DISTRO_RELEASE}
+	Pin-Priority: 1101
+	EOF
+
+	if [ -n "$HTTP_PROXY" ]; then
+		cat > "$root/etc/apt/apt.conf.d/01mirantis-use-proxy" <<-EOF
+		Acquire::http::Proxy "$HTTP_PROXY";
+		EOF
+	fi
+}
+
+run_apt_get ()
+{
+	local root="$1"
+	shift
+	chroot "$root" env \
+		LC_ALL=C \
+		DEBIAN_FRONTEND=noninteractive \
+		DEBCONF_NONINTERACTIVE_SEEN=true \
+		TMPDIR=/tmp \
+		TMP=/tmp \
+		apt-get $@
+}
+
+dpkg_is_too_old ()
+{
+	# XXX: dpkg-deb versions older than 1.15.6 can't handle data.tar.xz
+	# (which is the default payload of Ubuntu packages)
+	# Such an ancient version of dpkg is shipped with CentOS 6.[56]
+	local dpkg_version
+	local dpkg_major_version
+	local dpkg_minor_version
+	local dpkg_patch_version
+	if ! dpkg-deb --help >/dev/null 2>&1; then
+		return 0
+	fi
+	dpkg_version=`dpkg-deb --version | sed -rne '1 s/^.*\s+version\s+([0-9]+)\.([0-9]+)\.([0-9]+).*/\1.\2.\3/p'`
+	[ -z "$dpkg_version" ] && return 0
+
+	IFS='.'
+	set -- $dpkg_version
+	unset IFS
+	dpkg_major_version="$1"
+	dpkg_minor_version="$2"
+	dpkg_patch_version="$3"
+
+	if [ $dpkg_major_version -le 1 ] && [ $dpkg_minor_version -le 15 ] && [ $dpkg_patch_version -lt 6 ]; then
+		echo 'dpkg is too old, using ar to unpack debian packages' >&2
+		return 0
+	fi
+	return 1
+}
+
+run_debootstrap ()
+{
+	local root="$1"
+	[ -z "$root" ] && exit 1
+	local insecure="--no-check-gpg"
+	local extractor=''
+	if dpkg_is_too_old; then
+		# Ubuntu packages use data.tar.xz payload. Ancient versions of
+		# dpkg (in particular the ones shipped with CentOS 6.x) can't
+		# handle such packages. Tell debootstrap to use ar instead to
+		# avoid the failure.
+		extractor='--extractor=ar'
+	fi
+	env \
+		LC_ALL=C \
+		DEBIAN_FRONTEND=noninteractive \
+		DEBCONF_NONINTERACTIVE_SEEN=true \
+		debootstrap $insecure $extractor --arch=${ARCH} ${DISTRO_RELEASE} "$root" $MIRROR_DISTRO
+}
+
+install_packages ()
+{
+	local root="$1"
+	shift
+	echo "installing pkgs: $*"
+	run_apt_get "$root" install --yes $@
+}
+
+upgrade_chroot ()
+{
+	local root="$1"
+	run_apt_get "$root" update
+	if ! mountpoint -q "$root/proc"; then
+		mount -t proc bootstrapproc "$root/proc"
+	fi
+	run_apt_get "$root" dist-upgrade --yes
+}
+
+allow_insecure_apt ()
+{
+	local root="$1"
+	local conflet="${root}/etc/apt/apt.conf.d/02mirantis-insecure-apt"
+	mkdir -p "${conflet%/*}"
+	echo 'APT::Get::AllowUnauthenticated 1;' > "$conflet"
+}
+
+suppress_services_start ()
+{
+	local root="$1"
+	local policy_rc="$root/usr/sbin/policy-rc.d"
+	mkdir -p "${policy_rc%/*}"
+	cat > "$policy_rc" <<-EOF
+	#!/bin/sh
+	# suppress services start in the staging chroot
+	exit 101
+	EOF
+	chmod 755 "$policy_rc"
+}
+
+propagate_host_resolv_conf ()
+{
+	local root="$1"
+	mkdir -p "$root/etc"
+	for conf in "/etc/resolv.conf" "/etc/hosts"; do
+		if [ -e "${root}${conf}" ]; then
+			cp -a "${root}${conf}" "${root}${conf}.bak"
+		fi
+	done
+}
+
+restore_resolv_conf ()
+{
+	local root="$1"
+	for conf in "/etc/resolv.conf" "/etc/hosts"; do
+		if [ -e "${root}${conf}.bak" ]; then
+			rm -f "${root}${conf}"
+			cp -a "${root}${conf}.bak" "${root}${conf}"
+		fi
+	done
+}
+
+make_utf8_locale ()
+{
+	local root="$1"
+	chroot "$root" /bin/sh -c "locale-gen en_US.UTF-8 && dpkg-reconfigure locales"
+}
+
+copy_conf_files ()
+{
+	local root="$1"
+	rsync -rlptDK "$datadir/ubuntu/files/" "${root%/}"
+	sed -i $root/etc/shadow -e '/^root/c\root:$$6$$oC7haQNQ$$LtVf6AI.QKn9Jb89r83PtQN9fBqpHT9bAFLzy.YVxTLiFgsoqlPY3awKvbuSgtxYHx4RUcpUqMotp.WZ0Hwoj.:15441:0:99999:7:::' 
+}
+
+cleanup_chroot ()
+{
+	local root="$1"
+	[ -z "$root" ] && exit 1
+	signal_chrooted_processes "$root" SIGTERM
+	signal_chrooted_processes "$root" SIGKILL
+	rm -rf $root/var/cache/apt/archives/*.deb
+	rm -f $root/etc/apt/apt.conf.d/01mirantis-use-proxy.conf
+	rm -f $root/var/log/bootstrap.log
+	rm -rf $root/tmp/*
+	rm -rf $root/run/*
+}
+
+recompress_initramfs ()
+{
+	local root="$1"
+	local initramfs_conf="$root/etc/initramfs-tools/initramfs.conf"
+	sed -i $initramfs_conf -re 's/COMPRESS\s*=\s*gzip/COMPRESS=xz/'
+	rm -f $root/boot/initrd*
+	chroot "$root" \
+		env \
+		LC_ALL=C \
+		DEBIAN_FRONTEND=noninteractive \
+		DEBCONF_NONINTERACTIVE_SEEN=true \
+		TMPDIR=/tmp \
+		TMP=/tmp \
+		update-initramfs -c -k all
+}
+
+mk_squashfs_image ()
+{
+	local root="$1"
+	local tmp="$$"
+	[ -d "$DESTDIR" ] && mkdir -p "$DESTDIR"
+	cp -a $root/boot/initrd* $DESTDIR/initramfs.img.${tmp}
+	cp -a $root/boot/vmlinuz* $DESTDIR/linux.${tmp}
+	rm -f $root/boot/initrd*
+	rm -f $root/boot/vmlinuz*
+
+	# run mksquashfs inside a chroot (Ubuntu kernel will be able to
+	# mount an image produced by Ubuntu squashfs-tools)
+	mount -t tmpfs -o rw,nodev,nosuid,noatime,mode=0755,size=4M mnt${tmp} "$root/mnt"
+	mkdir -p "$root/mnt/src" "$root/mnt/dst"
+	mount -o bind "$root" "$root/mnt/src"
+	mount -o remount,bind,ro "$root/mnt/src"
+	mount -o bind "$DESTDIR" "$root/mnt/dst"
+
+	if ! mountpoint -q "$root/proc"; then
+		mount -t proc sandboxproc "$root/proc"
+	fi
+	chroot "$root" mksquashfs /mnt/src /mnt/dst/root.squashfs.${tmp} -comp xz -no-progress -noappend
+	mv $DESTDIR/initramfs.img.${tmp} $DESTDIR/initramfs.img
+	mv $DESTDIR/linux.${tmp} $DESTDIR/linux
+	mv $DESTDIR/root.squashfs.${tmp} $DESTDIR/root.squashfs
+
+	umount "$root/mnt/dst"
+	umount "$root/mnt/src"
+	umount "$root/mnt"
+}
+
+build_image ()
+{
+	local root="$1"
+	chmod 755 "$root"
+	suppress_services_start "$root"
+	run_debootstrap "$root"
+	suppress_services_start "$root"
+	propagate_host_resolv_conf "$root"
+	make_utf8_locale "$root"
+	apt_setup "$root"
+	allow_insecure_apt "$root"
+	upgrade_chroot "$root"
+	install_packages "$root" $BOOTSTRAP_PKGS $BOOTSTRAP_FUEL_PKGS
+	recompress_initramfs "$root"
+	copy_conf_files "$root"
+	restore_resolv_conf "$root"
+	cleanup_chroot "$root"
+	mk_squashfs_image "$root"
+}
+
+root=`mktemp -d --tmpdir fuel-bootstrap-image.XXXXXXXXX`
+
+main ()
+{
+	build_image "$root"
+}
+
+signal_chrooted_processes ()
+{
+	local root="$1"
+	local signal="${2:-SIGTERM}"
+	local max_attempts=10
+	local timeout=2
+	local count=0
+	local found_processes
+	[ ! -d "$root" ] && return 0
+	while [ $count -lt $max_attempts ]; do
+		found_processes=''
+		for pid in `fuser $root 2>/dev/null`; do
+			[ "$pid" = "kernel" ] && continue
+			if [ "`readlink /proc/$pid/root`" = "$root" ]; then
+				found_processes='yes'
+				kill "-${signal}" $pid
+			fi
+		done
+		[ -z "$found_processes" ] && break
+		count=$((count+1))
+		sleep $timeout
+	done
+}
+
+final_cleanup ()
+{
+	signal_chrooted_processes "$root" SIGTERM
+	signal_chrooted_processes "$root" SIGKILL
+	for mnt in /mnt/dst /mnt/src /mnt /proc; do
+		if mountpoint -q "${root}${mnt}"; then
+			umount "${root}${mnt}" || umount -l "${root}${mnt}" || true
+		fi
+	done
+	if [ -z "$SAVE_TEMPS" ]; then
+		rm -rf "$root"
+	fi
+}
+
+trap final_cleanup 0
+trap final_cleanup HUP TERM INT QUIT
+main
