@@ -251,6 +251,7 @@ daemonize
 dhcp
 docker-io
 fuel-bootstrap-image
+fuel-bootstrap-image-builder
 fuel-createmirror
 fuel-target-centos-images
 fuel-package-updates
