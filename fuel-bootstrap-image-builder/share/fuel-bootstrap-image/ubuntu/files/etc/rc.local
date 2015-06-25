@@ -1,0 +1,6 @@
+#!/bin/sh -e
+
+fix-configs-on-startup || true
+flock -w 0 -o /var/lock/agent.lock -c "/opt/nailgun/bin/agent >> /var/log/nailgun-agent.log 2>&1" || true
+
+touch /var/lock/subsys/local
