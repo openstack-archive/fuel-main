@@ -10,6 +10,7 @@ URL:     http://mirantis.com
 Source0: linux
 Source1: initramfs.img
 Source2: bootstrap.rsa
+Source3: root.squashfs
 License: Apache
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
@@ -25,6 +26,7 @@ Fuel bootstrap image package
 %install
 install -p -D -m 644 %{SOURCE0} %{buildroot}/var/www/nailgun/bootstrap/linux
 install -p -D -m 644 %{SOURCE1} %{buildroot}/var/www/nailgun/bootstrap/initramfs.img
+install -p -D -m 644 %{SOURCE3} %{buildroot}/var/www/nailgun/bootstrap/root.squashfs
 install -D -m 700 -d %{buildroot}/root/.ssh
 install -p -m 600 %{SOURCE2} %{buildroot}/root/.ssh/bootstrap.rsa
 
@@ -35,4 +37,5 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 /var/www/nailgun/bootstrap/linux
 /var/www/nailgun/bootstrap/initramfs.img
+/var/www/nailgun/bootstrap/root.squashfs
 /root/.ssh/bootstrap.rsa
