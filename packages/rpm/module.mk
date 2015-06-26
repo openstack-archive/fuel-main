@@ -99,6 +99,7 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: export SANDBOX_DOWN:=$(SANDBO
 $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 		$(BUILD_DIR)/repos/repos.done \
 		$(BUILD_DIR)/packages/rpm/buildd.tar.gz \
+		$(BUILD_DIR)/packages/rpm/repo-late.done \
 		$(BUILD_DIR)/docker/build.done
 	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	mkdir -p $(SANDBOX) && \
@@ -116,8 +117,6 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
 	$(ACTION.TOUCH)
-
-$(BUILD_DIR)/docker/build.done: $(BUILD_DIR)/packages/rpm/repo-late.done
 
 #######################################
 # This section is for building container
