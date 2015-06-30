@@ -274,9 +274,6 @@ FEATURE_GROUPS:=$(subst $(comma), ,$(FEATURE_GROUPS))
 # INTEGRATION TEST CONFIG
 NOFORWARD:=1
 
-# Path to yaml configuration file to build ISO ks.cfg
-KSYAML?=$(SOURCE_DIR)/iso/ks.yaml
-
 # Docker prebuilt containers. Default is to build containers during ISO build
 DOCKER_PREBUILT?=0
 
