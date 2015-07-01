@@ -52,6 +52,7 @@ fcgiwrap-1.0.3-2
 fdupes
 fence-agents
 fencing-agent
+fuel
 flex-2.5.35-8.el6
 fuel-createmirror
 fuelmenu
