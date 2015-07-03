@@ -1,0 +1,56 @@
+#!/bin/sh
+
+function get_kernel_parameter() {
+    echo $(find_parameter_from_file $1 "/proc/cmdline")
+}
+
+function find_parameter_from_file() {
+
+    local paramname=$1
+    local filename=$2
+
+    for i in `cat $filename`; do
+        case "$i" in
+            ${paramname}=*)
+                echo "${i#${paramname}=}"
+                return 0
+            ;;
+            ${paramname})
+                echo ""
+                return 0
+            ;;
+            *)
+            ;;
+        esac
+    done
+
+    echo ""
+    return 1
+}
+
+IRONIC_API_URL=$(get_kernel_parameter api-url)
+DEPLOYMENT_ID=$(get_kernel_parameter deployment_id)
+
+function do_vendor_passthru {
+
+    local data=$1
+    local vendor_passhru_name=$2
+
+    eval curl -i -X POST \
+         "-H 'Accept: application/json'" \
+         "-H 'Content-Type: application/json'" \
+         -d "$data" \
+         "$IRONIC_API_URL/v1/nodes/$DEPLOYMENT_ID/vendor_passthru/$vendor_passhru_name"
+
+}
+
+echo "Requesting Ironic API"
+echo $IRONIC_API_URL
+echo $DEPLOYMENT_ID
+
+for ip_address in `hostname -I`;
+do
+    echo $ip_address
+    deploy_data="'{\"address\":\"$ip_address\",\"status\":\"ready\",\"error_message\":\"no errors\"}'"
+    do_vendor_passthru "$deploy_data" "pass_deploy_info"
+done
