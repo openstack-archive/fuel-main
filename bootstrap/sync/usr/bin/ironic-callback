@@ -1,0 +1,10 @@
+#!/bin/sh
+
+get_kernel_parameter () {
+    sed -re "s/^.*$1[=]([^ ]+).*/\1/" /proc/cmdline
+}
+
+IRONIC_API_URL=$(get_kernel_parameter api-url)
+DEPLOYMENT_ID=$(get_kernel_parameter deployment_id)
+
+./ironic_callback.py $IRONIC_API_URL $DEPLOYMENT_ID
