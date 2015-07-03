@@ -1,0 +1,63 @@
+#!/bin/sh
+
+function get_kernel_parameter() {
+    echo $(find_parameter_from_file $1 "/proc/cmdline")
+}
+
+function find_parameter_from_file() {
+
+    local paramname=$1
+    local filename=$2
+
+    for i in `cat $filename`; do
+        case "$i" in
+            ${paramname}=*)
+                echo "${i#${paramname}=}"
+                return 0
+            ;;
+            ${paramname})
+                echo ""
+                return 0
+            ;;
+            *)
+            ;;
+        esac
+    done
+
+    echo ""
+    return 1
+}
+
+IRONIC_API_URL=$(get_kernel_parameter api-url)
+DEPLOYMENT_ID=$(get_kernel_parameter deployment_id)
+
+function do_vendor_passthru {
+
+    local data=$1
+    local vendor_passhru_name=$2
+
+    ironic_return_code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+         -H 'Accept: application/json' \
+         -H 'Content-Type: application/json' \
+         -d "$data" \
+         "$IRONIC_API_URL/v1/nodes/$DEPLOYMENT_ID/vendor_passthru/$vendor_passhru_name")
+
+}
+
+echo "Requesting Ironic API"
+echo "Ironic API URL - $IRONIC_API_URL"
+echo "Deployment ID - $DEPLOYMENT_ID"
+
+for ip_address in `hostname -I`;
+do
+    deploy_data="'{\"address\":\"$ip_address\",\"status\":\"ready\",\"error_message\":\"no errors\"}'"
+    do_vendor_passthru "$deploy_data" "pass_deploy_info"
+    
+    if [ $ironic_return_code == "202" ]; then
+        break
+    fi
+done
+
+if [ $ironic_return_code != "202" ]; then
+    echo "Can not continue deploy, Ironic API return code was $ironic_return_code while 202 was expected."
+fi
