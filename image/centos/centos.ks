@@ -139,6 +139,7 @@ bind-utils
 cronie
 crontabs
 curl
+ethtool
 gcc
 gdisk
 kernel
