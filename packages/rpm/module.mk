@@ -57,6 +57,10 @@ $(BUILD_DIR)/packages/rpm/$1.done:
 	mkdir -p $$(SANDBOX)/tmp/SOURCES && \
 	sudo cp -r $(BUILD_DIR)/packages/sources/$1/* $$(SANDBOX)/tmp/SOURCES && \
 	sudo cp $$(SPECFILE) $$(SANDBOX)/tmp && \
+        if [ -e $$(SANDBOX)/root/.bowerrc ]; then sudo cp -a $$(SANDBOX)/root/.bowerrc $$(SANDBOX)/root/.bowerrc.orig; fi && \
+        echo "{\n\"registry\":\"$$(BOWER_MIRROR)\" \n}" > $$(SANDBOX)/root/.bowerrc && \
+        if [ -e $$(SANDBOX)/root/.npmrc ]; then sudo cp -a $$(SANDBOX)/root/.npmrc $$(SANDBOX)/root/.npmrc.orig; fi && \
+        echo "registry = $$(NPM_MIRROR)" > $$(SANDBOX)/root/.npmrc && \
 	sudo /bin/sh -c 'export TMPDIR=$$(SANDBOX)/tmp/yum TMP=$$(SANDBOX)/tmp/yum; yum-builddep -y -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) $$(SANDBOX)/tmp/$1.spec'
 	test -f $$(SANDBOX)/tmp/SOURCES/version && \
 		sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" --define "release `awk -F'=' '/RELEASE/ {print $$$$2}' $$(SANDBOX)/tmp/SOURCES/version`" -ba /tmp/$1.spec || \
