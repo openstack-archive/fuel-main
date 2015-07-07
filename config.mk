@@ -240,6 +240,9 @@ else
 MIRROR_FUEL_UBUNTU?=perestroika-repo-tst.infra.mirantis.net
 endif
 
+# PIP index URL for upgrade module:
+PIP_MIRROR?=http://pypi.python.org/simple
+
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
 REQUIRED_DEBS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-deb.txt)
 
