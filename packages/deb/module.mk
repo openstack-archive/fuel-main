@@ -49,6 +49,11 @@ $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/repos/repos.done
 		-v $(PACKAGE_VERSION)-`awk -F'=' '/RELEASE/ {print $$$$2}' $(BUILD_DIR)/packages/sources/$1/version` \
 		"`awk -F'=' '/DEBMSG/ {print $$$$2}' $(BUILD_DIR)/packages/sources/$1/version`"
 	dpkg-checkbuilddeps $(BUILD_DIR)/repos/$1/debian/control 2>&1 | sed 's/^dpkg-checkbuilddeps: Unmet build dependencies: //g' | sed 's/([^()]*)//g;s/|//g' | sudo tee $$(SANDBOX_UBUNTU)/tmp/$1.installdeps
+	if [ -e $$(SANDBOX)/root/.npmrc ]; then sudo cp -a $$(SANDBOX)/root/.npmrc $$(SANDBOX)/root/.npmrc.orig; fi 
+	echo "registry = $(NPM_MIRROR)" > $$(SANDBOX)/root/.npmrc 
+	if [ -e $$(SANDBOX)/root/.pip/pip.conf ]; then sudo cp -a $$(SANDBOX)/root/.pip/pip.conf $$(SANDBOX)/root/.pip/pip.conf.orig; fi 
+	mkdir -p  $$(SANDBOX)/root/.pip/
+	echo "[global] \nindex-url = $(PIP_MIRROR)" > $$(SANDBOX)/root/.pip/pip.conf
 	sudo chroot $$(SANDBOX_UBUNTU) /bin/sh -c "cat /tmp/$1.installdeps | xargs --no-run-if-empty apt-get -y install"
 	sudo chroot $$(SANDBOX_UBUNTU) /bin/sh -c "cd /tmp/$1 ; DEB_BUILD_OPTIONS=nocheck debuild -us -uc -b -d"
 	cp $$(SANDBOX_UBUNTU)/tmp/*.deb $(BUILD_DIR)/packages/deb/packages
