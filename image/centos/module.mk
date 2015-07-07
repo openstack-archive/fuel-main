@@ -28,15 +28,17 @@ else
 $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): $(BUILD_DIR)/mirror/centos/build.done
 $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): $(BUILD_DIR)/packages/rpm/build.done
 $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): SANDBOX:=$(BUILD_DIR)/image/centos/SANDBOX
-$(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): export SANDBOX_UP:=$(SANDBOX_UP)
+$(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): $(BUILD_DIR)/packages/rpm/buildd.tar.gz
 $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): export SANDBOX_DOWN:=$(SANDBOX_DOWN)
 $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME):
 	@mkdir -p $(@D)
-	mkdir -p $(BUILD_DIR)/image/centos
-	sudo sh -c "$${SANDBOX_UP}"
+	mkdir -p $(SANDBOX)
+	sudo tar xzf $(BUILD_DIR)/packages/rpm/buildd.tar.gz -C $(SANDBOX)
 	sudo yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install tar python-setuptools git python-imgcreate python-argparse PyYAML
 	sudo cp /etc/mtab $(SANDBOX)/etc/mtab
 	sudo mkdir -p $(SANDBOX)/run/shm
+	mount | grep -q $(SANDBOX)/proc || sudo mount --bind /proc $(SANDBOX)/proc
+	mount | grep -q $(SANDBOX)/dev || sudo mount --bind /dev $(SANDBOX)/dev
 	sudo cp $(SOURCE_DIR)/image/centos/build_centos_image.py $(SANDBOX)/build_centos_image.py
 	sudo cp $(SOURCE_DIR)/image/centos/centos.ks $(SANDBOX)/centos.ks
 	sudo mkdir -p $(SANDBOX)/mirror
