@@ -252,6 +252,14 @@ else
 MIRROR_FUEL_UBUNTU?=obs-1.mirantis.com
 endif
 
+# NPM registry URL
+NPM_MIRROR?=http://registry.npmjs.org
+# PIP index URL:
+PIP_MIRROR?=http://pypi.python.org/simple
+# BOWER mirror URL:
+BOWER_MIRROR?=https://bower.herokuapp.com
+
+
 REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
 REQUIRED_DEBS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-deb.txt)
 
