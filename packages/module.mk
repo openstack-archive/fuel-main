@@ -94,6 +94,8 @@ $(eval $(call prepare_git_source,astute,astute-$(PACKAGE_VERSION).tar.gz,$(BUILD
 $(eval $(call prepare_git_source,fuel-library$(PRODUCT_VERSION),fuel-library$(PRODUCT_VERSION)-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-library$(PRODUCT_VERSION),HEAD,$(FUELLIB_GERRIT_COMMIT)))
 #FUEL_PYTHON_PKGS
 $(eval $(call prepare_git_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient,HEAD,$(PYTHON_FUELCLIENT_GERRIT_COMMIT)))
+#FUEL_AGENT_PKGS
+$(eval $(call prepare_git_source,fuel-agent,fuel-agent-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-agent,HEAD,$(FUEL_AGENT_GERRIT_COMMIT)))
 #FUEL-IMAGE PKGS
 $(eval $(call prepare_git_source,fuel-main,fuel-main-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD,$(FUELMAIN_GERRIT_COMMIT)))
 
@@ -117,7 +119,7 @@ packages-deb: $(BUILD_DIR)/packages/deb/build.done
 
 #FIXME(aglarendil): make sources generation uniform
 #$(BUILD_DIR)/packages/source_fuel-library.done: $(BUILD_DIR)/packages/source_fuel-library$(PRODUCT_VERSION).done
-#	ln -s $(BUILD_DIR)/packages/sources/fuel-library$(PRODUCT_VERSION) $(BUILD_DIR)/packages/sources/fuel-library  
+#	ln -s $(BUILD_DIR)/packages/sources/fuel-library$(PRODUCT_VERSION) $(BUILD_DIR)/packages/sources/fuel-library
 #	$(ACTION.TOUCH)
 
 ###################################
