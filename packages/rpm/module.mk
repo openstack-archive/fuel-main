@@ -12,7 +12,7 @@ clean-rpm:
 
 RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
 
-$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=ruby21 rpm-build tar python-setuptools python-pbr nodejs npm yum yum-utils git 
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=ruby21 rpm-build tar python-setuptools python-pbr nodejs npm yum yum-utils git
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/buildd
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
@@ -51,7 +51,7 @@ $(BUILD_DIR)/packages/rpm/$1.done:
 	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	mkdir -p $$(SANDBOX) && \
 	sudo tar xzf $(BUILD_DIR)/packages/rpm/buildd.tar.gz -C $$(SANDBOX) && \
-	sudo chroot $$(SANDBOX) bash -c "(mkdir -p '$$$${TEMP}'; mkdir -p /tmp/user/0)" 
+	sudo chroot $$(SANDBOX) bash -c "(mkdir -p '$$$${TEMP}'; mkdir -p /tmp/user/0)"
 	sudo mount --bind /proc $$(SANDBOX)/proc && \
 	sudo mount --bind /dev $$(SANDBOX)/dev && \
 	mkdir -p $$(SANDBOX)/tmp/SOURCES && \
@@ -83,7 +83,8 @@ fuel-library$(PRODUCT_VERSION) \
 astute \
 nailgun \
 fuel-ostf \
-python-fuelclient 
+python-fuelclient \
+fuel-agent
 
 $(eval $(foreach pkg,$(packages_list),$(call build_rpm,$(pkg))$(NEWLINE)))
 
