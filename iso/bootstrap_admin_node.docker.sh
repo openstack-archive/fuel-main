@@ -129,19 +129,19 @@ else
 fi
 
 if [ $UPDATE_ISSUES -eq 1 ]; then
-  warning="WARNING: There are issues connecting to Fuel update repository.\
-\nPlease fix your connection and update this node with \`yum update\`\
-\nThen run \`dockerctl destroy all; bootstrap_admin_node.sh;\`\
-\nto repeat bootstrap on Fuel Master with the latest updates.\
-\nFor more information, check out Fuel documentation at:\
-\nhttp://docs.mirantis.com/fuel"
+  warning="WARNING: There are issues connecting to Fuel update repository.
+Please fix your connection and update this node with \`yum update\`
+Then run \`dockerctl destroy all; bootstrap_admin_node.sh;\`
+to repeat bootstrap on Fuel Master with the latest updates.
+For more information, check out Fuel documentation at:
+http://docs.mirantis.com/fuel"
 else
-  warning="WARNING: There may be updates available for Fuel.\
-\nYou should update this node with \`yum update\`. If there are available\
-\n updates, run \`dockerctl destroy all; bootstrap_admin_node.sh;\`\
-\nto repeat bootstrap on Fuel Master with the latest updates.\
-\nFor more information, check out Fuel documentation at:\
-\nhttp://docs.mirantis.com/fuel"
+  warning="WARNING: There may be updates available for Fuel.
+You should update this node with \`yum update\`. If there are available
+updates, run \`dockerctl destroy all; bootstrap_admin_node.sh;\`
+to repeat bootstrap on Fuel Master with the latest updates.
+For more information, check out Fuel documentation at:
+http://docs.mirantis.com/fuel"
 fi
 echo
 echo "*************************************************"
