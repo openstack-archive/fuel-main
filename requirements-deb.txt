@@ -95,6 +95,7 @@ mysql-client
 mysql-server-wsrep-5.6
 nailgun-mcagents
 nailgun-net-check
+neutron-common
 neutron-dhcp-agent
 neutron-l3-agent
 neutron-lbaas-agent
@@ -104,7 +105,6 @@ neutron-plugin-bigswitch
 neutron-plugin-bigswitch-agent
 neutron-plugin-brocade
 neutron-plugin-cisco
-neutron-plugin-hyperv
 neutron-plugin-ibm
 neutron-plugin-ibm-agent
 neutron-plugin-linuxbridge
@@ -118,16 +118,15 @@ neutron-plugin-mlnx-agent
 neutron-plugin-nec
 neutron-plugin-nec-agent
 neutron-plugin-nicira
+neutron-plugin-nuage
 neutron-plugin-oneconvergence
 neutron-plugin-oneconvergence-agent
-neutron-plugin-openflow-agent
+neutron-plugin-opencontrail
 neutron-plugin-openvswitch
 neutron-plugin-openvswitch-agent
 neutron-plugin-plumgrid
-neutron-plugin-ryu
-neutron-plugin-ryu-agent
+neutron-plugin-sriov-agent
 neutron-plugin-vmware
-neutron-plugin-vpn-agent
 neutron-server
 neutron-vpn-agent
 nfs-common
@@ -182,6 +181,9 @@ python-muranoclient
 python-mysqldb
 python-netifaces
 python-neutron
+python-neutron-fwaas
+python-neutron-lbaas
+python-neutron-vpnaas
 python-nose
 python-novnc
 python-openid
