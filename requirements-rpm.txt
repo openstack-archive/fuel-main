@@ -252,6 +252,7 @@ ruby21-rubygem-stomp
 ruby21-rubygem-symboltable
 ruby21-rubygem-systemu
 ruby-augeas
+ruby-deep-merge
 ruby-devel
 rubygem-cstruct
 rubygem-extlib
