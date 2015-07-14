@@ -25,6 +25,13 @@ echo -n "Applying default Fuel settings..."
 fuelmenu --save-only --iface=eth0
 echo "Done!"
 
+# FIXME: don't hard code Ubuntu mirror here
+# FIXME: reuse check in fuel
+mirror_ubuntu="http://archive.ubuntu.com/ubuntu/dists/trusty/Release"
+if ! urlaccesscheck check "$mirror_ubuntu" >/dev/null 2>&1; then
+	showmenu="yes"
+fi
+
 if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
   fuelmenu
   else
@@ -50,6 +57,24 @@ fi
 #Reread /etc/sysconfig/network to inform puppet of changes
 . /etc/sysconfig/network
 hostname "$HOSTNAME"
+
+# Need to build bootstrap image early enough so cobbler can create
+# the `bootstrap' profile
+bootstrap_img_failed='yes'
+
+# FIXME: how to use DNS settings configured by fuelmenu properly?
+mount -o bind /etc/dnsmasq.upstream /etc/resolv.conf
+
+for n in `seq 1 3`; do
+	echo "Bulding bootstrap image, attempt $n"
+	if fuel-bootstrap-image 2>/var/log/fuel-bootstrap-image-build.log; then
+		bootstrap_img_failed=''
+		break
+	fi
+done
+
+# FIXME: how to use DNS settings configured by fuelmenu properly?
+umount /etc/resolv.conf || true
 
 service docker start
 
@@ -149,4 +174,13 @@ echo -e "$warning"
 echo "*************************************************"
 echo "Sending notification to Fuel UI..."
 fuel notify --topic warning --send "$warning"
+
+if [ -n "$bootstrap_img_failed" ]; then
+	warning="WARNING: building the bootstrap image failed.\
+\nPlease fix your Internet connection and run\
+\n\`dockerctl destroy all; bootstrap_admin_node.sh\'\
+\nto repeat the Fuel Master bootstrap sequence."
+	fuel notify --topic warning --send "$warning"
+fi
+
 echo "Fuel node deployment complete!"
