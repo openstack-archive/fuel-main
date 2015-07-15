@@ -25,12 +25,11 @@ $(BUILD_DIR)/packages/deb/buildd.tar.gz: $(BUILD_DIR)/mirror/ubuntu/reprepro.don
 # (eval (call build_deb,package_name))
 define build_deb
 $1-deb: $(BUILD_DIR)/packages/deb/$1.done
-$(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/$1.done
 
-$(BUILD_DIR)/mirror/ubuntu/repo.done: $(BUILD_DIR)/packages/deb/$1.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/mirror/ubuntu/reprepro.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/source_$1.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/deb/buildd.tar.gz
+$(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/deb/repocleanup.done
 $(BUILD_DIR)/packages/deb/$1.done: SANDBOX_UBUNTU:=$(BUILD_DIR)/packages/deb/SANDBOX/$1
 $(BUILD_DIR)/packages/deb/$1.done: SANDBOX_DEB_PKGS:=apt wget bzip2 apt-utils build-essential python-setuptools devscripts debhelper fakeroot
 $(BUILD_DIR)/packages/deb/$1.done: export SANDBOX_UBUNTU_UP:=$$(SANDBOX_UBUNTU_UP)
@@ -64,13 +63,23 @@ cd $(LOCAL_MIRROR_UBUNTU) && cat $(BUILD_DIR)/packages/deb/$1.cleanup.list | \
 xargs -n1 -I{} reprepro --confdir=$(REPREPRO_CONF_DIR) remove $(PRODUCT_NAME)$(PRODUCT_VERSION) {} $(NEWLINE)
 endef
 
-$(BUILD_DIR)/mirror/ubuntu/repo.done: $(BUILD_DIR)/packages/deb/repocleanup.done
 $(BUILD_DIR)/packages/deb/repocleanup.done: $(BUILD_DIR)/mirror/ubuntu/reprepro.done
 $(BUILD_DIR)/packages/deb/repocleanup.done: $(packages_list:%=$(BUILD_DIR)/packages/source_%.done)
 	$(foreach pkg,$(fuel_debian_packages),$(call remove_deb,$(pkg)))
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/packages/deb/build.done:
+$(BUILD_DIR)/packages/deb/repo.done: \
+		$(BUILD_DIR)/mirror/ubuntu/reprepro_config.done \
+		$(BUILD_DIR)/mirror/ubuntu/reprepro.done
+	# FIXME(aglarendil): do not touch upstream repo. instead - build new repo
+	# Import newly built packages
+	cd $(LOCAL_MIRROR_UBUNTU) && reprepro --confdir=$(REPREPRO_CONF_DIR) -V includedeb $(PRODUCT_NAME)$(PRODUCT_VERSION) $(BUILD_DIR)/packages/deb/packages/*.deb
+	# Clean up reprepro data
+	rm -rf $(LOCAL_MIRROR_UBUNTU)/db
+	rm -rf $(LOCAL_MIRROR_UBUNTU)/lists
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/repo.done
 	$(ACTION.TOUCH)
 
 fuel_debian_packages:=nailgun astute fuel-library$(PRODUCT_VERSION)

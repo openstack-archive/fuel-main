@@ -30,9 +30,6 @@ endef
 # USE_MIRROR=none - mirroring mode, rsync full mirror from internal build server
 # USE_MIRROR=<any_other_value> - ISO building mode, get repository for current product release only
 $(BUILD_DIR)/mirror/ubuntu/build.done: 	$(BUILD_DIR)/mirror/ubuntu/mirror.done
-ifneq ($(BUILD_PACKAGES),0)
-    $(BUILD_DIR)/mirror/ubuntu/build.done:	$(BUILD_DIR)/mirror/ubuntu/repo.done
-endif
 
 REPREPRO_CONF_DIR:=$(BUILD_DIR)/mirror/ubuntu/reprepro/conf
 
@@ -58,17 +55,6 @@ $(BUILD_DIR)/mirror/ubuntu/reprepro.done: \
 		$(BUILD_DIR)/mirror/ubuntu/reprepro_config.done
 	# Import existing Ubuntu repository
 	cd $(LOCAL_MIRROR_UBUNTU) && reprepro --confdir=$(REPREPRO_CONF_DIR) -V update
-	$(ACTION.TOUCH)
-
-$(BUILD_DIR)/mirror/ubuntu/repo.done: \
-		$(BUILD_DIR)/mirror/ubuntu/reprepro_config.done \
-		$(BUILD_DIR)/mirror/ubuntu/reprepro.done
-	# FIXME(aglarendil): do not touch upstream repo. instead - build new repo
-	# Import newly built packages
-	cd $(LOCAL_MIRROR_UBUNTU) && reprepro --confdir=$(REPREPRO_CONF_DIR) -V includedeb $(PRODUCT_NAME)$(PRODUCT_VERSION) $(BUILD_DIR)/packages/deb/packages/*.deb
-	# Clean up reprepro data
-	rm -rf $(LOCAL_MIRROR_UBUNTU)/db
-	rm -rf $(LOCAL_MIRROR_UBUNTU)/lists
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/ubuntu/mirror.done:
