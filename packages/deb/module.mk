@@ -27,7 +27,6 @@ define build_deb
 $1-deb: $(BUILD_DIR)/packages/deb/$1.done
 $(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/packages/deb/$1.done
 
-$(BUILD_DIR)/mirror/ubuntu/repo.done: $(BUILD_DIR)/packages/deb/$1.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/mirror/ubuntu/reprepro.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/source_$1.done
 $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/packages/deb/buildd.tar.gz
@@ -70,7 +69,7 @@ $(BUILD_DIR)/packages/deb/repocleanup.done: $(packages_list:%=$(BUILD_DIR)/packa
 	$(foreach pkg,$(fuel_debian_packages),$(call remove_deb,$(pkg)))
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/packages/deb/build.done:
+$(BUILD_DIR)/packages/deb/build.done: $(BUILD_DIR)/mirror/ubuntu/repo.done
 	$(ACTION.TOUCH)
 
 fuel_debian_packages:=nailgun astute fuel-library$(PRODUCT_VERSION)

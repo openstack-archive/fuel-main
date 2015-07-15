@@ -30,9 +30,6 @@ endef
 # USE_MIRROR=none - mirroring mode, rsync full mirror from internal build server
 # USE_MIRROR=<any_other_value> - ISO building mode, get repository for current product release only
 $(BUILD_DIR)/mirror/ubuntu/build.done: 	$(BUILD_DIR)/mirror/ubuntu/mirror.done
-ifneq ($(BUILD_PACKAGES),0)
-    $(BUILD_DIR)/mirror/ubuntu/build.done:	$(BUILD_DIR)/mirror/ubuntu/repo.done
-endif
 
 REPREPRO_CONF_DIR:=$(BUILD_DIR)/mirror/ubuntu/reprepro/conf
 
