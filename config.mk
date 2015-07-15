@@ -90,30 +90,8 @@ BUILD_PACKAGES?=1
 # setting this flag to 0 will cause to use repo priorities only (!)
 DENY_RPM_DOWNGRADE?=1
 
-# Build OpenStack packages from external sources (do not use prepackaged versions)
-# Enter the comma-separated list of OpenStack packages to build, or '0' otherwise.
-# Example: BUILD_OPENSTACK_PACKAGES=neutron,keystone
-BUILD_OPENSTACK_PACKAGES?=0
-
 # Do not compress javascript and css files
 NO_UI_OPTIMIZE:=0
-
-# Define a set of defaults for each OpenStack package
-# For each component defined in BUILD_OPENSTACK_PACKAGES variable, this routine will set
-# the following variables (i.e. for 'BUILD_OPENSTACK_PACKAGES=neutron'):
-# NEUTRON_REPO, NEUTRON_COMMIT, NEUTRON_SPEC_REPO, NEUTRON_SPEC_COMMIT,
-# NEUTRON_GERRIT_URL, NEUTRON_GERRIT_COMMIT, NEUTRON_GERRIT_URL,
-# NEUTRON_SPEC_GERRIT_URL, NEUTRON_SPEC_GERRIT_COMMIT
-define set_vars
-    $(call uc,$(1))_REPO?=https://github.com/openstack/$(1).git
-    $(call uc,$(1))_COMMIT?=master
-    $(call uc,$(1))_SPEC_REPO?=https://review.fuel-infra.org/openstack-build/$(1)-build.git
-    $(call uc,$(1))_SPEC_COMMIT?=master
-    $(call uc,$(1))_GERRIT_URL?=https://review.openstack.org/openstack/$(1).git
-    $(call uc,$(1))_GERRIT_COMMIT?=none
-    $(call uc,$(1))_SPEC_GERRIT_URL?=https://review.fuel-infra.org/openstack-build/$(1)-build.git
-    $(call uc,$(1))_SPEC_GERRIT_COMMIT?=none
-endef
 
 # Repos and versions
 FUELLIB_COMMIT?=master
