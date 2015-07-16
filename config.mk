@@ -52,7 +52,6 @@ CENTOS_REPO_ART_NAME?=centos-repo.tar
 UBUNTU_REPO_ART_NAME?=ubuntu-repo.tar
 PUPPET_ART_NAME?=puppet.tgz
 OPENSTACK_YAML_ART_NAME?=openstack.yaml
-TARGET_UBUNTU_IMG_ART_NAME?=ubuntu_target_images.tar
 TARGET_CENTOS_IMG_ART_NAME?=centos_target_images.tar
 
 
