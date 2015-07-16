@@ -82,17 +82,24 @@ sudo umount $(SANDBOX)/dev || true
 endef
 
 
+mos_repo_release_file:=$(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT)/dists/$(PRODUCT_NAME)$(PRODUCT_VERSION)/Release
+broken_mos_repo:=$(strip $(shell wget -q -O /dev/null $(mos_repo_release_file) || echo yes))
 define apt_sources_list
 #Upstream Ubuntu mirrors
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE) main universe multiverse restricted
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE)-updates main universe multiverse restricted
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE)-security main universe multiverse restricted
 #MOS mirrors
+$(if $(broken_mos_repo),
+# XXX: broken "perestroika" repo
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(UBUNTU_RELEASE) main,
+# Normal MOS repos
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION) main restricted
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-security main restricted
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-proposed main restricted
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-updates main restricted
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-holdback main restricted
+)
 #Extra repositories
 $(if $(EXTRA_DEB_REPOS),$(subst |,$(newline)deb ,deb $(EXTRA_DEB_REPOS)))
 endef
