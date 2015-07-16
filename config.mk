@@ -285,3 +285,22 @@ SANDBOX_MIRROR_CENTOS_UPSTREAM_OS_BASEURL:=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/os/
 SANDBOX_MIRROR_CENTOS_UPDATES_OS_BASEURL:=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/updates/$(CENTOS_ARCH)/
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
 SANDBOX_MIRROR_EPEL_OS_BASEURL:=$(SANDBOX_MIRROR_EPEL)/$(CENTOS_MAJOR)/$(CENTOS_ARCH)/
+
+# Development option only
+# Please don’t change them if you don’t know what they do ##
+
+# If not empty, will try save "build/upgrade/deps" pip cache from upgrade module only, 
+# to file  $(ARTS_DIR)/$(SAVE_UPGRADE_PIP_ART)
+# Example:
+# SAVE_UPGRADE_PIP_ART?=fuel-dev.art_pip_from_upg_module.tar.gz
+SAVE_UPGRADE_PIP_ART?=
+
+# If not empty, will try to download this archive and use like pip cache
+# for creating upgrade module.
+# Example:
+# USE_UPGRADE_PIP_ART_HTTP_LINK?=http://127.0.0.1/files/deps.pip.tar.gz
+# Content example:
+# deps.pip.tar.gz:\
+#  \argparse-1.2.1.tar.gz
+#  \docker-py-0.3.2.tar.gz
+USE_UPGRADE_PIP_ART_HTTP_LINK?=
