@@ -167,11 +167,10 @@ echo "*************************************************"
 echo -e "$warning"
 echo "*************************************************"
 echo "Sending notification to Fuel UI..."
-fuel notify --topic warning --send "$warning"
+fuel notify --topic warning --send $(echo "$warning" | tr '\r\n' ' ')
+echo "Fuel node deployment complete!"
 
 # TODO(kozhukalov) If building of bootstrap image fails
 # and if this image was supposed to be a default bootstrap image
 # we need to warn a user about this and give her
 # advice how to treat this.
-
-echo "Fuel node deployment complete!"
