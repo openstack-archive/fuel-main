@@ -163,6 +163,7 @@ YUM_REPOS?=proprietary
 MIRROR_BASE?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)
 MIRROR_CENTOS?=$(MIRROR_BASE)/centos
 MIRROR_UBUNTU?=mirror.fuel-infra.org
+MIRROR_FUEL_UBUNTU?=$(MIRROR_UBUNTU)
 MIRROR_UBUNTU_ROOT?=/$(PRODUCT_NAME)-repos/$(PRODUCT_VERSION)/cluster/base/trusty/
 MIRROR_UBUNTU_METHOD?=http
 MIRROR_UBUNTU_SECTION?=main
