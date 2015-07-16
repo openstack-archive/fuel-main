@@ -86,12 +86,8 @@ define apt_sources_list
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE) main universe multiverse restricted
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE)-updates main universe multiverse restricted
 deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE)-security main universe multiverse restricted
-#MOS mirrors
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION) main restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-security main restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-proposed main restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-updates main restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-holdback main restricted
+#Perestroika mirrors
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(UBUNTU_RELEASE) main
 #Extra repositories
 $(if $(EXTRA_DEB_REPOS),$(subst |,$(newline)deb ,deb $(EXTRA_DEB_REPOS)))
 endef
