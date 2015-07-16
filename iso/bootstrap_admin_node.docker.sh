@@ -148,5 +148,5 @@ echo "*************************************************"
 echo -e "$warning"
 echo "*************************************************"
 echo "Sending notification to Fuel UI..."
-fuel notify --topic warning --send "$warning"
+fuel notify --topic warning --send $(echo "$warning" | tr '\r\n' ' ')
 echo "Fuel node deployment complete!"
