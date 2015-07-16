@@ -2,6 +2,7 @@
 .DELETE_ON_ERROR: $(UPGRADE_TARBALL_PATH).lrz
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/common-part.tar
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/openstack-part.tar
+.DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/$(SAVE_UPGRADE_PIP_ART)
 
 all: upgrade-lrzip openstack-yaml
 
@@ -40,9 +41,27 @@ $(BUILD_DIR)/upgrade/deps.done: \
 	mkdir -p $(BUILD_DIR)/upgrade/deps
 	virtualenv $(BUILD_DIR)/upgrade/venv
 #	Requires virtualenv, pip, python-dev packages
+ifeq ($(USE_UPGRADE_PIP_ART_HTTP_LINK),)
+	echo "Using mirror pip-install approach"
 	$(BUILD_DIR)/upgrade/venv/bin/pip install -r $(BUILD_DIR)/repos/nailgun/fuel_upgrade_system/fuel_upgrade/requirements.txt --download $(BUILD_DIR)/upgrade/deps --no-use-wheel
+else
+	echo "Using artifact from $(USE_UPGRADE_PIP_ART_HTTP_LINK) for pip-install"
+	wget -v --no-check-certificate $(USE_UPGRADE_PIP_ART_HTTP_LINK) -O $(BUILD_DIR)/upgrade/deps.tar.gz.tmp
+	mv $(BUILD_DIR)/upgrade/deps.tar.gz.tmp $(BUILD_DIR)/upgrade/deps.tar.gz
+	mkdir -p $(BUILD_DIR)/upgrade/deps/
+	tar xvf $(BUILD_DIR)/upgrade/deps.tar.gz --strip-components=1 -C $(BUILD_DIR)/upgrade/deps/
+endif
 	cd $(BUILD_DIR)/repos/nailgun/fuel_upgrade_system/fuel_upgrade && $(BUILD_DIR)/upgrade/venv/bin/python setup.py sdist --dist-dir $(BUILD_DIR)/upgrade/deps
 	$(ACTION.TOUCH)
+
+#	Save pip artifact, if needed
+$(BUILD_DIR)/upgrade/$(SAVE_UPGRADE_PIP_ART): $(BUILD_DIR)/upgrade/deps.done
+	mkdir -p $(@D)
+	rm -f $@
+	tar czf $@ -C $(BUILD_DIR)/upgrade deps
+
+$(ARTS_DIR)/$(SAVE_UPGRADE_PIP_ART): $(BUILD_DIR)/upgrade/$(SAVE_UPGRADE_PIP_ART)
+	$(ACTION.COPY)
 
 ########################
 # COMMON PART
@@ -56,6 +75,11 @@ $(BUILD_DIR)/upgrade/common-part.tar: \
 	sed 's/{{UPGRADERS}}/${UPGRADERS}/g' $(SOURCE_DIR)/upgrade/upgrade_template.sh > $(BUILD_DIR)/upgrade/upgrade.sh
 	tar rf $@ --mode=755 -C $(BUILD_DIR)/upgrade upgrade.sh
 	tar rf $@ --mode=755 -C $(ARTS_DIR) --xform s:^:upgrade/config/: $(VERSION_YAML_ART_NAME)
+
+ifneq ($(SAVE_UPGRADE_PIP_ART),)
+$(BUILD_DIR)/upgrade/common-part.tar: $(ARTS_DIR)/$(SAVE_UPGRADE_PIP_ART)
+endif
+
 
 ########################
 # OPENSTACK PART
