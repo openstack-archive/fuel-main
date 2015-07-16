@@ -236,7 +236,7 @@ echo "*************************************************"
 echo -e "${message}"
 echo "*************************************************"
 echo "Sending notification to Fuel UI..."
-fuel notify --topic "${level}" --send "${message}"
+fuel notify --topic "${level}" --send $(echo "${message}" | tr '\r\n' ' ')
 
 # TODO(kozhukalov) If building of bootstrap image fails
 # and if this image was supposed to be a default bootstrap image
