@@ -58,6 +58,7 @@ heat-docker
 heat-engine
 hicolor-icon-theme
 htop
+i40e-dkms
 ifenslave
 installation-report
 intel-microcode
