@@ -17,7 +17,7 @@ BuildArch: noarch
 Requires: fuel-bootstrap-image >= %{version}
 Requires: fuel-dockerctl >= 7.0
 Requires: fuel-docker-images >= %{version}
-Requires: fuel-library >= 7.0
+Requires: fuel-library7.0
 Requires: fuelmenu >= %{version}
 Requires: fuel-package-updates >= %{version}
 Requires: fuel-provisioning-scripts >= %{version}
