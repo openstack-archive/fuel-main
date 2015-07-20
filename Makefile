@@ -61,12 +61,6 @@ current-version: $(BUILD_DIR)/current_version
 $(BUILD_DIR)/current_version: $(call depv,CURRENT_VERSION)
 	echo $(CURRENT_VERSION) > $@
 
-.PHONY: upgrade-versions
-upgrade-versions: $(BUILD_DIR)/upgrade_versions
-$(BUILD_DIR)/upgrade_versions: $(call depv,UPGRADE_VERSIONS)
-	echo -n > $@
-	$(foreach upgrade_version,$(UPGRADE_VERSIONS),echo $(upgrade_version) >> $@;)
-
 # Macroses for make
 include $(SOURCE_DIR)/rules.mk
 
@@ -81,5 +75,4 @@ include $(SOURCE_DIR)/packages/module.mk
 include $(SOURCE_DIR)/docker/module.mk
 include $(SOURCE_DIR)/bootstrap/module.mk
 include $(SOURCE_DIR)/iso/module.mk
-include $(SOURCE_DIR)/upgrade/module.mk
 include $(SOURCE_DIR)/virtualbox.mk

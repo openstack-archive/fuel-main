@@ -131,9 +131,9 @@ $(BUILD_DIR)/iso/isoroot-dotfiles.done: \
 		$(ISOROOT)/.treeinfo
 	$(ACTION.TOUCH)
 
-$(ISOROOT)/openstack_version: $(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)
+$(ISOROOT)/openstack_version: $(BUILD_DIR)/repos/nailgun.done
 	mkdir -p $(@D)
-	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $@
+	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$(BUILD_DIR)/repos/nailgun/nailgun/nailgun/fixtures/openstack.yaml')))[0]['fields']['version']" > $@
 
 $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done \
