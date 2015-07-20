@@ -78,13 +78,14 @@ endef
 
 
 packages_list:=\
-fuel-main \
-fuel-library$(PRODUCT_VERSION) \
 astute \
-nailgun \
+fuel-agent \
+fuel-library$(PRODUCT_VERSION) \
+fuel-main \
+fuel-nailgun-agent \
 fuel-ostf \
-python-fuelclient \
-fuel-agent
+nailgun \
+python-fuelclient
 
 $(eval $(foreach pkg,$(packages_list),$(call build_rpm,$(pkg))$(NEWLINE)))
 
