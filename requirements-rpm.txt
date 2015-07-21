@@ -286,6 +286,7 @@ ruby21-rubygem-eventmachine
 ruby21-rubygem-i18n
 ruby21-rubygem-json
 ruby21-rubygem-json_pure
+ruby21-rubygem-librarianp
 ruby21-rubygem-mcollective-client
 ruby21-rubygem-mime-types
 ruby21-rubygem-netaddr
@@ -303,6 +304,7 @@ ruby21-rubygem-shadow
 ruby21-rubygem-stomp
 ruby21-rubygem-symboltable
 ruby21-rubygem-systemu
+ruby21-rubygem-thor
 ruby-augeas
 ruby-devel
 rubygem-cstruct
@@ -319,6 +321,7 @@ rubygem-ohai
 rubygem-openstack
 rubygem-rethtool
 rubygems
+rubygem-librarian-puppet
 rubygem-stomp
 rubygem-systemu
 rubygem-yajl-ruby
