@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: Roman Vyalov <rvyalov@mirantis.com>
+Workflow+1: Roman Vyalov <rvyalov@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Wed, 22 Jul 2015 15:41:21 +0000
+Reviewed-on: https://review.openstack.org/204620
+Project: stackforge/fuel-main
+Branch: refs/heads/master
