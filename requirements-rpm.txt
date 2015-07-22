@@ -13,6 +13,7 @@ cloud-utils
 cobbler
 cobbler-web
 @Core
+createrepo
 cronie
 crontabs
 Cython
@@ -37,6 +38,7 @@ gcc
 gdisk
 genisoimage
 GeoIP
+git
 gperftools
 gv
 httpd
@@ -269,6 +271,8 @@ pytz
 PyYAML
 qemu-img
 rabbitmq-server
+rpm
+rpm-build
 rsync
 ruby
 ruby21
