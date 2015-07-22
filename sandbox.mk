@@ -127,6 +127,7 @@ endef
 
 
 define SANDBOX_UBUNTU_UP
+set -e
 echo "SANDBOX_UBUNTU_UP: start"
 mkdir -p $(SANDBOX_UBUNTU)
 mkdir -p $(SANDBOX_UBUNTU)/usr/sbin
@@ -166,9 +167,10 @@ echo "APT::Get::AllowUnauthenticated 1;" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/ap
 echo "Updating apt package database"
 sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p '$${TEMP}'; mkdir -p /tmp/user/0)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get update
+if ! mountpoint -q $(SANDBOX_UBUNTU)/proc; then sudo mount -t proc sandboxproc $(SANDBOX_UBUNTU)/proc; fi
 echo "Installing additional packages: $(SANDBOX_DEB_PKGS)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get dist-upgrade --yes
-test -n "$(SANDBOX_DEB_PKGS)" && sudo chroot $(SANDBOX_UBUNTU) apt-get install --yes $(SANDBOX_DEB_PKGS)
+test -n "$(SANDBOX_DEB_PKGS)" && sudo chroot $(SANDBOX_UBUNTU) env LC_ALL=C DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get install --yes $(SANDBOX_DEB_PKGS)
 echo "SANDBOX_UBUNTU_UP: done"
 endef
 
