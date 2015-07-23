@@ -96,6 +96,7 @@ FUELLIB_COMMIT?=master
 NAILGUN_COMMIT?=master
 PYTHON_FUELCLIENT_COMMIT?=master
 FUEL_AGENT_COMMIT?=master
+FUEL_UPGRADE_COMMIT?=master
 ASTUTE_COMMIT?=master
 OSTF_COMMIT?=master
 
@@ -103,6 +104,7 @@ FUELLIB_REPO?=https://github.com/stackforge/fuel-library.git
 NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
 PYTHON_FUELCLIENT_REPO?=https://github.com/stackforge/python-fuelclient.git
 FUEL_AGENT_REPO?=https://github.com/stackforge/fuel-agent.git
+FUEL_UPGRADE_REPO?=https://github.com/stackforge/fuel-upgrade.git
 ASTUTE_REPO?=https://github.com/stackforge/fuel-astute.git
 OSTF_REPO?=https://github.com/stackforge/fuel-ostf.git
 
@@ -111,6 +113,7 @@ FUELLIB_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-library
 NAILGUN_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-web
 PYTHON_FUELCLIENT_GERRIT_URL?=https://review.openstack.org/stackforge/python-fuelclient
 FUEL_AGENT_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-agent
+FUEL_UPGRADE_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-upgrade
 ASTUTE_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-astute
 OSTF_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-ostf
 
@@ -118,6 +121,7 @@ FUELLIB_GERRIT_COMMIT?=none
 NAILGUN_GERRIT_COMMIT?=none
 PYTHON_FUELCLIENT_GERRIT_COMMIT?=none
 FUEL_AGENT_GERRIT_COMMIT?=none
+FUEL_UPGRADE_GERRIT_COMMIT?=none
 ASTUTE_GERRIT_COMMIT?=none
 OSTF_GERRIT_COMMIT?=none
 FUELMAIN_GERRIT_COMMIT?=none

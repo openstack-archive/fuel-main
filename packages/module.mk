@@ -96,6 +96,8 @@ $(eval $(call prepare_git_source,fuel-library$(PRODUCT_VERSION),fuel-library$(PR
 $(eval $(call prepare_git_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient,HEAD,$(PYTHON_FUELCLIENT_GERRIT_COMMIT)))
 #FUEL_AGENT_PKGS
 $(eval $(call prepare_git_source,fuel-agent,fuel-agent-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-agent,HEAD,$(FUEL_AGENT_GERRIT_COMMIT)))
+#FUEL_UPGRADE_PKGS
+$(eval $(call prepare_git_source,fuel-upgrade,fuel-upgrade-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-upgrade,HEAD,$(FUEL_UPGRADE_GERRIT_COMMIT)))
 #FUEL-IMAGE PKGS
 $(eval $(call prepare_git_source,fuel-main,fuel-main-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD,$(FUELMAIN_GERRIT_COMMIT)))
 

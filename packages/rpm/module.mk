@@ -84,7 +84,8 @@ astute \
 nailgun \
 fuel-ostf \
 python-fuelclient \
-fuel-agent
+fuel-agent \
+fuel-upgrade
 
 $(eval $(foreach pkg,$(packages_list),$(call build_rpm,$(pkg))$(NEWLINE)))
 
