@@ -213,7 +213,11 @@ endif
 #to ubuntu mirror inside mirror
 #DocumentRoot
 
+# by default we use Upstream mirror from the same host as MOS, but can re-define
+# the iso build will look like:
+# MIRROR_UBUNTU_SUFFIX="" MIRROR_UPSTREAM_UBUNTU=archive.ubuntu.com make iso
 MIRROR_UBUNTU_SUFFIX?=/pkgs/ubuntu
+MIRROR_UPSTREAM_UBUNTU?=$(MIRROR_UBUNTU)
 
 YUM_DOWNLOAD_SRC?=
 
