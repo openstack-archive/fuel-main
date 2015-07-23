@@ -86,9 +86,9 @@ mos_repo_release_file:=$(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU
 broken_mos_repo:=$(strip $(shell wget -q -O /dev/null $(mos_repo_release_file) || echo yes))
 define apt_sources_list
 #Upstream Ubuntu mirrors
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE) main universe multiverse restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE)-updates main universe multiverse restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE)-security main universe multiverse restricted
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UPSTREAM_UBUNTU)$(MIRROR_UPSTREAM_UBUNTU_SUFFIX) $(UBUNTU_RELEASE) $(MIRROR_UPSTREAM_UBUNTU_SECTION)
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UPSTREAM_UBUNTU)$(MIRROR_UPSTREAM_UBUNTU_SUFFIX) $(UBUNTU_RELEASE)-updates $(MIRROR_UPSTREAM_UBUNTU_SECTION)
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UPSTREAM_UBUNTU)$(MIRROR_UPSTREAM_UBUNTU_SUFFIX) $(UBUNTU_RELEASE)-security $(MIRROR_UPSTREAM_UBUNTU_SECTION)
 #MOS mirrors
 $(if $(broken_mos_repo),
 # XXX: broken "perestroika" repo
@@ -142,7 +142,7 @@ touch $(SANDBOX_UBUNTU)/etc/init.d/.legacy-bootordering
 mkdir -p $(SANDBOX_UBUNTU)/usr/sbin
 cp -a $(BUILD_DIR)/policy-rc.d $(SANDBOX_UBUNTU)/usr/sbin
 echo "Running debootstrap"
-sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) http://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX)
+sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) http://$(MIRROR_UPSTREAM_UBUNTU)$(MIRROR_UPSTREAM_UBUNTU_SUFFIX)
 if [ -e $(SANDBOX_UBUNTU)/etc/resolv.conf ]; then sudo cp -a $(SANDBOX_UBUNTU)/etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf.orig; fi
 sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
 if [ -e $(SANDBOX_UBUNTU)/etc/hosts ]; then sudo cp -a $(SANDBOX_UBUNTU)/etc/hosts $(SANDBOX_UBUNTU)/etc/hosts.orig; fi

@@ -208,12 +208,15 @@ MIRROR_DOCKER?=$(MIRROR_BASE)/docker
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 endif
 
-
-#This suffix is used to generate path
-#to ubuntu mirror inside mirror
-#DocumentRoot
-
-MIRROR_UBUNTU_SUFFIX?=/pkgs/ubuntu
+# by default we use Upstream mirror from the same host as MOS, but can be re-defined
+# for example: MIRROR_UPSTREAM_UBUNTU=archive.ubuntu.com
+MIRROR_UPSTREAM_UBUNTU?=$(MIRROR_UBUNTU)
+# This suffix is used to generate path to ubuntu mirror inside mirror,
+MIRROR_UPSTREAM_UBUNTU_SUFFIX?=/pkgs/ubuntu
+# Choose sections from Upstream mirrors
+MIRROR_UPSTREAM_UBUNTU_SECTION?=main universe multiverse restricted
+# ISO build with upstream mirror will look like:
+# MIRROR_UPSTREAM_UBUNTU_SUFFIX= MIRROR_UPSTREAM_UBUNTU=archive.ubuntu.com make iso
 
 YUM_DOWNLOAD_SRC?=
 
