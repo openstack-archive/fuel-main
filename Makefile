@@ -18,7 +18,6 @@ help:
 	@echo '  all  - build product'
 	@echo '  bootstrap  - build bootstrap'
 	@echo '  iso  - build iso image'
-	@echo '  img  - build flash stick image'
 	@echo '  clean - remove build directory and resetting .done flags'
 	@echo '  deep_clean - clean + removing $(LOCAL_MIRROR) directory'
 	@echo

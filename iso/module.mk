@@ -1,12 +1,11 @@
-.PHONY: all iso img version-yaml centos-repo ubuntu-repo
-.DELETE_ON_ERROR: $(ISO_PATH) $(IMG_PATH)
+.PHONY: all iso version-yaml centos-repo ubuntu-repo
+.DELETE_ON_ERROR: $(ISO_PATH)
 
-all: iso img version-yaml
+all: iso version-yaml
 
 ISOROOT:=$(BUILD_DIR)/iso/isoroot
 
 iso: $(ISO_PATH)
-img: $(IMG_PATH)
 
 ########################
 # VERSION-YAML ARTIFACT
@@ -271,53 +270,3 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 		-o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
 	implantisomd5 $@
 
-# IMGSIZE is calculated as a sum of iso size plus
-# installation images directory size (~165M) and syslinux directory size (~35M)
-# plus a bit of free space for ext2 filesystem data
-# +300M seems reasonable
-IMGSIZE = $(shell echo "$(shell ls -s $(ISO_PATH) | awk '{print $$1}') * 1.3 / 1024" | bc)
-
-$(IMG_PATH): $(ISO_PATH)
-	rm -f $(BUILD_DIR)/iso/img_loop_device
-	rm -f $(BUILD_DIR)/iso/img_loop_partition
-	rm -f $(BUILD_DIR)/iso/img_loop_uuid
-	mkdir -p $(@D)
-	sudo losetup -j $(IMG_PATH) | awk -F: '{print $$1}' | while read loopdevice; do \
-          sudo kpartx -v $$loopdevice | awk '{print "/dev/mapper/" $$1}' | while read looppartition; do \
-            sudo umount -f $$looppartition; \
-          done; \
-          sudo kpartx -d $$loopdevice; \
-          sudo losetup -d $$loopdevice; \
-	done
-	rm -f $(IMG_PATH)
-	dd if=/dev/zero of=$(IMG_PATH) bs=1M count=$(IMGSIZE)
-	sudo losetup -f > $(BUILD_DIR)/iso/img_loop_device
-	sudo losetup `cat $(BUILD_DIR)/iso/img_loop_device` $(IMG_PATH)
-	sudo parted -s `cat $(BUILD_DIR)/iso/img_loop_device` mklabel msdos
-	sudo parted -s `cat $(BUILD_DIR)/iso/img_loop_device` unit MB mkpart primary ext2 1 $(IMGSIZE) set 1 boot on
-	sudo kpartx -a -v `cat $(BUILD_DIR)/iso/img_loop_device` | awk '{print "/dev/mapper/" $$3}' > $(BUILD_DIR)/iso/img_loop_partition
-	sleep 1
-	sudo mkfs.ext2 `cat $(BUILD_DIR)/iso/img_loop_partition`
-	mkdir -p $(BUILD_DIR)/iso/imgroot
-	sudo mount `cat $(BUILD_DIR)/iso/img_loop_partition` $(BUILD_DIR)/iso/imgroot
-	sudo extlinux -i $(BUILD_DIR)/iso/imgroot
-	sudo /sbin/blkid -s UUID -o value `cat $(BUILD_DIR)/iso/img_loop_partition` > $(BUILD_DIR)/iso/img_loop_uuid
-	sudo dd conv=notrunc bs=440 count=1 if=/usr/lib/extlinux/mbr.bin of=`cat $(BUILD_DIR)/iso/img_loop_device`
-	sudo cp -r $(BUILD_DIR)/iso/isoroot/images $(BUILD_DIR)/iso/imgroot
-	sudo cp -r $(BUILD_DIR)/iso/isoroot/isolinux $(BUILD_DIR)/iso/imgroot
-	sudo mv $(BUILD_DIR)/iso/imgroot/isolinux $(BUILD_DIR)/iso/imgroot/syslinux
-	sudo rm $(BUILD_DIR)/iso/imgroot/syslinux/isolinux.cfg
-	sudo cp $(SOURCE_DIR)/iso/syslinux/syslinux.cfg $(BUILD_DIR)/iso/imgroot/syslinux  # NOTE(mihgen): Is it used for IMG file? Comments needed!
-	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $(BUILD_DIR)/iso/img_loop_uuid`/g" $(BUILD_DIR)/iso/imgroot/syslinux/syslinux.cfg
-	sudo sed -r -i -e "s/ip=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/ip=$(MASTER_IP)/" $(BUILD_DIR)/iso/imgroot/syslinux/syslinux.cfg
-	sudo sed -r -i -e "s/dns1=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/dns1=$(MASTER_DNS)/" $(BUILD_DIR)/iso/imgroot/syslinux/syslinux.cfg
-	sudo sed -r -i -e "s/netmask=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/netmask=$(MASTER_NETMASK)/" $(BUILD_DIR)/iso/imgroot/syslinux/syslinux.cfg
-	sudo sed -r -i -e "s/gw=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/gw=$(MASTER_GW)/" $(BUILD_DIR)/iso/imgroot/syslinux/syslinux.cfg
-	sudo sed -r -i -e "s/will_be_substituted_with_PRODUCT_VERSION/$(PRODUCT_VERSION)/" $(BUILD_DIR)/iso/imgroot/syslinux/syslinux.cfg
-	sudo cp $(BUILD_DIR)/iso/isoroot/ks.cfg $(BUILD_DIR)/iso/imgroot/ks.cfg
-	sudo sed -i -e "s/will_be_substituted_with_actual_uuid/`cat $(BUILD_DIR)/iso/img_loop_uuid`/g" $(BUILD_DIR)/iso/imgroot/ks.cfg
-	sudo cp $(ISO_PATH) $(BUILD_DIR)/iso/imgroot/nailgun.iso
-	sudo sync
-	sudo umount `cat $(BUILD_DIR)/iso/img_loop_partition`
-	sudo kpartx -d `cat $(BUILD_DIR)/iso/img_loop_device`
-	sudo losetup -d `cat $(BUILD_DIR)/iso/img_loop_device`
