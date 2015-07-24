@@ -217,7 +217,7 @@ MIRROR_UBUNTU_SUFFIX?=/pkgs/ubuntu
 
 YUM_DOWNLOAD_SRC?=
 
-MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_MAJOR)
 MIRROR_CENTOS_KERNEL?=http://mirror.centos.org/centos-6/6.6/
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 MIRROR_CENTOS_KERNEL_BASEURL?=$(MIRROR_CENTOS_KERNEL)/os/$(CENTOS_ARCH)
@@ -279,7 +279,7 @@ DOCKER_PREBUILT_SOURCE?=http://srv11-msk.msk.mirantis.net/docker-test/fuel-image
 # Production variable (prod, dev, docker)
 PRODUCTION?=docker
 
-SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_MAJOR)
 SANDBOX_MIRROR_CENTOS_UPSTREAM_OS_BASEURL:=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/os/$(CENTOS_ARCH)/
 SANDBOX_MIRROR_CENTOS_UPDATES_OS_BASEURL:=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/updates/$(CENTOS_ARCH)/
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
