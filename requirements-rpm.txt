@@ -291,6 +291,7 @@ ruby21-rubygem-eventmachine
 ruby21-rubygem-i18n
 ruby21-rubygem-json
 ruby21-rubygem-json_pure
+ruby21-rubygem-librarianp
 ruby21-rubygem-librarian-puppet-simple
 ruby21-rubygem-mcollective-client
 ruby21-rubygem-mime-types
