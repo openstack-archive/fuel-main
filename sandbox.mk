@@ -1,22 +1,33 @@
+define s_create_extra_repo
+[$(call get_repo_name,$1)]
+name = Repo "$(call get_repo_name,$1)"
+baseurl = $(call get_repo_url,$1)
+gpgcheck = 0
+enabled = 1
+priority = 1
+endef
+
+sandbox_contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(call s_create_extra_repo,$(repo))\n)
+
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
 baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 gpgcheck=0
 enabled=1
-priority=1
+priority=10
 endef
 define yum_upstream_repo
 [upstream]
 name=Upstream mirror
-baseurl=$(SANDBOX_MIRROR_CENTOS_UPSTREAM_OS_BASEURL)
+baseurl=http://mirror.centos.org/centos/6.6/os/x86_64/
 gpgcheck=0
-priority=2
+priority=1
 [upstream-updates]
 name=Upstream mirror
-baseurl=$(SANDBOX_MIRROR_CENTOS_UPDATES_OS_BASEURL)
+baseurl=http://mirror.centos.org/centos/6/updates/x86_64/
 gpgcheck=0
-priority=2
+priority=1
 endef
 define yum_epel_repo
 [epel]
@@ -49,6 +60,7 @@ mkdir -p $(SANDBOX)/etc/yum.repos.d
 cat > $(SANDBOX)/etc/yum.conf <<EOF
 $(sandbox_yum_conf)
 EOF
+
 cp /etc/resolv.conf $(SANDBOX)/etc/resolv.conf
 cp /etc/hosts $(SANDBOX)/etc/hosts
 cat > $(SANDBOX)/etc/yum.repos.d/base.repo <<EOF
