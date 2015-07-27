@@ -1,3 +1,14 @@
+define s_create_extra_repo
+[$(call get_repo_name,$1)]
+name = Repo "$(call get_repo_name,$1)"
+baseurl = $(call get_repo_url,$1)
+gpgcheck = 0
+enabled = 1
+priority = 1
+endef
+
+sandbox_contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(call s_create_extra_repo,$(repo))\n)
+
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
@@ -49,6 +60,11 @@ mkdir -p $(SANDBOX)/etc/yum.repos.d
 cat > $(SANDBOX)/etc/yum.conf <<EOF
 $(sandbox_yum_conf)
 EOF
+
+cat > $(SANDBOX)/etc/yum.repos.d/extra.repo <<EOF
+$(sandbox_contents)
+EOF
+
 cp /etc/resolv.conf $(SANDBOX)/etc/resolv.conf
 cp /etc/hosts $(SANDBOX)/etc/hosts
 cat > $(SANDBOX)/etc/yum.repos.d/base.repo <<EOF
