@@ -17,7 +17,7 @@ global_conf="/etc/fuel-bootstrap-image.conf"
 [ -z "$DESTDIR" ] && DESTDIR="/var/www/nailgun/bootstrap/ubuntu"
 [ -z "$BOOTSTRAP_SSH_KEYS" ] && BOOTSTRAP_SSH_KEYS="$datadir/ubuntu/files/root/.ssh/authorized_keys"
 
-BOOTSTRAP_FUEL_PKGS_DFLT="openssh-server ntp fuel-agent"
+BOOTSTRAP_FUEL_PKGS_DFLT="openssh-server ntp"
 
 # Packages required for the master node to discover a bootstrap node
 if [ -z "$BOOTSTRAP_IRONIC" ]; then
@@ -41,7 +41,7 @@ BOOTSTRAP_PKGS="ubuntu-minimal live-boot live-boot-initramfs-tools linux-image${
 BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS xz-utils squashfs-tools"
 # Smaller tools providing the standard ones.
 # - mdadm depends on mail-transport-agent, default one is postfix => use msmtp instead
-BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS msmtp-mta"
+BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS msmtp-mta gdebi-core"
 
 apt_setup ()
 {
@@ -113,6 +113,19 @@ run_apt_get ()
 		apt-get $@
 }
 
+run_apt_key ()
+{
+	local root="$1"
+	shift
+	chroot "$root" env \
+		LC_ALL=C \
+		DEBIAN_FRONTEND=noninteractive \
+		DEBCONF_NONINTERACTIVE_SEEN=true \
+		TMPDIR=/tmp \
+		TMP=/tmp \
+		apt-key adv --keyserver keyserver.ubuntu.com --recv-keys $@
+}
+
 dpkg_is_too_old ()
 {
 	# XXX: dpkg-deb versions older than 1.15.6 can't handle data.tar.xz
@@ -173,6 +186,7 @@ install_packages ()
 upgrade_chroot ()
 {
 	local root="$1"
+	run_apt_key "$root" CA2B20483E301371
 	run_apt_get "$root" update
 	if ! mountpoint -q "$root/proc"; then
 		mount -t proc bootstrapproc "$root/proc"
@@ -287,13 +301,31 @@ cleanup_chroot ()
 	[ -z "$root" ] && exit 1
 	signal_chrooted_processes "$root" SIGTERM
 	signal_chrooted_processes "$root" SIGKILL
-	umount "${root}/tmp/local-apt" 2>/dev/null || umount -l "${root}/tmp/local-apt"
-	rm -f "${root}/etc/apt/sources.list.d/nailgun-local.list"
+	# umount "${root}/tmp/local-apt" 2>/dev/null || umount -l "${root}/tmp/local-apt"
+	# rm -f "${root}/etc/apt/sources.list.d/nailgun-local.list"
 	rm -rf $root/var/cache/apt/archives/*.deb
 	rm -f $root/etc/apt/apt.conf.d/01mirantis-use-proxy.conf
 	rm -f $root/var/log/bootstrap.log
 	rm -rf $root/tmp/*
 	rm -rf $root/run/*
+}
+
+install_agent ()
+{
+	local root="$1"
+	local package_path="$2"
+	local full_path=`ls $package_path/fuel-agent*.deb`
+	local package=`basename $full_path`
+	cp $full_path $root/tmp
+	chroot "$root" env \
+		LC_ALL=C \
+		DEBIAN_FRONTEND=noninteractive \
+		DEBCONF_NONINTERACTIVE_SEEN=true \
+		TMPDIR=/tmp \
+		TMP=/tmp \
+		gdebi -n /tmp/$package
+
+	rm -f $root/tmp/$package
 }
 
 recompress_initramfs ()
@@ -353,10 +385,11 @@ build_image ()
 	propagate_host_resolv_conf "$root"
 	make_utf8_locale "$root"
 	apt_setup "$root"
-	add_local_mos_repo "$root"
+	# add_local_mos_repo "$root"
 	allow_insecure_apt "$root"
 	upgrade_chroot "$root"
 	install_packages "$root" $BOOTSTRAP_PKGS $BOOTSTRAP_FUEL_PKGS
+	install_agent "$root" $AGENT_PACKAGE_PATH
 	recompress_initramfs "$root"
 	copy_conf_files "$root" $GONFIG_SOURCE
 	install_ssh_keys "$root" $BOOTSTRAP_SSH_KEYS
