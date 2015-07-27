@@ -27,11 +27,28 @@ echo "Done!"
 
 # TODO(asheplyakov): reuse the check from fuelmenu/bootstrapimage
 mirror_ubuntu="http://archive.ubuntu.com/ubuntu/dists/trusty/Release"
-if ! urlaccesscheck check "$mirror_ubuntu" >/dev/null 2>&1; then
-	showmenu="yes"
-fi
+# XXX: master node deployment start very early in the boot sequence.
+# Thus the network configuration might be still in progress when we try
+# to check if repositories are available.
+net_check_attempts=5
+net_check_wait=60
+net_check_interval=$((net_check_wait/net_check_attempts))
+force_show_menu='yes'
+for n in `seq 1 $net_check_attempts`; do
+	if urlaccesscheck check "$mirror_ubuntu" >/dev/null 2>&1; then
+		force_show_menu=''
+		break
+	else
+		cat >&2 <<-EOF
+		bootstrap_admin_node: Ubuntu mirror is not accessible
+		bootstrap_admin_node: failed to download $mirror_ubuntu
+		bootstrap_admin_node: retrying in $net_check_attempts sec.
+		EOF
+		sleep $net_check_interval
+	fi
+done
 
-if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
+if [[ "$showmenu" == "yes" || "$showmenu" == "YES" || -n "$force_show_menu" ]]; then
   fuelmenu
   else
   #Give user 15 seconds to enter fuelmenu or else continue
