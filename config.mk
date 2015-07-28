@@ -134,123 +134,95 @@ LOCAL_MIRROR_DOCKER:=$(LOCAL_MIRROR)/docker
 LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
 
 # Use download.mirantis.com mirror by default. Other possible values are
-# 'msk', 'srt', 'usa', 'hrk'.
+# 'msk', 'srt', 'usa', 'hrk', 'cz'
 # Setting any other value or removing of this variable will cause
 # download of all the packages directly from internet
 USE_MIRROR?=ext
+
 ifeq ($(USE_MIRROR),ext)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)
-MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=mirror.fuel-infra.org
-MIRROR_FUEL_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_UBUNTU_ROOT?=/$(PRODUCT_NAME)-repos/$(PRODUCT_VERSION)/cluster/base/trusty/
-MIRROR_UBUNTU_METHOD?=http
-MIRROR_UBUNTU_SECTION?=main
-MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_CENTOS?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://vault.centos.org/$(CENTOS_RELEASE)
+MIRROR_UBUNTU?=mirror.fuel-infra.org
+MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
+MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 endif
+
 ifeq ($(USE_MIRROR),srt)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://osci-mirror-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)
-MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=osci-mirror-srt.srt.mirantis.net
-MIRROR_FUEL_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_UBUNTU_ROOT?=/$(PRODUCT_NAME)-repos/$(PRODUCT_VERSION)/cluster/base/trusty/
-MIRROR_UBUNTU_METHOD?=http
-MIRROR_UBUNTU_SECTION?=main
-MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_CENTOS?=http://osci-mirror-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
+MIRROR_UBUNTU?=osci-mirror-srt.srt.mirantis.net
+MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
+MIRROR_DOCKER?=http://osci-mirror-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)/docker
 endif
+
 ifeq ($(USE_MIRROR),msk)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://osci-mirror-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)
-MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
-MIRROR_FUEL_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_UBUNTU_ROOT?=/$(PRODUCT_NAME)-repos/$(PRODUCT_VERSION)/cluster/base/trusty/
-MIRROR_UBUNTU_METHOD?=http
-MIRROR_UBUNTU_SECTION?=main
-MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_CENTOS?=http://osci-mirror-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
+MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
+MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
+MIRROR_DOCKER?=http://osci-mirror-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)/docker
 endif
+
 ifeq ($(USE_MIRROR),hrk)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://osci-mirror-kha.kha.mirantis.net/fwm/$(PRODUCT_VERSION)
-MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=osci-mirror-kha.kha.mirantis.net
-MIRROR_FUEL_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_UBUNTU_ROOT?=/$(PRODUCT_NAME)-repos/$(PRODUCT_VERSION)/cluster/base/trusty/
-MIRROR_UBUNTU_METHOD?=http
-MIRROR_UBUNTU_SECTION?=main
-MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_CENTOS?=http://osci-mirror-kha.kha.mirantis.net/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
+MIRROR_UBUNTU?=osci-mirror-kha.kha.mirantis.net
+MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
+MIRROR_DOCKER?=http://osci-mirror-kha.kha.mirantis.net/fwm/$(PRODUCT_VERSION)/docker
 endif
+
 ifeq ($(USE_MIRROR),usa)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://mirror.seed-us1.fuel-infra.org/fwm/$(PRODUCT_VERSION)
-MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=mirror.seed-us1.fuel-infra.org
-MIRROR_FUEL_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_UBUNTU_ROOT?=/$(PRODUCT_NAME)-repos/$(PRODUCT_VERSION)/cluster/base/trusty/
-MIRROR_UBUNTU_METHOD?=http
-MIRROR_UBUNTU_SECTION?=main
-MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_CENTOS?=http://mirror.seed-us1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
+MIRROR_UBUNTU?=mirror.seed-us1.fuel-infra.org
+MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
+MIRROR_DOCKER?=http://mirror.seed-us1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 endif
+
 ifeq ($(USE_MIRROR),cz)
 YUM_REPOS?=proprietary
-MIRROR_BASE?=http://mirror.seed-cz1.fuel-infra.org/fwm/$(PRODUCT_VERSION)
-MIRROR_CENTOS?=$(MIRROR_BASE)/centos
-MIRROR_UBUNTU?=mirror.seed-cz1.fuel-infra.org
-MIRROR_FUEL_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_UBUNTU_ROOT?=/$(PRODUCT_NAME)-repos/$(PRODUCT_VERSION)/cluster/base/trusty/
-MIRROR_UBUNTU_METHOD?=http
-MIRROR_UBUNTU_SECTION?=main
-MIRROR_DOCKER?=$(MIRROR_BASE)/docker
+MIRROR_CENTOS?=http://mirror.seed-cz1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
+MIRROR_UBUNTU?=mirror.seed-cz1.fuel-infra.org
+MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
+MIRROR_DOCKER?=http://mirror.seed-cz1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 endif
-
-
-#This suffix is used to generate path
-#to ubuntu mirror inside mirror
-#DocumentRoot
-
-MIRROR_UBUNTU_SUFFIX?=/pkgs/ubuntu
-
-YUM_DOWNLOAD_SRC?=
-
-MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
-MIRROR_CENTOS_KERNEL?=http://mirror.centos.org/centos-6/6.6/
-MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
-MIRROR_CENTOS_KERNEL_BASEURL?=$(MIRROR_CENTOS_KERNEL)/os/$(CENTOS_ARCH)
-MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
-MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
-MIRROR_UBUNTU_METHOD?=http
-MIRROR_UBUNTU_ROOT?=/osci/$(PRODUCT_NAME)/$(PRODUCT_VERSION)/cluster/base/trusty/
-MIRROR_UBUNTU_SECTION?=main
-MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
-MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
-# MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
-# and ignored in other cases
-MIRROR_POSTFIX?=stable
-MIRROR_FUEL?=http://perestroika-repo-tst.infra.mirantis.net/osci/mos/$(PRODUCT_VERSION)/fuel/base/centos6/
-ifeq (precise,$(strip $(UBUNTU_RELEASE)))
-MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-$(MIRROR_POSTFIX)/reprepro
-else
-MIRROR_FUEL_UBUNTU?=perestroika-repo-tst.infra.mirantis.net
-endif
-
-REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
-REQUIRED_DEBS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-deb.txt)
 
 # Which repositories to use for making local centos mirror.
 # Possible values you can find out from mirror/centos/yum_repos.mk file.
-# The actual name will be constracted wich prepending "yum_repo_" prefix.
+# The actual name will be constracted prepending "yum_repo_" prefix.
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
 YUM_REPOS?=official fuel subscr_manager
+MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+MIRROR_CENTOS_KERNEL?=http://mirror.centos.org/centos-6/6.6/
+SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
+MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
+# := is used as a temporary solution to align this with jenkins-jobs
+MIRROR_UBUNTU_ROOT:=/pkgs/ubuntu/
+MIRROR_UBUNTU_SUITE?=$(UBUNTU_RELEASE)
+MIRROR_UBUNTU_SECTION?=main universe multiverse restricted
+MIRROR_MOS_UBUNTU?=perestroika-repo-tst.infra.mirantis.net
+MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu
+#MIRROR_MOS_UBUNTU_SUITE?=$(PRODUCT_NAME)$(PRODUCT_VERSION)
+MIRROR_MOS_UBUNTU_SUITE?=$(shell wget -q -O- http://$(MIRROR_MOS_UBUNTU)$(MIRROR_MOS_UBUNTU_ROOT)/dists/$(PRODUCT_NAME)$(PRODUCT_VERSION).target.txt)
+MIRROR_MOS_UBUNTU_SECTION?=main restricted
+MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
+
+
+# MIRROR_FUEL affects build process only if YUM_REPOS variable contains 'fuel'.
+# Otherwise it is ignored entirely.
+# MIRROR_FUEL?=http://perestroika-repo-tst.infra.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/os/x86_64
+MIRROR_FUEL?=http://perestroika-repo-tst.infra.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/$(shell wget -q -O- http://perestroika-repo-tst.infra.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/os.target.txt)/x86_64
+
+YUM_DOWNLOAD_SRC?=
 
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.
@@ -265,26 +237,8 @@ FEATURE_GROUPS?=experimental
 comma:=,
 FEATURE_GROUPS:=$(subst $(comma), ,$(FEATURE_GROUPS))
 
-# INTEGRATION TEST CONFIG
-NOFORWARD:=1
-
 # Path to yaml configuration file to build ISO ks.cfg
 KSYAML?=$(SOURCE_DIR)/iso/ks.yaml
 
-# Docker prebuilt containers. Default is to build containers during ISO build
-DOCKER_PREBUILT?=0
-
-# Source of docker prebuilt containers archive. Works only if DOCKER_PREBUILT=true
-# Examples:
-# DOCKER_PREBUILT_SOURCE=http://srv11-msk.msk.mirantis.net/docker-test/fuel-images.tar.lrz
-# DOCKER_PREBUILT_SOURCE=/var/fuel-images.tar.lrz make docker
-DOCKER_PREBUILT_SOURCE?=http://srv11-msk.msk.mirantis.net/docker-test/fuel-images.tar.lrz
-
 # Production variable (prod, dev, docker)
 PRODUCTION?=docker
-
-SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
-SANDBOX_MIRROR_CENTOS_UPSTREAM_OS_BASEURL:=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/os/$(CENTOS_ARCH)/
-SANDBOX_MIRROR_CENTOS_UPDATES_OS_BASEURL:=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/updates/$(CENTOS_ARCH)/
-SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
-SANDBOX_MIRROR_EPEL_OS_BASEURL:=$(SANDBOX_MIRROR_EPEL)/$(CENTOS_MAJOR)/$(CENTOS_ARCH)/
