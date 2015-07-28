@@ -1,0 +1,5 @@
+#!/bin/sh -e
+
+configure-remote-logging.sh || true
+
+touch /var/lock/subsys/local
