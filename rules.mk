@@ -41,3 +41,6 @@ find-files=$(shell test -e $1 && find $1 -type f 2> /dev/null)
 uc = $(shell echo $(1) | tr a-z A-Z)
 
 comma:=,
+
+space:=
+space+=
