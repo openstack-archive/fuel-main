@@ -71,14 +71,16 @@ $(BUILD_DIR)/mirror/ubuntu/repo.done: \
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/lists
 	$(ACTION.TOUCH)
 
+wget_mirror_command:=wget
+	--no-verbose --no-parent --tries=10 --no-host-directories
+	--cut-dirs $(shell echo $(MIRROR_MOS_UBUNTU_ROOT) | tr '/' ' ' | wc -w)
+	--directory-prefix $(LOCAL_MIRROR_UBUNTU)
+	-rc http://$(MIRROR_MOS_UBUNTU)$(MIRROR_MOS_UBUNTU_ROOT)/dists/$(MIRROR_MOS_UBUNTU_SUITE)/
 $(BUILD_DIR)/mirror/ubuntu/mirror.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU)
-	set -ex; debmirror --method=$(MIRROR_UBUNTU_METHOD) --progress --checksums --nocleanup --host=$(MIRROR_FUEL_UBUNTU) --root=$(MIRROR_UBUNTU_ROOT) \
-	--arch=$(UBUNTU_ARCH) --dist=$(UBUNTU_RELEASE) --nosource --ignore-release-gpg --rsync-extra=none \
-	--section=$(MIRROR_UBUNTU_SECTION) $(LOCAL_MIRROR_UBUNTU)/
-	rm -rf $(LOCAL_MIRROR_UBUNTU)/.temp $(LOCAL_MIRROR_UBUNTU)/project
-	mv $(LOCAL_MIRROR_UBUNTU)/dists/trusty $(LOCAL_MIRROR_UBUNTU)/dists/mos7.0
-	sed -i 's/trusty/mos7.0/g' $(LOCAL_MIRROR_UBUNTU)/dists/mos7.0/Release
-	rm -f $(LOCAL_MIRROR_UBUNTU)/dists/mos7.0/main/binary-amd64/*bz2
-	$(SOURCE_DIR)/regenerate_ubuntu_repo.sh $(LOCAL_MIRROR_UBUNTU)/ mos7.0
+	set -ex; $(foreach thread,$(shell seq 1 9),$(wget_mirror_command) &) $(wget_mirror_command)
+	if ! test "$(MIRROR_MOS_UBUNTU_SUITE)" = "$(PRODUCT_NAME)$(PRODUCT_VERSION)"; then \
+	mv $(LOCAL_MIRROR_UBUNTU)/dists/$(MIRROR_MOS_UBUNTU_SUITE) \
+	$(LOCAL_MIRROR_UBUNTU)/dists/$(PRODUCT_NAME)$(PRODUCT_VERSION); fi
 	$(ACTION.TOUCH)
+
