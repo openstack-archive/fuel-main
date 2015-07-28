@@ -235,7 +235,7 @@ MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
 # MIRROR_FUEL option is valid only for 'fuel' YUM_REPOS section
 # and ignored in other cases
 MIRROR_POSTFIX?=stable
-MIRROR_FUEL?=http://perestroika-repo-tst.infra.mirantis.net/osci/mos/$(PRODUCT_VERSION)/fuel/base/centos6/
+MIRROR_FUEL?=http://perestroika-repo-tst.infra.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/os/x86_64
 ifeq (precise,$(strip $(UBUNTU_RELEASE)))
 MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VERSION)-$(MIRROR_POSTFIX)/reprepro
 else
