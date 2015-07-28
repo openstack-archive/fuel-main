@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: Dmitry Pyzhov <dpyzhov+gerrit@mirantis.com>
+Workflow+1: Dmitry Pyzhov <dpyzhov+gerrit@mirantis.com>
+Code-Review+1: Miroslav Anashkin <manashkin@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 28 Jul 2015 21:20:19 +0000
+Reviewed-on: https://review.openstack.org/165427
+Project: stackforge/fuel-main
+Branch: refs/heads/master
