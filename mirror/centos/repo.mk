@@ -2,6 +2,8 @@ include $(SOURCE_DIR)/mirror/centos/yum_repos.mk
 
 .PHONY: show-yum-urls-centos show-yum-repos-centos
 
+MIRROR_CENTOS_OS_BASEURL?=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
+
 $(BUILD_DIR)/mirror/centos/etc/yum.conf: $(call depv,yum_conf)
 $(BUILD_DIR)/mirror/centos/etc/yum.conf: export contents:=$(yum_conf)
 $(BUILD_DIR)/mirror/centos/etc/yum.conf:

@@ -11,19 +11,19 @@ endef
 define yum_upstream_repo
 [upstream]
 name=Upstream mirror
-baseurl=$(SANDBOX_MIRROR_CENTOS_UPSTREAM_OS_BASEURL)
+baseurl=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/os/$(CENTOS_ARCH)/
 gpgcheck=0
 priority=2
 [upstream-updates]
 name=Upstream mirror
-baseurl=$(SANDBOX_MIRROR_CENTOS_UPDATES_OS_BASEURL)
+baseurl=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/updates/$(CENTOS_ARCH)/
 gpgcheck=0
 priority=2
 endef
 define yum_epel_repo
 [epel]
 name=epel mirror
-baseurl=$(SANDBOX_MIRROR_EPEL_OS_BASEURL)
+baseurl=$(SANDBOX_MIRROR_EPEL)/$(CENTOS_MAJOR)/$(CENTOS_ARCH)/
 gpgcheck=0
 priority=3
 endef
@@ -83,25 +83,18 @@ sudo umount $(SANDBOX)/proc || true
 sudo umount $(SANDBOX)/dev || true
 endef
 
-
-mos_repo_release_file:=$(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT)/dists/$(PRODUCT_NAME)$(PRODUCT_VERSION)/Release
-broken_mos_repo:=$(strip $(shell wget -q -O /dev/null $(mos_repo_release_file) || echo yes))
 define apt_sources_list
 #Upstream Ubuntu mirrors
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE) main universe multiverse restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE)-updates main universe multiverse restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX) $(UBUNTU_RELEASE)-security main universe multiverse restricted
-#MOS mirrors
-$(if $(broken_mos_repo),
-# XXX: broken "perestroika" repo
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_FUEL_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(UBUNTU_RELEASE) main,
-# Normal MOS repos
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION) main restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-security main restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-proposed main restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-updates main restricted
-deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(PRODUCT_NAME)$(PRODUCT_VERSION)-holdback main restricted
-)
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(MIRROR_UBUNTU_SUITE) $(MIRROR_UBUNTU_SECTION)
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(MIRROR_UBUNTU_SUITE)-updates $(MIRROR_UBUNTU_SECTION)
+deb $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT) $(MIRROR_UBUNTU_SUITE)-security $(MIRROR_UBUNTU_SECTION)
+# MOS repos
+deb $(MIRROR_MOS_UBUNTU_METHOD)://$(MIRROR_MOS_UBUNTU)$(MIRROR_MOS_UBUNTU_ROOT) $(MIRROR_MOS_UBUNTU_SUITE) $(MIRROR_MOS_UBUNTU_SECTION)
+deb $(MIRROR_MOS_UBUNTU_METHOD)://$(MIRROR_MOS_UBUNTU)$(MIRROR_MOS_UBUNTU_ROOT) $(MIRROR_MOS_UBUNTU_SUITE)-security $(MIRROR_MOS_UBUNTU_SECTION)
+deb $(MIRROR_MOS_UBUNTU_METHOD)://$(MIRROR_MOS_UBUNTU)$(MIRROR_MOS_UBUNTU_ROOT) $(MIRROR_MOS_UBUNTU_SUITE)-proposed $(MIRROR_MOS_UBUNTU_SECTION)
+deb $(MIRROR_MOS_UBUNTU_METHOD)://$(MIRROR_MOS_UBUNTU)$(MIRROR_MOS_UBUNTU_ROOT) $(MIRROR_MOS_UBUNTU_SUITE)-updates $(MIRROR_MOS_UBUNTU_SECTION)
+deb $(MIRROR_MOS_UBUNTU_METHOD)://$(MIRROR_MOS_UBUNTU)$(MIRROR_MOS_UBUNTU_ROOT) $(MIRROR_MOS_UBUNTU_SUITE)-holdback $(MIRROR_MOS_UBUNTU_SECTION)
+
 #Extra repositories
 $(if $(EXTRA_DEB_REPOS),$(subst |,$(newline)deb ,deb $(EXTRA_DEB_REPOS)))
 endef
@@ -110,11 +103,11 @@ define apt_preferences
 # Apt repo @ obs-1 has Codename=trusty (which is OK)
 # However the one @ mirror.fuel-infra has Codename=mos6.1
 Package: *
-Pin: release o=Mirantis, n=$(UBUNTU_RELEASE)
+Pin: release o=Mirantis, n=$(MIRROR_UBUNTU_SUITE)
 Pin-Priority: 1101
 
 Package: *
-Pin: release o=Mirantis, n=mos$(PRODUCT_VERSION)
+Pin: release o=Mirantis, n=$(PRODUCT_NAME)$(PRODUCT_VERSION)
 Pin-Priority: 1101
 
 # to install packages from unmerged fuel-infra requests
@@ -144,7 +137,7 @@ touch $(SANDBOX_UBUNTU)/etc/init.d/.legacy-bootordering
 mkdir -p $(SANDBOX_UBUNTU)/usr/sbin
 cp -a $(BUILD_DIR)/policy-rc.d $(SANDBOX_UBUNTU)/usr/sbin
 echo "Running debootstrap"
-sudo debootstrap --no-check-gpg --include=ca-certificates --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) http://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX)
+sudo debootstrap --no-check-gpg --include=ca-certificates --arch=$(UBUNTU_ARCH) $(MIRROR_UBUNTU_SUITE) $(SANDBOX_UBUNTU) $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT)
 if [ -e $(SANDBOX_UBUNTU)/etc/resolv.conf ]; then sudo cp -a $(SANDBOX_UBUNTU)/etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf.orig; fi
 sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
 if [ -e $(SANDBOX_UBUNTU)/etc/hosts ]; then sudo cp -a $(SANDBOX_UBUNTU)/etc/hosts $(SANDBOX_UBUNTU)/etc/hosts.orig; fi
