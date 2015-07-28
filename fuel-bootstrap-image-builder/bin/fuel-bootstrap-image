@@ -16,8 +16,16 @@ global_conf="/etc/fuel-bootstrap-image.conf"
 [ -z "$ARCH" ] && ARCH="amd64"
 [ -z "$DESTDIR" ] && DESTDIR="/var/www/nailgun/bootstrap/ubuntu"
 
+BOOTSTRAP_FUEL_PKGS_DFLT="openssh-server ntp fuel-agent"
+
 # Packages required for the master node to discover a bootstrap node
-BOOTSTRAP_FUEL_PKGS_DFLT="openssh-client openssh-server ntp mcollective nailgun-agent nailgun-mcagents nailgun-net-check fuel-agent"
+if [ -z "$BOOTSTRAP_IRONIC" ]; then
+	BOOTSTRAP_FUEL_PKGS_DFLT="$BOOTSTRAP_FUEL_PKGS_DFLT openssh-client mcollective nailgun-agent nailgun-mcagents nailgun-net-check"
+	GONFIG_SOURCE="$datadir/ubuntu/files/"
+else
+	GONFIG_SOURCE="$datadir/ubuntu/files.ironic/"
+fi
+
 [ -z "$BOOTSTRAP_FUEL_PKGS" ] && BOOTSTRAP_FUEL_PKGS="$BOOTSTRAP_FUEL_PKGS_DFLT"
 
 if [ -n "$http_proxy" ]; then
@@ -237,7 +245,8 @@ make_utf8_locale ()
 copy_conf_files ()
 {
 	local root="$1"
-	rsync -rlptDK "$datadir/ubuntu/files/" "${root%/}"
+	local sdir="$2"
+	rsync -rlptDK "${sdir}" "${root%/}"
 	sed -i $root/etc/shadow -e '/^root/c\root:$$6$$oC7haQNQ$$LtVf6AI.QKn9Jb89r83PtQN9fBqpHT9bAFLzy.YVxTLiFgsoqlPY3awKvbuSgtxYHx4RUcpUqMotp.WZ0Hwoj.:15441:0:99999:7:::'
 }
 
@@ -341,7 +350,7 @@ build_image ()
 	upgrade_chroot "$root"
 	install_packages "$root" $BOOTSTRAP_PKGS $BOOTSTRAP_FUEL_PKGS
 	recompress_initramfs "$root"
-	copy_conf_files "$root"
+	copy_conf_files "$root" $GONFIG_SOURCE
 	if [ -n "$BOOTSTRAP_SSH_KEYS" ]; then
 		install_ssh_keys "$root" $BOOTSTRAP_SSH_KEYS
 	else
