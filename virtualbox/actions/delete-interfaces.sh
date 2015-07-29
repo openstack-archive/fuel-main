@@ -1,4 +1,5 @@
 #!/bin/bash
+# set -x
 
 #    Copyright 2015 Mirantis, Inc.
 #
@@ -13,20 +14,19 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+#
+#    This script deletes host-only network interfaces.
+#
 
-# Add VirtualBox directory to PATH
-case "$(execute uname)" in
-    CYGWIN*)
-        vbox_path_registry=`execute cat /proc/registry/HKEY_LOCAL_MACHINE/SOFTWARE/Oracle/VirtualBox/InstallDir`
-        vbox_path=`execute cygpath "$vbox_path_registry"| sed -e 's%/$%%'`
-        export PATH=$PATH:$vbox_path
-      ;;
-    *)
-      ;;
-esac
+# Include scripts with handy functions to operate VMs and VirtualBox networking
+source ./config.sh
+source ./functions/vm.sh
+source ./functions/network.sh
 
-# Shutdown installation and clean environment
-./actions/prepare-environment.sh || exit 1
-./actions/clean-previous-installation.sh || exit 1
-./actions/delete-interfaces.sh || exit 1
+# Delete host-only interfaces
+if [[ "$rm_network" == "0" ]]; then
+    delete_fuel_ifaces
+else
+    delete_all_hostonly_interfaces
+fi
 
