@@ -59,20 +59,10 @@ $(BUILD_DIR)/mirror/centos/yum-config.done: \
 $(BUILD_DIR)/mirror/centos/yum.done: $(BUILD_DIR)/mirror/centos/rpm-download.done
 	$(ACTION.TOUCH)
 
-ifneq (,$(strip $(YUM_DOWNLOAD_SRC)))
-$(BUILD_DIR)/mirror/centos/yum.done: $(BUILD_DIR)/mirror/centos/src-rpm-download.done
-endif
-
 $(BUILD_DIR)/mirror/centos/rpm-download.done: $(BUILD_DIR)/mirror/centos/urls.list
 	dst="$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages"; \
 	mkdir -p "$$dst" && \
 	xargs -n1 -P4 wget -Nnv -P "$$dst" < $<
-	$(ACTION.TOUCH)
-
-$(BUILD_DIR)/mirror/centos/src-rpm-download.done: $(BUILD_DIR)/mirror/centos/src_urls.list
-	dst="$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Sources"; \
-	mkdir -p "$$dst" && \
-	xargs --no-run-if-empty -n1 -P4 wget -Nnv -P "$$dst" < $<
 	$(ACTION.TOUCH)
 
 # Strip the comments and sort the list alphabetically
@@ -153,26 +143,6 @@ $(BUILD_DIR)/mirror/centos/urls.list: $(BUILD_DIR)/mirror/centos/requirements-rp
 # yumdownloader -q prints logs to stdout, filter them out
 	sed -rne '/\.rpm$$/ {p}' < $@.out > $@.pre
 	sort -u < $@.pre > $@.tmp
-	mv $@.tmp $@
-
-$(BUILD_DIR)/mirror/centos/mirantis_rpms.list: $(BUILD_DIR)/mirror/centos/urls.list
-	sed -rne '/$(subst /,\/,$(MIRROR_FUEL))/ s/^.*[/]([^/]+)\.($(CENTOS_ARCH)|noarch)\.rpm$$/\1/p' < $< > $@.pre && \
-	sort -u < $@.pre > $@.tmp && \
-	mv $@.tmp $@
-
-$(BUILD_DIR)/mirror/centos/src_urls.list: $(BUILD_DIR)/mirror/centos/mirantis_rpms.list
-	mkdir -p "$(@D)" && \
-	env \
-		TMPDIR="$(centos_empty_installroot)/cache" \
-		TMP="$(centos_empty_installroot)/cache" \
-	$(BUILD_DIR)/bin/yumdownloader -q --urls \
-		--archlist=src --source \
-		--installroot="$(centos_empty_installroot)" \
-		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
-		--cacheonly \
-		`cat $<` > $@.pre 2>$@.log
-	sed -rne '/\.rpm$$/ {p}' -i $@.pre && \
-	sort -u < $@.pre > $@.tmp && \
 	mv $@.tmp $@
 
 show-yum-urls-centos: $(BUILD_DIR)/mirror/centos/urls.list
