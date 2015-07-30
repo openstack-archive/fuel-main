@@ -59,20 +59,10 @@ $(BUILD_DIR)/mirror/centos/yum-config.done: \
 $(BUILD_DIR)/mirror/centos/yum.done: $(BUILD_DIR)/mirror/centos/rpm-download.done
 	$(ACTION.TOUCH)
 
-ifneq (,$(strip $(YUM_DOWNLOAD_SRC)))
-$(BUILD_DIR)/mirror/centos/yum.done: $(BUILD_DIR)/mirror/centos/src-rpm-download.done
-endif
-
 $(BUILD_DIR)/mirror/centos/rpm-download.done: $(BUILD_DIR)/mirror/centos/urls.list
 	dst="$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages"; \
 	mkdir -p "$$dst" && \
 	xargs -n1 -P4 wget -Nnv -P "$$dst" < $<
-	$(ACTION.TOUCH)
-
-$(BUILD_DIR)/mirror/centos/src-rpm-download.done: $(BUILD_DIR)/mirror/centos/src_urls.list
-	dst="$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Sources"; \
-	mkdir -p "$$dst" && \
-	xargs --no-run-if-empty -n1 -P4 wget -Nnv -P "$$dst" < $<
 	$(ACTION.TOUCH)
 
 # Strip the comments and sort the list alphabetically
