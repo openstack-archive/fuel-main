@@ -65,7 +65,7 @@ $(BUILD_DIR)/mirror/centos/yum.done: \
 	test `grep "conflicts with" $(BUILD_DIR)/mirror/centos/yumdownloader.log | grep -v '^[[:space:]]' | wc -l` -le 9
 	# Yumdownloader workaround number four:
 	# yumdownloader should fail if some errors appears
-	test `grep "Errno" $(BUILD_DIR)/mirror/centos/yumdownloader.log | wc -l` = 0
+	test `grep "Errno" $(BUILD_DIR)/mirror/centos/yumdownloader.log | grep -Ev "perl\(Error\)|perl-Error" | wc -l` = 0
 	$(ACTION.TOUCH)
 
 show-yum-urls-centos: \
