@@ -64,5 +64,10 @@ if __name__ == "__main__":
     else:
         pid = '/var/run/simplehttpd.pid'
 
-    server = SimpleHTTPDaemon('0.0.0.0', port, pid, 600)
+    if sys.argv[3:]:
+        timeout = int(sys.argv[3])
+    else:
+        timeout = sys.maxint
+
+    server = SimpleHTTPDaemon('0.0.0.0', port, pid, timeout)
     server.start()
