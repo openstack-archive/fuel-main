@@ -286,3 +286,7 @@ SANDBOX_MIRROR_CENTOS_UPSTREAM_OS_BASEURL:=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/os/
 SANDBOX_MIRROR_CENTOS_UPDATES_OS_BASEURL:=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/updates/$(CENTOS_ARCH)/
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
 SANDBOX_MIRROR_EPEL_OS_BASEURL:=$(SANDBOX_MIRROR_EPEL)/$(CENTOS_MAJOR)/$(CENTOS_ARCH)/
+
+# Copy local /etc/ssl certs inside SANDBOX, which used for build deb mirror and packages.
+# This option should be enabled, in case you have to pass https repos for Ubuntu.
+SANDBOX_COPY_CERTS?=
