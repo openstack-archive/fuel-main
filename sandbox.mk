@@ -164,6 +164,13 @@ sudo cp $(BUILD_DIR)/mirror/ubuntu/sources.list $(SANDBOX_UBUNTU)/etc/apt/
 sudo cp $(BUILD_DIR)/policy-rc.d $(SANDBOX_UBUNTU)/usr/sbin
 echo "Allowing using unsigned repos"
 echo "APT::Get::AllowUnauthenticated 1;" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
+if [ "$(SANDBOX_COPY_CERTS)" = "true" ] ; then
+echo "Copy local certs, for be ensure passing custom certs inside chroot"
+sudo bash -c "rsync -arzhlPL /etc/ssl/certs/ $(SANDBOX_UBUNTU)/usr/share/ca-certificates/local/"
+echo "Acquire::https {  Verify-Peer \"true\";  Verify-Host \"true\"; }; " | sudo tee -a $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/05-local-ssl-certs
+sudo chroot $(SANDBOX_UBUNTU) sh -xc "(cd  /usr/share/ca-certificates; find local -type f) >> /etc/ca-certificates.conf"
+sudo chroot $(SANDBOX_UBUNTU) update-ca-certificates
+fi
 echo "Updating apt package database"
 sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p '$${TEMP}'; mkdir -p /tmp/user/0)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get update
