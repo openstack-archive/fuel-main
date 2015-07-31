@@ -142,7 +142,7 @@ touch $(SANDBOX_UBUNTU)/etc/init.d/.legacy-bootordering
 mkdir -p $(SANDBOX_UBUNTU)/usr/sbin
 cp -a $(BUILD_DIR)/policy-rc.d $(SANDBOX_UBUNTU)/usr/sbin
 echo "Running debootstrap"
-sudo debootstrap --no-check-gpg --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) http://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX)
+sudo debootstrap --no-check-gpg --include=ca-certificates --arch=$(UBUNTU_ARCH) $(UBUNTU_RELEASE) $(SANDBOX_UBUNTU) http://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_SUFFIX)
 if [ -e $(SANDBOX_UBUNTU)/etc/resolv.conf ]; then sudo cp -a $(SANDBOX_UBUNTU)/etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf.orig; fi
 sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
 if [ -e $(SANDBOX_UBUNTU)/etc/hosts ]; then sudo cp -a $(SANDBOX_UBUNTU)/etc/hosts $(SANDBOX_UBUNTU)/etc/hosts.orig; fi
@@ -164,6 +164,13 @@ sudo cp $(BUILD_DIR)/mirror/ubuntu/sources.list $(SANDBOX_UBUNTU)/etc/apt/
 sudo cp $(BUILD_DIR)/policy-rc.d $(SANDBOX_UBUNTU)/usr/sbin
 echo "Allowing using unsigned repos"
 echo "APT::Get::AllowUnauthenticated 1;" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
+if [ "$(SANDBOX_COPY_CERTS)" = "1" ] ; then
+echo "Copying local certificates and CA to chroot"
+sudo bash -c "mkdir -p $(SANDBOX_UBUNTU)/usr/share/ca-certificates/ ; rsync -arzL /etc/ssl/certs/ $(SANDBOX_UBUNTU)/usr/share/ca-certificates/local/"
+echo "Acquire::https {  Verify-Peer \"true\";  Verify-Host \"true\"; }; " | sudo tee -a $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/05-local-ssl-certs
+sudo chroot $(SANDBOX_UBUNTU) sh -xc "(cd  /usr/share/ca-certificates; find local -type f) >> /etc/ca-certificates.conf"
+sudo chroot $(SANDBOX_UBUNTU) update-ca-certificates
+fi
 echo "Updating apt package database"
 sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p '$${TEMP}'; mkdir -p /tmp/user/0)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get update
