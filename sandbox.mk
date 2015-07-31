@@ -164,6 +164,11 @@ sudo cp $(BUILD_DIR)/mirror/ubuntu/sources.list $(SANDBOX_UBUNTU)/etc/apt/
 sudo cp $(BUILD_DIR)/policy-rc.d $(SANDBOX_UBUNTU)/usr/sbin
 echo "Allowing using unsigned repos"
 echo "APT::Get::AllowUnauthenticated 1;" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
+if [ ! -z "$(CUSTOM_CA_CERTS)" ] ; then
+echo "Allowing using custom https repos" 
+echo "$(CUSTOM_CA_CERTS)" | sudo tee -a $(SANDBOX_UBUNTU)/etc/ssl/certs/extra.pem
+echo "Acquire::https {  Verify-Peer \"true\";  Verify-Host \"true\";  CaInfo \"/etc/ssl/certs/extra.pem\"; }; " | sudo tee -a $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
+fi
 echo "Updating apt package database"
 sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p '$${TEMP}'; mkdir -p /tmp/user/0)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get update
