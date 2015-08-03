@@ -41,7 +41,7 @@ case "${DISTRO}" in
 
   trusty)
     GEMPKG="ruby ruby-dev"
-    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys D5A05778
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D2B45A2
     echo "deb http://mirror.fuel-infra.org/devops/ubuntu/ ./" | sudo tee /etc/apt/sources.list.d/fuel-devops.list
     sudo apt-get update && sudo apt-get -y install nodejs nodejs-legacy npm
     ;;
