@@ -118,7 +118,8 @@ endif
 ########################
 # DOCKER_ART_NAME is defined in /docker/module.mk
 $(ISOROOT)/docker.done: $(BUILD_DIR)/docker/build.done \
-		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done
+		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done \
+                $(BUILD_DIR)/docker/repo-container-down.done
 	$(ACTION.TOUCH)
 
 ########################
