@@ -5,8 +5,7 @@ REPO_CONTAINER:=fuel-repo-container
 docker: $(ARTS_DIR)/$(DOCKER_ART_NAME)
 
 $(ARTS_DIR)/$(DOCKER_ART_NAME): \
-		$(BUILD_DIR)/docker/build.done \
-		$(BUILD_DIR)/docker/repo-container-down.done
+		$(BUILD_DIR)/docker/build.done
 	mkdir -p $(@D)
 	cp $(BUILD_DIR)/docker/$(DOCKER_ART_NAME) $@
 
@@ -52,8 +51,9 @@ $(BUILD_DIR)/docker/$1.done: \
 	cp $(SOURCE_DIR)/docker/docker-astute.yaml $(BUILD_DIR)/docker/$1/etc/fuel/astute.yaml && \
 	sudo docker build --force-rm -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
 	$$(ACTION.TOUCH)
-endef
 
+$(BUILD_DIR)/docker/build.done:$(BUILD_DIR)/docker/repo-container-down.done
+endef
 $(BUILD_DIR)/docker/base-images.done: \
 		$(BUILD_DIR)/mirror/docker/build.done
 	for container in $(LOCAL_MIRROR_DOCKER_BASEURL)/*.xz; do xz -dkc -T0 $$container | sudo docker load; done
@@ -80,9 +80,8 @@ $(BUILD_DIR)/docker/repo-container-up.done: \
 	wget -t10 -T1 --waitretry 1 --retry-connrefused --no-proxy http://127.0.0.1:$${REPO_PORT}/os/x86_64/repodata/repomd.xml
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/docker/repo-container-down.done: \
-		$(BUILD_DIR)/docker/build.done
-	sudo docker rm -f "$(REPO_CONTAINER)"
+$(BUILD_DIR)/docker/repo-container-down.done:
+	-sudo docker rm -f "$(REPO_CONTAINER)"
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/docker/sources.done: \
