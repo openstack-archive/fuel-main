@@ -43,7 +43,7 @@ case "${DISTRO}" in
   trusty)
     GEMPKG="ruby ruby-dev"
     # we need multistrap version 2.1.6, let's install it from devops mirror
-    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys D5A05778
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D2B45A2
     echo "deb http://mirror.fuel-infra.org/devops/ubuntu/ ./" | sudo tee /etc/apt/sources.list.d/fuel-devops.list
     # be sure, that we will not update multistrap in future
     sudo tee /etc/apt/preferences.d/fuel-pin-300 <<EOF
