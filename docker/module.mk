@@ -5,8 +5,7 @@ REPO_CONTAINER:=fuel-repo-container
 docker: $(ARTS_DIR)/$(DOCKER_ART_NAME)
 
 $(ARTS_DIR)/$(DOCKER_ART_NAME): \
-		$(BUILD_DIR)/docker/build.done \
-		$(BUILD_DIR)/docker/repo-container-down.done
+		$(BUILD_DIR)/docker/build.done
 	mkdir -p $(@D)
 	cp $(BUILD_DIR)/docker/$(DOCKER_ART_NAME) $@
 
@@ -23,7 +22,8 @@ else
 # Lrzip all containers into single archive
 $(BUILD_DIR)/docker/build.done: \
 		$(BUILD_DIR)/docker/fuel-centos.done \
-		$(BUILD_DIR)/docker/sources.done
+		$(BUILD_DIR)/docker/sources.done \
+		$(BUILD_DIR)/docker/repo-container-down.done
 	sudo docker save fuel/centos busybox $(foreach cnt,$(containers), fuel/$(cnt)_$(PRODUCT_VERSION)) > $(BUILD_DIR)/docker/fuel-images.tar
 	lrzip -L2 -U -D -f $(BUILD_DIR)/docker/fuel-images.tar -o $(BUILD_DIR)/docker/$(DOCKER_ART_NAME)
 	rm -f $(BUILD_DIR)/docker/fuel-images.tar
