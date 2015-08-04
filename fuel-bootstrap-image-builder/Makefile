@@ -15,6 +15,7 @@ install:
 	install -d -m 755 $(DESTDIR)$(PREFIX)/bin
 	install -d -m 755 $(DESTDIR)$(PREFIX)/share/fuel-bootstrap-image
 	install -m 755 -t $(DESTDIR)$(PREFIX)/bin $(top_srcdir)/bin/fuel-bootstrap-image
+	install -m 755 -t $(DESTDIR)$(PREFIX)/bin $(top_srcdir)/bin/fuel-bootstrap-image-set
 	tar cf - -C $(top_srcdir) share | tar xf - -C $(DESTDIR)$(PREFIX)
 
 dist: $(top_builddir)/fuel-bootstrap-image-builder-$(VERSION).tar.gz
