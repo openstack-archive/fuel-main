@@ -1,0 +1,102 @@
+#!/bin/sh
+# Script for switching between the Ubuntu and CentOS based bootstrap images.
+# Usage: fuel-bootstrap-image-set centos|ubuntu
+set -e
+MYSELF="${0##*/}"
+ASTUTE_YAML="/etc/fuel/astute.yaml"
+cobbler_manifest="/etc/puppet/modules/nailgun/examples/cobbler-only.pp"
+astute_manifest="/etc/puppet/modules/nailgun/examples/astute-only.pp"
+ubuntu_bootstrap_dir="/var/www/nailgun/bootstrap/ubuntu"
+
+run_puppet () {
+	local container="$1"
+	local manifest="$2"
+	local ret=''
+	set +e
+	dockerctl shell "$container" puppet apply --detailed-exitcodes -dv "$manifest"
+	ret=$?
+	set -e
+	if [ "$ret" = "0" ] || [ "$ret" = "2" ]; then
+		return 0
+	else
+		cat >&2 <<-EOF
+		$MYSELF: puppet apply $manifest failed: exit code $ret
+		$MYSELF: container: $container
+		EOF
+		exit 1
+	fi
+}
+
+maybe_build_ubuntu_bootstrap ()
+{
+	local log='/var/log/fuel-bootstrap-image-build.log'
+	local need_rebuild=''
+	for item in linux initramfs.img root.squashfs; do
+		if [ ! -f "$ubuntu_bootstrap_dir/$item" ]; then
+			need_rebuild='yes'
+		fi
+	done
+	if [ -n "$need_rebuild" ]; then
+		cat >&2 <<-EOF
+		$MYSELF: info: Ubuntu bootstrap image does not exist, building one
+		$MYSELF: info: build log is available at $log
+		EOF
+		if ! fuel-bootstrap-image >>"$log" 2>&1; then
+			cat >&2 <<-EOF
+			$MYSELF: error: failed to build Ubuntu bootstrap image
+			$MYSELF: error: see $log for more details
+			EOF
+			exit 1
+		fi
+	fi
+}
+
+verify_bootstrap_flavor () {
+	local flavor="$1"
+	if [ -z "$flavor" ]; then
+		cat >&2 <<-EOF
+		$MYSELF: error: no bootstrap image specified
+		Usage: $MYSELF centos|ubuntu
+		EOF
+		exit 1
+	fi
+	case "$flavor" in
+		centos|CentOS)
+			flavor='centos'
+			;;
+		ubuntu|Ubuntu)
+			flavor='ubuntu'
+			;;
+		*)
+			cat >&2 <<-EOF
+			$MYSELF: error: unknown bootstrap image: $flavor
+			$MYSELF: available bootstrap images: ubuntu, centos
+			EOF
+			exit 1
+			;;
+	esac
+}
+
+write_astute_yaml () {
+	local flavor="$1"
+	python <<-PYEOF
+	from fuelmenu.fuelmenu import Settings
+	conf = {'BOOTSTRAP': {'flavor': "$flavor"}}
+	Settings().write(conf, outfn="$ASTUTE_YAML", defaultsfile=None)
+	PYEOF
+}
+
+switch_bootstrap () {
+	local flavor="$1"
+	verify_bootstrap_flavor "$flavor"
+	if [ "$flavor" = "ubuntu" ]; then
+		maybe_build_ubuntu_bootstrap
+	fi
+	write_astute_yaml "$flavor"
+	run_puppet cobbler "$cobbler_manifest"
+	run_puppet astute "$astute_manifest"
+	# XXX: astute puppet manifest should take care to restart astuted on its own
+	dockerctl shell astute killall -sHUP supervisord
+}
+
+switch_bootstrap $1
