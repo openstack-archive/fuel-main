@@ -5,8 +5,7 @@ REPO_CONTAINER:=fuel-repo-container
 docker: $(ARTS_DIR)/$(DOCKER_ART_NAME)
 
 $(ARTS_DIR)/$(DOCKER_ART_NAME): \
-		$(BUILD_DIR)/docker/build.done \
-		$(BUILD_DIR)/docker/repo-container-down.done
+		$(BUILD_DIR)/docker/build.done
 	mkdir -p $(@D)
 	cp $(BUILD_DIR)/docker/$(DOCKER_ART_NAME) $@
 
@@ -27,6 +26,7 @@ $(BUILD_DIR)/docker/build.done: \
 	sudo docker save fuel/centos busybox $(foreach cnt,$(containers), fuel/$(cnt)_$(PRODUCT_VERSION)) > $(BUILD_DIR)/docker/fuel-images.tar
 	lrzip -L2 -U -D -f $(BUILD_DIR)/docker/fuel-images.tar -o $(BUILD_DIR)/docker/$(DOCKER_ART_NAME)
 	rm -f $(BUILD_DIR)/docker/fuel-images.tar
+	sudo docker rm -f "$(REPO_CONTAINER)" || true
 	$(ACTION.TOUCH)
 endif
 
@@ -78,11 +78,6 @@ $(BUILD_DIR)/docker/repo-container-up.done: \
 	sudo docker -D run -d -p 80 -v $(LOCAL_MIRROR_CENTOS):/var/www/html --name "$(REPO_CONTAINER)" fuel/centos /usr/sbin/apachectl -DFOREGROUND
 	REPO_PORT=`sudo docker port $(REPO_CONTAINER) 80 | cut -d':' -f2` && \
 	wget -t10 -T1 --waitretry 1 --retry-connrefused --no-proxy http://127.0.0.1:$${REPO_PORT}/os/x86_64/repodata/repomd.xml
-	$(ACTION.TOUCH)
-
-$(BUILD_DIR)/docker/repo-container-down.done: \
-		$(BUILD_DIR)/docker/build.done
-	sudo docker rm -f "$(REPO_CONTAINER)"
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/docker/sources.done: \
