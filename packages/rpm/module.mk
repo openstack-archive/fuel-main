@@ -110,6 +110,7 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 	mkdir -p $(SANDBOX)/tmp/SOURCES && \
 	sudo cp -r $(BUILD_DIR)/docker/$(DOCKER_ART_NAME) $(SANDBOX)/tmp/SOURCES && \
 	(cd $(BUILD_DIR)/docker && sudo tar czf $(SANDBOX)/tmp/SOURCES/fuel-images-sources.tar.gz sources utils) && \
+	sudo cp $(BUILD_DIR)/docker/extra_nets_from_cobbler.py $(SANDBOX)/tmp/SOURCES && \
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/fuel-docker-images.spec $(SANDBOX)/tmp && \
 	sudo chroot $(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/fuel-docker-images.spec
 	cp $(SANDBOX)/tmp/RPMS/*/fuel-docker-images-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
