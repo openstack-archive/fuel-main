@@ -1,6 +1,6 @@
 %define name fuel-docker-images
 %{!?version: %define version 7.0.0}
-%{!?release: %define release 1}
+%{!?release: %define release 2}
 
 Name:    %{name}
 Summary:  Fuel Docker images
@@ -25,7 +25,9 @@ tar xzvf %{SOURCE1} -C %{name}-%{version}
 %install
 cd %{name}-%{version}
 mkdir -p %{buildroot}/var/www/nailgun/docker/{images,sources,utils}
+mkdir -p %{buildroot}/var/lib/fuel-docker-images
 install -m 644 %{SOURCE0} %{buildroot}/var/www/nailgun/docker/images/fuel-images.tar.lrz
+mv utils/extra_nets_from_cobbler.py %{buildroot}/var/lib/fuel-docker-images/
 cp -R sources %{buildroot}/var/www/nailgun/docker/
 cp -R utils %{buildroot}/var/www/nailgun/docker/
 
@@ -35,10 +37,17 @@ rm -rf %{buildroot}
 %post
 rm -f /var/www/nailgun/docker/images/fuel-images.tar
 lrzip -d -o /var/www/nailgun/docker/images/fuel-images.tar /var/www/nailgun/docker/images/fuel-images.tar.lrz
+if [ "$1" = "2" ]; then
+  #upgrade script execution
+  umask 0177
+  cp /etc/fuel/astute.yaml /etc/fuel/astute.yaml.bak
+  dockerctl shell cobbler cat /etc/cobbler/dnsmasq.template | python /var/lib/fuel-docker-images/extra_nets_from_cobbler.py > /etc/fuel/astute.yaml.tmp
+  mv /etc/fuel/astute.yaml.tmp /etc/fuel/astute.yaml
+fi
 
 %files
 %defattr(-,root,root)
 /var/www/nailgun/docker/images/fuel-images.tar.lrz
 /var/www/nailgun/docker/sources/*
 /var/www/nailgun/docker/utils/*
-
+/var/lib/fuel-docker-images/*
