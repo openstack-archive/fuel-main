@@ -1,4 +1,4 @@
-.PHONY: mirror-ubuntu repo-ubuntu
+.PHONY: mirror-ubuntu repo-ubuntu show-apt-source-list
 
 mirror-ubuntu: $(BUILD_DIR)/mirror/ubuntu/mirror.done
 repo-ubuntu: $(BUILD_DIR)/mirror/ubuntu/repo.done
@@ -82,3 +82,8 @@ $(BUILD_DIR)/mirror/ubuntu/mirror.done:
 	rm -f $(LOCAL_MIRROR_UBUNTU)/dists/mos7.0/main/binary-amd64/*bz2
 	$(SOURCE_DIR)/regenerate_ubuntu_repo.sh $(LOCAL_MIRROR_UBUNTU)/ mos7.0
 	$(ACTION.TOUCH)
+
+show-apt-source-list: $(call depv,apt_sources_list)
+show-apt-source-list: export apt_source_content:=$(apt_sources_list)
+show-apt-source-list:
+	/bin/echo -e "$${apt_source_content}"
