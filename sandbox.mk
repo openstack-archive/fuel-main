@@ -1,3 +1,5 @@
+.PHONY: show-apt-source-list
+
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
@@ -186,3 +188,8 @@ define SANDBOX_UBUNTU_DOWN
 	sudo umount $(SANDBOX_UBUNTU)/tmp/apt || true
 endef
 
+show-apt-source-list: export apt_source_content:=$(apt_sources_list)
+show-apt-source-list: export apt_pinning_content:=$(apt_preferences)
+show-apt-source-list:
+	/bin/echo -e "$${apt_source_content}"
+	/bin/echo -e "$${apt_pinning_content}"
