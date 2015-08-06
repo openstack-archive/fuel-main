@@ -1,6 +1,6 @@
 %define name fuel-docker-images
 %{!?version: %define version 7.0.0}
-%{!?release: %define release 1}
+%{!?release: %define release 2}
 
 Name:    %{name}
 Summary:  Fuel Docker images
@@ -35,10 +35,16 @@ rm -rf %{buildroot}
 %post
 rm -f /var/www/nailgun/docker/images/fuel-images.tar
 lrzip -d -o /var/www/nailgun/docker/images/fuel-images.tar /var/www/nailgun/docker/images/fuel-images.tar.lrz
+if [ "$1" = "2" ]; then
+  #upgrade
+  umask 0177
+  cp /etc/fuel/astute.yaml /etc/fuel/astute.yaml.bak
+  dockerctl shell cobbler cat /etc/cobbler/dnsmasq.template | python /var/www/nailgun/docker/utils/extra_nets_from_cobbler.py > /etc/fuel/astute.yaml.tmp
+  mv /etc/fuel/astute.yaml.tmp /etc/fuel/astute.yaml
+fi
 
 %files
 %defattr(-,root,root)
 /var/www/nailgun/docker/images/fuel-images.tar.lrz
 /var/www/nailgun/docker/sources/*
 /var/www/nailgun/docker/utils/*
-
