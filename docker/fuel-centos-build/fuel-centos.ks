@@ -56,6 +56,8 @@ reboot
 -ql23xx-firmware
 -ql2400-firmware
 -ql2500-firmware
+-hpsa
+-megaraid_sas
 -redhat-logos
 -rt61pci-firmware
 -rt73usb-firmware
