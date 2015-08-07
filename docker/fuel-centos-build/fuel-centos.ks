@@ -28,6 +28,7 @@ reboot
 -dhclient
 -efibootmgr
 -ethtool
+-hpsa
 -initscripts
 -iproute
 -iptables
@@ -48,6 +49,7 @@ reboot
 -kbd
 -kernel-firmware
 -libertas-usb8388-firmware
+-megaraid_sas
 -openssh-server
 -postfix
 -policycoreutils
