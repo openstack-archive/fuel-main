@@ -1,4 +1,4 @@
-.PHONY: show-apt-source-list
+.PHONY: show-ubuntu-sandbox-repos show-centos-sandbox-repos
 
 define yum_local_repo
 [mirror]
@@ -188,8 +188,18 @@ define SANDBOX_UBUNTU_DOWN
 	sudo umount $(SANDBOX_UBUNTU)/tmp/apt || true
 endef
 
-show-apt-source-list: export apt_source_content:=$(apt_sources_list)
-show-apt-source-list: export apt_pinning_content:=$(apt_preferences)
-show-apt-source-list:
+show-ubuntu-sandbox-repos: export apt_source_content:=$(apt_sources_list)
+show-ubuntu-sandbox-repos: export apt_pinning_content:=$(apt_preferences)
+show-ubuntu-sandbox-repos:
 	/bin/echo -e "$${apt_source_content}"
 	/bin/echo -e "$${apt_pinning_content}"
+
+show-centos-sandbox-repos: export sandbox_yum_conf_content:=$(sandbox_yum_conf)
+show-centos-sandbox-repos: export yum_upstream_repo_content:=$(yum_upstream_repo)
+show-centos-sandbox-repos: export yum_epel_repo_content:=$(yum_epel_repo)
+show-centos-sandbox-repos: export yum_local_repo_content:=$(yum_local_repo)
+show-centos-sandbox-repos:
+	/bin/echo -e "$${sandbox_yum_conf_content}\n"
+	/bin/echo -e "$${yum_upstream_repo_content}\n"
+	/bin/echo -e "$${yum_epel_repo_content}\n"
+	/bin/echo -e "$${yum_local_repo_content}\n"

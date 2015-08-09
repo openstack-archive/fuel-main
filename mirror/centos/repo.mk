@@ -1,6 +1,6 @@
 include $(SOURCE_DIR)/mirror/centos/yum_repos.mk
 
-.PHONY: show-yum-urls-centos
+.PHONY: show-yum-urls-centos show-yum-repos-centos
 
 $(BUILD_DIR)/mirror/centos/etc/yum.conf: $(call depv,yum_conf)
 $(BUILD_DIR)/mirror/centos/etc/yum.conf: export contents:=$(yum_conf)
@@ -147,6 +147,11 @@ $(BUILD_DIR)/mirror/centos/urls.list: $(BUILD_DIR)/mirror/centos/requirements-rp
 
 show-yum-urls-centos: $(BUILD_DIR)/mirror/centos/urls.list
 	cat $<
+
+show-yum-repos-centos: \
+		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo \
+		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo
+	cat $?
 
 $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml: \
 		export COMPSXML=$(shell wget -qO- $(MIRROR_CENTOS_OS_BASEURL)/repodata/repomd.xml | grep -m 1 '$(@F)' | awk -F'"' '{ print $$2 }')
