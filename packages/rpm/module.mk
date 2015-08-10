@@ -22,6 +22,10 @@ $(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
 	sudo tar czf $@.tmp -C $(SANDBOX) .
 	mv $@.tmp $@
 
+# fuel-library offline build hook
+$(BUILD_DIR)/packages/sources/fuel-library$(PRODUCT_VERSION)/upstream_modules.tar.gz: $(BUILD_DIR)/packages/source_fuel-library$(PRODUCT_VERSION).done
+	wget -nv $(USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES) -O $@.tmp
+	mv $@.tmp $@
 
 # Usage:
 # (eval (call build_rpm,package_name))
