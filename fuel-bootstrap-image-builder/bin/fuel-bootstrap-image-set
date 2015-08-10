@@ -51,6 +51,12 @@ maybe_build_ubuntu_bootstrap ()
 	fi
 }
 
+maybe_restart_dnsmasq () {
+	if ! dockerctl shell cobbler service dnsmasq status >/dev/null; then
+		dockerctl shell cobbler service dnsmasq restart
+	fi
+}
+
 verify_bootstrap_flavor () {
 	local flavor="$1"
 	if [ -z "$flavor" ]; then
@@ -87,6 +93,7 @@ write_astute_yaml () {
 	PYEOF
 }
 
+
 switch_bootstrap () {
 	local flavor="$1"
 	verify_bootstrap_flavor "$flavor"
@@ -95,6 +102,8 @@ switch_bootstrap () {
 	fi
 	write_astute_yaml "$flavor"
 	run_puppet cobbler "$cobbler_manifest"
+	# XXX: sometimes dnsmasq stops after cobbler sync
+	maybe_restart_dnsmasq
 	run_puppet astute "$astute_manifest"
 	# XXX: astute puppet manifest should take care to restart astuted on its own
 	dockerctl shell astute killall -sHUP supervisord
