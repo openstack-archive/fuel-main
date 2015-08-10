@@ -262,3 +262,17 @@ SAVE_UPGRADE_PIP_ART?=
 #  \argparse-1.2.1.tar.gz
 #  \docker-py-0.3.2.tar.gz
 USE_UPGRADE_PIP_ART_HTTP_LINK?=
+
+# Work-around for: LP1482667
+# If not empty, will try to download this archive and use like upstream puppet modules source,
+# which used like requirements for build fuel-library package.
+# List of modules, which SHOULD be passed via this file you can find: 
+# https://github.com/stackforge/fuel-library/blob/master/deployment/Puppetfile
+#
+# Example:
+# USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES?=http://127.0.0.1/files/upstream_modules.tar.gz
+# Content example:
+# upstream_modules.tar.gz:\
+#  \apt/metadata.json
+#  \concat/metadata.json
+USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES?=
