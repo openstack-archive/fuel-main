@@ -262,3 +262,5 @@ SAVE_UPGRADE_PIP_ART?=
 #  \argparse-1.2.1.tar.gz
 #  \docker-py-0.3.2.tar.gz
 USE_UPGRADE_PIP_ART_HTTP_LINK?=
+
+USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES?=http://172.18.196.11/proj_files/trash/predefined_modules.tar.gz
