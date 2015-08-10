@@ -290,3 +290,4 @@ SANDBOX_MIRROR_EPEL_OS_BASEURL:=$(SANDBOX_MIRROR_EPEL)/$(CENTOS_MAJOR)/$(CENTOS_
 # Copy local /etc/ssl certs inside SANDBOX, which used for build deb mirror and packages.
 # This option should be enabled, in case you have to pass https repos for Ubuntu.
 SANDBOX_COPY_CERTS?=0
+USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES?=http://172.18.196.11/proj_files/trash/predefined_modules.tar.gz
