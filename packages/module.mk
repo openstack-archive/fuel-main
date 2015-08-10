@@ -14,6 +14,11 @@ $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	cp $3 $(BUILD_DIR)/packages/sources/$1/$2
 endef
 
+# fuel-library offline build hook
+$(BUILD_DIR)/packages/sources/fuel-library$(PRODUCT_VERSION)/upstream_modules.tar.gz: $(BUILD_DIR)/packages/source_fuel-library$(PRODUCT_VERSION).done
+	wget -nv $(USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES) -O $@.tmp
+	mv $@.tmp $@
+
 # Usage:
 # (eval (call prepare_python_source,package_name,file_name,source_path))
 # Note: dependencies for deb targets are also specified here to make
