@@ -22,7 +22,6 @@ $(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
 	sudo tar czf $@.tmp -C $(SANDBOX) .
 	mv $@.tmp $@
 
-
 # Usage:
 # (eval (call build_rpm,package_name))
 define build_rpm
