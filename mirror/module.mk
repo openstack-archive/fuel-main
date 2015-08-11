@@ -15,10 +15,12 @@ include $(SOURCE_DIR)/mirror/docker/module.mk
 $(BUILD_DIR)/mirror/build.done: \
 		$(BUILD_DIR)/mirror/centos/build.done \
 		$(BUILD_DIR)/mirror/ubuntu/build.done \
-		$(BUILD_DIR)/mirror/docker/build.done
+		$(BUILD_DIR)/mirror/docker/build.done \
+		$(BUILD_DIR)/mirror/make-changelog.done
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/mirror/make-changelog.done: $(BUILD_DIR)/mirror/build.done
-	sudo bash -c "export LOCAL_MIRROR=$(LOCAL_MIRROR); \
-		$(SOURCE_DIR)/report-changelog.sh"
+$(BUILD_DIR)/mirror/make-changelog.done: \
+		$(BUILD_DIR)/mirror/ubuntu/mirror.done \
+		$(BUILD_DIR)/mirror/centos/build.done
+	env LOCAL_MIRROR=$(LOCAL_MIRROR) $(SOURCE_DIR)/report-changelog.sh
 	$(ACTION.TOUCH)
