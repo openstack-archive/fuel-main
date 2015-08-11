@@ -124,7 +124,7 @@ bash /etc/rc.local
 cat > /etc/yum.repos.d/mos${FUEL_RELEASE}-updates.repo << EOF
 [mos${FUEL_RELEASE}-updates]
 name=mos${FUEL_RELEASE}-updates
-baseurl=http://mirror.fuel-infra.org/mos/centos-6/mos${FUEL_RELEASE}/updates/
+baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos${FUEL_RELEASE}-centos6-fuel/updates/
 gpgcheck=0
 skip_if_unavailable=1
 EOF
@@ -133,7 +133,7 @@ EOF
 cat > /etc/yum.repos.d/mos${FUEL_RELEASE}-security.repo << EOF
 [mos${FUEL_RELEASE}-security]
 name=mos${FUEL_RELEASE}-security
-baseurl=http://mirror.fuel-infra.org/mos/centos-6/mos${FUEL_RELEASE}/security/
+baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos${FUEL_RELEASE}-centos6-fuel/security/
 gpgcheck=0
 skip_if_unavailable=1
 EOF
