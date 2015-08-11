@@ -42,6 +42,7 @@ GeoIP
 git
 gperftools
 gv
+htop
 httpd
 iproute
 iptables
@@ -349,6 +350,7 @@ syslinux
 sysstat
 tar
 tftp-server
+tmux
 uwsgi
 uwsgi-plugin-python
 vim
