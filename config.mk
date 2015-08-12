@@ -200,9 +200,9 @@ endif
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
 YUM_REPOS?=official fuel subscr_manager
-MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
-MIRROR_CENTOS_KERNEL?=http://mirror.centos.org/centos-6/6.6/
-SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/files/centos-2015-08-12-032902/$(CENTOS_RELEASE)
+MIRROR_CENTOS_KERNEL?=http://mirrors-local-msk.msk.mirantis.net/files/centos-2015-08-12-032902/6.6/
+SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/files/centos-2015-08-12-032902/$(CENTOS_RELEASE)
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
 MIRROR_UBUNTU_METHOD?=http
 MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
