@@ -201,7 +201,7 @@ endif
 # will be used.
 YUM_REPOS?=official fuel subscr_manager
 MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
-MIRROR_CENTOS_KERNEL?=http://mirror.centos.org/centos-6/6.6/
+MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
 MIRROR_UBUNTU_METHOD?=http
