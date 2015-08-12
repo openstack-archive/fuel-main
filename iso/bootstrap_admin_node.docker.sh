@@ -26,7 +26,7 @@ fuelmenu --save-only --iface=eth0
 echo "Done!"
 
 # TODO(asheplyakov): reuse the check from fuelmenu/bootstrapimage
-mirror_ubuntu="http://archive.ubuntu.com/ubuntu/dists/trusty/Release"
+mirror_ubuntu=${mirror_ubuntu:-"http://archive.ubuntu.com/ubuntu/dists/trusty/Release"}
 if ! urlaccesscheck check "$mirror_ubuntu" >/dev/null 2>&1; then
 	showmenu="yes"
 fi
@@ -147,7 +147,7 @@ else
   UPDATE_ISSUES=1
 fi
 
-if [ $UPDATE_ISSUES -eq 1 ]; then
+if [ $UPDATE_ISSUES -eq 3 ]; then
   warning="WARNING: There are issues connecting to Fuel update repository.
 Please fix your connection and update this node with \`yum update\`
 Then run \`dockerctl destroy all; bootstrap_admin_node.sh;\`

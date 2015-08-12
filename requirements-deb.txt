@@ -42,6 +42,7 @@ dstat
 erlang-dev
 ethtool
 fence-agents
+fuel-agent
 fuel-utils
 galera
 git
@@ -78,6 +79,9 @@ libnss3-tools
 libssl0.9.8
 linux-firmware
 linux-firmware-nonfree
+linux-image-generic-lts-trusty
+live-boot
+live-boot-initramfs-tools
 lksctp-tools
 lldpad
 mc
@@ -89,10 +93,12 @@ memcached
 mongodb-clients
 mongodb-server
 monit
+msmtp-mta
 murano
 murano-dashboard
 mysql-client
 mysql-server-wsrep-5.6
+nailgun-agent
 nailgun-mcagents
 nailgun-net-check
 neutron-common
@@ -148,6 +154,7 @@ novnc
 ntp
 ohai
 openhpid
+openssh-client
 openssh-server
 openstack-dashboard
 openvswitch-switch
@@ -228,6 +235,7 @@ sahara-engine
 screen
 sheepdog
 socat
+squashfs-tools
 swift
 swift-account
 swift-container
@@ -247,6 +255,7 @@ vim
 virt-what
 vlan
 xinetd
+xz-utils
 zabbix-agent
 zabbix-frontend-php
 zabbix-server-mysql
