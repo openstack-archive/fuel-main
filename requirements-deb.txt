@@ -93,7 +93,7 @@ mongodb-clients
 mongodb-server
 monit
 msmtp-mta
-murano
+murano-common
 murano-dashboard
 mysql-client
 mysql-server-wsrep-5.6
@@ -145,8 +145,8 @@ nova-compute-kvm
 nova-compute-qemu
 nova-conductor
 nova-consoleauth
+nova-consoleproxy
 nova-network
-nova-novncproxy
 nova-objectstore
 nova-scheduler
 novnc
