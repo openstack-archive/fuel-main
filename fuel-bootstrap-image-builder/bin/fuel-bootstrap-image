@@ -11,7 +11,7 @@ global_conf="/etc/fuel-bootstrap-image.conf"
 [ -z "$MOS_VERSION" ] && MOS_VERSION="7.0"
 [ -z "$DISTRO_RELEASE" ] && DISTRO_RELEASE="trusty"
 [ -z "$MIRROR_DISTRO" ] && MIRROR_DISTRO="http://archive.ubuntu.com/ubuntu"
-[ -z "$MIRROR_MOS" ] && MIRROR_MOS="http://mirror.fuel-infra.org/mos-repos/$MOS_VERSION/cluster/base/$DISTRO_RELEASE"
+[ -z "$MIRROR_MOS" ] && MIRROR_MOS="http://mirror.fuel-infra.org/mos-repos/ubuntu/$MOS_VERSION"
 [ -z "$KERNEL_FLAVOR" ] && KERNEL_FLAVOR="-generic-lts-trusty"
 [ -z "$ARCH" ] && ARCH="amd64"
 [ -z "$DESTDIR" ] && DESTDIR="/var/www/nailgun/bootstrap/ubuntu"
@@ -40,11 +40,13 @@ apt_setup ()
 	local root="$1"
 	local sources_list="${root}/etc/apt/sources.list"
 	local apt_prefs="${root}/etc/apt/preferences"
-	local mos_codename="mos${MOS_VERSION}-${DISTRO_RELEASE}"
-	local broken_repo=''
+	local mos_codename="mos${MOS_VERSION}"
 	local release_file="$MIRROR_MOS/dists/$mos_codename/Release"
 	if ! wget -q -O /dev/null "$release_file" 2>/dev/null; then
-		broken_repo='yes'
+		cat >&2 <<-EOF
+		$MYSELF: broken MOS repo: no $release_file"
+		EOF
+		exit 2
 	fi
 	mkdir -p "${sources_list%/*}"
 
@@ -52,20 +54,11 @@ apt_setup ()
 	deb $MIRROR_DISTRO ${DISTRO_RELEASE}         main universe multiverse restricted
 	deb $MIRROR_DISTRO ${DISTRO_RELEASE}-security main universe multiverse restricted
 	deb $MIRROR_DISTRO ${DISTRO_RELEASE}-updates  main universe multiverse restricted
+	deb $MIRROR_MOS ${mos_codename}          main
+	deb $MIRROR_MOS ${mos_codename}-security main
+	deb $MIRROR_MOS ${mos_codename}-updates  main
+	deb $MIRROR_MOS ${mos_codename}-holdback main
 	EOF
-	if [ -z "$broken_repo" ]; then
-		cat >> "$sources_list" <<-EOF
-		deb $MIRROR_MOS ${mos_codename}          main
-		deb $MIRROR_MOS ${mos_codename}-security main
-		deb $MIRROR_MOS ${mos_codename}-updates  main
-		deb $MIRROR_MOS ${mos_codename}-holdback main
-		EOF
-	else
-		# TODO(asheplyakov): remove this after perestroika repo gets fixed
-		cat >> "$sources_list" <<-EOF
-		deb $MIRROR_MOS ${DISTRO_RELEASE} main
-		EOF
-	fi
 	if [ -n "$EXTRA_DEB_REPOS" ]; then
 		l="$EXTRA_DEB_REPOS"
 		IFS='|'
