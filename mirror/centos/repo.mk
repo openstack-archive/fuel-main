@@ -67,8 +67,19 @@ $(BUILD_DIR)/mirror/centos/rpm-download.done: $(BUILD_DIR)/mirror/centos/urls.li
 	xargs -n1 -P4 wget -Nnv -P "$$dst" < $<
 	$(ACTION.TOUCH)
 
+# apply patch for requiremetns rpm, since we are using patching feature
+ifneq ($(PATCHING_CI),0)
+$(BUILD_DIR)/requirements-rpm.txt: \
+		$(SOURCE_DIR)/requirements-rpm.txt \
+		$(SOURCE_DIR)/requirements-rpm.txt.patch
+	patch $< $(SOURCE_DIR)/requirements-rpm.txt.patch -o $(@)
+else
+$(BUILD_DIR)/requirements-rpm.txt: $(SOURCE_DIR)/requirements-rpm.txt
+	$(ACTION.COPY)
+endif
+
 # Strip the comments and sort the list alphabetically
-$(BUILD_DIR)/mirror/centos/requirements-rpm-0.txt: $(SOURCE_DIR)/requirements-rpm.txt
+$(BUILD_DIR)/mirror/centos/requirements-rpm-0.txt: $(BUILD_DIR)/requirements-rpm.txt
 	mkdir -p $(@D) && \
 	grep -v -e '^#' $< > $@.tmp && \
 	sort -u < $@.tmp > $@.pre && \

@@ -1,0 +1,46 @@
+diff --git a/requirements-rpm.txt b/requirements-rpm.txt
+index c913136..115e566 100644
+--- a/requirements-rpm.txt
++++ b/requirements-rpm.txt
+@@ -30,10 +30,22 @@ erlang
+ ethtool
+ euca2ools
+ fence-agents
++fencing-agent
++fuel
++fuel-agent
++fuel-bootstrap-image-builder
+ fuel-createmirror
++fuel-dockerctl
++fuel-ha-utils
+ fuel-library
+ fuelmenu
++fuel-migrate
++fuel-misc
++fuel-notify
+ fuel-ostf
++fuel-package-updates
++fuel-provisioning-scripts
++fuel-rabbit-fence
+ fuel-utils
+ gcc
+ gdisk
+@@ -76,8 +88,10 @@ monit
+ mtools
+ MySQL-python
+ MySQL-shared-wsrep
++nailgun
+ nailgun-agent
+ nailgun-mcagents
++nailgun-net-check
+ nginx
+ nmap-ncat
+ nodejs-bower
+@@ -284,6 +298,7 @@ ruby21-augeas
+ ruby21-facter
+ ruby21-hiera
+ ruby21-mcollective
++ruby21-nailgun-mcagents
+ ruby21-puppet
+ ruby21-rubygem-activesupport
+ ruby21-rubygem-amq-client
