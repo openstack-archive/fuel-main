@@ -1,0 +1,27 @@
+diff --git a/requirements-rpm.txt b/requirements-rpm.txt
+index c913136..2ea8f1b 100644
+--- a/requirements-rpm.txt
++++ b/requirements-rpm.txt
+@@ -30,10 +30,22 @@ erlang
+ ethtool
+ euca2ools
+ fence-agents
++fuel
++fuel-agent
++fuel-bootstrap-image-builder
+ fuel-createmirror
++fuel-dockerctl
++fuel-ha-utils
++fuel-image
+ fuel-library
+ fuelmenu
++fuel-migrate
++fuel-misc
++fuel-notify
+ fuel-ostf
++fuel-package-updates
++fuel-provisioning-scripts
++fuel-rabbit-fence
+ fuel-utils
+ gcc
+ gdisk
