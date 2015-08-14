@@ -81,6 +81,17 @@ $(BUILD_DIR)/packages/sources/$1/$2:
 	cd $(BUILD_DIR)/packages/sources/$1 && gzip -9 $1.tar && mv $1.tar.gz $2
 endef
 
+# fuel-library offline build hook
+ifneq ($(USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES),)
+$(BUILD_DIR)/packages/sources/fuel-library$(PRODUCT_VERSION)/upstream_modules.tar.gz:
+	@mkdir -p $(@D)
+	wget -nv $(USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES) -O $@.tmp
+	mv $@.tmp $@
+
+$(BUILD_DIR)/packages/source_fuel-library$(PRODUCT_VERSION).done: \
+	$(BUILD_DIR)/packages/sources/fuel-library$(PRODUCT_VERSION)/upstream_modules.tar.gz
+endif
+
 $(BUILD_DIR)/packages/source_%.done:
 	$(ACTION.TOUCH)
 
