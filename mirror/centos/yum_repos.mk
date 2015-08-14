@@ -117,6 +117,15 @@ enabled = 1
 priority=20
 endef
 
+define yum_repo_release
+[release]
+name = CentOS $(CENTOS_RELEASE) - Release $(PRODUCT_VERSION)
+baseurl = $(MIRROR_BASE)-release/centos/os/$(CENTOS_ARCH)
+gpgcheck = 0
+enabled = 1
+priority=30
+endef
+
 # Accept EXTRA_RPM_REPOS in a form of a list of: name,url,priority
 # Accept EXTRA_RPM_REPOS in a form of list of (default priority=10): name,url
 get_repo_name=$(shell echo $1 | cut -d ',' -f 1)
