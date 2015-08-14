@@ -22,6 +22,14 @@ $(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
 	sudo tar czf $@.tmp -C $(SANDBOX) .
 	mv $@.tmp $@
 
+# Usage:
+# (eval (get_rpm_package_version,package_name))
+define get_rpm_package_version
+$(BUILD_DIR)/packages/sources/$1/version:
+	mkdir -p $(BUILD_DIR)/packages/sources/$1
+	echo "RELEASE=100" > $(BUILD_DIR)/packages/sources/$1/version
+endef
+
 
 # Usage:
 # (eval (call build_rpm,package_name))
@@ -45,6 +53,7 @@ $(BUILD_DIR)/repos/$1/specs/$1.spec: $(BUILD_DIR)/repos/$1.done
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/repos/$1/specs/$1.spec
 else
 $(BUILD_DIR)/packages/rpm/$1.done: SPECFILE:=$(SOURCE_DIR)/packages/rpm/specs/$1.spec
+$(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/sources/$1/version
 endif
 
 $(BUILD_DIR)/packages/rpm/$1.done:
@@ -100,6 +109,7 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 		$(BUILD_DIR)/repos/repos.done \
 		$(BUILD_DIR)/packages/rpm/buildd.tar.gz \
 		$(BUILD_DIR)/packages/rpm/repo-late.done \
+		$(BUILD_DIR)/packages/sources/fuel-docker-images/version \
 		$(BUILD_DIR)/docker/build.done
 	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	mkdir -p $(SANDBOX) && \
@@ -115,7 +125,10 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
+$(BUILD_DIR)/packages/rpm/build.done:
+ifneq (0,$(strip $(BUILD_PACKAGES)))
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
+endif
 	$(ACTION.TOUCH)
 
 #######################################
@@ -135,7 +148,16 @@ fuel-target-centos-images
 
 $(eval $(foreach pkg,$(fuel_rpm_packages_late),$(call build_rpm,$(pkg),-late)$(NEWLINE)))
 
+$(eval $(call get_rpm_package_version,fuel-bootstrap-image))
+$(eval $(call get_rpm_package_version,fuel-target-centos-images))
+$(eval $(call get_rpm_package_version,fuel-docker-images))
+
+# BUILD_PACKAGES=0 - for late packages we need to be sure that centos mirror is ready
+# BUILD_PACKAGES=1 - for late packages we need to be sure that fuel-* packages was build beforehand
+$(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/mirror/centos/repo.done
+ifneq (0,$(strip $(BUILD_PACKAGES)))
 $(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/packages/rpm/repo.done
+endif
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u --target-directory $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages {} +
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
