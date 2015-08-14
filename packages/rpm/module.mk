@@ -60,7 +60,7 @@ $(BUILD_DIR)/packages/rpm/$1.done:
 	sudo /bin/sh -c 'export TMPDIR=$$(SANDBOX)/tmp/yum TMP=$$(SANDBOX)/tmp/yum; yum-builddep -y -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) $$(SANDBOX)/tmp/$1.spec'
 	test -f $$(SANDBOX)/tmp/SOURCES/version && \
 		sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" --define "release `awk -F'=' '/RELEASE/ {print $$$$2}' $$(SANDBOX)/tmp/SOURCES/version`" -ba /tmp/$1.spec || \
-		sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/$1.spec
+		sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/$1.spec --define "release $$$$(( `LANG=C yum -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) --disablerepo=* --enablerepo=mirror info $1 | awk -F ':' '/Release/ {print $$$$2}' | tr -d ' ' | sort -n | tail -n 1` + 1 ))"
 	cp $$(SANDBOX)/tmp/RPMS/*/*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	sudo sh -c "$$$${SANDBOX_DOWN}"
 	$$(ACTION.TOUCH)
@@ -108,14 +108,17 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 	sudo cp -r $(BUILD_DIR)/docker/$(DOCKER_ART_NAME) $(SANDBOX)/tmp/SOURCES && \
 	(cd $(BUILD_DIR)/docker && sudo tar czf $(SANDBOX)/tmp/SOURCES/fuel-images-sources.tar.gz sources utils) && \
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/fuel-docker-images.spec $(SANDBOX)/tmp && \
-	sudo chroot $(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/fuel-docker-images.spec
+	sudo chroot $(SANDBOX) rpmbuild --nodeps --define "release $$(( `LANG=C yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) --disablerepo=* --enablerepo=mirror info fuel-docker-images | awk -F ':' '/Release/ {print $$2}' | tr -d ' ' | sort -n | tail -n 1` + 1 ))" --define "_topdir /tmp" -ba /tmp/fuel-docker-images.spec
 	cp $(SANDBOX)/tmp/RPMS/*/fuel-docker-images-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' | xargs cp -u --target-directory=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
+$(BUILD_DIR)/packages/rpm/build.done:
+ifneq (0,$(strip $(BUILD_PACKAGES)))
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
+endif
 	$(ACTION.TOUCH)
 
 #######################################
@@ -135,7 +138,12 @@ fuel-target-centos-images
 
 $(eval $(foreach pkg,$(fuel_rpm_packages_late),$(call build_rpm,$(pkg),-late)$(NEWLINE)))
 
+# BUILD_PACKAGES=0 - for late packages we need to be sure that centos mirror is ready
+# BUILD_PACKAGES=1 - for late packages we need to be sure that fuel-* packages was build beforehand
+$(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/mirror/centos/repo.done
+ifneq (0,$(strip $(BUILD_PACKAGES)))
 $(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/packages/rpm/repo.done
+endif
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u --target-directory $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages {} +
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)

@@ -83,8 +83,14 @@ UBUNTU_ARCH:=amd64
 UBUNTU_IMAGE_RELEASE:=$(UBUNTU_MAJOR)$(UBUNTU_MINOR)
 SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
+PATCHING_CI?=0
+
+ifeq ($(PATCHING_CI),0)
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
+else
+BUILD_PACKAGES:=0
+endif
 
 # by default we are not allowed to downgrade rpm packages,
 # setting this flag to 0 will cause to use repo priorities only (!)
@@ -251,9 +257,6 @@ MIRROR_FUEL_UBUNTU?=http://osci-obs.vm.mirantis.net:82/ubuntu-fuel-$(PRODUCT_VER
 else
 MIRROR_FUEL_UBUNTU?=obs-1.mirantis.com
 endif
-
-REQUIRED_RPMS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-rpm.txt)
-REQUIRED_DEBS:=$(shell grep -v "^\\s*\#" $(SOURCE_DIR)/requirements-deb.txt)
 
 # Which repositories to use for making local centos mirror.
 # Possible values you can find out from mirror/centos/yum_repos.mk file.
