@@ -81,8 +81,19 @@ UBUNTU_ARCH:=amd64
 UBUNTU_IMAGE_RELEASE:=$(UBUNTU_MAJOR)$(UBUNTU_MINOR)
 SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
+PATCHING_CI?=0
+
+ifeq ($(PATCHING_CI),0)
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
+else
+# we are using patching feature
+# so we are not going to build 1-st level packages
+BUILD_PACKAGES:=0
+# but is going to use release repo
+MIRROR_BASE:=http://mirror.fuel-infra.org/fwm/
+YUM_REPOS:=proprietary release
+endif
 
 # by default we are not allowed to downgrade rpm packages,
 # setting this flag to 0 will cause to use repo priorities only (!)
