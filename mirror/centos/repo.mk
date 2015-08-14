@@ -68,8 +68,18 @@ $(BUILD_DIR)/mirror/centos/src-rpm-download.done: $(BUILD_DIR)/mirror/centos/src
 	xargs --no-run-if-empty -n1 -P4 wget -Nnv -P "$$dst" < $<
 	$(ACTION.TOUCH)
 
+# apply patch for requiremetns rpm, since we are using patching feature
+ifneq ($(PATCHING_CI),0)
+$(BUILD_DIR)/requirements-rpm.txt: \
+		$(SOURCE_DIR)/requirements-rpm.txt \
+		$(SOURCE_DIR)/requirements-rpm.txt.patch
+	patch $< $(SOURCE_DIR)/requirements-rpm.txt.patch -o $(@)
+else
+$(BUILD_DIR)/requirements-rpm.txt: $(SOURCE_DIR)/requirements-rpm.txt
+	$(ACTION.COPY)
+endif
 
-$(BUILD_DIR)/mirror/centos/urls.list: $(SOURCE_DIR)/requirements-rpm.txt \
+$(BUILD_DIR)/mirror/centos/urls.list: $(BUILD_DIR)/requirements-rpm.txt \
 		$(BUILD_DIR)/mirror/centos/yum-config.done
 	mkdir -p $(@D) && \
 	env \
@@ -80,7 +90,7 @@ $(BUILD_DIR)/mirror/centos/urls.list: $(SOURCE_DIR)/requirements-rpm.txt \
 		--installroot="$(centos_empty_installroot)" \
 		-c $(BUILD_DIR)/mirror/centos/etc/yum.conf \
 		--resolve \
-		`cat $(SOURCE_DIR)/requirements-rpm.txt` > "$@.out" 2>"$@.log"
+		`cat $(BUILD_DIR)/requirements-rpm.txt` > "$@.out" 2>"$@.log"
 	# yumdownloader -q prints logs to stdout, filter them out
 	sed -rne '/\.rpm$$/ {p}' < $@.out > $@.pre
 # yumdownloader selects i686 packages too. Remove them. However be
