@@ -82,6 +82,8 @@ SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
+# This value must be set to 1 only if we have late artifacts in mirrors
+PATCHING_CI?=0
 
 # by default we are not allowed to downgrade rpm packages,
 # setting this flag to 0 will cause to use repo priorities only (!)
