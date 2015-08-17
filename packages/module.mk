@@ -14,42 +14,6 @@ $(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
 	cp $3 $(BUILD_DIR)/packages/sources/$1/$2
 endef
 
-# Usage:
-# (eval (call prepare_python_source,package_name,file_name,source_path))
-# Note: dependencies for deb targets are also specified here to make
-# sure the source is ready before the build is started.
-define prepare_python_source
-$(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
-$(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
-$(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
-	mkdir -p $(BUILD_DIR)/packages/sources/$1
-	cd $3 && python setup.py sdist -d $(BUILD_DIR)/packages/sources/$1
-endef
-
-# Usage:
-# (eval (call prepare_tgz_source,package_name,file_name,source_path))
-# Note: dependencies for deb targets are also specified here to make
-# sure the source is ready before the build is started.
-define prepare_tgz_source
-$(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
-$(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
-$(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
-	mkdir -p $(BUILD_DIR)/packages/sources/$1
-	cd $3 && tar zcf $(BUILD_DIR)/packages/sources/$1/$2 *
-endef
-
-# Usage:
-# (eval (call prepare_ruby21_source,package_name,file_name,source_path))
-# Note: dependencies for deb targets are also specified here to make
-# sure the source is ready before the build is started.
-define prepare_ruby21_source
-$(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
-$(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
-$(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
-	mkdir -p $(BUILD_DIR)/packages/sources/$1
-	cd $3 && gem build *.gemspec && cp $2 $(BUILD_DIR)/packages/sources/$1/$2
-endef
-
 # Prepare sources + version file in format:
 #
 # VERSION=$(PRODUCT_VERSION)
