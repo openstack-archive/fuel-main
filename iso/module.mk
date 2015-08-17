@@ -44,7 +44,7 @@ centos-repo: $(ARTS_DIR)/$(CENTOS_REPO_ART_NAME)
 
 $(ARTS_DIR)/$(CENTOS_REPO_ART_NAME): $(BUILD_DIR)/iso/isoroot-centos.done
 	mkdir -p $(@D)
-	tar cf $@ -C $(ISOROOT) --xform s:^:centos-repo/: comps.xml  EFI  images  isolinux  Packages  repodata centos-versions.yaml
+	tar cf $@ -C $(ISOROOT) --xform s:^:centos-repo/: comps.xml  EFI  images  isolinux  Packages  repodata
 
 CENTOS_DEP_FILE:=$(call find-files,$(DEPS_DIR_CURRENT)/$(CENTOS_REPO_ART_NAME))
 
@@ -68,7 +68,6 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 	rsync -rp $(LOCAL_MIRROR)/centos-packages.changelog $(ISOROOT)
 	createrepo -g $(ISOROOT)/comps.xml \
 		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
-	rpm -qi -p $(ISOROOT)/Packages/*.rpm | $(SOURCE_DIR)/iso/pkg-versions.awk > $(ISOROOT)/centos-versions.yaml
 	$(ACTION.TOUCH)
 endif
 
@@ -98,7 +97,6 @@ $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 	mkdir -p $(ISOROOT)/ubuntu
 	rsync -rp $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ $(ISOROOT)/ubuntu/
 	rsync -rp $(LOCAL_MIRROR)/ubuntu-packages.changelog $(ISOROOT)
-	zcat $(ISOROOT)/ubuntu/dists/$(PRODUCT_NAME)$(PRODUCT_VERSION)/main/binary-amd64/Packages.gz | $(SOURCE_DIR)/iso/pkg-versions.awk > $(ISOROOT)/ubuntu/ubuntu-versions.yaml
 	$(ACTION.TOUCH)
 endif
 
@@ -143,9 +141,7 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/bootstrap_admin_node.conf \
 		$(ISOROOT)/send2syslog.py \
 		$(ISOROOT)/version.yaml \
-		$(ISOROOT)/openstack_version \
-		$(ISOROOT)/centos-versions.yaml \
-		$(ISOROOT)/ubuntu-versions.yaml
+		$(ISOROOT)/openstack_version
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
@@ -168,14 +164,6 @@ endif
 $(ISOROOT)/bootstrap_admin_node.conf: $(SOURCE_DIR)/iso/bootstrap_admin_node.conf ; $(ACTION.COPY)
 $(ISOROOT)/send2syslog.py: $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py ; $(ACTION.COPY)
 $(BUILD_DIR)/repos/nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/nailgun.done
-
-$(ISOROOT)/centos-versions.yaml: $(BUILD_DIR)/iso/isoroot-centos.done
-#	here we don't need to do anything because we unpack centos repo in $(ISOROOT) and it already contains centos-versions.yaml
-	$(ACTION.TOUCH)
-
-$(ISOROOT)/ubuntu-versions.yaml: $(BUILD_DIR)/iso/isoroot-ubuntu.done
-	cp $(ISOROOT)/ubuntu/ubuntu-versions.yaml $@
-	$(ACTION.TOUCH)
 
 ifeq ($(PRODUCTION),docker)
 $(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/docker.done
