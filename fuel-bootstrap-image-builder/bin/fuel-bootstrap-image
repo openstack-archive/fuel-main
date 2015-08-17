@@ -15,7 +15,6 @@ global_conf="/etc/fuel-bootstrap-image.conf"
 [ -z "$KERNEL_FLAVOR" ] && KERNEL_FLAVOR="-generic-lts-trusty"
 [ -z "$ARCH" ] && ARCH="amd64"
 [ -z "$DESTDIR" ] && DESTDIR="/var/www/nailgun/bootstrap/ubuntu"
-[ -z "$BOOTSTRAP_SSH_KEYS" ] && BOOTSTRAP_SSH_KEYS="$datadir/ubuntu/files/root/.ssh/authorized_keys"
 
 # Packages required for the master node to discover a bootstrap node
 BOOTSTRAP_FUEL_PKGS_DFLT="openssh-client openssh-server ntp mcollective nailgun-agent nailgun-mcagents nailgun-net-check fuel-agent"
@@ -343,7 +342,14 @@ build_image ()
 	install_packages "$root" $BOOTSTRAP_PKGS $BOOTSTRAP_FUEL_PKGS
 	recompress_initramfs "$root"
 	copy_conf_files "$root"
-	install_ssh_keys "$root" $BOOTSTRAP_SSH_KEYS
+	if [ -n "$BOOTSTRAP_SSH_KEYS" ]; then
+		install_ssh_keys "$root" $BOOTSTRAP_SSH_KEYS
+	else
+		cat >&2 <<-EOF
+		$MYSELF: Warning: no ssh keys specified
+		$MYSELF: bootstrap nodes won't be available via ssh
+		EOF
+	fi
 	restore_resolv_conf "$root"
 	cleanup_chroot "$root"
 	mk_squashfs_image "$root"
