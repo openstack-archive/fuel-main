@@ -51,7 +51,6 @@ VERSION_YAML_ART_NAME?=version.yaml
 CENTOS_REPO_ART_NAME?=centos-repo.tar
 UBUNTU_REPO_ART_NAME?=ubuntu-repo.tar
 PUPPET_ART_NAME?=puppet.tgz
-OPENSTACK_YAML_ART_NAME?=openstack.yaml
 TARGET_CENTOS_IMG_ART_NAME?=centos_target_images.tar
 
 
