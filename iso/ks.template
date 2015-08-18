@@ -255,6 +255,8 @@ fuel-bootstrap-image-builder
 fuel-createmirror
 fuel-target-centos-images
 fuel-package-updates
+fuel-openstack-metadata
+PyYAML
 fuelmenu
 fuel-docker-images
 gdisk
@@ -395,7 +397,7 @@ elif test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
     mount -o loop ${FS}/nailgun.iso ${SOURCE}
 fi
 
-OPENSTACK_VERSION=`cat ${SOURCE}/openstack_version`
+OPENSTACK_VERSION=`python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('/usr/share/fuel-openstack-metadata/openstack.yaml')))[0]['fields']['version']"`
 
 # ----------------------
 # UNPACKING REPOSITORIES
