@@ -86,6 +86,7 @@ nodejs-glob
 nodejs-gulp
 nodejs-gulp-autoprefixer
 nodejs-gulp-bower
+nodejs-gulp-eslint
 nodejs-gulp-filter
 nodejs-gulp-intermediate
 nodejs-gulp-jison
