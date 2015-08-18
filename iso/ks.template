@@ -255,6 +255,7 @@ fuel-bootstrap-image-builder
 fuel-createmirror
 fuel-target-centos-images{{CENTOS_RELEASE}}
 fuel-package-updates
+fuel-openstack-metadata
 fuelmenu
 fuel-docker-images
 gdisk
@@ -396,7 +397,7 @@ elif test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
     mount -o loop ${FS}/nailgun.iso ${SOURCE}
 fi
 
-OPENSTACK_VERSION=`cat ${SOURCE}/openstack_version`
+OPENSTACK_VERSION=`cat /etc/fuel_openstack_version`
 
 # ----------------------
 # UNPACKING REPOSITORIES
@@ -498,12 +499,12 @@ mkdir -p /etc/nailgun /etc/fuel/${RELEASE} /etc/fuel/release_versions
 cp ${SOURCE}/version.yaml /etc/nailgun/version.yaml
 cp ${SOURCE}/version.yaml /etc/fuel/${RELEASE}/version.yaml
 ln -s /etc/fuel/${RELEASE}/version.yaml /etc/fuel/version.yaml
-cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_version`.yaml
+cp ${SOURCE}/version.yaml /etc/fuel/release_versions/${OPENSTACK_VERSION}.yaml
 
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
 
-# Run fuel menu 
+# Run fuel menu
 [ -z "$showmenu" ] && showmenu="no"
 
 # Pause during bootstrap_admin_node to wait for external config
