@@ -143,7 +143,6 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/bootstrap_admin_node.conf \
 		$(ISOROOT)/send2syslog.py \
 		$(ISOROOT)/version.yaml \
-		$(ISOROOT)/openstack_version \
 		$(ISOROOT)/centos-versions.yaml \
 		$(ISOROOT)/ubuntu-versions.yaml
 	$(ACTION.TOUCH)
