@@ -145,7 +145,7 @@ $(eval $(call prepare_file_source,fuel-bootstrap-image,initramfs.img,$(BUILD_DIR
 $(eval $(call prepare_file_source,fuel-bootstrap-image,bootstrap.rsa,$(SOURCE_DIR)/bootstrap/ssh/id_rsa,$(SOURCE_DIR)/bootstrap/ssh/id_rsa))
 
 # fuel-target-centos-images sources
-$(eval $(call prepare_file_source,fuel-target-centos-images,fuel-target-centos-images.tar,$(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME),$(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME)))
+$(eval $(call prepare_file_source,fuel-target-centos-images$(PRODUCT_VERSION),fuel-target-centos-images$(PRODUCT_VERSION).tar,$(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME),$(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME)))
 
 .PHONY: packages-late packages-rpm-late
 

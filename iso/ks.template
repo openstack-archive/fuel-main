@@ -253,7 +253,7 @@ docker-io
 fuel-bootstrap-image
 fuel-bootstrap-image-builder
 fuel-createmirror
-fuel-target-centos-images
+fuel-target-centos-images7.0
 fuel-package-updates
 fuelmenu
 fuel-docker-images
