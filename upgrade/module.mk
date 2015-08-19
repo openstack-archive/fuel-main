@@ -1,8 +1,9 @@
-.PHONY: all upgrade-lrzip openstack-yaml upgrade_versions
+.PHONY: all upgrade-lrzip openstack-yaml
 .DELETE_ON_ERROR: $(UPGRADE_TARBALL_PATH).lrz
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/common-part.tar
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/openstack-part.tar
 .DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/$(SAVE_UPGRADE_PIP_ART)
+.DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/openstack-part.tar
 
 all: upgrade-lrzip openstack-yaml
 
@@ -84,66 +85,42 @@ endif
 ########################
 # OPENSTACK PART
 ########################
-define build_openstack_part
-# 1 - new vervion
-# 2 - old version
+$(BUILD_DIR)/upgrade/openstack_version: $(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME)
+	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $@
 
-ifeq ($(CURRENT_VERSION),$1)
-ARTS_DIR_$1:=$(ARTS_DIR)
-else
-ARTS_DIR_$1:=$(DEPS_DIR)/$1
-endif
-
-$(BUILD_DIR)/upgrade/openstack_version_$1: $$(ARTS_DIR_$1)/$(OPENSTACK_YAML_ART_NAME)
-	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$$(ARTS_DIR_$1)/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $$@
-
-$(BUILD_DIR)/upgrade/openstack-part.done: $(BUILD_DIR)/upgrade/openstack-$1-part.done
-
-.DELETE_ON_ERROR: $(BUILD_DIR)/upgrade/openstack-part.tar
-
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: CENTOS_REPO_ART=$(CENTOS_REPO_ART_NAME)
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: CENTOS_REPO_ART_TOPDIR=centos-repo
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: UBUNTU_REPO_ART=$(UBUNTU_REPO_ART_NAME)
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: UBUNTU_REPO_ART_TOPDIR=ubuntu-repo
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: $$(ARTS_DIR_$1)/$(CENTOS_REPO_ART_NAME)
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: $$(ARTS_DIR_$1)/$(UBUNTU_REPO_ART_NAME)
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: BASE=$(BUILD_DIR)/upgrade/openstack-$1-part
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: OPENSTACK_VERSION=$$(shell cat $(BUILD_DIR)/upgrade/openstack_version_$1)
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: CENTOS_BASE=$$(BASE)/upgrade/repos/$$(OPENSTACK_VERSION)/centos/x86_64
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: UBUNTU_BASE=$$(BASE)/upgrade/repos/$$(OPENSTACK_VERSION)/ubuntu/x86_64
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: RELEASES_BASE=$$(BASE)/upgrade/releases
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: RELEASE_VERSIONS_BASE=$$(BASE)/upgrade/release_versions
-$(BUILD_DIR)/upgrade/openstack-$1-part.done: \
-		$(BUILD_DIR)/upgrade/openstack_version_$1 \
-		$$(ARTS_DIR_$1)/$(OPENSTACK_YAML_ART_NAME) \
-		$$(ARTS_DIR_$1)/$(VERSION_YAML_ART_NAME)
-	rm -f $$@
-	mkdir -p $$(@D)
+$(BUILD_DIR)/upgrade/openstack-part.done: CENTOS_REPO_ART=$(CENTOS_REPO_ART_NAME)
+$(BUILD_DIR)/upgrade/openstack-part.done: CENTOS_REPO_ART_TOPDIR=centos-repo
+$(BUILD_DIR)/upgrade/openstack-part.done: UBUNTU_REPO_ART=$(UBUNTU_REPO_ART_NAME)
+$(BUILD_DIR)/upgrade/openstack-part.done: UBUNTU_REPO_ART_TOPDIR=ubuntu-repo
+$(BUILD_DIR)/upgrade/openstack-part.done: $(ARTS_DIR)/$(CENTOS_REPO_ART_NAME)
+$(BUILD_DIR)/upgrade/openstack-part.done: $(ARTS_DIR)/$(UBUNTU_REPO_ART_NAME)
+$(BUILD_DIR)/upgrade/openstack-part.done: BASE=$(BUILD_DIR)/upgrade/openstack-part
+$(BUILD_DIR)/upgrade/openstack-part.done: OPENSTACK_VERSION=$(shell cat $(BUILD_DIR)/upgrade/openstack_version)
+$(BUILD_DIR)/upgrade/openstack-part.done: CENTOS_BASE=$(BASE)/upgrade/repos/$(OPENSTACK_VERSION)/centos/x86_64
+$(BUILD_DIR)/upgrade/openstack-part.done: UBUNTU_BASE=$(BASE)/upgrade/repos/$(OPENSTACK_VERSION)/ubuntu/x86_64
+$(BUILD_DIR)/upgrade/openstack-part.done: RELEASES_BASE=$(BASE)/upgrade/releases
+$(BUILD_DIR)/upgrade/openstack-part.done: RELEASE_VERSIONS_BASE=$(BASE)/upgrade/release_versions
+$(BUILD_DIR)/upgrade/openstack-part.done: \
+		$(BUILD_DIR)/upgrade/openstack_version \
+		$(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME) \
+		$(ARTS_DIR)/$(VERSION_YAML_ART_NAME)
+	rm -f $@
+	mkdir -p $(@D)
 #	CENTOS REPO
-	mkdir -p $$(CENTOS_BASE)
-	tar xf $$(ARTS_DIR_$1)/$$(CENTOS_REPO_ART) -C $$(CENTOS_BASE) --xform s:^$$(CENTOS_REPO_ART_TOPDIR)/::
+	mkdir -p $(CENTOS_BASE)
+	tar xf $(ARTS_DIR)/$(CENTOS_REPO_ART) -C $(CENTOS_BASE) --xform s:^$(CENTOS_REPO_ART_TOPDIR)/::
 #	UBUNTU REPO
-	mkdir -p $$(UBUNTU_BASE)
-	tar xf $$(ARTS_DIR_$1)/$$(UBUNTU_REPO_ART) -C $$(UBUNTU_BASE) --xform s:^$$(UBUNTU_REPO_ART_TOPDIR)/::
+	mkdir -p $(UBUNTU_BASE)
+	tar xf $(ARTS_DIR)/$(UBUNTU_REPO_ART) -C $(UBUNTU_BASE) --xform s:^$(UBUNTU_REPO_ART_TOPDIR)/::
 #	OPENSTACK-YAML
-	mkdir -p $$(RELEASES_BASE)
-	cp $$(ARTS_DIR_$1)/$(OPENSTACK_YAML_ART_NAME) $$(RELEASES_BASE)/$$(OPENSTACK_VERSION).yaml
+	mkdir -p $(RELEASES_BASE)
+	cp $(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME) $(RELEASES_BASE)/$(OPENSTACK_VERSION).yaml
 #	VERSION-YAML
-	mkdir -p $$(RELEASE_VERSIONS_BASE)
-	cp $$(ARTS_DIR_$1)/$(VERSION_YAML_ART_NAME) $$(RELEASE_VERSIONS_BASE)/$$(OPENSTACK_VERSION).yaml
-#	ARCHIVING
-	tar rf $(BUILD_DIR)/upgrade/openstack-part.tar -C $$(BASE) .
-	@mkdir -p $$(@D)
-	touch $$@
-endef
-
-
-$(foreach upgrade_version,$(UPGRADE_VERSIONS),$(eval $(call build_openstack_part,$(upgrade_version))))
-
-
-$(BUILD_DIR)/upgrade/openstack-part.done:
+	mkdir -p $(RELEASE_VERSIONS_BASE)
+	cp $(ARTS_DIR)/$(VERSION_YAML_ART_NAME) $(RELEASE_VERSIONS_BASE)/$(OPENSTACK_VERSION).yaml
 #   This is for backward compatibility with upgrade script.
 #   It tries to figure out whether a particular update bundle diffirential or not.
-	grep -q "diff_releases:" $(BUILD_DIR)/upgrade/metadata.yaml 2>/dev/null || echo "diff_releases: {}" > $(BUILD_DIR)/upgrade/metadata.yaml
-	tar rf $(BUILD_DIR)/upgrade/openstack-part.tar -C $(BUILD_DIR)/upgrade/ metadata.yaml --xform s:^:upgrade/releases/:
+	echo "diff_releases: {}" > $(RELEASES_BASE)/metadata.yaml
+#	ARCHIVING
+	tar rf $(BUILD_DIR)/upgrade/openstack-part.tar -C $(BASE) .
 	$(ACTION.TOUCH)
