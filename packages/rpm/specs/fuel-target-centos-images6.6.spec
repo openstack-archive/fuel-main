@@ -1,4 +1,4 @@
-%define name fuel-target-centos-images
+%define name fuel-target-centos-images6.6
 %{!?version: %define version 7.0.0}
 %{!?release: %define release 1}
 

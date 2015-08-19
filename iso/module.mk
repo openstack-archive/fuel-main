@@ -160,6 +160,8 @@ endif
 $(ISOROOT)/ks.cfg: $(call depv,KSYAML)
 $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(KSYAML)
 	python $(SOURCE_DIR)/iso/ks.py -t $(SOURCE_DIR)/iso/ks.template -c $(KSYAML) -o $@
+	sed -r -i -e 's/WILL_BE_SUBSTITUTED_WITH_CENTOS_RELEASE/$(CENTOS_RELEASE)/g' $@
+
 ifeq ($(PRODUCTION),docker)
 $(ISOROOT)/bootstrap_admin_node.sh: $(SOURCE_DIR)/iso/bootstrap_admin_node.docker.sh ; $(ACTION.COPY)
 else
