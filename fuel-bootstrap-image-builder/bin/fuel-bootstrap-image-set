@@ -72,6 +72,10 @@ verify_bootstrap_flavor () {
 			;;
 		ubuntu|Ubuntu)
 			flavor='ubuntu'
+			cat >&2 <<-EOF
+			$MYSELF: WARNING: Ubuntu based bootstrap is EXPERIMENTAL.
+			$MYSELF: WARNING: Use at your own risk.
+			EOF
 			;;
 		*)
 			cat >&2 <<-EOF
