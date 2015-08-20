@@ -1,7 +1,5 @@
 .PHONY: bootstrap clean clean-bootstrap
 
-include $(SOURCE_DIR)/bootstrap/ubuntu.mk
-
 bootstrap: $(ARTS_DIR)/$(BOOTSTRAP_ART_NAME)
 
 $(ARTS_DIR)/$(BOOTSTRAP_ART_NAME): \
