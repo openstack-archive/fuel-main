@@ -378,7 +378,6 @@ device="eth0"
 hwaddr=`ifconfig $device | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
 dhcp_interface=$dhcp_interface
 build_images=$build_images
-wait_for_external_config=$wait_for_external_config
 save_cfg
 
 # Mounting installation source
@@ -508,19 +507,12 @@ cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_v
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
 
-# Run fuel menu 
+###Run fuel menu
 [ -z "$showmenu" ] && showmenu="no"
-
-# Pause during bootstrap_admin_node to wait for external config
-[ -z "$wait_for_external_config" ] && wait_for_external_config="no"
-
-
-# Prepare bootstrap_admin_node config
-cat > /etc/fuel/bootstrap_admin_node.conf << EOF
+cat > /root/.showfuelmenu << EOF
 #Set to yes to run Fuel Setup
 #Set to no to accept default settings
-showmenu=${showmenu}
-wait_for_external_config=${wait_for_external_config}
+showmenu=$showmenu
 EOF
 
 # Prepare custom /etc/issue logon banner and script for changing IP in it

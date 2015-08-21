@@ -5,7 +5,7 @@ function countdown() {
   local i
   sleep 1
   for ((i=$1-1; i>=1; i--)); do
-    printf '\b\b\b\b%04d' "$i"
+    printf '\b\b%02d' "$i"
     sleep 1
   done
 }
@@ -17,8 +17,8 @@ function fail() {
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 export LANG=en_US.UTF8
 showmenu="no"
-if [ -f /etc/fuel/bootstrap_admin_node.conf ]; then
-  . /etc/fuel/bootstrap_admin_node.conf
+if [ -f /root/.showfuelmenu ]; then
+  . /root/.showfuelmenu
 fi
 
 echo -n "Applying default Fuel settings..."
@@ -36,7 +36,7 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
   else
   #Give user 15 seconds to enter fuelmenu or else continue
   echo
-  echo -n "Press a key to enter Fuel Setup (or press ESC to skip)...   15"
+  echo -n "Press a key to enter Fuel Setup (or press ESC to skip)... 15"
   countdown 15 & pid=$!
   if ! read -s -n 1 -t 15 key; then
     echo -e "\nSkipping Fuel Setup..."
@@ -50,27 +50,6 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
               ;;
     esac
   fi
-fi
-
-if [ "$wait_for_external_config" == "yes" ]; then
-  wait_timeout=3000
-  pidfile=/var/lock/wait_for_external_config
-  echo -n "Waiting for external configuration (or press ESC to skip)...
-$wait_timeout"
-  countdown $wait_timeout & countdown_pid=$!
-  exec -a wait_for_external_config sleep $wait_timeout & wait_pid=$!
-  echo $wait_pid > $pidfile
-  while ps -p $countdown_pid &> /dev/null && ps -p $wait_pid &>/dev/null; do
-    read -s -n 1 -t 2 key
-    case "$key" in
-      $'\e')   echo -e "\b\b\b\b abort on user input"
-               break
-               ;;
-      *)       ;;
-    esac
-  done
-  { kill $countdown_pid $wait_pid & wait $!; }
-  rm -f $pidfile
 fi
 
 
