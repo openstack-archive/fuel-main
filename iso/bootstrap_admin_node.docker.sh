@@ -25,12 +25,6 @@ echo -n "Applying default Fuel settings..."
 fuelmenu --save-only --iface=eth0
 echo "Done!"
 
-# TODO(asheplyakov): reuse the check from fuelmenu/bootstrapimage
-mirror_ubuntu="http://archive.ubuntu.com/ubuntu/dists/trusty/Release"
-if ! urlaccesscheck check "$mirror_ubuntu" >/dev/null 2>&1; then
-	showmenu="yes"
-fi
-
 if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
   fuelmenu
   else
@@ -70,6 +64,15 @@ make_ubuntu_bootstrap_stub () {
 	done
 }
 
+get_bootstrap_flavor () {
+	local ASTUTE_YAML='/etc/fuel/astute.yaml'
+	python <<-EOF
+	from fuelmenu.fuelmenu import Settings
+	conf = Settings().read("$ASTUTE_YAML").get('BOOTSTRAP', {})
+	print(conf.get('flavor', 'centos')
+	EOF
+}
+
 # Actually build the bootstrap image
 build_ubuntu_bootstrap () {
 	local ret=1
@@ -87,12 +90,22 @@ build_ubuntu_bootstrap () {
 		echo "Bulding bootstrap image, attempt $n" >&2
 		if fuel-bootstrap-image >>"$log" 2>&1; then
 			ret=0
+			fuel-bootstrap-image-set "ubuntu"
 			break
 		fi
 	done
+	if [ $ret -ne 0 ]; then
+		warning="WARNING: failed to build the bootstrap image, see $log for details.
+Perhaps your Internet connection is broken. Please fix the problem and run
+\`fuel-bootstrap-image-set ubuntu\`"
+		fuel notify --topic warning --send "$warning"
+	fi
 	return $ret
 }
 
+
+# Create empty files to make cobbler happy
+# (even if we don't use Ubuntu based bootstrap)
 make_ubuntu_bootstrap_stub
 
 service docker start
@@ -146,16 +159,11 @@ rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
 dockerctl check || fail
 bash /etc/rc.local
 
-bootstrap_img_failed=''
-if build_ubuntu_bootstrap; then
-	dockerctl shell cobbler cobbler sync
-	# XXX: sometimes dnsmasq fails to restart after cobbler sync
-	if ! dockerctl shell cobbler service dnsmasq status 2>/dev/null; then
-		dockerctl shell cobbler service dnsmasq restart
-	fi
-else
-	bootstrap_img_failed='yes'
+if "`get_bootstrap_flavor`" = "ubuntu"; then
+	build_ubuntu_bootstrap || true
 fi
+
+maybe_build_ubuntu_bootstrap
 
 # Enable updates repository
 cat > /etc/yum.repos.d/mos${FUEL_RELEASE}-updates.repo << EOF
