@@ -31,6 +31,8 @@ BOOTSTRAP_RPMS:=\
 	ql2100-firmware \
 	ql2200-firmware \
 	ql23xx-firmware \
+	kernel-lt-devel \
+	fm10k-dkms \
 	crontabs \
 	dhclient \
 	dmidecode \
