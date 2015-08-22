@@ -30,6 +30,7 @@ erlang
 ethtool
 euca2ools
 fence-agents
+fm10k-dkms
 fuel-createmirror
 fuel-library
 fuelmenu
