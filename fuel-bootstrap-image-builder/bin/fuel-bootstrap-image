@@ -8,10 +8,16 @@ datadir="${bindir%/*}/share/fuel-bootstrap-image"
 global_conf="/etc/fuel-bootstrap-image.conf"
 [ -r "$global_conf" ] && . "$global_conf"
 
+[ -z "$DISTRO_MIRROR" ] && DISTRO_MIRROR="http://archive.ubuntu.com/ubuntu"
+[ -z "$DISTRO_SUITES" ] && DISTRO_SUITES="trusty trusty-security trusty-updates"
+[ -z "$DISTRO_SECTIONS" ] && DISTRO_SECTIONS="main universe multiverse restricted"
+
 [ -z "$MOS_VERSION" ] && MOS_VERSION="7.0"
-[ -z "$DISTRO_RELEASE" ] && DISTRO_RELEASE="trusty"
-[ -z "$MIRROR_DISTRO" ] && MIRROR_DISTRO="http://archive.ubuntu.com/ubuntu"
-[ -z "$MIRROR_MOS" ] && MIRROR_MOS="http://mirror.fuel-infra.org/mos-repos/ubuntu/$MOS_VERSION"
+[ -z "$MOS_CODENAME" ] && MOS_CODENAME="mos$MOS_VERSION"
+[ -z "$MOS_MIRROR" ] && MOS_MIRROR="http://mirror.fuel-infra.org/mos-repos/ubuntu/$MOS_VERSION"
+[ -z "$MOS_SUITES" ] && MOS_SUITES="mos$MOS_VERSION mos$MOS_VERSION-security mos$MOS_VERSION-updates mos$MOS_VERSION-holdback"
+[ -z "$MOS_SECTIONS" ] && MOS_SECTIONS="main"
+
 [ -z "$KERNEL_FLAVOR" ] && KERNEL_FLAVOR="-generic-lts-trusty"
 [ -z "$ARCH" ] && ARCH="amd64"
 [ -z "$DESTDIR" ] && DESTDIR="/var/www/nailgun/bootstrap/ubuntu"
@@ -39,8 +45,7 @@ apt_setup ()
 	local root="$1"
 	local sources_list="${root}/etc/apt/sources.list"
 	local apt_prefs="${root}/etc/apt/preferences"
-	local mos_codename="mos${MOS_VERSION}"
-	local release_file="$MIRROR_MOS/dists/$mos_codename/Release"
+	local release_file="${MOS_MIRROR}/dists/${MOS_SUITE}/Release"
 	if ! wget -q -O /dev/null "$release_file" 2>/dev/null; then
 		cat >&2 <<-EOF
 		$MYSELF: broken MOS repo: no $release_file"
@@ -48,16 +53,16 @@ apt_setup ()
 		exit 2
 	fi
 	mkdir -p "${sources_list%/*}"
+	echo -n > "$sources_list"
 
-	cat > "$sources_list" <<-EOF
-	deb $MIRROR_DISTRO ${DISTRO_RELEASE}         main universe multiverse restricted
-	deb $MIRROR_DISTRO ${DISTRO_RELEASE}-security main universe multiverse restricted
-	deb $MIRROR_DISTRO ${DISTRO_RELEASE}-updates  main universe multiverse restricted
-	deb $MIRROR_MOS ${mos_codename}          main
-	deb $MIRROR_MOS ${mos_codename}-security main
-	deb $MIRROR_MOS ${mos_codename}-updates  main
-	deb $MIRROR_MOS ${mos_codename}-holdback main
-	EOF
+	for distro_suite in $DISTRO_SUITES; do
+		echo "deb $DISTRO_MIRROR $distro_suite $DISTRO_SECTIONS" >> "$sources_list"
+	done
+
+	for mos_suite in $MOS_SUITES; do
+		echo "deb $MOS_MIRROR $mos_suite $MOS_SECTIONS" >> "$sources_list"
+	done
+
 	if [ -n "$EXTRA_DEB_REPOS" ]; then
 		l="$EXTRA_DEB_REPOS"
 		IFS='|'
@@ -68,13 +73,10 @@ apt_setup ()
 		done >> "$sources_list"
 	fi
 
-	cat > "$apt_prefs" <<-EOF
-	Package: *
-	Pin: release o=Mirantis, n=mos${MOS_VERSION}
-	Pin-Priority: 1101
-	Package: *
-	Pin: release o=Mirantis, n=${DISTRO_RELEASE}
-	Pin-Priority: 1101
+	cat >"$apt_prefs" <<-EOF
+		Package: *
+		Pin: release o=Mirantis, n=$MOS_CODENAME
+		Pin-Priority: 1101
 	EOF
 
 	if [ -n "$HTTP_PROXY" ]; then
@@ -143,7 +145,7 @@ run_debootstrap ()
 		LC_ALL=C \
 		DEBIAN_FRONTEND=noninteractive \
 		DEBCONF_NONINTERACTIVE_SEEN=true \
-		debootstrap $insecure $extractor --arch=${ARCH} ${DISTRO_RELEASE} "$root" $MIRROR_DISTRO
+		debootstrap $insecure $extractor --arch=${ARCH} ${DISTRO_SUITE} "$root" $DISTRO_MIRROR
 }
 
 install_packages ()
@@ -174,15 +176,13 @@ add_local_mos_repo ()
 	local path_in_chroot="/tmp/local-apt"
 	local source_parts_d="${root}/etc/apt/sources.list.d"
 
-	# TODO(asheplyakov): update the codename after repo get fixed
-	local mos_codename="mos${MOS_VERSION}"
-
 	mkdir -p "${root}${path_in_chroot}" "${source_parts_d}"
 	mount -o bind "$local_repo" "${root}${path_in_chroot}"
 	mount -o remount,ro,bind "${root}${path_in_chroot}"
-	cat > "${source_parts_d}/nailgun-local.list" <<-EOF
-	deb file://${path_in_chroot} ${mos_codename} main
-	EOF
+	echo -n > "${source_parts_d}/nailgun-local.list"
+	for mos_suite in $MOS_SUITES; do
+		echo "deb file://${path_in_chroot} $mos_suite $MOS_SECTIONS" >> "${source_parts_d}/nailgun-local.list"
+	done
 }
 
 allow_insecure_apt ()
