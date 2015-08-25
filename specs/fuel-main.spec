@@ -21,7 +21,7 @@ Requires: fuel-library7.0
 Requires: fuelmenu >= %{version}
 Requires: fuel-package-updates >= %{version}
 Requires: fuel-provisioning-scripts >= %{version}
-Requires: fuel-target-centos-images >= %{version}
+Requires: fuel-target-centos-images6.6 >= %{version}
 Requires: nailgun-net-check >= %{version}
 Requires: python-fuelclient >= %{version}
 Requires: yum

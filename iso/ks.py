@@ -22,17 +22,23 @@ from jinja2 import Environment
 
 
 class KickstartFile(object):
-    def __init__(self, config_filename, template_filename):
-        with open(config_filename, "r") as f:
-            self.config = yaml.load(f.read())
+    def __init__(self, template_file, config_file=None, config_data=None):
+        self.config = {}
+
+        if config_file:
+            with open(config_file, "r") as f:
+                self.config.update(yaml.safe_load(f.read()))
+
+        if config_data:
+            self.config.update(yaml.safe_load(config_data))
 
         self.env = Environment(
             loader=FileSystemLoader(
-                os.path.dirname(os.path.abspath(template_filename))
+                os.path.dirname(os.path.abspath(template_file))
             )
         )
         self.template = self.env.get_template(
-            os.path.basename(os.path.abspath(template_filename))
+            os.path.basename(os.path.abspath(template_file))
         )
 
     def render(self):
@@ -50,12 +56,16 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(epilog=description)
     parser.add_argument(
-        '-t', '--template', dest='template', action='store', type=str,
-        help='kickstart template file', required=True
+        '-t', '--template-file', dest='template_file', action='store',
+        type=str, help='kickstart template file', required=True
     )
     parser.add_argument(
-        '-c', '--config', dest='config', action='store', type=str,
-        help='yaml config file', required=True
+        '-c', '--config-file', dest='config_file', action='store', type=str,
+        help='yaml config file', required=False, default=None
+    )
+    parser.add_argument(
+        '-u', '--config-data', dest='config_data', action='store', type=str,
+        help='yaml config input', default='{}'
     )
     parser.add_argument(
         '-o', '--output', dest='output', action='store', type=str,
@@ -64,8 +74,9 @@ if __name__ == "__main__":
     params, other_params = parser.parse_known_args()
 
     ks = KickstartFile(
-        config_filename=params.config,
-        template_filename=params.template
+        template_file=params.template_file,
+        config_file=params.config_file,
+        config_data=params.config_data
     )
 
     if params.output == '-':
