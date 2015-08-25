@@ -33,6 +33,8 @@ BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS xz-utils squashfs-tools"
 # Smaller tools providing the standard ones.
 # - mdadm depends on mail-transport-agent, default one is postfix => use msmtp instead
 BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS msmtp-mta"
+# Added the i40e-dkms package as required for bootstrap
+BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS i40e-dkms"
 
 apt_setup ()
 {
