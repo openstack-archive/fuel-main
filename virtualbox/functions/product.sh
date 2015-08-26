@@ -22,62 +22,6 @@ source ./functions/shell.sh
 
 ssh_options='-oConnectTimeout=5 -oStrictHostKeyChecking=no -oCheckHostIP=no -oUserKnownHostsFile=/dev/null -oRSAAuthentication=no -oPubkeyAuthentication=no'
 
-wait_for_fuel_menu() {
-    ip=$1
-    username=$2
-    password=$3
-    prompt=$4
-
-    echo "Waiting for Fuel Menu so it can be skipped. Please do NOT abort the script..."
-
-    # Loop until master node gets successfully installed
-    maxdelay=3000
-    while ! skip_fuel_menu $ip $username $password "$prompt"; do
-        sleep 5
-        ((waited += 5))
-        if (( waited >= maxdelay )); then
-          echo "Installation timed out! ($maxdelay seconds)" 1>&2
-          exit 1
-        fi
-    done
-}
-
-skip_fuel_menu() {
-    ip=$1
-    username=$2
-    password=$3
-    prompt=$4
-
-    # Log in into the VM, see if Fuel Setup is running or puppet already started
-    # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
-    result=$(
-        execute expect << ENDOFEXPECT
-        spawn ssh $ssh_options $username@$ip
-        expect "connect to host" exit
-        expect "*?assword:*"
-        send "$password\r"
-        expect "$prompt"
-        send "pgrep 'fuelmenu|puppet';echo \"returns $?\"\r"
-        expect "$prompt"
-ENDOFEXPECT
-    )
-    if [[ "$result" =~ "returns 0" ]]; then
-      echo "Skipping Fuel Setup..."
-      execute expect << ENDOFEXPECT
-        spawn ssh $ssh_options $username@$ip
-        expect "connect to host" exit
-        expect "*?assword:*"
-        send "$password\r"
-        expect "$prompt"
-        send "killall -w -SIGUSR1 fuelmenu\r"
-        expect "$prompt"
-ENDOFEXPECT
-      return 0
-    else
-      return 1
-    fi
-}
-
 is_product_vm_operational() {
     ip=$1
     username=$2
