@@ -16,13 +16,18 @@ function fail() {
 }
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 export LANG=en_US.UTF8
+export ADMIN_INTERFACE=eth0
+
 showmenu="no"
 if [ -f /etc/fuel/bootstrap_admin_node.conf ]; then
   . /etc/fuel/bootstrap_admin_node.conf
+  echo "Applying admin interface '$ADMIN_INTERFACE'"
 fi
 
-echo -n "Applying default Fuel settings..."
-fuelmenu --save-only --iface=eth0
+echo "Applying default Fuel settings..."
+set -x
+fuelmenu --save-only --iface=$ADMIN_INTERFACE
+set +x
 echo "Done!"
 
 if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
