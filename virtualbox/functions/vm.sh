@@ -207,6 +207,19 @@ start_vm() {
     else
         execute VBoxManage startvm $name
     fi
+
+    if [ -n "$boot_line" ]; then
+        sleep 3
+        # Pressing/releasing escape key
+        VBoxManage controlvm ${name} keyboardputscancode 01 81
+
+        for letter in ${boot_line} ;
+            do
+            #sleep 1
+            VBoxManage controlvm ${name} keyboardputscancode ${letter}
+        done
+    fi
+
 }
 
 mount_iso_to_vm() {
