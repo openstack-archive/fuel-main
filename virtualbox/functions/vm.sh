@@ -202,6 +202,19 @@ start_vm() {
     else
         VBoxManage startvm $name
     fi
+
+    sleep 3
+    # Pressing/releasing escape key
+    VBoxManage controlvm ${name} keyboardputscancode 01 81
+
+    export key_seq=" 39 b9 2f af 32 b2 26 a6 17 97 31 b1 16 96 2c ac 39 b9 17 97 31 b1 17 97 14 94 13 93 20 a0 0d 8d 17 97 31 b1 17 97 14 94 13 93 20 a0 34 b4 17 97 32 b2 22 a2 39 b9 30 b0 17 97 18 98 1f 9f 20 a0 12 92 2f af 31 b1 1e 9e 32 b2 12 92 0d 8d 0b 8b 39 b9 25 a5 1f 9f 0d 8d 2e ae 20 a0 13 93 18 98 32 b2 2a 27 a7 aa 35 b5 25 a5 1f 9f 34 b4 2e ae 21 a1 22 a2 39 b9 17 97 19 99 0d 8d 02 82 0b 8b 34 b4 03 83 0b 8b 34 b4 0b 8b 34 b4 03 83 39 b9 22 a2 11 91 0d 8d 02 82 0b 8b 34 b4 03 83 0b 8b 34 b4 0b 8b 34 b4 02 82 39 b9 20 a0 31 b1 1f 9f 02 82 0d 8d 02 82 0b 8b 34 b4 03 83 0b 8b 34 b4 0b 8b 34 b4 02 82 39 b9 31 b1 12 92 14 94 32 b2 1e 9e 1f 9f 25 a5 0d 8d 03 83 06 86 06 86 34 b4 03 83 06 86 06 86 34 b4 03 83 06 86 06 86 34 b4 0b 8b 39 b9 23 a3 18 98 1f 9f 14 94 31 b1 1e 9e 32 b2 12 92 0d 8d 21 a1 16 96 12 92 26 a6 34 b4 20 a0 18 98 32 b2 1e 9e 17 97 31 b1 34 b4 14 94 26 a6 20 a0 39 b9 1f 9f 23 a3 18 98 11 91 32 b2 12 92 31 b1 16 96 0d 8d 31 b1 18 98 1c 9c"
+
+    for letter in ${key_seq} ;
+      do
+      #sleep 1
+      vboxmanage controlvm ${name} keyboardputscancode ${letter}
+    done
+
 }
 
 mount_iso_to_vm() {
