@@ -57,7 +57,7 @@ $(BUILD_DIR)/mirror/ubuntu/reprepro.done: \
 		$(BUILD_DIR)/mirror/ubuntu/mirror.done \
 		$(BUILD_DIR)/mirror/ubuntu/reprepro_config.done
 	# Import existing Ubuntu repository
-	cd $(LOCAL_MIRROR_UBUNTU) && reprepro --confdir=$(REPREPRO_CONF_DIR) -V update
+	cd $(LOCAL_MIRROR_UBUNTU) && reprepro --confdir=$(REPREPRO_CONF_DIR) -V includedeb $(PRODUCT_NAME)$(PRODUCT_VERSION) pool/*/*/*/*.deb
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/ubuntu/repo.done: \
@@ -75,6 +75,7 @@ $(BUILD_DIR)/mirror/ubuntu/mirror.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU)
 	set -ex; debmirror --progress --checksums --nocleanup \
 	--nosource --ignore-release-gpg --rsync-extra=none \
+	--exclude-deb-section='^debug$$' \
 	--method=$(MIRROR_MOS_UBUNTU_METHOD) \
 	--host=$(MIRROR_MOS_UBUNTU) \
 	--root=$(MIRROR_MOS_UBUNTU_ROOT) \
