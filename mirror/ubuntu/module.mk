@@ -75,6 +75,7 @@ $(BUILD_DIR)/mirror/ubuntu/mirror.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU)
 	set -ex; debmirror --progress --checksums --nocleanup \
 	--nosource --ignore-release-gpg --rsync-extra=none \
+	--exclude-deb-section='^debug$' \
 	--method=$(MIRROR_MOS_UBUNTU_METHOD) \
 	--host=$(MIRROR_MOS_UBUNTU) \
 	--root=$(MIRROR_MOS_UBUNTU_ROOT) \
