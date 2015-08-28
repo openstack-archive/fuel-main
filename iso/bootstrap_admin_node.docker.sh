@@ -185,7 +185,7 @@ rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
 dockerctl check || fail
 bash /etc/rc.local
 
-if "`get_bootstrap_flavor`" = "ubuntu"; then
+if [ "`get_bootstrap_flavor`" = "ubuntu" ]; then
 	build_ubuntu_bootstrap || true
 fi
 
