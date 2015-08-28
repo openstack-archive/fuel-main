@@ -44,7 +44,7 @@ $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME):
 	sudo chroot $(SANDBOX) python build_centos_image.py -k centos.ks -n centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH) -s "$(SEPARATE_IMAGES)" -O centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH).yaml
 	sudo umount $(SANDBOX)/mirror
 	sudo mv $(SANDBOX)/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)* $(BUILD_DIR)/image/centos/
-	gzip -f $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)*.img
+	pigz -f $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)*.img
 	sudo sh -c "$${SANDBOX_DOWN}"
 	tar cf $@.tmp $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)* --xform s:^:/: --xform s:$(BUILD_DIR)/image/centos/::
 	mv $@.tmp $@

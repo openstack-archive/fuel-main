@@ -100,7 +100,7 @@ clean-bootstrap:
 $(BUILD_DIR)/bootstrap/initramfs.img: \
 		$(BUILD_DIR)/bootstrap/customize-initram-root.done
 	sudo sh -c "cd $(INITRAMROOT) && find . -xdev | cpio --create \
-        --format='newc' | gzip -9 > $(BUILD_DIR)/bootstrap/initramfs.img"
+        --format='newc' | pigz -9 > $(BUILD_DIR)/bootstrap/initramfs.img"
 
 $(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/centos/build.done
 	mkdir -p $(BUILD_DIR)/bootstrap
