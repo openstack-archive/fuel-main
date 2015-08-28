@@ -33,6 +33,10 @@ BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS xz-utils squashfs-tools"
 # Smaller tools providing the standard ones.
 # - mdadm depends on mail-transport-agent, default one is postfix => use msmtp instead
 BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS msmtp-mta"
+# Add the DKMS package list to bootstrap
+if [ -n "$DKMS_PACKAGES" ] ; then
+	BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS linux-headers{KERNEL_FLAVOR} $DKMS_PACKAGES"
+fi
 
 apt_setup ()
 {
@@ -144,6 +148,25 @@ run_debootstrap ()
 		DEBIAN_FRONTEND=noninteractive \
 		DEBCONF_NONINTERACTIVE_SEEN=true \
 		debootstrap $insecure $extractor --arch=${ARCH} ${DISTRO_RELEASE} "$root" $MIRROR_DISTRO
+}
+
+populate_dev ()
+{
+	local root="$1"
+	if ! mountpoint -q "$root/dev"; then
+		mount -nvt tmpfs none "$root/dev"
+		# Create devices
+		mknod -m 622 "$root/dev/console" c 5 1
+		mknod -m 666 "$root/dev/null" c 1 3
+		mknod -m 666 "$root/dev/zero" c 1 5
+		mknod -m 666 "$root/dev/ptmx" c 5 2
+		mknod -m 666 "$root/dev/tty" c 5 0
+		mknod -m 444 "$root/dev/random" c 1 8
+		mknod -m 444 "$root/dev/urandom" c 1 9
+		chown -v root:tty "$root/dev/"{console,ptmx,tty}
+		# Create symlink for DKMS
+		chroot "$root" env LC_ALL=C ln -sv /proc/self/fd /dev/fd
+	fi
 }
 
 install_packages ()
@@ -264,12 +287,23 @@ install_ssh_keys ()
 	chmod 640 "$authorized_keys"
 }
 
+cleanup_after_dkms ()
+{
+	local root="$1"
+	if [ -n "$DKMS_PACKAGES" ] ; then
+		chroot "$root" env LC_ALL=C apt-get remove --yes linux-headers{KERNEL_FLAVOR} 2>/dev/null
+	fi
+}
+
 cleanup_chroot ()
 {
 	local root="$1"
 	[ -z "$root" ] && exit 1
 	signal_chrooted_processes "$root" SIGTERM
 	signal_chrooted_processes "$root" SIGKILL
+	# Clean up the DKMS required symlink and $root/dev
+	rm -Rf "${root}/dev/fd"
+	umount "${root}/dev" 2>/dev/null
 	umount "${root}/tmp/local-apt" 2>/dev/null || umount -l "${root}/tmp/local-apt"
 	rm -f "${root}/etc/apt/sources.list.d/nailgun-local.list"
 	rm -rf $root/var/cache/apt/archives/*.deb
@@ -339,6 +373,7 @@ build_image ()
 	add_local_mos_repo "$root"
 	allow_insecure_apt "$root"
 	upgrade_chroot "$root"
+	populate_dev "$root"
 	install_packages "$root" $BOOTSTRAP_PKGS $BOOTSTRAP_FUEL_PKGS
 	recompress_initramfs "$root"
 	copy_conf_files "$root"
@@ -351,6 +386,7 @@ build_image ()
 		EOF
 	fi
 	restore_resolv_conf "$root"
+	cleanup_after_dkms "$root"
 	cleanup_chroot "$root"
 	mk_squashfs_image "$root"
 }
@@ -390,7 +426,7 @@ final_cleanup ()
 {
 	signal_chrooted_processes "$root" SIGTERM
 	signal_chrooted_processes "$root" SIGKILL
-	for mnt in /tmp/local-apt /mnt/dst /mnt/src /mnt /proc; do
+	for mnt in /tmp/local-apt /mnt/dst /mnt/src /mnt /proc /dev; do
 		if mountpoint -q "${root}${mnt}"; then
 			umount "${root}${mnt}" || umount -l "${root}${mnt}" || true
 		fi
