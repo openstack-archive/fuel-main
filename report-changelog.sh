@@ -22,7 +22,7 @@ for packagename in `find ${LOCAL_MIRROR} -name \*.deb | sort -u`; do
     CHANGELOGFILE=`ar p $packagename $DATAFILE | tar $ZFLAG -tvf - | grep '/usr/share/doc/' | grep "/changelog\.Debian\.gz" || :`
     CHANGELOGFILE=${CHANGELOGFILE##* }
     if [[ ${CHANGELOGFILE:0:2} == './' ]]; then
-        ar p $packagename $DATAFILE | tar $ZFLAG -xO $CHANGELOGFILE | gzip -cd | sed -n '1,/--/ p' >> ${UBUNTU_CHANGELOG}
+        ar p $packagename $DATAFILE | tar $ZFLAG -xO $CHANGELOGFILE | pigz -cd | sed -n '1,/--/ p' >> ${UBUNTU_CHANGELOG}
         echo '' >> ${UBUNTU_CHANGELOG}
     fi
 done
