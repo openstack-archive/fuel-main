@@ -7,6 +7,7 @@ ASTUTE_YAML="/etc/fuel/astute.yaml"
 cobbler_manifest="/etc/puppet/modules/nailgun/examples/cobbler-only.pp"
 astute_manifest="/etc/puppet/modules/nailgun/examples/astute-only.pp"
 ubuntu_bootstrap_dir="/var/www/nailgun/bootstrap/ubuntu"
+bootstrap_conf="/etc/fuel-bootstrap-image.conf"
 
 run_puppet () {
 	local container="$1"
@@ -36,6 +37,10 @@ maybe_build_ubuntu_bootstrap ()
 			need_rebuild='yes'
 		fi
 	done
+	if ! grep -qE '^\s*BOOTSTRAP_SSH_KEYS\s*[=]' "$bootstrap_conf" 2>/dev/null; then
+		echo >> "$bootstrap_conf"
+		echo "BOOTSTRAP_SSH_KEYS=\"/root/.ssh/id_rsa.pub\"" >> "$bootstrap_conf"
+	fi
 	if [ -n "$need_rebuild" ]; then
 		cat >&2 <<-EOF
 		$MYSELF: info: Ubuntu bootstrap image does not exist, building one
