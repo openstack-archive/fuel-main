@@ -66,8 +66,8 @@ MASTER_DNS?=10.20.0.1
 MASTER_NETMASK?=255.255.255.0
 MASTER_GW?=10.20.0.1
 
-CENTOS_MAJOR:=6
-CENTOS_MINOR:=6
+CENTOS_MAJOR:=7
+CENTOS_MINOR:=1
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
 CENTOS_IMAGE_RELEASE:=$(CENTOS_MAJOR)$(CENTOS_MINOR)
@@ -200,7 +200,7 @@ endif
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
 YUM_REPOS?=official fuel subscr_manager
-MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+MIRROR_CENTOS?=http://mirror.yandex.ru/centos/7/
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
