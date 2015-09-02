@@ -234,6 +234,27 @@ make_utf8_locale ()
 	chroot "$root" /bin/sh -c "locale-gen en_US.UTF-8 && dpkg-reconfigure locales"
 }
 
+# XXX: CentOS version of debootstrap produces a broken /dev:
+# /dev/fd is a directory instead of a symlink to /proc/self/fd
+dev_fixup ()
+{
+	local root="$1"
+	if [ -z "$root" ]; then
+		echo "*** Error: $MYSELF: dev_fixup: \$root is not specified" >&2
+		exit 1
+	fi
+	mkdir -p -m755 "$root/dev"
+	if [ ! -L "$root/dev/fd" ]; then
+		rm -rf "$root/dev/fd"
+		# Ask MAKEDEV to re-create /dev/fd, /dev/stdin, etc
+		chroot "$root" /bin/sh -c "cd /dev && MAKEDEV fd"
+	fi
+	if [ ! -c "$root/dev/null" ]; then
+		# basic device nodes are missing => create them
+		chroot "$root" /bin/sh -c "cd /dev && MAKEDEV std"
+	fi
+}
+
 copy_conf_files ()
 {
 	local root="$1"
@@ -332,6 +353,7 @@ build_image ()
 	chmod 755 "$root"
 	suppress_services_start "$root"
 	run_debootstrap "$root"
+	dev_fixup "$root"
 	suppress_services_start "$root"
 	propagate_host_resolv_conf "$root"
 	make_utf8_locale "$root"
