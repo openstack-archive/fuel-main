@@ -14,11 +14,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+source ./functions/shell.sh
+
 # Add VirtualBox directory to PATH
-case "$(uname)" in
+case "$(execute uname)" in
     CYGWIN*)
-        vbox_path_registry=`cat /proc/registry/HKEY_LOCAL_MACHINE/SOFTWARE/Oracle/VirtualBox/InstallDir`
-        vbox_path=`cygpath "$vbox_path_registry"| sed -e 's%/$%%'`
+        vbox_path_registry=`execute cat /proc/registry/HKEY_LOCAL_MACHINE/SOFTWARE/Oracle/VirtualBox/InstallDir`
+        vbox_path=`execute cygpath "$vbox_path_registry"| sed -e 's%/$%%'`
         export PATH=$PATH:$vbox_path
       ;;
     *)
