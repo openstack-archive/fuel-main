@@ -113,14 +113,12 @@ $(eval $(call prepare_git_source,fuel-nailgun-agent,fuel-nailgun-agent-$(PACKAGE
 $(eval $(call prepare_git_source,fuel-main,fuel-main-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD,$(FUELMAIN_GERRIT_COMMIT)))
 
 include $(SOURCE_DIR)/packages/rpm/module.mk
-include $(SOURCE_DIR)/packages/deb/module.mk
 
-.PHONY: packages packages-deb packages-rpm
+.PHONY: packages packages-rpm
 
 ifneq ($(BUILD_PACKAGES),0)
 $(BUILD_DIR)/packages/build.done: \
-		$(BUILD_DIR)/packages/rpm/build.done \
-		$(BUILD_DIR)/packages/deb/build.done
+		$(BUILD_DIR)/packages/rpm/build.done
 endif
 
 $(BUILD_DIR)/packages/build.done:
@@ -128,7 +126,6 @@ $(BUILD_DIR)/packages/build.done:
 
 packages: $(BUILD_DIR)/packages/build.done
 packages-rpm: $(BUILD_DIR)/packages/rpm/build.done
-packages-deb: $(BUILD_DIR)/packages/deb/build.done
 
 #FIXME(aglarendil): make sources generation uniform
 #$(BUILD_DIR)/packages/source_fuel-library.done: $(BUILD_DIR)/packages/source_fuel-library$(PRODUCT_VERSION).done
