@@ -72,35 +72,6 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 	$(ACTION.TOUCH)
 endif
 
-########################
-# UBUNTU MIRROR ARTIFACT
-########################
-ubuntu-repo: $(ARTS_DIR)/$(UBUNTU_REPO_ART_NAME)
-
-$(ARTS_DIR)/$(UBUNTU_REPO_ART_NAME): $(BUILD_DIR)/iso/isoroot-ubuntu.done
-	mkdir -p $(@D)
-	tar cf $@ -C $(ISOROOT)/ubuntu --xform s:^./:ubuntu-repo/: .
-
-UBUNTU_DEP_FILE:=$(call find-files,$(DEPS_DIR_CURRENT)/$(UBUNTU_REPO_ART_NAME))
-
-ifdef UBUNTU_DEP_FILE
-$(BUILD_DIR)/iso/isoroot-ubuntu.done: \
-		$(BUILD_DIR)/iso/isoroot-dotfiles.done
-	mkdir -p $(ISOROOT)/ubuntu
-	tar xf $(UBUNTU_DEP_FILE) -C $(ISOROOT)/ubuntu --xform s:^ubuntu-repo/::
-	$(ACTION.TOUCH)
-else
-$(BUILD_DIR)/iso/isoroot-ubuntu.done: \
-		$(BUILD_DIR)/mirror/build.done \
-		$(BUILD_DIR)/mirror/make-changelog.done \
-		$(BUILD_DIR)/packages/build.done \
-		$(BUILD_DIR)/iso/isoroot-dotfiles.done
-	mkdir -p $(ISOROOT)/ubuntu
-	rsync -rp $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ $(ISOROOT)/ubuntu/
-	rsync -rp $(LOCAL_MIRROR)/ubuntu-packages.changelog $(ISOROOT)
-	zcat $(ISOROOT)/ubuntu/dists/$(PRODUCT_NAME)$(PRODUCT_VERSION)/main/binary-amd64/Packages.gz | $(SOURCE_DIR)/iso/pkg-versions.awk > $(ISOROOT)/ubuntu/ubuntu-versions.yaml
-	$(ACTION.TOUCH)
-endif
 
 ########################
 # PUPPET
@@ -144,8 +115,7 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/send2syslog.py \
 		$(ISOROOT)/version.yaml \
 		$(ISOROOT)/openstack_version \
-		$(ISOROOT)/centos-versions.yaml \
-		$(ISOROOT)/ubuntu-versions.yaml
+		$(ISOROOT)/centos-versions.yaml
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
@@ -179,10 +149,6 @@ $(ISOROOT)/centos-versions.yaml: $(BUILD_DIR)/iso/isoroot-centos.done
 #	here we don't need to do anything because we unpack centos repo in $(ISOROOT) and it already contains centos-versions.yaml
 	$(ACTION.TOUCH)
 
-$(ISOROOT)/ubuntu-versions.yaml: $(BUILD_DIR)/iso/isoroot-ubuntu.done
-	cp $(ISOROOT)/ubuntu/ubuntu-versions.yaml $@
-	$(ACTION.TOUCH)
-
 ifeq ($(PRODUCTION),docker)
 $(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/docker.done
 endif
@@ -193,7 +159,6 @@ endif
 
 $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/iso/isoroot-centos.done \
-		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-files.done
 	$(ACTION.TOUCH)
 
