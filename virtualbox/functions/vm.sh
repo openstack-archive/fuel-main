@@ -16,16 +16,18 @@
 
 # This file contains the functions to manage VMs in through VirtualBox CLI
 
+source ./functions/shell.sh
+
 get_vm_base_path() {
-    echo `VBoxManage list systemproperties | grep '^Default machine folder' | sed 's/^Default machine folder\:[ \t]*//'`
+    echo `execute VBoxManage list systemproperties | grep '^Default machine folder' | sed 's/^Default machine folder\:[ \t]*//'`
 }
 
 get_vms_running() {
-    echo `VBoxManage list runningvms | sed 's/[ \t]*{.*}//' | sed 's/^"//' | sed 's/"$//'`
+    echo `execute VBoxManage list runningvms | sed 's/[ \t]*{.*}//' | sed 's/^"//' | sed 's/"$//'`
 }
 
 get_vms_present() {
-    echo `VBoxManage list vms | sed 's/[ \t]*{.*}//' | sed 's/^"//' | sed 's/"$//'`
+    echo `execute VBoxManage list vms | sed 's/[ \t]*{.*}//' | sed 's/^"//' | sed 's/"$//'`
 }
 
 is_vm_running() {
@@ -57,14 +59,14 @@ check_running_vms() {
   OIFS=$IFS
   IFS=","
   local hostonly_interfaces=$1
-  local list_running_vms=$(VBoxManage list runningvms | sed 's/\" {/\",{/g')
+  local list_running_vms=$(execute VBoxManage list runningvms | sed 's/\" {/\",{/g')
   for vm_name in $list_running_vms; do
     vm_name=$(echo $vm_name | grep "\"" | sed 's/"//g')
     vm_names+="$vm_name,"
   done
   for i in $vm_names; do
     for j in $hostonly_interfaces; do
-      running_vm=`VBoxManage showvminfo $i | grep "$j"`
+      running_vm=`execute VBoxManage showvminfo $i | grep "$j"`
       if [[ $? -eq 0 ]]; then
         echo "The \"$i\" VM uses host-only interface \"$j\" and it cannot be removed...."
         echo "You should turn off the \"$i\" virtual machine, run the script again and then the host-only interface will be deleted. Aborting..."
@@ -86,23 +88,23 @@ create_vm() {
     # There is a chance that some files are left from previous VM instance
     vm_base_path=$(get_vm_base_path)
     vm_path="$vm_base_path/$name/"
-    rm -rf "$vm_path"
+    execute rm -rf "$vm_path"
 
     # Create virtual machine with the right name and type (assuming CentOS)
-    VBoxManage createvm --name $name --ostype $os --register
+    execute VBoxManage createvm --name $name --ostype $os --register
 
     # Set the real-time clock (RTC) operate in UTC time
     # Set memory and CPU parameters
     # Set video memory to 16MB, so VirtualBox does not complain about "non-optimal" settings in the UI
-    VBoxManage modifyvm $name --rtcuseutc on --memory $memory_mb --cpus $cpu_cores --vram 16
+    execute VBoxManage modifyvm $name --rtcuseutc on --memory $memory_mb --cpus $cpu_cores --vram 16
 
     # Configure main network interface for management/PXE network
     add_hostonly_adapter_to_vm $name 1 "$nic"
-    VBoxManage modifyvm $name --boot1 disk --boot2 dvd --boot3 net --boot4 none
+    execute VBoxManage modifyvm $name --boot1 disk --boot2 dvd --boot3 net --boot4 none
 
     # Configure storage controllers
-    VBoxManage storagectl $name --name 'IDE' --add ide --hostiocache on
-    VBoxManage storagectl $name --name 'SATA' --add sata --hostiocache on
+    execute VBoxManage storagectl $name --name 'IDE' --add ide --hostiocache on
+    execute VBoxManage storagectl $name --name 'SATA' --add sata --hostiocache on
 
     # Create and attach the main hard drive
     add_disk_to_vm $name 0 $disk_mb
@@ -115,9 +117,9 @@ add_hostonly_adapter_to_vm() {
     echo "Adding hostonly adapter to $name and bridging with host NIC $nic..."
 
     # Add Intel PRO/1000 MT Desktop (82540EM) card to VM. The card is 1Gbps.
-    VBoxManage modifyvm $name --nic${id} hostonly --hostonlyadapter${id} "$nic" --nictype${id} 82540EM \
+    execute VBoxManage modifyvm $name --nic${id} hostonly --hostonlyadapter${id} "$nic" --nictype${id} 82540EM \
                         --cableconnected${id} on --macaddress${id} auto
-    VBoxManage modifyvm  $name  --nicpromisc${id} allow-all
+    execute VBoxManage modifyvm  $name  --nicpromisc${id} allow-all
 }
 
 add_nat_adapter_to_vm() {
@@ -127,10 +129,10 @@ add_nat_adapter_to_vm() {
     echo "Adding NAT adapter to $name for outbound network access through the host system..."
 
     # Add Intel PRO/1000 MT Desktop (82540EM) card to VM. The card is 1Gbps.
-    VBoxManage modifyvm $name --nic${id} nat --nictype${id} 82540EM \
+    execute VBoxManage modifyvm $name --nic${id} nat --nictype${id} 82540EM \
                         --cableconnected${id} on --macaddress${id} auto --natnet${id} "${nat_network}"
-    VBoxManage modifyvm  $name  --nicpromisc${id} allow-all
-    VBoxManage controlvm $name setlinkstate${id} on
+    execute VBoxManage modifyvm  $name  --nicpromisc${id} allow-all
+    execute VBoxManage controlvm $name setlinkstate${id} on
 }
 
 add_disk_to_vm() {
@@ -143,12 +145,12 @@ add_disk_to_vm() {
     vm_disk_path="$(get_vm_base_path)/$vm_name/"
     disk_name="${vm_name}_${port}"
     disk_filename="${disk_name}.vdi"
-    VBoxManage createhd --filename "$vm_disk_path/$disk_filename" --size $disk_mb --format VDI
-    VBoxManage storageattach $vm_name --storagectl 'SATA' --port $port --device 0 --type hdd --medium "$vm_disk_path/$disk_filename"
+    execute VBoxManage createhd --filename "$vm_disk_path/$disk_filename" --size $disk_mb --format VDI
+    execute VBoxManage storageattach $vm_name --storagectl 'SATA' --port $port --device 0 --type hdd --medium "$vm_disk_path/$disk_filename"
 
     # Add serial numbers of disks to slave nodes
     echo "Adding serial numbers of disks to $vm_name..."
-    VBoxManage setextradata $vm_name "VBoxInternal/Devices/ahci/0/Config/Port$port/SerialNumber" "VBOX-MIRANTIS-VHD$port"
+    execute VBoxManage setextradata $vm_name "VBoxInternal/Devices/ahci/0/Config/Port$port/SerialNumber" "VBOX-MIRANTIS-VHD$port"
 
 }
 
@@ -161,7 +163,7 @@ delete_vm() {
     count=0
     while is_vm_running $name; do
         echo "Stopping Virtual Machine $name..."
-        VBoxManage controlvm $name poweroff
+        execute VBoxManage controlvm $name poweroff
         if [[ "$count" != 5 ]]; then
             count=$((count+1))
             sleep 5
@@ -174,10 +176,10 @@ delete_vm() {
     echo "Deleting existing virtual machine $name..."
     while is_vm_present $name
     do
-        VBoxManage unregistervm $name --delete
+        execute VBoxManage unregistervm $name --delete
     done
     # Virtualbox does not fully delete VM file structure, so we need to delete the corresponding directory with files as well
-    rm -rf "$vm_path"
+    execute rm -rf "$vm_path"
 }
 
 delete_vms_multiple() {
@@ -198,9 +200,9 @@ start_vm() {
 
     # Just start it
     if [[ $headless == 1 ]]; then
-        VBoxManage startvm $name --type headless
+        execute VBoxManage startvm $name --type headless
     else
-        VBoxManage startvm $name
+        execute VBoxManage startvm $name
     fi
 }
 
@@ -209,13 +211,12 @@ mount_iso_to_vm() {
     iso_path=$2
 
     # Mount ISO to the VM
-    VBoxManage storageattach $name --storagectl "IDE" --port 0 --device 0 --type dvddrive --medium "$iso_path"
+    execute VBoxManage storageattach $name --storagectl "IDE" --port 0 --device 0 --type dvddrive --medium "$iso_path"
 }
 
 enable_network_boot_for_vm() {
     name=$1
 
     # Set the right boot priority
-    VBoxManage modifyvm $name --boot1 net --boot2 disk --boot3 none --boot4 none --nicbootprio1 1
+    execute VBoxManage modifyvm $name --boot1 net --boot2 disk --boot3 none --boot4 none --nicbootprio1 1
 }
-

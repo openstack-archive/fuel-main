@@ -16,14 +16,16 @@
 
 # This file contains the functions to get available memory on host PC
 
+source ./functions/shell.sh
+
 get_available_memory() {
 local total_memory
-  case $(uname) in
+  case $(execute uname) in
     Linux | CYGWIN*)
-      total_memory=$(LANG=C free | grep Mem | awk '{print $2}')
+      total_memory=$(execute LANG=C free | grep Mem | awk '{print $2}')
     ;;
     Darwin)
-      total_memory=$(sysctl -n hw.memsize)
+      total_memory=$(execute sysctl -n hw.memsize)
       total_memory=$(( $total_memory / 1024 ))
     ;;
     *)
