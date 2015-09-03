@@ -8,7 +8,7 @@ datadir="${bindir%/*}/share/fuel-bootstrap-image"
 global_conf="/etc/fuel-bootstrap-image.conf"
 [ -r "$global_conf" ] && . "$global_conf"
 
-[ -z "$MOS_VERSION" ] && MOS_VERSION="7.0"
+[ -z "$MOS_VERSION" ] && MOS_VERSION="8.0"
 [ -z "$DISTRO_RELEASE" ] && DISTRO_RELEASE="trusty"
 [ -z "$MIRROR_DISTRO" ] && MIRROR_DISTRO="http://archive.ubuntu.com/ubuntu"
 [ -z "$MIRROR_MOS" ] && MIRROR_MOS="http://mirror.fuel-infra.org/mos-repos/ubuntu/$MOS_VERSION"

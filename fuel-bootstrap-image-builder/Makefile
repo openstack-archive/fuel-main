@@ -1,6 +1,6 @@
 
 
-VERSION?=7.0.0
+VERSION?=8.0.0
 
 top_srcdir:=$(shell pwd)
 ubuntu_DATA:=$(shell cd $(top_srcdir) && find share -type f)
