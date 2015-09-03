@@ -2,7 +2,7 @@
 %define repo_name fuel-main
 
 %define name fuel
-%{!?version: %define version 7.0.0}
+%{!?version: %define version 8.0.0}
 %{!?release: %define release 1}
 
 Name: %{name}
@@ -15,9 +15,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
 Requires: fuel-bootstrap-image >= %{version}
-Requires: fuel-dockerctl >= 7.0
+Requires: fuel-dockerctl >= 8.0
 Requires: fuel-docker-images >= %{version}
-Requires: fuel-library7.0
+Requires: fuel-library8.0
 Requires: fuelmenu >= %{version}
 Requires: fuel-package-updates >= %{version}
 Requires: fuel-provisioning-scripts >= %{version}
