@@ -1,5 +1,5 @@
 %define name fuel-bootstrap-image
-%{!?version: %define version 7.0.0}
+%{!?version: %define version 8.0.0}
 %{!?release: %define release 1}
 
 Summary: Fuel bootstrap image package
