@@ -18,6 +18,8 @@
 # and Fuel became operational, and also enabling outbound network/internet access for this VM through the
 # host system
 
+source ./functions/shell.sh
+
 ssh_options='-oConnectTimeout=5 -oStrictHostKeyChecking=no -oCheckHostIP=no -oUserKnownHostsFile=/dev/null -oRSAAuthentication=no -oPubkeyAuthentication=no'
 
 wait_for_fuel_menu() {
@@ -49,7 +51,7 @@ skip_fuel_menu() {
     # Log in into the VM, see if Fuel Setup is running or puppet already started
     # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
     result=$(
-        expect << ENDOFEXPECT
+        execute expect << ENDOFEXPECT
         spawn ssh $ssh_options $username@$ip
         expect "connect to host" exit
         expect "*?assword:*"
@@ -61,7 +63,7 @@ ENDOFEXPECT
     )
     if [[ "$result" =~ "returns 0" ]]; then
       echo "Skipping Fuel Setup..."
-      expect << ENDOFEXPECT
+      execute expect << ENDOFEXPECT
         spawn ssh $ssh_options $username@$ip
         expect "connect to host" exit
         expect "*?assword:*"
@@ -85,7 +87,7 @@ is_product_vm_operational() {
     # Log in into the VM, see if Puppet has completed its run
     # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
     result=$(
-        expect << ENDOFEXPECT
+        execute expect << ENDOFEXPECT
         spawn ssh $ssh_options $username@$ip
         expect "connect to host" exit
         expect "*?assword:*"
@@ -168,22 +170,22 @@ enable_outbound_network_for_product_vm() {
     # Check for internet access on the host system
     echo -n "Checking for internet connectivity on the host system... "
     check_hosts=`echo google.com wikipedia.com | tr '  ' '\n'`
-    case $(uname) in
+    case $(execute uname) in
         Linux | Darwin)
             for i in ${check_hosts} ; do
-                ping_host=`ping -c 2 ${i} | grep %`
+                ping_host=`execute ping -c 2 ${i} | grep %`
                 ping_host_result+=$ping_host
             done
         ;;
         CYGWIN*)
-            if [ ! -z "`type ping | grep system32`" ]; then
+            if [ ! -z "`execute type ping | grep system32`" ]; then
                 for i in ${check_hosts} ; do
-                    ping_host=`ping -n 5 ${i} | grep %`
+                    ping_host=`execute ping -n 5 ${i} | grep %`
                     ping_host_result+=$ping_host
                 done
-            elif [ ! -z "`type ping | grep bin`" ]; then
+            elif [ ! -z "`execute type ping | grep bin`" ]; then
                 for i in ${check_hosts} ; do
-                    ping_host=`ping ${i} count 5 | grep %`
+                    ping_host=`execute ping ${i} count 5 | grep %`
                     ping_host_result+=$ping_host
                 done
             else
@@ -204,13 +206,13 @@ enable_outbound_network_for_product_vm() {
 
     # Check host nameserver configuration
     echo -n "Checking local DNS configuration... "
-    if [ -f /etc/resolv.conf ]; then
-      nameserver="$(grep '^nameserver' /etc/resolv.conf | grep -v 'nameserver\s\s*127.' | head -3)"
+    if execute test -f /etc/resolv.conf ; then
+      nameserver="$(execute grep '^nameserver' /etc/resolv.conf | grep -v 'nameserver\s\s*127.' | head -3)"
     fi
-    if [ -z "$nameserver" -a -x /usr/bin/nmcli ]; then
+    if [ -z "$nameserver" -a execute test -x /usr/bin/nmcli ]; then
       # Get DNS from network manager
-      if [ -n "`LANG=C nmcli nm | grep \"running\s\+connected\"`" ]; then
-        nameserver="$(nmcli dev list | grep 'IP[46].DNS' | sed -e 's/IP[46]\.DNS\[[0-9]\+\]:\s\+/nameserver /'| grep -v 'nameserver\s\s*127.' | head -3)"
+      if [ -n "`execute LANG=C nmcli nm | grep \"running\s\+connected\"`" ]; then
+        nameserver="$(execute nmcli dev list | grep 'IP[46].DNS' | sed -e 's/IP[46]\.DNS\[[0-9]\+\]:\s\+/nameserver /'| grep -v 'nameserver\s\s*127.' | head -3)"
       fi
     fi
     if [ -z "$nameserver" ]; then
@@ -231,7 +233,7 @@ enable_outbound_network_for_product_vm() {
     # Log in into the VM, configure and bring up the NAT interface, set default gateway, check internet connectivity
     # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
     result=$(
-        expect << ENDOFEXPECT
+        execute expect << ENDOFEXPECT
         spawn ssh $ssh_options $username@$ip
         expect "connect to host" exit
         expect "*?assword:*"
@@ -285,7 +287,7 @@ ENDOFEXPECT
     echo -e "\nWaiting until the network services are restarted..."
     sleep 5s
        result_inet=$(
-            expect << ENDOFEXPECT
+            execute expect << ENDOFEXPECT
             spawn ssh $ssh_options $username@$ip
             expect "connect to host" exit
             expect "*?assword:*"

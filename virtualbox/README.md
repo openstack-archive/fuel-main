@@ -22,3 +22,5 @@ If there are any errors, the script will report them and abort.
 If you want to change settings (number of OpenStack nodes, CPU, RAM, HDD), please refer to "config.sh".
 
 To shutdown VMs and clean environment just run "./clean.sh"
+
+To deploy on remove machine just set environment variable $REMOTE_HOST with address of target machine.
