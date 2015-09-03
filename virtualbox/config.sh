@@ -15,6 +15,7 @@
 #    under the License.
 
 source ./functions/memory.sh
+source ./functions/shell.sh
 
 # Get the first available ISO from the directory 'iso'
 iso_path=`ls -1t iso/*.iso 2>/dev/null | head -1`
@@ -42,10 +43,10 @@ fuel_master_ips="10.20.0.1 172.16.0.254 172.16.1.1"
 mask="255.255.255.0"
 
 # Determining the type of operating system and adding CPU core to the master node
-  case "$(uname)" in
+  case "$(execute uname)" in
     Linux)
       os_type="linux"
-      if [ "$(nproc)" -gt "1" ]; then
+      if [ "$(execute nproc)" -gt "1" ]; then
         vm_master_cpu_cores=2
       else
         vm_master_cpu_cores=1
@@ -53,7 +54,7 @@ mask="255.255.255.0"
     ;;
     Darwin)
       os_type="darwin"
-      mac_nproc=`sysctl -a | grep machdep.cpu.thread_count | sed 's/^machdep.cpu.thread_count\:[ \t]*//'`
+      mac_nproc=`execute sysctl -a | grep machdep.cpu.thread_count | sed 's/^machdep.cpu.thread_count\:[ \t]*//'`
       if [ "$mac_nproc" -gt "1" ]; then
         vm_master_cpu_cores=2
       else
@@ -62,14 +63,14 @@ mask="255.255.255.0"
     ;;
     CYGWIN*)
       os_type="cygwin"
-      if [ "$(nproc)" -gt "1" ]; then
+      if [ "$(execute nproc)" -gt "1" ]; then
         vm_master_cpu_cores=2
       else
         vm_master_cpu_cores=1
       fi
     ;;
     *)
-      echo "$(uname) is not supported operating system."
+      echo "$(execute uname) is not supported operating system."
       exit 1
     ;;
   esac
