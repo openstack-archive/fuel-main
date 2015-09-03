@@ -22,3 +22,12 @@ If there are any errors, the script will report them and abort.
 If you want to change settings (number of OpenStack nodes, CPU, RAM, HDD), please refer to "config.sh".
 
 To shutdown VMs and clean environment just run "./clean.sh"
+
+To deploy on a remote machine just set environment variable REMOTE_HOST with ssh connection string.
+The variable REMOTE_PORT allows to specify custom port for ssh.
+
+```bash
+ REMOTE_HOST=user@user.mos.mirantis.net ./launch_8GB.sh
+# or
+ REMOTE_HOST=user@user.mos.mirantis.net REMOTE_PORT=23 ./launch_8GB.sh
+```
