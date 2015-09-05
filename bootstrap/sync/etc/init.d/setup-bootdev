@@ -19,6 +19,15 @@ cd /etc/sysconfig/network-scripts
 
 
 get_bootdev() {
+    local ethdevice_timeout=$(sed -rne 's/^.*\s*\<ethdevice_timeout=([0-9]+)\s*.*$/\1/p' /proc/cmdline)
+    ethdevice_timeout="${ethdevice_timeout:-120}"
+    local wait4dev_interval=5
+    local max_attempts=$((ethdevice_timeout/wait4dev_interval))
+    local attempt=0
+    if [ $max_attempts -lt 2 ]; then
+	    max_attempts=2
+    fi
+
     bootaddr=$(ruby -e \
     'File.open("/proc/cmdline") { |fo|
       l = fo.read
@@ -30,7 +39,17 @@ get_bootdev() {
         return 1
     fi
 
-    dev=$(get_device_by_hwaddr $bootaddr)
+    while [ $attempt -lt $max_attempts ]; do
+        dev=$(get_device_by_hwaddr $bootaddr)
+        if [ -n "$dev" ]; then
+	    break
+	else
+	    attempt=$((attempt+1))
+	    echo "Failed to find boot NIC (mac $bootaddr), retrying in $wait4dev_interval sec." >&2
+	    sleep $wait4dev_interval
+	    continue
+	fi
+    done
     if [ -z "$dev" ]; then
         return 2
     fi
@@ -53,6 +72,9 @@ set_interfaces_up_when_booted() {
 # See how we were called.
 case "$1" in
   start)
+    echo -n "Waiting for network hardware to initialize..."
+    udevadm trigger --subsystem-match=net
+    udevadm settle
     echo -n "Configure all interfaces as active..."
     set_interfaces_up_when_booted
     echo "ok."
