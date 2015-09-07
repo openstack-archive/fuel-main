@@ -92,13 +92,13 @@ DENY_RPM_DOWNGRADE?=1
 NO_UI_OPTIMIZE:=0
 
 # Repos and versions
-FUELLIB_COMMIT?=master
-NAILGUN_COMMIT?=master
-PYTHON_FUELCLIENT_COMMIT?=master
-FUEL_AGENT_COMMIT?=master
-FUEL_NAILGUN_AGENT_COMMIT?=master
-ASTUTE_COMMIT?=master
-OSTF_COMMIT?=master
+FUELLIB_COMMIT?=stable/7.0
+NAILGUN_COMMIT?=stable/7.0
+PYTHON_FUELCLIENT_COMMIT?=stable/7.0
+FUEL_AGENT_COMMIT?=stable/7.0
+FUEL_NAILGUN_AGENT_COMMIT?=stable/7.0
+ASTUTE_COMMIT?=stable/7.0
+OSTF_COMMIT?=stable/7.0
 
 FUELLIB_REPO?=https://github.com/stackforge/fuel-library.git
 NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
@@ -267,7 +267,7 @@ USE_UPGRADE_PIP_ART_HTTP_LINK?=
 # If not empty, will try to download prepeared upstream puppet modules source,
 # which used like requirements for build fuel-library package.
 # List of modules, which SHOULD be passed via this file can be found:
-# https://github.com/stackforge/fuel-library/blob/master/deployment/Puppetfile
+# https://github.com/stackforge/fuel-library/blob/stable/7.0/deployment/Puppetfile
 #
 # Usage example:
 # USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES?=http://127.0.0.1/files/upstream_modules.tar.gz
