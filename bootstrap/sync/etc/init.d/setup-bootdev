@@ -78,8 +78,15 @@ case "$1" in
 
     if [ $rc -eq 0 ]; then
         for name in $dev; do
-            content="DEVICE=$name\nBOOTPROTO=dhcp\nONBOOT=yes\nLINKDELAY=30"
-            echo -e "$content" > "./ifcfg-$name"
+		# sometimes shell is very picky about tabs and spaces
+		# tabs used here to make here-document work
+		cat > "./ifcfg-${name}" <<-EOF
+		DEVICE=$name
+		BOOTPROTO=dhcp
+		ONBOOT=yes
+		LINKDELAY=30
+		PERSISTENT_DHCLIENT=yes
+		EOF
         done
     fi
     action $"Update network interfaces settings: " [ $rc -eq 0 ]
