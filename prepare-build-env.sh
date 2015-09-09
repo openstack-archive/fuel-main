@@ -40,39 +40,15 @@ DISTRO=$(lsb_release -c -s)
 case "${DISTRO}" in
 
   trusty)
-    GEMPKG="ruby ruby-dev"
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1D2B45A2
     echo "deb http://mirror.fuel-infra.org/devops/ubuntu/ ./" | sudo tee /etc/apt/sources.list.d/fuel-devops.list
-    sudo apt-get update && sudo apt-get -y install nodejs nodejs-legacy npm
+    sudo apt-get update
     ;;
 
   precise)
-    GEMPKG="ruby ruby-dev rubygems"
-    # be sure, we will use nodejs from chris-lea
-    sudo tee /etc/apt/preferences.d/fuel-pin-300 <<EOF
-Package: *nodejs*
-Pin: release o=LP-PPA-chris-lea-node.js
-Pin-Priority: 1000
-EOF
-
     # we need to use add-apt-repository command
     sudo apt-get -y install software-properties-common python-software-properties
-
-    if hash nodejs 2> /dev/null; then
-      echo "Nodejs found, checking if it has proper version"
-      # Install correct nodejs from chris-lea
-      if ! dpkg-query -W -f='${Version}\n' nodejs | grep -q "1chl1"; then
-        # we don't have nodejs from chris-lea, need remove previous version
-        sudo apt-get -y remove nodejs npm
-        # install chris-lea repo, the package itself will be installed later
-        sudo add-apt-repository -y ppa:chris-lea/node.js
-      fi
-    else
-      # just add repository, package nodejs will be installed from
-      sudo add-apt-repository -y ppa:chris-lea/node.js
-    fi
-      sudo apt-get update && sudo apt-get -y install nodejs
-      ;;
+    ;;
 
   *)
     echo "We currently doesn't support building on your distribution ${DISTRO}"
@@ -82,7 +58,7 @@ esac
 # Check if docker is installed
 if hash docker 2>/dev/null; then
   echo "Docker binary found, checking if service is running..."
-  ps cax | grep docker > /dev/null
+  pgrep docker > /dev/null
   if [ $? -eq 0 ]; then
     echo "Docker is running."
   else
@@ -94,7 +70,7 @@ else
   # Check that HTTPS transport is available to APT
   if [ ! -e /usr/lib/apt/methods/https ]; then
     sudo apt-get update
-    sudo apt-get -y install -y apt-transport-https
+    sudo apt-get install -y apt-transport-https
   fi
   # Add the repository to APT sources
   echo deb http://mirror.yandex.ru/mirrors/docker/ docker main | sudo tee /etc/apt/sources.list.d/docker.list
@@ -107,17 +83,37 @@ fi
 
 # Install software
 sudo apt-get update
-sudo apt-get -y install build-essential make git $GEMPKG debootstrap createrepo \
-  python-setuptools yum yum-utils libmysqlclient-dev isomd5sum bc \
-  python-nose libvirt-bin python-ipaddr python-paramiko python-yaml \
-  python-pip kpartx extlinux unzip genisoimage syslinux debmirror \
-  lrzip python-daemon python-dev libparse-debcontrol-perl reprepro devscripts \
-  xorriso
-sudo gem install bundler -v 1.2.1
-sudo gem install builder
-sudo pip install xmlbuilder jinja2 pbr
-sudo npm install -g gulp
-sudo chown -R `whoami`.`id -gn` `npm config get cache`
+sudo apt-get -y install \
+  build-essential \
+  createrepo \
+  debmirror \
+  debootstrap \
+  devscripts \
+  dosfstools \
+  extlinux \
+  genisoimage \
+  git \
+  isomd5sum \
+  libmysqlclient-dev \
+  libparse-debcontrol-perl \
+  libvirt-bin \
+  lrzip \
+  make \
+  python-dev \
+  python-jinja2 \
+  python-paramiko \
+  python-pbr \
+  python-pip \
+  python-setuptools \
+  python-virtualenv \
+  python-xmlbuilder \
+  python-yaml \
+  reprepro \
+  syslinux \
+  unzip \
+  xorriso \
+  yum \
+  yum-utils
 
 # Add account to sudoers
 if sudo grep "`whoami` ALL=(ALL) NOPASSWD: ALL" /etc/sudoers; then
