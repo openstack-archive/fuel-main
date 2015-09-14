@@ -41,3 +41,4 @@ postgres:
   ostf_dbname: ostf
   ostf_user: ostf
   ostf_password: ostf
+PRODUCTION: docker-build

@@ -257,6 +257,8 @@ fuel-target-centos-images{{CENTOS_RELEASE}}
 fuel-package-updates
 fuelmenu
 fuel-docker-images
+fuel-release
+fuel-openstack-metadata
 gdisk
 lrzip
 lsof
@@ -503,7 +505,7 @@ cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_v
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
 
-# Run fuel menu 
+# Run fuel menu
 [ -z "$showmenu" ] && showmenu="no"
 
 # Pause during bootstrap_admin_node to wait for external config

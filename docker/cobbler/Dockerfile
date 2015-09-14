@@ -5,12 +5,12 @@
 FROM fuel/centos
 MAINTAINER Matthew Mosesohn mmosesohn@mirantis.com
 
-RUN rm -rf /etc/yum.repos.d/*;echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/os/x86_64/\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean expire-cache; yum update -y; ln -s /etc/dnsmasq.conf /etc/cobbler.dnsmasq.conf; echo httpd cobbler dnsmasq xinetd tftp-server | xargs -n1 yum install -y --quiet
+RUN rm -rf /etc/yum.repos.d/*;echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/os/x86_64/\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean expire-cache; yum update -y; ln -s /etc/dnsmasq.conf /etc/cobbler.dnsmasq.conf; echo fuel-release fuel-openstack-metadata httpd cobbler dnsmasq xinetd tftp-server | xargs -n1 yum install -y --quiet
 ADD etc /etc
 ADD start.sh /usr/local/bin/start.sh
 
 #Workaround for dnsmasq startup and create blank SSH key during build
-RUN echo -e "NETWORKING=yes\nHOSTNAME=$HOSTNAME" > /etc/sysconfig/network; mkdir -p /root/.ssh; chmod 700 /root/.ssh; touch /root/.ssh/id_rsa.pub; /etc/init.d/httpd start && puppet apply --detailed-exitcodes -dv /etc/puppet/modules/nailgun/examples/cobbler-only.pp; [[ $? == 0 || $? == 2 ]]
+RUN export FACTER_fuel_production=docker-build; echo -e "NETWORKING=yes\nHOSTNAME=$HOSTNAME" > /etc/sysconfig/network; mkdir -p /root/.ssh; chmod 700 /root/.ssh; touch /root/.ssh/id_rsa.pub; /etc/init.d/httpd start && puppet apply --detailed-exitcodes -dv /etc/puppet/modules/nailgun/examples/cobbler-only.pp; [[ $? == 0 || $? == 2 ]]
 
 RUN chmod +x /usr/local/bin/start.sh;echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean all
 
