@@ -365,6 +365,40 @@ function save_cfg {
     [ -n "$build_images" -a "$build_images" != "0" ] && echo -e "$build_images" > /root/.build_images
 }
 
+function get_ethernet_interfaces() {
+  # Get list of all ethernet interfaces, non-virtual, not a wireless
+  for DEV in /sys/class/net/* ; do
+     # Take only links into account, skip files
+     if test ! -L $DEV ; then
+        continue
+     fi
+     DEVPATH=$(readlink -f $DEV)
+     # Avoid virtual devices like loopback, tunnels, bonding, vlans ...
+     case $DEVPATH in
+          */virtual/*)
+             continue
+          ;;
+     esac
+     IF=${DEVPATH##*/}
+     # Check ethernet only
+     case "`cat $DEV/type`" in
+          1)
+          # TYPE=1 is ethernet, may also be wireless, bond, tunnel ...
+          # Virtual lo, bounding, vlan, tunneling has been skipped before
+          if test -d $DEV/wireless -o -L $DEV/phy80211 ;
+          then
+               continue
+          else
+          # Catch ethernet non-virtual device
+               echo $IF
+          fi
+          ;;
+          *) continue
+          ;;
+     esac
+  done
+}
+
 # Default FQDN
 hostname="nailgun.mirantis.com"
 
@@ -374,7 +408,8 @@ domain=${hostname#*.}
 ip=$ip
 netmask=$netmask
 gw=$gw
-admin_interface=${admin_interface:-"eth0"}
+first_eth_intf=$(get_ethernet_interfaces | sort -V | head -1)
+admin_interface=${admin_interface:-$first_eth_intf}
 hwaddr=`ifconfig $admin_interface | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
 dhcp_interface=$dhcp_interface
 build_images=$build_images
@@ -541,8 +576,44 @@ EOF
 
 
 cat >> '/etc/rc.local' << EOF
+#Collect info about network addresses
+function get_ethernet_intf_ip () {
+  # Return IP addresses for ethernet interfaces
+  # exclude wireless, bond, vlan, loopback, tunnels ...
+  for DEV in /sys/class/net/* ; do
+    # Take only links into account, skip files
+    if test ! -L \$DEV ; then
+        continue
+    fi
+    DEVPATH=\$(readlink -f \$DEV)
+    # Drop virtual devices like loopback, tunnels, bonding, vlans ...
+    case \$DEVPATH in
+       */virtual/*)
+           continue
+      ;;
+    esac
+    IF=\${DEVPATH##*/}
+    # Check ethernet only
+    case "`cat \$DEV/type`" in
+         1)
+            # TYPE=1 is ethernet, may also be wireless
+            # Virtual (lo, bounding, vlan, tunnel ...) have been skipped before
+            if test -d \$DEV/wireless -o -L \$DEV/phy80211 ;
+            then
+                 continue
+            else
+                 # Catch ethernet non-virtual device
+                 # Get IP address if assigned
+                       echo \$(ip -4 -o addr show dev \$IF | awk '{ print \$4 }' | cut -d/ -f1)
+             fi
+             ;;
+          *) continue
+             ;;
+    esac
+  done
+}
 first=yes
-for ip in \$(ip -o -4 addr | grep "eth." | awk '{print \$4 }' | cut -d/ -f1); do
+for ip in \$(get_ethernet_intf_ip); do
 if [ "\$first" = "yes" ]; then
   ipstr="Fuel UI is available on: https://\$ip:8443"
   first=no
