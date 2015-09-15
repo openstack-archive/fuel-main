@@ -9,7 +9,12 @@ function countdown() {
   done
 }
 export LANG=en_US.UTF8
-export ADMIN_INTERFACE=eth0
+#export ADMIN_INTERFACE=eth0
+# Get the first real network interface as admin interface, ignore others
+# export ADMIN_INTERFACE=$(find /sys/class/net/* -type l | xargs realpath | grep -v virtual | xargs basename)
+# the realpath and basename are not always installed, lets use "ls -lvd" and "grep -oE" instead
+# Take all non-virtual interfaces, cut names, make a string from the list and take very first one word
+export ADMIN_INTERFACE=$(find /sys/class/net/* -type l | xargs ls -lvd | grep -v virtual | grep -oE "[^/]+$" | tr "\n" " " | grep -oE "^[[:alnum:]]+")
 
 showmenu="no"
 if [ -f /root/.showfuelmenu ]; then

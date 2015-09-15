@@ -39,7 +39,10 @@ get_bootdev() {
 }
 
 get_alldevs() {
-    ip link|grep -oE 'eth[0-9]+'|sort|uniq
+    # Take all not virtual network devices given by links (to omit files)
+    # The realpath is not always installed, so let's use ls -lvd instead
+    # realpath | grep -v virtual | grep -oE '[^/]+$'
+    find /sys/class/net/ -type l | xargs ls -lvd | grep -v virtual | grep -oE '[^/]+$'
 }
 
 set_interfaces_up_when_booted() {
