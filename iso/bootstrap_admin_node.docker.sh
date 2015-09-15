@@ -16,7 +16,42 @@ function fail() {
 }
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 export LANG=en_US.UTF8
-export ADMIN_INTERFACE=eth0
+# Be sure, that network devices have been initialized
+udevadm trigger --subsystem-match=net
+udevadm settle
+# Take the very first ethernet interface, non-virtual, not a wireless
+for DEV in /sys/class/net/* ; do
+   # Take only links into account, skip files
+   if test ! -L $DEV ; then
+      continue
+   fi
+   DEVPATH=$(readlink -f $DEV)
+   # Avoid virtual devices like loopback, tunnels, bonding, vlans ...
+   case $DEVPATH in
+        */virtual/*)
+           continue
+        ;;
+   esac
+   IF=${DEVPATH##*/}
+   # Check ethernet only
+   case "`cat $DEV/type`" in
+        1)
+        # TYPE=1 is ethernet, may also be wireless, bond, tunnel ...
+        # Virtual lo, bounding, vlan, tunneling has been skipped before
+        if test -d $DEV/wireless -o -L $DEV/phy80211 ;
+        then
+             continue
+        else
+        # Catch ethernet non-virtual device
+             ADMIN_INTERFACE=$IF
+             break;
+        fi
+        ;;
+        *) continue
+        ;;
+   esac
+done
+export ADMIN_INTERFACE
 
 showmenu="no"
 if [ -f /etc/fuel/bootstrap_admin_node.conf ]; then
