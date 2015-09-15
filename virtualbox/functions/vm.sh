@@ -219,3 +219,11 @@ enable_network_boot_for_vm() {
     VBoxManage modifyvm $name --boot1 net --boot2 disk --boot3 none --boot4 none --nicbootprio1 1
 }
 
+enable_vrde(){
+    name=$1
+    port=${2:-5000}
+
+    # Enable VRDE, set port and address
+    VBoxManage modifyvm $name --vrde on
+    VBoxManage modifyvm $name --vrdeport $port
+}
