@@ -43,6 +43,11 @@ add_nat_adapter_to_vm $name 3 $vm_master_nat_network
 # Mount ISO with installer
 mount_iso_to_vm $name $iso_path
 
+#add RDP connection
+if [ ${headless} -eq 1 ]; then
+  enable_vrde $name 5000
+fi
+
 # Start virtual machine with the master node
 echo
 start_vm $name
