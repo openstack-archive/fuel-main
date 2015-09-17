@@ -129,24 +129,25 @@ else
 fi
 
 if [ $UPDATE_ISSUES -eq 1 ]; then
-  warning="WARNING: There are issues connecting to Fuel update repository.\
-\nPlease fix your connection and update this node with \`yum update\`\
-\nThen run \`dockerctl destroy all; bootstrap_admin_node.sh;\`\
-\nto repeat bootstrap on Fuel Master with the latest updates.\
-\nFor more information, check out Fuel documentation at:\
-\nhttp://docs.mirantis.com/fuel"
+  message="There is an issue connecting to the Fuel update repository. \
+Please fix your connection prior to applying any updates. \
+Once the connection is fixed, we recommend reviewing and applying \
+Maintenance Updates for this release of Mirantis OpenStack: \
+https://docs.mirantis.com/openstack/fuel/fuel-${FUEL_RELEASE}/\
+release-notes.html#maintenance-updates"
+  level="warning"
 else
-  warning="WARNING: There may be updates available for Fuel.\
-\nYou should update this node with \`yum update\`. If there are available\
-\n updates, run \`dockerctl destroy all; bootstrap_admin_node.sh;\`\
-\nto repeat bootstrap on Fuel Master with the latest updates.\
-\nFor more information, check out Fuel documentation at:\
-\nhttp://docs.mirantis.com/fuel"
+  message="We recommend reviewing and applying Maintenance Updates \
+for this release of Mirantis OpenStack: \
+https://docs.mirantis.com/openstack/fuel/fuel-${FUEL_RELEASE}/\
+release-notes.html#maintenance-updates"
+  level="done"
 fi
 echo
 echo "*************************************************"
-echo -e "$warning"
+echo -e "${message}"
 echo "*************************************************"
 echo "Sending notification to Fuel UI..."
-fuel notify --topic warning --send "$warning"
+fuel notify --topic "${level}" --send "${message}"
+
 echo "Fuel node deployment complete!"
