@@ -136,12 +136,10 @@ if [ $UPDATE_ISSUES -eq 1 ]; then
 \nFor more information, check out Fuel documentation at:\
 \nhttp://docs.mirantis.com/fuel"
 else
-  warning="WARNING: There may be updates available for Fuel.\
-\nYou should update this node with \`yum update\`. If there are available\
-\n updates, run \`dockerctl destroy all; bootstrap_admin_node.sh;\`\
-\nto repeat bootstrap on Fuel Master with the latest updates.\
-\nFor more information, check out Fuel documentation at:\
-\nhttp://docs.mirantis.com/fuel"
+  warning="We recommend reviewing and applying Maintenance Updates \
+for this release of Mirantis OpenStack: \
+https://docs.mirantis.com/openstack/fuel/fuel-${FUEL_RELEASE}/\
+release-notes.html#maintenance-updates)."
 fi
 echo
 echo "*************************************************"
