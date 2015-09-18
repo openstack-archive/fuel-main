@@ -51,6 +51,10 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
   fi
 fi
 
+# Enable sshd
+chkconfig sshd on
+service sshd start
+
 if [ "$wait_for_external_config" == "yes" ]; then
   wait_timeout=3000
   pidfile=/var/lock/wait_for_external_config
