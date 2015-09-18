@@ -2,8 +2,8 @@
 %define repo_name fuel-main
 
 %define name fuel
-%{!?version: %define version 8.0.0}
-%{!?fuel_release: %define fuel_release 8.0}
+%{!?version: %define version 1.0.0}
+%{!?fuel_release: %define fuel_release 1.0}
 %{!?release: %define release 1}
 
 Name: %{name}
@@ -16,10 +16,10 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
 Requires: fuel-bootstrap-image >= %{version}
-Requires: fuel-createmirror >= 8.0
-Requires: fuel-dockerctl >= 8.0
+Requires: fuel-createmirror >= %{fuel_release}
+Requires: fuel-dockerctl >= %{fuel_release}
 Requires: fuel-docker-images >= %{version}
-Requires: fuel-library8.0
+Requires: fuel-library%{fuel_release}
 Requires: fuelmenu >= %{version}
 Requires: fuel-package-updates >= %{version}
 Requires: fuel-provisioning-scripts >= %{version}
