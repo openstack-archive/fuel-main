@@ -594,4 +594,8 @@ cp -f /etc/skel/.bash* /root/
 # Blacklist i2c_piix4 module for VirtualBox so it does not create kernel errors
 [[ $(virt-what) = "virtualbox" ]] && echo "blacklist i2c_piix4" > /etc/modprobe.d/blacklist-i2c-piix4.conf
 
+# Disable sshd until after Fuel Setup if not running on VirtualBox
+# TODO(mattymo): Remove VBox exception after LP#1487047 is fixed
+[[ $(virt-what) = "virtualbox" ]] || chkconfig sshd off
+
 %end
