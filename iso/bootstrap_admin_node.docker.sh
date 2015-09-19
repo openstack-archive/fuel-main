@@ -217,26 +217,28 @@ else
 fi
 
 if [ $UPDATE_ISSUES -eq 1 ]; then
-  warning="WARNING: There are issues connecting to Fuel update repository.
+  text="WARNING: There are issues connecting to Fuel update repository.
 Please fix your connection and update this node with \`yum update\`
 Then run \`dockerctl destroy all; bootstrap_admin_node.sh;\`
 to repeat bootstrap on Fuel Master with the latest updates.
 For more information, check out Fuel documentation at:
 http://docs.mirantis.com/fuel"
+  topic="warning"
 else
-  warning="WARNING: There may be updates available for Fuel.
+  text="There may be updates available for Fuel.
 You should update this node with \`yum update\`. If there are available
 updates, run \`dockerctl destroy all; bootstrap_admin_node.sh;\`
 to repeat bootstrap on Fuel Master with the latest updates.
 For more information, check out Fuel documentation at:
 http://docs.mirantis.com/fuel"
+  topic="done"
 fi
 echo
 echo "*************************************************"
-echo -e "$warning"
+echo -e "$text"
 echo "*************************************************"
 echo "Sending notification to Fuel UI..."
-fuel notify --topic warning --send "$warning"
+fuel notify --topic $topic --send "$text"
 
 # TODO(kozhukalov) If building of bootstrap image fails
 # and if this image was supposed to be a default bootstrap image
