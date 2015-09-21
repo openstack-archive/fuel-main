@@ -34,7 +34,7 @@ $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME):
 	@mkdir -p $(@D)
 	mkdir -p $(BUILD_DIR)/image/centos
 	sudo sh -c "$${SANDBOX_UP}"
-	sudo yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install tar python-setuptools git python-imgcreate python-argparse PyYAML
+	echo tar python-setuptools git python-imgcreate python-argparse PyYAML | xargs -n1 sudo yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install
 	sudo cp /etc/mtab $(SANDBOX)/etc/mtab
 	sudo mkdir -p $(SANDBOX)/run/shm
 	sudo cp $(SOURCE_DIR)/image/centos/build_centos_image.py $(SANDBOX)/build_centos_image.py
