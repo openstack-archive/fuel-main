@@ -5,19 +5,19 @@ repo-ubuntu: $(BUILD_DIR)/mirror/ubuntu/repo.done
 
 define reprepro_dist_conf
 Origin: Mirantis
-Label: $(PRODUCT_NAME)$(PRODUCT_VERSION)
-Suite: $(PRODUCT_NAME)$(PRODUCT_VERSION)
-Codename: $(PRODUCT_NAME)$(PRODUCT_VERSION)
+Label: $(PRODUCT_NAME)7.0
+Suite: $(PRODUCT_NAME)7.0
+Codename: $(PRODUCT_NAME)7.0
 Description: Mirantis OpenStack mirror
 Architectures: $(UBUNTU_ARCH)
 Components: main restricted
 DebIndices: Packages Release . .gz .bz2
-Update: - $(PRODUCT_NAME)$(PRODUCT_VERSION)
+Update: - $(PRODUCT_NAME)7.0
 endef
 
 define reprepro_updates_conf
-Suite: $(PRODUCT_NAME)$(PRODUCT_VERSION)
-Name: $(PRODUCT_NAME)$(PRODUCT_VERSION)
+Suite: $(PRODUCT_NAME)7.0
+Name: $(PRODUCT_NAME)7.0
 Method: file:$(LOCAL_MIRROR_UBUNTU)
 Components: main
 Architectures: $(UBUNTU_ARCH)
@@ -65,7 +65,7 @@ $(BUILD_DIR)/mirror/ubuntu/repo.done: \
 		$(BUILD_DIR)/mirror/ubuntu/reprepro.done
 	# FIXME(aglarendil): do not touch upstream repo. instead - build new repo
 	# Import newly built packages
-	cd $(LOCAL_MIRROR_UBUNTU) && reprepro --confdir=$(REPREPRO_CONF_DIR) -V includedeb $(PRODUCT_NAME)$(PRODUCT_VERSION) $(BUILD_DIR)/packages/deb/packages/*.deb
+	cd $(LOCAL_MIRROR_UBUNTU) && reprepro --confdir=$(REPREPRO_CONF_DIR) -V includedeb $(PRODUCT_NAME)7.0 $(BUILD_DIR)/packages/deb/packages/*.deb
 	# Clean up reprepro data
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/db
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/lists
@@ -78,7 +78,7 @@ $(BUILD_DIR)/mirror/ubuntu/mirror.done:
 	--method=$(MIRROR_MOS_UBUNTU_METHOD) \
 	--host=$(MIRROR_MOS_UBUNTU) \
 	--root=$(MIRROR_MOS_UBUNTU_ROOT) \
-	--dist=$(MIRROR_MOS_UBUNTU_SUITE) \
+	--dist=mos7.0 \
 	--section=$(subst $(space),$(comma),$(MIRROR_MOS_UBUNTU_SECTION)) \
 	--arch=$(UBUNTU_ARCH) \
 	$(LOCAL_MIRROR_UBUNTU)/

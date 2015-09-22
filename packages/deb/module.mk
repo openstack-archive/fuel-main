@@ -60,7 +60,7 @@ define remove_deb
 mkdir -p $(BUILD_DIR)/packages/deb
 perl $(SOURCE_DIR)/packages/deb/genpkgnames.pl $(BUILD_DIR)/repos/$1/debian/control > $(BUILD_DIR)/packages/deb/$1.cleanup.list
 cd $(LOCAL_MIRROR_UBUNTU) && cat $(BUILD_DIR)/packages/deb/$1.cleanup.list | \
-xargs -n1 -I{} reprepro --confdir=$(REPREPRO_CONF_DIR) remove $(PRODUCT_NAME)$(PRODUCT_VERSION) {} $(NEWLINE)
+xargs -n1 -I{} reprepro --confdir=$(REPREPRO_CONF_DIR) remove $(PRODUCT_NAME)7.0 {} $(NEWLINE)
 endef
 
 $(BUILD_DIR)/mirror/ubuntu/repo.done: $(BUILD_DIR)/packages/deb/repocleanup.done

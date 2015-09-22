@@ -53,10 +53,10 @@ apt_setup ()
 	deb $MIRROR_DISTRO ${DISTRO_RELEASE}         main universe multiverse restricted
 	deb $MIRROR_DISTRO ${DISTRO_RELEASE}-security main universe multiverse restricted
 	deb $MIRROR_DISTRO ${DISTRO_RELEASE}-updates  main universe multiverse restricted
-	deb $MIRROR_MOS ${mos_codename}          main
-	deb $MIRROR_MOS ${mos_codename}-security main
-	deb $MIRROR_MOS ${mos_codename}-updates  main
-	deb $MIRROR_MOS ${mos_codename}-holdback main
+	deb $MIRROR_MOS mos7.0          main
+	deb $MIRROR_MOS mos7.0-security main
+	deb $MIRROR_MOS mos7.0-updates  main
+	deb $MIRROR_MOS mos7.0-holdback main
 	EOF
 	if [ -n "$EXTRA_DEB_REPOS" ]; then
 		l="$EXTRA_DEB_REPOS"
