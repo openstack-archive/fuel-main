@@ -211,7 +211,8 @@ MIRROR_UBUNTU_SUITE?=$(UBUNTU_RELEASE)
 MIRROR_UBUNTU_SECTION?=main universe multiverse restricted
 MIRROR_MOS_UBUNTU_METHOD?=http
 MIRROR_MOS_UBUNTU?=perestroika-repo-tst.infra.mirantis.net
-MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/$(PRODUCT_VERSION)
+#MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/$(PRODUCT_VERSION)
+MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/7.0
 MIRROR_MOS_UBUNTU_SUITE?=$(PRODUCT_NAME)$(PRODUCT_VERSION)
 MIRROR_MOS_UBUNTU_SECTION?=main restricted
 # NOTE(kozhukalov): We are getting rid of staging mirrors (FWM) which are built using 'make mirror' command.
