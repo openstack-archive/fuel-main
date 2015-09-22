@@ -84,7 +84,7 @@ fuel-library$(PRODUCT_VERSION) \
 fuel-main \
 fuel-nailgun-agent \
 fuel-ostf \
-nailgun \
+fuel-nailgun \
 python-fuelclient
 
 $(eval $(foreach pkg,$(packages_list),$(call build_rpm,$(pkg))$(NEWLINE)))
