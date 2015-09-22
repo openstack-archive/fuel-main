@@ -269,6 +269,7 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 		-V $(ISO_VOLUME_ID) -p $(ISO_VOLUME_PREP) \
 		-J -R \
 		-graft-points \
+		-joilet-long \
 		-b isolinux/isolinux.bin -no-emul-boot -boot-load-size 4 -boot-info-table \
 		-isohybrid-mbr /usr/lib/syslinux/isohdpfx.bin \
 		-eltorito-alt-boot -e images/efiboot.img -no-emul-boot \
