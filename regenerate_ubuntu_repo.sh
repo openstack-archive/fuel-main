@@ -22,7 +22,8 @@
 #    regenerate_ubuntu_repo /path/to/ubuntu/repo precise
 
 REPO_PATH=$1
-REPONAME=$2
+#REPONAME=$2
+REPONAME=mos7.0
 
 BINDIR=${REPO_PATH}/dists/${REPONAME}/main
 package_deb=${BINDIR}/binary-amd64/Packages
