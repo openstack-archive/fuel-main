@@ -5,6 +5,7 @@
 rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
+puppet apply -d -v /etc/puppet/modules/nailgun/examples/hiera-for-container.pp
 puppet apply -d -v /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp
 
 #Stop daemon and restart it in the foreground

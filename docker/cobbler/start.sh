@@ -30,6 +30,12 @@ puppet apply -v /etc/puppet/modules/nailgun/examples/cobbler-only.pp
 /etc/init.d/dnsmasq stop
 /etc/init.d/cobblerd stop
 
+# Check if we have any dhcp-ranges configured in dnsmasq. If not, then
+# we need to create default dhcp-range for fuelweb_admin network that
+# was configured via fuelmenu and stored in /etc/fuel/astute.yaml
+ls /etc/dnsmasq.d/*.conf || \
+  puppet apply -d -v /etc/puppet/modules/nailgun/examples/dhcp-default-range.pp
+
 # Running services
 /etc/init.d/dnsmasq restart
 cobblerd -F
