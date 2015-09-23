@@ -33,8 +33,25 @@ function run_upgrade {
   # prepare virtualenv for fuel_upgrade script
   prepare_virtualenv
 
+  local args=()
+  local kwargs=("--src=$UPGRADE_PATH")
+
+  while [ -n "$1" ]; do
+    if [ $1 == \-\-password ]; then
+      kwargs=("${kwargs[@]}" "$1=$2"); shift
+    elif [[ $1 == \-* ]]; then
+      kwargs=("${kwargs[@]}" "$1")
+    else
+      args=("${args[@]}" "$1")
+    fi
+    shift
+  done
+
+  [ -z "${args[0]}" ] && args=("${UPGRADERS[@]}")
+
   # run fuel_upgrade script
-  $VIRTUALENV_PATH/bin/python "$VIRTUALENV_PATH/bin/fuel-upgrade" --src "$UPGRADE_PATH" $UPGRADERS "$@" || error "Upgrade failed" $?
+  $VIRTUALENV_PATH/bin/python "$VIRTUALENV_PATH/bin/fuel-upgrade" "${kwargs[@]}" ${args[@]} || \
+    error "Upgrade failed" $?
 }
 
 
