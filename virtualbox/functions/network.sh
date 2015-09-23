@@ -16,8 +16,10 @@
 
 # This file contains the functions to manage host-only interfaces in the system
 
+source ./functions/shell.sh
+
 get_hostonly_interfaces() {
-  echo -e `VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`
+  echo -e `execute VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`
 }
 
 get_fuel_ifaces() {
@@ -30,7 +32,7 @@ get_fuel_ifaces() {
     fuel_networks+="$fuel_network "
   done
   for ip in $fuel_networks; do
-    fuel_iface=`VBoxManage list hostonlyifs | grep -B5 $ip | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`
+    fuel_iface=`execute VBoxManage list hostonlyifs | grep -B5 $ip | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`
     fuel_ifaces+="$fuel_iface"
   done
   echo $fuel_ifaces
@@ -53,7 +55,7 @@ is_hostonly_interface_present() {
   # String comparison with IF works different in Cygwin, probably due to encoding.
   # So, reduced Case is used. since it works the same way.
   # Default divider character change is mandatory for Cygwin.
-  case "$(uname)" in
+  case "$(execute uname)" in
     CYGWIN*)
       OIFS=$IFS
       IFS=","
@@ -62,9 +64,9 @@ is_hostonly_interface_present() {
       ;;
   esac
   # Call VBoxManage directly instead of function, due to changed IFS
-  local found_iface=(`VBoxManage list hostonlyifs | grep -E "Name: + $name\$" | awk '/Name/ { $1 = ""; print substr($0, 2) }'`)
+  local found_iface=(`execute VBoxManage list hostonlyifs | grep -E "Name: + $name\$" | awk '/Name/ { $1 = ""; print substr($0, 2) }'`)
   # Change default divider back
-  case "$(uname)" in
+  case "$(execute uname)" in
     CYGWIN*)
       IFS=$OIFS
       ;;
@@ -85,7 +87,7 @@ check_if_iface_settings_applied() {
   mask=$3
   echo "Verifying interface $name has IP $ip and mask $mask properly set."
   # Please leave 12 spaces in place - these are placed intentionally
-  case "$(uname)" in
+  case "$(execute uname)" in
     CYGWIN*)
       OIFS=$IFS
       IFS=","
@@ -93,17 +95,17 @@ check_if_iface_settings_applied() {
     *)
       ;;
     esac
-  local new_name=(`VBoxManage list hostonlyifs | egrep -A9 "Name:            $name\$" | awk '/Name/ { $1 = ""; print substr($0, 2) }'`)
-  case "$(uname)" in
+  local new_name=(`execute VBoxManage list hostonlyifs | egrep -A9 "Name:            $name\$" | awk '/Name/ { $1 = ""; print substr($0, 2) }'`)
+  case "$(execute uname)" in
     CYGWIN*)
       IFS=$OIFS
       ;;
     *)
       ;;
   esac
-  local new_ip=(`VBoxManage list hostonlyifs | egrep -A9 "Name:            $name\$" | awk '/IPAddress:/ {print $2}'`)
-  local new_mask=(`VBoxManage list hostonlyifs | egrep -A9 "Name:            $name\$" | awk '/NetworkMask:/ {print $2}'`)
-  local new_dhcp=(`VBoxManage list hostonlyifs | egrep -A9 "Name:            $name\$" | awk '/DHCP:/ {print $2}'`)
+  local new_ip=(`execute VBoxManage list hostonlyifs | egrep -A9 "Name:            $name\$" | awk '/IPAddress:/ {print $2}'`)
+  local new_mask=(`execute VBoxManage list hostonlyifs | egrep -A9 "Name:            $name\$" | awk '/NetworkMask:/ {print $2}'`)
+  local new_dhcp=(`execute VBoxManage list hostonlyifs | egrep -A9 "Name:            $name\$" | awk '/DHCP:/ {print $2}'`)
   # First verify if we checking correct interface
   if [[ "$name" != "$new_name" ]]; then
     echo "Checking $name but found settings for $new_name"
@@ -129,7 +131,7 @@ create_hostonly_interfaces() {
   # Creating host-only interface
   local ip=$1
   echo "Creating host-only interface"
-  local id=`VBoxManage hostonlyif create | sed "s/'/_/g" | cut -d "_" -f2 | sed "s/^_//" | sed "s/_$//"`
+  local id=`execute VBoxManage hostonlyif create | sed "s/'/_/g" | cut -d "_" -f2 | sed "s/^_//" | sed "s/_$//"`
   # If it does not exist after creation, let's abort
   if ! is_hostonly_interface_present "$id"; then
     echo "Fatal error. Interface $id does not exist after creation. Exiting"
@@ -142,12 +144,12 @@ create_hostonly_interfaces() {
   # These magic 1 second sleeps around DHCP config are required under Windows/Cygwin
   # due to VBoxSvc COM server accepts next request before previous one is actually finished.
   sleep 1s
-  VBoxManage dhcpserver remove --ifname "$name" 2>/dev/null
+  execute VBoxManage dhcpserver remove --ifname "$name" 2>/dev/null
   sleep 1s
   # Set up IP address and network mask
   echo "Configuring IP address $ip and network mask $mask on interface: $name..."
   set -x
-  VBoxManage hostonlyif ipconfig "$id" --ip $ip --netmask $mask
+  execute VBoxManage hostonlyif ipconfig "$id" --ip $ip --netmask $mask
   set +x
   # Check what we have created actually.
   # Sometimes VBox occasionally fails to apply settings to the last IFace under Windows
@@ -181,7 +183,7 @@ delete_fuel_ifaces() {
     for interface in $fuel_ifaces; do
       IFS=$OIFS
       echo "Deleting host-only interface: $interface..."
-      VBoxManage hostonlyif remove "$interface"
+      execute VBoxManage hostonlyif remove "$interface"
       check_removed_iface "$interface"
     done
   fi
@@ -192,11 +194,11 @@ delete_all_hostonly_interfaces() {
   local all_hostonly_interfaces=$(get_hostonly_interfaces)
   # Checking that the running virtual machines don't use removable host-only interfaces
   check_running_vms "$all_hostonly_interfaces"
-  OIFS=$IFS;IFS=",";list=(`VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`);IFS=$OIFS
+  OIFS=$IFS;IFS=",";list=(`execute VBoxManage list hostonlyifs | grep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`);IFS=$OIFS
   # Delete every single hostonly interface in the system
   for interface in "${list[@]}"; do
     echo "Deleting host-only interface: $interface..."
-    VBoxManage hostonlyif remove "$interface"
+    execute VBoxManage hostonlyif remove "$interface"
     check_removed_iface "$interface"
   done
 }
