@@ -12,7 +12,7 @@ gpgcheck=0" \
         > /etc/yum.repos.d/nailgun.repo; \
     yum clean expire-cache; \
     yum update -y; \
-    echo ruby21-mcollective shotgun fuel-agent fuel-provisioning-scripts \
+    echo ruby21-mcollective shotgun fuel-agent fuel-provisioning-scripts daemonize \
         | xargs -n1 yum install -y --quiet
 
 ADD etc /etc
