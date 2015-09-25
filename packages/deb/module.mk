@@ -72,6 +72,6 @@ $(BUILD_DIR)/packages/deb/repocleanup.done: $(packages_list:%=$(BUILD_DIR)/packa
 $(BUILD_DIR)/packages/deb/build.done:
 	$(ACTION.TOUCH)
 
-fuel_debian_packages:=nailgun astute fuel-agent fuel-library$(PRODUCT_VERSION) fuel-nailgun-agent
+fuel_debian_packages:=fuel-nailgun astute fuel-agent fuel-library$(PRODUCT_VERSION) fuel-nailgun-agent
 
 $(eval $(foreach pkg,$(fuel_debian_packages),$(call build_deb,$(pkg))$(NEWLINE)))

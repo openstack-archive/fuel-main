@@ -30,21 +30,21 @@ openstack-yaml: $(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME)
 $(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME): $(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)
 	$(ACTION.COPY)
 
-$(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME): $(BUILD_DIR)/repos/nailgun.done
+$(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME): $(BUILD_DIR)/repos/fuel-nailgun.done
 	mkdir -p $(@D)
-	cp $(BUILD_DIR)/repos/nailgun/nailgun/nailgun/fixtures/openstack.yaml $@
+	cp $(BUILD_DIR)/repos/fuel-nailgun/nailgun/nailgun/fixtures/openstack.yaml $@
 
 ########################
 # UPGRADE DEPENDENCIES
 ########################
 $(BUILD_DIR)/upgrade/deps.done: \
-		$(BUILD_DIR)/repos/nailgun.done
+		$(BUILD_DIR)/repos/fuel-nailgun.done
 	mkdir -p $(BUILD_DIR)/upgrade/deps
 	virtualenv $(BUILD_DIR)/upgrade/venv
 #	Requires virtualenv, pip, python-dev packages
 ifeq ($(USE_UPGRADE_PIP_ART_HTTP_LINK),)
 	echo "Using mirror pip-install approach"
-	$(BUILD_DIR)/upgrade/venv/bin/pip install -r $(BUILD_DIR)/repos/nailgun/fuel_upgrade_system/fuel_upgrade/requirements.txt --download $(BUILD_DIR)/upgrade/deps --no-use-wheel
+	$(BUILD_DIR)/upgrade/venv/bin/pip install -r $(BUILD_DIR)/repos/fuel-nailgun/fuel_upgrade_system/fuel_upgrade/requirements.txt --download $(BUILD_DIR)/upgrade/deps --no-use-wheel
 else
 	echo "Using artifact from $(USE_UPGRADE_PIP_ART_HTTP_LINK) for pip-install"
 	wget -v --no-check-certificate $(USE_UPGRADE_PIP_ART_HTTP_LINK) -O $(BUILD_DIR)/upgrade/deps.tar.gz.tmp
@@ -52,7 +52,7 @@ else
 	mkdir -p $(BUILD_DIR)/upgrade/deps/
 	tar xvf $(BUILD_DIR)/upgrade/deps.tar.gz --strip-components=1 -C $(BUILD_DIR)/upgrade/deps/
 endif
-	cd $(BUILD_DIR)/repos/nailgun/fuel_upgrade_system/fuel_upgrade && $(BUILD_DIR)/upgrade/venv/bin/python setup.py sdist --dist-dir $(BUILD_DIR)/upgrade/deps
+	cd $(BUILD_DIR)/repos/fuel-nailgun/fuel_upgrade_system/fuel_upgrade && $(BUILD_DIR)/upgrade/venv/bin/python setup.py sdist --dist-dir $(BUILD_DIR)/upgrade/deps
 	$(ACTION.TOUCH)
 
 # Save pip artifact, if needed
