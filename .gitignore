@@ -24,3 +24,4 @@ lock
 .DS_Store
 
 Nailgun.egg-info
+repomd.xml
