@@ -164,7 +164,7 @@ if [ -f /root/.build_images ]; then
     mkdir -p $WORKDIR/$image/etc
     cp -R /etc/puppet /etc/fuel $WORKDIR/$image/etc
     sed -e "s/_PORT_/${RANDOM_PORT}/" -i $WORKDIR/$image/Dockerfile
-    sed -e 's/"PRODUCTION":.*/"PRODUCTION": "docker-build"/' -i $WORKDIR/$image/etc/fuel/astute.yaml
+    sed -e 's/PRODUCTION:.*/PRODUCTION: docker-build/' -i $WORKDIR/$image/etc/fuel/astute.yaml
     # FIXME(kozhukalov): Once this patch https://review.openstack.org/#/c/219581/ is merged
     # remove this line. fuel-library is to use PRODUCTION value from astute.yaml instead of
     # the same value from version.yaml. It is a part of version.yaml deprecation plan.
