@@ -50,8 +50,14 @@ for idx in $(eval echo {1..$cluster_size}); do
   add_disk_to_vm $name 2 $vm_slave_third_disk_mb
 
   #add NIC1 MAC to description
-  mac=$(vboxmanage showvminfo $name |awk -F ': ' '$1~/NIC 1/ {mac=gensub(/^.+ MAC: ([0-9A-F]{12}).+$/,"\\1","g",$0);print mac}')
-  vboxmanage modifyvm $name --description $mac
+  mac=$(execute vboxmanage showvminfo $name |awk -F ': ' '$1~/NIC 1/ {mac=gensub(/^.+ MAC: ([0-9A-F]{12}).+$/,"\\1","g",$0);print mac}')
+  execute vboxmanage modifyvm $name --description $mac
+
+  #add RDP connection
+  if [ ${headless} -eq 1 ]; then
+    enable_vrde $name $((${RDPport} + idx))
+  fi
+
   enable_network_boot_for_vm $name
 
   # The delay required for downloading tftp boot image
