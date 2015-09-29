@@ -72,13 +72,15 @@ gpgcheck=0
 enabled=1
 includepkgs=$(x86_rpm_packages_whitelist)
 priority=90
+endef
 
+define yum_repo_extras
 [extras]
 name=CentOS-$(CENTOS_RELEASE) - Extras
 #mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=extras
 baseurl=$(MIRROR_CENTOS)/extras/$(CENTOS_ARCH)
 gpgcheck=0
-enabled=0
+enabled=1
 priority=90
 
 [centosplus]
