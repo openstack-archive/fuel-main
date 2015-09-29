@@ -51,7 +51,6 @@ echo kernel-lt kernel-lt-devel kernel-lt-headers linux-firmware | xargs -n1 yum 
 rm /etc/yum.repos.d/*
 
 
-%post
 # make sure firstboot doesn't start
 echo "RUN_FIRSTBOOT=NO" > /etc/sysconfig/firstboot
 
