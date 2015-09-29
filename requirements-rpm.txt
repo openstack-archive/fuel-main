@@ -1,7 +1,5 @@
-ami-creator
 anacron
 apr-util
-atop
 augeas-libs
 bakefile
 @Base
@@ -75,7 +73,7 @@ mod_wsgi
 monit
 mtools
 MySQL-python
-MySQL-shared-wsrep
+mysql-shared-wsrep
 nailgun-agent
 nailgun-mcagents
 nginx
