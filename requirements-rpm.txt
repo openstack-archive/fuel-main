@@ -30,10 +30,6 @@ erlang
 ethtool
 euca2ools
 fence-agents
-fuel-createmirror
-fuel-library
-fuelmenu
-fuel-ostf
 gcc
 gdisk
 genisoimage
@@ -75,8 +71,6 @@ monit
 mtools
 MySQL-python
 MySQL-shared-wsrep
-nailgun-agent
-nailgun-mcagents
 nginx
 nmap-ncat
 nodejs-backbone
@@ -165,7 +159,6 @@ python-ethtool
 python-eventlet
 python-fabric
 python-flask
-python-fuelclient
 python-futures
 python-fysom
 python-gevent
@@ -279,7 +272,6 @@ ruby21-rubygem-activesupport
 ruby21-rubygem-amq-client
 ruby21-rubygem-amqp
 ruby21-rubygem-amq-protocol
-ruby21-rubygem-astute
 ruby21-rubygem-eventmachine
 ruby21-rubygem-i18n
 ruby21-rubygem-json
