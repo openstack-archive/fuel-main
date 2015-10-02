@@ -50,7 +50,6 @@ ipxe-roms
 kernel-2.6.32-504.16.2.el6
 kernel-devel-2.6.32-504.16.2.el6
 kernel-headers-2.6.32-504.16.2.el6
-kernel-lt
 kmod-hpsa
 leveldb
 libevent-devel
