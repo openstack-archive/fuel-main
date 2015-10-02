@@ -34,7 +34,6 @@ fuel-createmirror
 fuel-library
 fuelmenu
 fuel-ostf
-fuel-utils
 gcc
 gdisk
 genisoimage
