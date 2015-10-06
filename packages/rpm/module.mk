@@ -12,7 +12,7 @@ clean-rpm:
 
 RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
 
-$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=ruby21 rpm-build tar python-setuptools python-pbr nodejs npm yum yum-utils git
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=rpm-build tar python-setuptools python-pbr nodejs npm yum yum-utils git
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/buildd
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
