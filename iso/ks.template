@@ -269,9 +269,9 @@ openssh-clients
 policycoreutils
 python-daemon
 rsync
-ruby21-puppet
-ruby21-rubygem-netaddr
-ruby21-rubygem-openstack
+puppet
+rubygem-netaddr
+rubygem-openstack
 selinux-policy-targeted
 strace
 subscription-manager

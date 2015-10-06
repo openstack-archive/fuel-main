@@ -85,9 +85,9 @@ reposdir=$(BUILD_DIR)/bootstrap/etc/yum.repos.d
 endef
 
 #FIXME Partial-Bug: #1403088
-YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --exclude=ruby-2.1.1  --exclude=ruby21 --installroot=$(INITRAMROOT) -y --nogpgcheck
+YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --installroot=$(INITRAMROOT) -y --nogpgcheck
 
-KERNEL_PATTERN:=kernel-lt-3.10.*
+KERNEL_PATTERN:=kernel
 KERNEL_FIRMWARE_PATTERN:=linux-firmware*
 
 clean: clean-bootstrap
