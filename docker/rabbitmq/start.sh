@@ -8,16 +8,10 @@ rpm --rebuilddb
 mkdir -p /var/log/rabbitmq
 chown -R rabbitmq:rabbitmq /var/log/rabbitmq
 
-exitcode=0
-puppet apply --detailed-exitcodes -v /etc/puppet/modules/nailgun/examples/rabbitmq-only.pp || exitcode=$?
-if [[ $exitcode != 0 && $exitcode != 2 ]]; then
-  echo Puppet apply failed with exit code: $exitcode
-  exit $exitcode
-fi
+puppet apply --detailed-exitcodes -v /etc/puppet/modules/nailgun/examples/rabbitmq-only.pp || [[ $? == 2 ]]
 
-set +e
-service rabbitmq-server stop
+systemctl stop rabbitmq-server.service
 # Just in case stopping service fails
 pkill -u rabbitmq
 
-/usr/sbin/rabbitmq-server
+systemctl start rabbitmq-server.service
