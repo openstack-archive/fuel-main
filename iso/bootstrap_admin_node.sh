@@ -1,4 +1,8 @@
 #!/bin/bash
+mkdir -p /var/log/puppet
+exec > >(tee -i /var/log/puppet/bootstrap_admin_node.log)
+exec 2>&1
+
 FUEL_RELEASE=$(grep release: /etc/fuel/version.yaml | cut -d: -f2 | tr -d '" ')
 
 function countdown() {
@@ -49,20 +53,77 @@ function get_ethernet_interfaces() {
   done
 }
 
+
+function get_ifcfg_value {
+    local key=$1
+    local path=$2
+    local value=''
+    if [[ -f ${path} ]]; then
+        value=$(awk -F\= "\$1==\"${key}\" {print \$2}" ${path})
+        value=${value//\"/}
+    fi
+    echo ${value}
+}
+
+#FIXME(dteselkin): dirty workaround to fix dracut network configuration approach
+function ifdown_ethernet_interfaces {
+    local adminif_ipaddr
+    local if_config
+    local if_name
+    local if_ipaddr
+
+    adminif_ipaddr=$(get_ifcfg_value IPADDR /etc/sysconfig/network-scripts/ifcfg-${ADMIN_INTERFACE})
+    for if_config in $(find /etc/sysconfig/network-scripts -name 'ifcfg-*' ! -name 'ifcfg-lo'); do
+        if_name=$(get_ifcfg_value NAME $if_config)
+        if [[ "${if_name}" == "${ADMIN_INTERFACE}" ]]; then
+            continue
+        fi
+        if_ipaddr=$(get_ifcfg_value IPADDR $if_config)
+        if [[ "${if_ipaddr}" == "${adminif_ipaddr}" ]]; then
+            echo "Interface '${if_name}' uses the same ip '${if_ipaddr}' as admin interface '${ADMIN_INTERFACE}', removing ..."
+            ifdown ${if_name}
+            rm -f ${if_config}
+        fi
+    done
+}
+
+function ifname_valid {
+    local adminif_name=$1
+    local if_name
+    local if_config
+    for if_config in $(find /etc/sysconfig/network-scripts -name 'ifcfg-*' ! -name 'ifcfg-lo'); do
+        if_name=$(get_ifcfg_value NAME $if_config)
+        if [[ "${if_name}" == "${adminif_name}" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 export LANG=en_US.UTF8
 # Be sure, that network devices have been initialized
 udevadm trigger --subsystem-match=net
 udevadm settle
-# Take the very first ethernet interface as an admin interface
-ADMIN_INTERFACE=$(get_ethernet_interfaces | sort -V | head -1)
+
+if [ -f /etc/fuel/bootstrap_admin_node.conf ]; then
+    source /etc/fuel/bootstrap_admin_node.conf
+fi
+
+ADMIN_INTERFACE=${ADMIN_INTERFACE:-'eth0'}
+showmenu=${showmenu:-'no'}
+
+if ! ifname_valid $ADMIN_INTERFACE; then
+    # Take the very first ethernet interface as an admin interface
+    ADMIN_INTERFACE=$(get_ethernet_interfaces | sort -V | head -1)
+fi
+echo "Applying admin interface '$ADMIN_INTERFACE'"
 export ADMIN_INTERFACE
 
-showmenu="no"
-if [ -f /etc/fuel/bootstrap_admin_node.conf ]; then
-  . /etc/fuel/bootstrap_admin_node.conf
-  echo "Applying admin interface '$ADMIN_INTERFACE'"
-fi
+echo "Bringing down ALL network interfaces except '${ADMIN_INTERFACE}'"
+ifdown_ethernet_interfaces
+systemctl restart network
 
 echo "Applying default Fuel settings..."
 set -x
@@ -92,8 +153,11 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
 fi
 
 # Enable sshd
-chkconfig sshd on
-service sshd start
+systemctl enable sshd
+systemctl start sshd
+systemctl enable iptables.service
+systemctl start iptables.service
+
 
 if [ "$wait_for_external_config" == "yes" ]; then
   wait_timeout=3000
@@ -292,3 +356,5 @@ fuel notify --topic "${level}" --send $(echo "${message}" | tr '\r\n' ' ')
 # advice how to treat this.
 
 echo "Fuel node deployment complete!"
+# Sleep for agetty autologon
+sleep 3
