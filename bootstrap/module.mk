@@ -58,7 +58,13 @@ BOOTSTRAP_RPMS_CUSTOM:=\
 	nailgun-agent \
 	nailgun-mcagents \
 	network-checker \
-	fuel-agent
+	fuel-agent \
+	rubygem-mime-types \
+	rubygem-ffi \
+	rubygem-ffi-yajl \
+	rubygem-mixlib-shellout \
+	rubygem-wmi-lite \
+        lsof
 
 define yum_local_repo
 [mirror]
@@ -87,7 +93,7 @@ endef
 #FIXME Partial-Bug: #1403088
 YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --exclude=ruby-2.1.1  --exclude=ruby21 --installroot=$(INITRAMROOT) -y --nogpgcheck
 
-KERNEL_PATTERN:=kernel-lt-3.10.*
+KERNEL_PATTERN:=kernel-3.10.0*
 KERNEL_FIRMWARE_PATTERN:=linux-firmware*
 
 clean: clean-bootstrap
