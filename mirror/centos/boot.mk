@@ -1,7 +1,7 @@
 ISOLINUX_FILES:=boot.msg grub.conf initrd.img isolinux.bin memtest vesamenu.c32 vmlinuz
-IMAGES_FILES:=efiboot.img efidisk.img install.img
+IMAGES_FILES:=efiboot.img
 PXEBOOT_FILES:=initrd.img vmlinuz
-EFI_FILES:=BOOTX64.conf BOOTX64.efi splash.xpm.gz
+EFI_FILES:=BOOTX64.EFI MokManager.efi grub.cfg grubx64.efi
 
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 MIRROR_CENTOS_KERNEL_BASEURL?=$(MIRROR_CENTOS_KERNEL)/os/$(CENTOS_ARCH)
