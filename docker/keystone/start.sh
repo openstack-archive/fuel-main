@@ -5,12 +5,4 @@
 rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
-exitcode=0
-puppet apply --detailed-exitcodes -v /etc/puppet/modules/nailgun/examples/keystone-only.pp || exitcode=$?
-if [[ $exitcode != 0 && $exitcode != 2 ]]; then
-  echo Puppet apply failed with exit code: $exitcode
-  exit $exitcode
-fi
-
-service openstack-keystone stop
-keystone-all
+puppet apply --detailed-exitcodes -v /etc/puppet/modules/nailgun/examples/keystone-only.pp || [[ $? == 2]]
