@@ -21,6 +21,11 @@ mount -o loop "$image" "$mount"
 
 cd "$mount"
 
+# remove all getty services/slices/units
+# see #1508364
+find ${mount}/usr/lib/systemd/system -name "*getty*" -delete
+ln -snf /dev/null ${mount}/etc/systemd/system/firewalld.service
+
 #this tar seems to cause issues such as rpmdb corruption
 #tar -cpSf - --acls --selinux --xattrs * | docker import - "$tag"
 
