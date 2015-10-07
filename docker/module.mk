@@ -84,7 +84,6 @@ $(BUILD_DIR)/docker/sources.done: \
 		$(find-files $(SOURCE_DIR)/docker)
 	mkdir -p $(BUILD_DIR)/docker/sources $(BUILD_DIR)/docker/utils
 	find $(SOURCE_DIR)/docker -mindepth 1 -type d -not -name '*fuel-centos-build*' | xargs cp -r --target-directory=$(BUILD_DIR)/docker/sources
-	cp -r $(SOURCE_DIR)/utils/simple_http_daemon.py $(BUILD_DIR)/docker/utils
 	$(ACTION.TOUCH)
 
 $(foreach cnt,$(containers),$(eval $(call build_container,$(cnt))))
