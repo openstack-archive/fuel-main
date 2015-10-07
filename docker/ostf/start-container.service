@@ -1,0 +1,9 @@
+[Unit]
+Description=Container Startup Script
+Requires=dbus.socket
+After=rsyslog.service
+
+[Service]
+ExecStart=/bin/bash /usr/local/bin/start.sh > /var/log/setup.log 2>&1
+[Install]
+WantedBy=multi-user.target
