@@ -67,9 +67,13 @@ $(BUILD_DIR)/docker/fuel-centos.done: \
 	cp -a $(SOURCE_DIR)/docker/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build && \
 	sudo docker build -t fuel/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build && \
 	mkdir -p $(BUILD_DIR)/docker/fuel-centos/ && \
-	echo "Generating fuel/centos base image. Refer to $(BUILD_DIR)/docker/fuel-centos-build.log if it fails." && \
-	sudo docker -D run --net=bridge --rm -a stdout -a stderr -i -t --privileged -v $(LOCAL_MIRROR_CENTOS):/repo:ro -v $(BUILD_DIR)/docker/fuel-centos:/export fuel/fuel-centos-build 2>&1 > $(BUILD_DIR)/docker/fuel-centos-build.log && \
-	sudo $(SOURCE_DIR)/docker/fuel-centos-build/img2docker.sh $(BUILD_DIR)/docker/fuel-centos/fuel-centos.img fuel/centos
+	echo ">>> Generating fuel/centos base image..." && \
+	sudo docker -D run --net=bridge --rm -a stdout -a stderr -i -t --privileged -v /var/run/dbus:/var/run/dbus -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v $(LOCAL_MIRROR_CENTOS):/repo:ro -v $(BUILD_DIR)/docker/fuel-centos:/export fuel/fuel-centos-build 2>&1 && \
+	echo "<<< Image generated successfully." && \
+	echo ">>> Converting image..." && \
+	sudo $(SOURCE_DIR)/docker/fuel-centos-build/img2docker.sh $(BUILD_DIR)/docker/fuel-centos/fuel-centos.img fuel/centos && \
+	echo "<<< Image converted successfully."
+	echo "$@ done."
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/docker/repo-container-up.done: \
