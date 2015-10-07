@@ -103,7 +103,6 @@ endef
 define yum_repo_fuel
 [fuel]
 name=Mirantis OpenStack Custom Packages
-#mirrorlist=http://download.mirantis.com/epel-fuel-grizzly-3.1/mirror.internal.list
 baseurl=$(MIRROR_FUEL)
 gpgcheck=0
 enabled=1
