@@ -1,0 +1,4 @@
+[nailgun]
+name=Nailgun Local Repo
+baseurl=file:///repo/os/x86_64/
+gpgcheck=0

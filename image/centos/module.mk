@@ -8,6 +8,7 @@ clean_centos_image:
 	-sudo umount $(BUILD_DIR)/image/centos/SANDBOX/mirror
 	-sudo umount $(BUILD_DIR)/image/centos/SANDBOX/proc
 	-sudo umount $(BUILD_DIR)/image/centos/SANDBOX/dev
+	-sudo umount $(BUILD_DIR)/iso/efi_tmp/efi_image
 	-mount | grep '$(BUILD_DIR)/image/centos/SANDBOX' | sort -r | \
 		while read entry; do \
 			set -- $$entry; \
@@ -35,6 +36,7 @@ $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME):
 	mkdir -p $(BUILD_DIR)/image/centos
 	sudo sh -c "$${SANDBOX_UP}"
 	echo tar python-setuptools git python-imgcreate python-argparse PyYAML | xargs -n1 sudo yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install
+	sudo rm -vf $(SANDBOX)/etc/mtab
 	sudo cp /etc/mtab $(SANDBOX)/etc/mtab
 	sudo mkdir -p $(SANDBOX)/run/shm
 	sudo cp $(SOURCE_DIR)/image/centos/build_centos_image.py $(SANDBOX)/build_centos_image.py
