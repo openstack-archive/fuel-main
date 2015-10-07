@@ -6,7 +6,7 @@ rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
 #FIXME(mattymo): Update CentOS to 6.6
-yum downgrade -y libcom_err libselinux libselinux-utils
+#yum downgrade -y libcom_err libselinux libselinux-utils
 
 # Install necessary packages
 yum install -y sudo ami-creator python-daemon httpd
@@ -20,7 +20,8 @@ done
 
 # Start webserver and wait for it to be up
 ln -s /repo/os /var/www/html/os
-service httpd start
+systemctl enable httpd.service
+systemctl start httpd.service
 
 cd /export
 ami-creator -c /root/fuel-centos.ks -n fuel-centos
