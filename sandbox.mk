@@ -77,11 +77,13 @@ echo 'Installing packages for Sandbox'
 sudo /bin/sh -c 'export TMPDIR=$(SANDBOX)/tmp/yum TMP=$(SANDBOX)/tmp/yum; echo $(SANDBOX_PACKAGES) | xargs -n1 yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install'
 mount | grep -q $(SANDBOX)/proc || sudo mount --bind /proc $(SANDBOX)/proc
 mount | grep -q $(SANDBOX)/dev || sudo mount --bind /dev $(SANDBOX)/dev
+mount | grep -q $(SANDBOX)/sys || sudo mount --bind /sys $(SANDBOX)/sys
 endef
 
 define SANDBOX_DOWN
 sudo umount $(SANDBOX)/proc || true
 sudo umount $(SANDBOX)/dev || true
+sudo umount $(SANDBOX)/sys || true
 endef
 
 define apt_sources_list

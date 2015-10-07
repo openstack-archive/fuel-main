@@ -8,7 +8,7 @@ authconfig --enableshadow --passalgo=sha512 --enablefingerprint
 selinux --disabled
 timezone --utc Etc/UTC
 #repo --name="CentOS" --baseurl=http://mirror.centos.org/centos/6/os/x86_64/ --cost=100
-repo --name="Fuel CentOS" --baseurl=http://127.0.0.1/os/x86_64/ --cost 100
+repo --name="Fuel CentOS" --baseurl=http://mirror.fuel-infra.org/fwm/7.0/centos/os/x86_64/ --cost 100
 #repo --name="Updates" --baseurl=http://mirror.centos.org/centos-6/6/updates/x86_64/ --cost=100
 # CentOSPlus is here ONLY for a libselinux patch.
 # Once 6.6 is released, this should be removed
