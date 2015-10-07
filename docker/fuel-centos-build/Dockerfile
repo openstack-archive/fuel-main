@@ -1,5 +1,5 @@
 #fuel/centos-docker-build
-FROM centos:centos6
+FROM centos:centos7
 
 MAINTAINER Matthew Mosesohn mmosesohn@mirantis.com
 
