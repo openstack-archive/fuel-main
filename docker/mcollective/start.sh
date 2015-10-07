@@ -5,11 +5,13 @@
 rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
+systemctl daemon-reload
 puppet apply -d -v /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp
 
 #Stop daemon and restart it in the foreground
 service mcollective stop
 
 sed -e 's/daemonize[[:space:]]*=[[:space:]]*1/daemonize = 0/g' -i /etc/mcollective/server.cfg
-/usr/sbin/mcollectived --pid=/var/run/mcollectived.pid --config=/etc/mcollective/server.cfg
 
+#TODO(dteselkin): convert to systemd service
+/usr/sbin/mcollectived --pid=/var/run/mcollectived.pid --config=/etc/mcollective/server.cfg &
