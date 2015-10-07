@@ -1,0 +1,28 @@
+[Unit]
+Description=Fuel bootstrap admin node service
+# FIXME(isuzdal) using tty1 is not a good idea
+# but another console could require `chvt N` in bootstrap script
+After=getty@tty2.service
+
+[Service]
+Type=oneshot
+StandardInput=tty
+TTYPath=/dev/tty2
+TTYReset=yes
+TTYVHangup=yes
+
+# TODO(isuzdal) mb, ConditionNeedsUpdate, or ConditionFirstBoot ?
+ConditionPathExists=/etc/sysconfig/bootstrap_admin_node
+
+ExecPreStart=-/usr/bin/grep -q 'ENABLED=1' /etc/sysconfig/bootstrap_admin_node
+ExecPreStart=/usr/bin/sed 's/^ENABLED=.*/ENABLED=0/g' /etc/sysconfig/bootstrap_admin_node
+ExecStart=/bin/bash -c "/usr/local/sbin/bootstrap_admin_node.sh 2>&1 | tee /var/log/puppet/bootstrap_admin_node.log"
+
+# TODO(isuzdal) Post or Pre?
+#ExecPostStart=/usr/bin/sed 's/^ENABLED=.*/ENABLED=0/g' /etc/sysconfig/bootstrap_admin_node
+
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
