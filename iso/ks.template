@@ -253,7 +253,8 @@ docker-io
 fuel-bootstrap-image
 fuel-bootstrap-image-builder
 fuel-createmirror
-fuel-target-centos-images{{CENTOS_RELEASE}}
+# NOTE(kozhukalov): We don't need target centos images in 8.0
+# fuel-target-centos-images{{CENTOS_RELEASE}}
 fuel-package-updates
 fuelmenu
 fuel-docker-images
@@ -429,6 +430,8 @@ touch ${repodir}/ubuntu/x86_64/images/initrd.gz
 ln -s ${repodir}/centos ${wwwdir}/centos
 ln -s ${repodir}/ubuntu ${wwwdir}/ubuntu
 
+mkdir -p ${wwwdir}/targetimages
+
 # --------------------------
 # UNPACKING PUPPET MANIFESTS
 # --------------------------
@@ -503,7 +506,7 @@ cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_v
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
 
-# Run fuel menu 
+# Run fuel menu
 [ -z "$showmenu" ] && showmenu="no"
 
 # Pause during bootstrap_admin_node to wait for external config
