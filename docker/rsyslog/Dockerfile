@@ -3,37 +3,13 @@
 FROM fuel/centos
 MAINTAINER Aleksandr Didenko adidenko@mirantis.com
 
-RUN rm -rf /etc/yum.repos.d/*; \
-    echo -e "\
-[nailgun]\n\
-name=Nailgun Local Repo\n\
-baseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/os/x86_64/\n\
-gpgcheck=0" \
-        > /etc/yum.repos.d/nailgun.repo; \
-    yum clean expire-cache; \
-    yum update -y
+ENV DOCKER_PORT _PORT_
 
 ADD etc /etc
-ADD start.sh /usr/local/bin/start.sh
+ADD setup.sh /usr/local/bin/
 
-# let's disable some services and commands since we don't need them in our container
-RUN echo -e '#!/bin/bash\n#chkconfig: 345 20 80\nexit 0' > /etc/init.d/rsyslog; \
-    echo -e '#!/bin/bash\n#chkconfig: 345 20 80\nexit 0' > /etc/init.d/iptables; \
-    echo -e '#!/bin/bash\nexit 0' > /sbin/iptables; \
-    chmod +x /etc/init.d/iptables /sbin/iptables /etc/init.d/rsyslog
-
-RUN puppet apply --detailed-exitcodes -d -v \
-        /etc/puppet/modules/nailgun/examples/rsyslog-only.pp; \
-    [[ $? == 0 || $? == 2 ]]
-
-RUN echo -e "\
-[nailgun]\n\
-name=Nailgun Local Repo\n\
-baseurl=file:/var/www/nailgun/centos/x86_64\n\
-gpgcheck=0" \
-        > /etc/yum.repos.d/nailgun.repo; \
-    yum clean all; \
-    chmod +x /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/setup.sh
 
 EXPOSE 514 514/udp
-CMD /usr/local/bin/start.sh
+
+CMD ["/usr/lib/systemd/systemd"]
