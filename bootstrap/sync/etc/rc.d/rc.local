@@ -2,7 +2,8 @@
 
 mount -t devpts devpts /dev/pts
 
-fix-configs-on-startup || true
-flock -w 0 -o /var/lock/agent.lock -c "/opt/nailgun/bin/agent >> /var/log/nailgun-agent.log 2>&1" || true
+#fix-configs-on-startup || true
+#flock -w 0 -o /var/lock/agent.lock -c "/opt/nailgun/bin/agent >> /var/log/nailgun-agent.log 2>&1" || true
+ln -nfs /usr/lib64/libyajl.so.2 /usr/lib64/libyajl.so
 
 touch /var/lock/subsys/local
