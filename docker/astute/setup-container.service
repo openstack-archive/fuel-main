@@ -1,0 +1,7 @@
+[Unit]
+Description=Container Setup Script
+Requires=dbus.socket
+After=syslog.target
+
+[Service]
+ExecStart=/bin/bash /usr/local/bin/setup.sh > /var/log/setup.log 2>&1
