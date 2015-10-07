@@ -320,7 +320,7 @@ mk_squashfs_image ()
 {
 	local root="$1"
 	local tmp="$$"
-	[ -d "$DESTDIR" ] && mkdir -p "$DESTDIR"
+	[ -d "$DESTDIR" ] || mkdir -p "$DESTDIR"
 	cp -a $root/boot/initrd* $DESTDIR/initramfs.img.${tmp}
 	cp -a $root/boot/vmlinuz* $DESTDIR/linux.${tmp}
 	rm -f $root/boot/initrd*
