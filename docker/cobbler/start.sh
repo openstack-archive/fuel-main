@@ -19,17 +19,5 @@ if rpm -V cobbler-web | grep -q missing; then
   yum reinstall -q -y cobbler-web
 fi
 
-# Make sure services are not running (no pids, etc), puppet will
-# configure and bring them up.
-/etc/init.d/httpd stop
-/etc/init.d/xinetd stop
-
 # Run puppet to apply custom config
 puppet apply -v /etc/puppet/modules/nailgun/examples/cobbler-only.pp
-# Stop cobbler and dnsmasq
-/etc/init.d/dnsmasq stop
-/etc/init.d/cobblerd stop
-
-# Running services
-/etc/init.d/dnsmasq restart
-cobblerd -F
