@@ -1,0 +1,13 @@
+[Unit]
+Name=Nailgun agent
+ConditionFileExecutable=/opt/nailgun/bin/agent
+After=network.service setup-bootdev.service
+
+[Service]
+Restart=always
+# TODO(isuzdal): Move to package!
+ExecPre=/usr/bin/ln -nsf /usr/lib64/libyajl.so.2 /usr/lib64/libyajl.so
+ExecStart=/bin/bash -c "/opt/nailgun/bin/agent >> /var/log/nailgun-agent.log 2>&1"
+
+[Install]
+WantedBy=multi-user.target
