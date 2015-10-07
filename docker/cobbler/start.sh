@@ -19,29 +19,8 @@ if rpm -V cobbler-web | grep -q missing; then
   yum reinstall -q -y cobbler-web
 fi
 
-# Make sure services are not running (no pids, etc), puppet will
-# configure and bring them up.
-/etc/init.d/httpd stop
-/etc/init.d/xinetd stop
-
 # Run puppet to apply custom config
-puppet apply -v /etc/puppet/modules/nailgun/examples/cobbler-only.pp
-# Stop cobbler and dnsmasq
-/etc/init.d/dnsmasq stop
-/etc/init.d/cobblerd stop
-
-# Check if we have any dhcp-ranges configured in dnsmasq. If not, then
-# we need to create default dhcp-range for fuelweb_admin network that
-# was configured via fuelmenu and stored in /etc/fuel/astute.yaml
-
-# TODO: remove 'test -f' when I9d7428c9fc21c705a1aee7fbca8003829a81e1d0
-# is merged
-ls /etc/dnsmasq.d/*.conf || \
-  ( \
-    test -f /etc/puppet/modules/nailgun/examples/dhcp-default-range.pp && \
-    puppet apply -d -v /etc/puppet/modules/nailgun/examples/dhcp-default-range.pp \
-  )
-
-# Running services
-/etc/init.d/dnsmasq restart
-cobblerd -F
+systemctl daemon-reload
+puppet apply -v /etc/puppet/modules/nailgun/examples/cobbler-only.pp || [[ $? == 2 ]]
+puppet apply -v /etc/puppet/modules/nailgun/examples/dhcp-default-range.pp || [[ $? == 2 ]]
+systemctl restart dnsmasq
