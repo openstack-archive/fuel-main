@@ -64,14 +64,14 @@ reboot
 -upstart
 -xorg-x11-drv-ati-firmware
 -zd1211-firmware
-anacron
+cronie-anacron
 bzip2
 cobbler
 cobbler-web
 cronie
 crontabs
 dnsmasq
-fence-agents
+fence-agents-all
 fuel-library
 httpd
 logrotate
@@ -84,12 +84,10 @@ postgresql
 python-alembic
 python-amqplib
 python-anyjson
-python-argparse
 python-babel
 python-ceilometerclient
 python-cinderclient
 python-crypto
-python-daemonize
 python-decorator
 python-django
 python-fabric
@@ -128,19 +126,18 @@ python-networkx-core
 pytz
 rabbitmq-server
 rsync
-ruby21-mcollective
-ruby21-rubygem-mcollective-client
-ruby21-puppet
-ruby21-rubygem-activesupport
-ruby21-rubygem-amqp
-ruby21-rubygem-mcollective-client
-ruby21-rubygem-symboltable
-ruby21-rubygem-rest-client
-ruby21-rubygem-popen4
-ruby21-rubygem-raemon
-ruby21-rubygem-net-ssh
-ruby21-rubygem-net-ssh-gateway
-ruby21-rubygem-net-ssh-multi
+mcollective
+puppet
+rubygem-activesupport
+rubygem-amqp
+rubygem-mcollective-client
+rubygem-symboltable
+rubygem-rest-client
+rubygem-popen4
+rubygem-raemon
+rubygem-net-ssh
+rubygem-net-ssh-gateway
+rubygem-net-ssh-multi
 screen
 send2syslog
 sudo
@@ -148,9 +145,7 @@ supervisor
 sysstat
 tar
 tftp-server
-uwsgi-plugin-python
 vim-minimal
-vim
 xinetd
 yum-plugin-priorities
 %end
@@ -180,9 +175,9 @@ rpm -e MAKEDEV ethtool upstart initscripts iputils policycoreutils iptables \
 # directories intact since those may be required by new rpms.
 
 # locales
-find
-/usr/{{lib,share}/{i18n,locale},{lib,lib64}/gconv,bin/localedef,sbin/build-locale-archive} \
-        -type f | xargs /bin/rm
+#find
+#/usr/{{lib,share}/{i18n,locale},{lib,lib64}/gconv,bin/localedef,sbin/build-locale-archive} \
+#        -type f | xargs /bin/rm
 
 #  man pages and documentation
 find /usr/share/{man,doc,info,gnome/help} \
