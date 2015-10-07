@@ -135,8 +135,9 @@ $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
 #######################################
 
 fuel_rpm_packages_late:=\
-fuel-bootstrap-image \
-fuel-target-centos-images$(CENTOS_RELEASE)
+fuel-bootstrap-image
+# NOTE(kozhukalov): We don't need target centos images in 8.0
+# fuel-target-centos-images$(CENTOS_RELEASE)
 
 $(eval $(foreach pkg,$(fuel_rpm_packages_late),$(call build_rpm,$(pkg),-late)$(NEWLINE)))
 
