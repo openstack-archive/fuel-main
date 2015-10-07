@@ -101,10 +101,16 @@ priority=90
 endef
 
 define yum_repo_fuel
-[fuel]
+[fuel1]
 name=Mirantis OpenStack Custom Packages
-#mirrorlist=http://download.mirantis.com/epel-fuel-grizzly-3.1/mirror.internal.list
-baseurl=$(MIRROR_FUEL)
+baseurl=$(MIRROR_FUEL1)
+gpgcheck=0
+enabled=1
+priority=20
+
+[fuel2]
+name=Mirantis OpenStack Custom Packages
+baseurl=$(MIRROR_FUEL2)
 gpgcheck=0
 enabled=1
 priority=20
