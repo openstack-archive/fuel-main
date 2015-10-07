@@ -1,0 +1,13 @@
+[Unit]
+Name=Setup boot device
+ConditionFileExecutable=/usr/bin/setup-bootdev
+Before=network.service mcollective.service ntpdate.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/setup-bootdev
+ExecStartPost=-/usr/bin/fix-configs-on-startup
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
