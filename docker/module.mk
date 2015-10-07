@@ -23,7 +23,9 @@ else
 $(BUILD_DIR)/docker/build.done: \
 		$(BUILD_DIR)/docker/fuel-centos.done \
 		$(BUILD_DIR)/docker/sources.done
-	sudo docker save fuel/centos busybox $(foreach cnt,$(containers), fuel/$(cnt)_$(PRODUCT_VERSION)) > $(BUILD_DIR)/docker/fuel-images.tar
+	sudo docker ps -a
+	sudo docker images
+	sudo docker save fuel/centos busybox $(foreach cnt,$(containers), fuel/$(cnt)_$(PRODUCT_VERSION):latest) > $(BUILD_DIR)/docker/fuel-images.tar
 	lrzip -L2 -U -D -f $(BUILD_DIR)/docker/fuel-images.tar -o $(BUILD_DIR)/docker/$(DOCKER_ART_NAME)
 	rm -f $(BUILD_DIR)/docker/fuel-images.tar
 	sudo docker rm -f "$(REPO_CONTAINER)" || true
@@ -41,16 +43,32 @@ $(BUILD_DIR)/docker/$1.done: \
 		$(BUILD_DIR)/docker/fuel-centos.done \
 		$(BUILD_DIR)/iso/isoroot/$(VERSION_YAML_ART_NAME) \
 		$(BUILD_DIR)/docker/repo-container-up.done
-	mkdir -p "$(BUILD_DIR)/docker/containers" && \
-	rm -rf $(BUILD_DIR)/docker/$1 && \
-	cp -a $(SOURCE_DIR)/docker/$1 $(BUILD_DIR)/docker/$1 && \
+	@echo ""
+	@echo "========================================"
+	@echo "Building container '$1'"
+	mkdir -p "$(BUILD_DIR)/docker/containers"
+	rm -rf $(BUILD_DIR)/docker/$1
+	cp -a $(SOURCE_DIR)/docker/$1 $(BUILD_DIR)/docker/$1
 	REPO_PORT=`sudo docker port $(REPO_CONTAINER) 80 | cut -d':' -f2` && \
-	sed -e "s/_PORT_/$$$${REPO_PORT}/" -i $(BUILD_DIR)/docker/$1/Dockerfile && \
-	mkdir -p $(BUILD_DIR)/docker/$1/etc/fuel && \
-	cp $(BUILD_DIR)/iso/isoroot/version.yaml $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml && \
-	sed -e 's/production:.*/production: "docker-build"/' -i $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml && \
-	cp $(SOURCE_DIR)/docker/docker-astute.yaml $(BUILD_DIR)/docker/$1/etc/fuel/astute.yaml && \
+		sed -e "s/_PORT_/$$$${REPO_PORT}/" -i $(BUILD_DIR)/docker/$1/Dockerfile
+	mkdir -p $(BUILD_DIR)/docker/$1/etc/fuel
+	cp $(BUILD_DIR)/iso/isoroot/version.yaml $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml
+	sed -e 's/production:.*/production: "docker-build"/' -i $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml
+	cp $(SOURCE_DIR)/docker/docker-astute.yaml $(BUILD_DIR)/docker/$1/etc/fuel/astute.yaml
+	cp $(SOURCE_DIR)/docker/functions.sh $(BUILD_DIR)/docker/$1/etc/fuel/
 	sudo docker build --force-rm -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
+	sudo docker run --name=FUEL_$1_$(PRODUCT_VERSION) \
+    --net=bridge -d -i -t --privileged fuel/$1_$(PRODUCT_VERSION) -v /sys/fs/cgroup:/sys/fs/cgroup:ro
+	sudo docker exec -i FUEL_$1_$(PRODUCT_VERSION) /usr/local/bin/setup.sh 2>&1 \
+		|| touch $(BUILD_DIR)/docker/$1.failed
+	@test -f $(BUILD_DIR)/docker/$1.failed \
+		&& (echo "CONTAINER BUILD FAILED, container '$1'"; bash $(SOURCE_DIR)/docker/debug.sh) \
+		||:
+	@test -f $(BUILD_DIR)/docker/$1.failed && exit 1 ||:
+	sudo docker commit FUEL_$1_$(PRODUCT_VERSION) fuel/$1_$(PRODUCT_VERSION):latest
+	@echo "CONTAINER BUILD SUCCEEDED, container '$1'."
+	@echo "========================================"
+	@echo ""
 	$$(ACTION.TOUCH)
 endef
 
@@ -63,13 +81,19 @@ $(BUILD_DIR)/docker/fuel-centos.done: \
 		$(BUILD_DIR)/docker/base-images.done \
 		$(BUILD_DIR)/mirror/centos/build.done \
 		$(BUILD_DIR)/packages/rpm/build.done
-	rm -rf $(BUILD_DIR)/docker/fuel-centos-build && \
-	cp -a $(SOURCE_DIR)/docker/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build && \
-	sudo docker build -t fuel/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build && \
-	mkdir -p $(BUILD_DIR)/docker/fuel-centos/ && \
-	echo "Generating fuel/centos base image. Refer to $(BUILD_DIR)/docker/fuel-centos-build.log if it fails." && \
-	sudo docker -D run --net=bridge --rm -a stdout -a stderr -i -t --privileged -v $(LOCAL_MIRROR_CENTOS):/repo:ro -v $(BUILD_DIR)/docker/fuel-centos:/export fuel/fuel-centos-build 2>&1 > $(BUILD_DIR)/docker/fuel-centos-build.log && \
+	rm -rf $(BUILD_DIR)/docker/fuel-centos-build
+	cp -a $(SOURCE_DIR)/docker/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
+	sudo docker build -t fuel/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
+	mkdir -p $(BUILD_DIR)/docker/fuel-centos/
+	echo ">>> Generating fuel/centos base image..."
+	sudo docker -D run --name=FUEL_CENTOS_$(PRODUCT_VERSION) --net=bridge -d -i -t --privileged \
+		-v $(LOCAL_MIRROR_CENTOS):/repo:ro -v $(BUILD_DIR)/docker/fuel-centos:/export fuel/fuel-centos-build
+	sudo docker exec -i FUEL_CENTOS_$(PRODUCT_VERSION) /usr/local/bin/start.sh 2>&1
+	echo "<<< Image generated successfully."
+	echo ">>> Converting image..."
 	sudo $(SOURCE_DIR)/docker/fuel-centos-build/img2docker.sh $(BUILD_DIR)/docker/fuel-centos/fuel-centos.img fuel/centos
+	echo "<<< Image converted successfully."
+	echo "$@ done."
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/docker/repo-container-up.done: \
