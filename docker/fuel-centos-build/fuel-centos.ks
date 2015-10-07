@@ -64,14 +64,14 @@ reboot
 -upstart
 -xorg-x11-drv-ati-firmware
 -zd1211-firmware
-anacron
+cronie-anacron
 bzip2
 cobbler
 cobbler-web
 cronie
 crontabs
 dnsmasq
-fence-agents
+fence-agents-all
 fuel-library
 httpd
 logrotate
@@ -84,12 +84,10 @@ postgresql
 python-alembic
 python-amqplib
 python-anyjson
-python-argparse
 python-babel
 python-ceilometerclient
 python-cinderclient
 python-crypto
-python-daemonize
 python-decorator
 python-django
 python-fabric
@@ -128,19 +126,18 @@ python-networkx-core
 pytz
 rabbitmq-server
 rsync
-ruby21-mcollective
-ruby21-rubygem-mcollective-client
-ruby21-puppet
-ruby21-rubygem-activesupport
-ruby21-rubygem-amqp
-ruby21-rubygem-mcollective-client
-ruby21-rubygem-symboltable
-ruby21-rubygem-rest-client
-ruby21-rubygem-popen4
-ruby21-rubygem-raemon
-ruby21-rubygem-net-ssh
-ruby21-rubygem-net-ssh-gateway
-ruby21-rubygem-net-ssh-multi
+mcollective
+puppet
+rubygem-activesupport
+rubygem-amqp
+rubygem-mcollective-client
+rubygem-symboltable
+rubygem-rest-client
+rubygem-popen4
+rubygem-raemon
+rubygem-net-ssh
+rubygem-net-ssh-gateway
+rubygem-net-ssh-multi
 screen
 send2syslog
 sudo
@@ -148,9 +145,7 @@ supervisor
 sysstat
 tar
 tftp-server
-uwsgi-plugin-python
 vim-minimal
-vim
 xinetd
 yum-plugin-priorities
 %end
@@ -179,25 +174,38 @@ rpm -e MAKEDEV ethtool upstart initscripts iputils policycoreutils iptables \
 # Remove files that are known to take up lots of space but leave
 # directories intact since those may be required by new rpms.
 
+
 # locales
-find
-/usr/{{lib,share}/{i18n,locale},{lib,lib64}/gconv,bin/localedef,sbin/build-locale-archive} \
-        -type f | xargs /bin/rm
+# nuking the locales breaks things. Lets not do that anymore
+# strip most of the languages from the archive.
+localedef --delete-from-archive $(localedef --list-archive | \
+grep -v -i ^en | xargs )
+# prep the archive template
+mv /usr/lib/locale/locale-archive  /usr/lib/locale/locale-archive.tmpl
+# rebuild archive
+/usr/sbin/build-locale-archive
+#empty the template
+:>/usr/lib/locale/locale-archive.tmpl
+
 
 #  man pages and documentation
 find /usr/share/{man,doc,info,gnome/help} \
         -type f | xargs /bin/rm
 
+
 #  cracklib
-find /usr/share/cracklib \
-        -type f | xargs /bin/rm
+#find /usr/share/cracklib \
+#        -type f | xargs /bin/rm
+
 
 #  sln
 rm -f /sbin/sln
 
+
 #  ldconfig
-/sbin/ldconfig
+rm -rf /etc/ld.so.cache
+rm -rf /var/cache/ldconfig/*
+rm -rf /var/cache/yum/* 
 
 %end
-
 
