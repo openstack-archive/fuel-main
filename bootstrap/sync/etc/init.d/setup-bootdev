@@ -14,139 +14,16 @@
 # Source function library.
 . /etc/init.d/functions
 
-cd /etc/sysconfig/network-scripts
-. ./network-functions
-
-
-get_bootdev() {
-    local ethdevice_timeout=$(sed -rne 's/^.*\s*\<ethdevice_timeout=([0-9]+)\s*.*$/\1/p' /proc/cmdline)
-    ethdevice_timeout="${ethdevice_timeout:-120}"
-    local wait4dev_interval=5
-    local max_attempts=$((ethdevice_timeout/wait4dev_interval))
-    local attempt=0
-    if [ $max_attempts -lt 2 ]; then
-        max_attempts=2
-    fi
-
-    bootaddr=$(ruby -e \
-    'File.open("/proc/cmdline") { |fo|
-      l = fo.read
-      m = l.match( /BOOTIF=([0-9A-Fa-f]{2}(-[0-9A-Fa-f]{2})+)/ )
-      print m[1].split("-")[-6..-1].join(":")
-    }' 2> /dev/null)
-
-    if [ -z "$bootaddr" ]; then
-        return 1
-    fi
-
-    while [ $attempt -lt $max_attempts ]; do
-        dev=$(get_device_by_hwaddr $bootaddr)
-        if [ -n "$dev" ]; then
-            break
-        else
-            attempt=$((attempt+1))
-            echo "Failed to find boot NIC (mac $bootaddr), retrying in $wait4dev_interval sec." >&2
-            sleep $wait4dev_interval
-            continue
-        fi
-    done
-    if [ -z "$dev" ]; then
-        return 2
-    fi
-
-    echo $dev
-}
-
-get_alldevs() {
-    # Take all not virtual network devices given by links (to omit files)
-    # Choose ethernet, but exclude wireless, bond, vlan, loopback, tunnels ...
-    for DEV in /sys/class/net/* ; do
-       # Take only links into account, skip files
-       if test ! -L $DEV ; then
-          continue
-       fi
-       DEVPATH=$(readlink -f $DEV)
-       # Drop virtual devices like loopback, tunnels, bonding, vlans ...
-       case $DEVPATH in
-        */virtual/*)
-          continue
-         ;;
-       esac
-       IF=${DEVPATH##*/}
-       # Check ethernet only
-       case "`cat $DEV/type`" in
-            1)
-                # TYPE=1 is ethernet, may also be wireless
-                # Virtual (lo, bound, vlan, tunnel ...) have been skipped before
-                if test -d $DEV/wireless -o -L $DEV/phy80211 ;
-                then
-                     continue
-                else
-                     # Catch ethernet non-virtual device
-                     echo $IF
-                fi
-                ;;
-             *) continue
-                ;;
-       esac
-     done
-}
-
-set_interfaces_up_when_booted() {
-    devs=$(get_alldevs)
-    for name in $devs; do
-        content="DEVICE=$name\nBOOTPROTO=none\nONBOOT=yes\nLINKDELAY=30"
-        echo -e "$content" > "./ifcfg-$name"
-    done
-}
-
 # See how we were called.
+rc=0
 case "$1" in
   start)
-    echo -n "Waiting for network hardware to initialize..."
-    udevadm trigger --subsystem-match=net
-    udevadm settle
-    echo -n "Configure all interfaces as active..."
-    set_interfaces_up_when_booted
-    echo "ok."
-    echo -n "Obtain boot interface name..."
-    dev=$(get_bootdev)
-    rc=$?
-
-    if [ $rc -ne 0 ]; then
-        echo "failed."
-        echo -en "Obtain all eth interfaces..."
-        dev=$(get_alldevs)
-        if [ -z "$dev" ]; then
-            rc=1
-            echo "failed."
-        else
-            rc=0
-            dev_str=$(echo "$dev"|tr "\n" " "|sed 's/ *$//')
-            echo "ok ($dev_str)."
-        fi
-    else
-        echo "ok ($dev)."
-    fi
-
-    if [ $rc -eq 0 ]; then
-        for name in $dev; do
-		# sometimes shell is very picky about tabs and spaces
-		# tabs used here to make here-document work
-		cat > "./ifcfg-${name}" <<-EOF
-		DEVICE=$name
-		BOOTPROTO=dhcp
-		ONBOOT=yes
-		LINKDELAY=30
-		PERSISTENT_DHCLIENT=yes
-		EOF
-        done
-    fi
+    /usr/bin/setup-bootdev || rc=$?
     action $"Update network interfaces settings: " [ $rc -eq 0 ]
-    ;;
+  ;;
   *)
     rc=0
-    ;;
+  ;;
 esac
 
 exit $rc

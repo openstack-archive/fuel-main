@@ -7,8 +7,15 @@ rpm --rebuilddb
 
 #Workaround so nailgun can see version.yaml
 ln -sf /etc/fuel/version.yaml /etc/nailgun/version.yaml
-#Run puppet to apply custom config
-puppet apply -v /etc/puppet/modules/nailgun/examples/nailgun-only.pp
 
-service supervisord stop
-/usr/bin/supervisord -n
+#Run puppet to apply custom config
+puppet apply --debug --verbose --detailed-exitcodes /etc/puppet/modules/nailgun/examples/nailgun-only.pp
+echo "Puppet exited with '$?'"
+
+sysctl -f /etc/sysctl.conf
+
+#FIXME(dteselkin): for some f**ng reason /usr/share/nailgun/static
+#                  is empty after puppet apply, despite the fact that
+#                  package contains the files
+#                  Reinstall package as a dirty workaround
+yum -y --quiet reinstall fuel-nailgun
