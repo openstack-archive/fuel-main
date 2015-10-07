@@ -64,14 +64,14 @@ reboot
 -upstart
 -xorg-x11-drv-ati-firmware
 -zd1211-firmware
-anacron
+cronie-anacron
 bzip2
 cobbler
 cobbler-web
 cronie
 crontabs
 dnsmasq
-fence-agents
+fence-agents-all
 fuel-library
 httpd
 logrotate
@@ -84,12 +84,10 @@ postgresql
 python-alembic
 python-amqplib
 python-anyjson
-python-argparse
 python-babel
 python-ceilometerclient
 python-cinderclient
 python-crypto
-python-daemonize
 python-decorator
 python-django
 python-fabric
@@ -128,19 +126,18 @@ python-networkx-core
 pytz
 rabbitmq-server
 rsync
-ruby21-mcollective
-ruby21-rubygem-mcollective-client
-ruby21-puppet
-ruby21-rubygem-activesupport
-ruby21-rubygem-amqp
-ruby21-rubygem-mcollective-client
-ruby21-rubygem-symboltable
-ruby21-rubygem-rest-client
-ruby21-rubygem-popen4
-ruby21-rubygem-raemon
-ruby21-rubygem-net-ssh
-ruby21-rubygem-net-ssh-gateway
-ruby21-rubygem-net-ssh-multi
+mcollective
+puppet
+rubygem-activesupport
+rubygem-amqp
+rubygem-mcollective-client
+rubygem-symboltable
+rubygem-rest-client
+rubygem-popen4
+rubygem-raemon
+rubygem-net-ssh
+rubygem-net-ssh-gateway
+rubygem-net-ssh-multi
 screen
 send2syslog
 sudo
@@ -148,14 +145,55 @@ supervisor
 sysstat
 tar
 tftp-server
-uwsgi-plugin-python
 vim-minimal
-vim
 xinetd
 yum-plugin-priorities
 %end
 
 %post
+# Determinate is the given option present in the INI file
+# ini_has_option config-file section option
+function ini_has_option {
+    local file=$1
+    local section=$2
+    local option=$3
+    local line
+
+    line=$(sed -ne "/^\[$section\]/,/^\[.*\]/ { /^$option[ \t]*=/ p; }" "$file")
+    [ -n "$line" ]
+}
+
+# Set an option in an INI file
+# iniset [-sudo] config-file section option value
+#  - if the file does not exist, it is created
+function iniset {
+    local file=$1
+    local section=$2
+    local option=$3
+    local value=$4
+
+    if [[ -z $section || -z $option ]]; then
+        return
+    fi
+
+    if ! grep -q "^\[$section\]" "$file" 2>/dev/null; then
+        # Add section at the end
+        echo -e "\n[$section]" | $sudo tee --append "$file" > /dev/null
+    fi
+    if ! ini_has_option "$file" "$section" "$option"; then
+        # Add it
+        sed -i -e "/^\[$section\]/ a\\
+$option = $value
+" "$file"
+    else
+        local sep
+        sep=$(echo -ne "\x01")
+        # Replace it
+        sed -i -e '/^\['${section}'\]/,/^\[.*\]/ s'${sep}'^\('${option}'[ \t]*=[ \t]*\).*$'${sep}'\1'"${value}"${sep} "$file"
+    fi
+}
+
+
 # randomize root password and lock root account
 dd if=/dev/urandom count=50 | md5sum | passwd --stdin root
 passwd -l root
@@ -179,30 +217,221 @@ rpm -e MAKEDEV ethtool upstart initscripts iputils policycoreutils iptables \
 # Remove files that are known to take up lots of space but leave
 # directories intact since those may be required by new rpms.
 
+
 # locales
-find
-/usr/{{lib,share}/{i18n,locale},{lib,lib64}/gconv,bin/localedef,sbin/build-locale-archive} \
-        -type f | xargs /bin/rm
+# nuking the locales breaks things. Lets not do that anymore
+# strip most of the languages from the archive.
+localedef --delete-from-archive $(localedef --list-archive | \
+grep -v -i ^en | xargs )
+# prep the archive template
+mv /usr/lib/locale/locale-archive  /usr/lib/locale/locale-archive.tmpl
+# rebuild archive
+/usr/sbin/build-locale-archive
+#empty the template
+:>/usr/lib/locale/locale-archive.tmpl
+
 
 #  man pages and documentation
 find /usr/share/{man,doc,info,gnome/help} \
         -type f | xargs /bin/rm
 
+
 #  cracklib
-find /usr/share/cracklib \
-        -type f | xargs /bin/rm
+#find /usr/share/cracklib \
+#        -type f | xargs /bin/rm
+
 
 #  sln
 rm -f /sbin/sln
 
+
 #  ldconfig
-/sbin/ldconfig
+rm -rf /etc/ld.so.cache
+rm -rf /var/cache/ldconfig/*
+rm -rf /var/cache/yum/*
 
 # Suppress hiera warnings
 mkdir -p /etc/puppet /var/lib/fuel/ibp
 touch /etc/puppet/hiera.yaml /var/lib/hiera/common.yaml
 
-# Sudo does not need TTYs
 sed -i '/requiretty/s/^/#/g' /etc/sudoers
+
+cat > /usr/bin/service-systemctl-wrapper << 'EOF'
+#!/bin/bash
+
+WRAPPER=$(basename ${0})
+SUPERVISORD_CONF=/etc/supervisord.conf
+SUPERVISORD_CONFDIR=/etc/supervisord.d
+declare -A ACTIONS
+ACTIONS['service']='start|stop|reload|restart|status'
+ACTIONS['systemctl']='enable|daemon-reload|disable|is-active|is-enabled|start|stop|reload|restart|status'
+
+function usage() {
+    case ${WRAPPER} in
+        'service')
+            usage_service
+        ;;
+        'systemctl')
+            usage_systemctl
+        ;;
+        *)
+            echo "Unknown wrapper command '${WRAPPER}'"
+        ;;
+    esac
+}
+
+function usage_systemctl() {
+    echo "* Usage: ${WRAPPER} ${ACTIONS[${WRAPPER}]} service_name"
+}
+
+function usage_service() {
+    echo "* Usage: ${WRAPPER} service_name ${ACTIONS[${WRAPPER}]}"
+}
+
+# Get an option from an INI file
+# iniget config-file section option
+function iniget() {
+    local file=$1
+    local section=$2
+    local option=$3
+    local line
+    line=$(sed -ne "/^\[$section\]/,/^\[.*\]/ { /^$option[ \t]*=/ p; }" "$file")
+    echo ${line#*=}
+}
+
+# Determinate is the given option present in the INI file
+# ini_has_option config-file section option
+function ini_has_option {
+    local file=$1
+    local section=$2
+    local option=$3
+    local line
+
+    line=$(sed -ne "/^\[$section\]/,/^\[.*\]/ { /^$option[ \t]*=/ p; }" "$file")
+    [ -n "$line" ]
+}
+
+# Set an option in an INI file
+# iniset [-sudo] config-file section option value
+#  - if the file does not exist, it is created
+function iniset {
+    local file=$1
+    local section=$2
+    local option=$3
+    local value=$4
+    local append_section=${5:-'true'}
+
+    if [[ -z $section || -z $option ]]; then
+        return
+    fi
+
+    if ! grep -q "^\[$section\]" "$file" 2>/dev/null; then
+        if [[ "$append_section" == 'true' ]]; then
+            # Add section at the end
+            echo -e "\n[$section]" | $sudo tee --append "$file" > /dev/null
+        else
+            return
+        fi
+    fi
+
+    if ! ini_has_option "$file" "$section" "$option"; then
+        # Add it
+        sed -i -e "/^\[$section\]/ a\\
+$option = $value
+" "$file"
+    else
+        local sep
+        sep=$(echo -ne "\x01")
+        # Replace it
+        sed -i -e '/^\['${section}'\]/,/^\[.*\]/ s'${sep}'^\('${option}'[ \t]*=[ \t]*\).*$'${sep}'\1'"${value}"${sep} "$file"
+    fi
+}
+
+case $(basename ${0}) in
+    'service')
+        service_name=$1
+        action=$2
+    ;;
+    'systemctl')
+        action=$1
+        service_name=$2
+    ;;
+esac
+
+if [[ ! "|${ACTIONS[${WRAPPER}]}|" =~ \|${action}\| ]]; then
+    echo "Invalid action '${action}'"
+    usage
+    exit 1
+fi
+
+res=0
+if [ "${service_name}" == 'supervisord' ]; then
+  case ${action} in
+    'enable')
+      echo "supervisord service enabled by default inside container."
+    ;;
+    'disable')
+      echo "supervisord can't be disabled inside container, ignoring."
+    ;;
+    'is-active')
+      /etc/init.d/supervisord status || res=$?
+    ;;
+    'is-enabled')
+    ;;
+    *)
+      /etc/init.d/supervisord ${action} || res=$?
+    ;;
+  esac
+  exit $res
+fi
+
+case ${action} in
+  'enable')
+    for conf_file in "${SUPERVISORD_CONF}" "$(find ${SUPERVISORD_CONFDIR} -type f)"; do
+      iniset "${conf_file}" "program:${service_name}" "autostart" "true" "false"
+    done
+    supervisorctl reread || res=$?
+  ;;
+  'daemon-reload')
+    supervisorctl reload || res=$?
+  ;;
+  'disable')
+    for conf_file in "${SUPERVISORD_CONF}" "$(find ${SUPERVISORD_CONFDIR} -type f)"; do
+      iniset "${conf_file}" "program:${service_name}" "autostart" "false" "false"
+    done
+    supervisorctl reread || res=$?
+  ;;
+  'is-active')
+    supervisorctl status $service_name || res=$?
+  ;;
+  'is-enabled')
+    res=1
+    for conf_file in "${SUPERVISORD_CONF}" "$(find ${SUPERVISORD_CONFDIR} -type f)"; do
+      value=$(iniget "${conf_file}" "program:${service_name}" "autostart")
+      [[ "${value}" =~ [Tt]rue ]] && res=0 ||:
+    done
+  ;;
+  restart|reload)
+    supervisorctl restart ${service_name}: || res=$?
+  ;;
+  *)
+    supervisorctl $action $service_name || res=$?
+  ;;
+esac
+exit $res
+EOF
+chmod +x /usr/bin/service-systemctl-wrapper
+
+mv /usr/sbin/service /usr/sbin/service.orig
+mv /usr/bin/systemctl /usr/bin/systemctl.orig
+ln -nsf /usr/bin/service-systemctl-wrapper /usr/bin/systemctl
+ln -nsf /usr/bin/service-systemctl-wrapper /usr/sbin/service
+
+iniset /etc/supervisord.conf 'supervisord' 'nodaemon' 'true'
+iniset /etc/supervisord.conf 'include' 'files' '/etc/supervisord.d/*.conf /etc/supervisord.d/*.ini'
+iniset /etc/supervisord.conf 'unix_http_server' 'username' 'supervisord'
+iniset /etc/supervisord.conf 'unix_http_server' 'password' 'supervisord'
+iniset /etc/supervisord.conf 'supervisorctl' 'username' 'supervisord'
+iniset /etc/supervisord.conf 'supervisorctl' 'password' 'supervisord'
 
 %end
