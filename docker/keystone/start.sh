@@ -12,5 +12,5 @@ if [[ $exitcode != 0 && $exitcode != 2 ]]; then
   exit $exitcode
 fi
 
-service openstack-keystone stop
+#systemctl stop openstack-keystone.service
 keystone-all
