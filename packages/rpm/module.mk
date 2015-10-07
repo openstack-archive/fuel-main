@@ -85,7 +85,8 @@ fuel-main \
 fuel-nailgun-agent \
 fuel-ostf \
 fuel-nailgun \
-python-fuelclient
+python-fuelclient \
+fuel-createmirror
 
 $(eval $(foreach pkg,$(packages_list),$(call build_rpm,$(pkg))$(NEWLINE)))
 
