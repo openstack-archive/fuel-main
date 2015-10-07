@@ -1,12 +1,14 @@
 #!/bin/bash -xe
 
+export PATH=${PATH}:/sbin
+
 # Clean rpm locks before puppet run.
 # See ticket https://bugs.launchpad.net/fuel/+bug/1339236
 rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
 #FIXME(mattymo): Update CentOS to 6.6
-yum downgrade -y libcom_err libselinux libselinux-utils
+#yum downgrade -y libcom_err libselinux libselinux-utils
 
 # Install necessary packages
 yum install -y sudo ami-creator python-daemon httpd
