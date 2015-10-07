@@ -217,8 +217,8 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 
 	mkdir -p $(BUILD_DIR)/iso/efi_tmp/efi_image
 	# We need to have a partition which will be pointed from ISO as efi partition
-	# vmlinuz + initrd + bootloader + conffile = about 38MB
-	dd bs=1M count=40 if=/dev/zero of=$(BUILD_DIR)/iso/efi_tmp/efiboot.img
+	# vmlinuz + initrd + bootloader + conffile = about 38MB. 100M should be enough ^_^
+	dd bs=1M count=100 if=/dev/zero of=$(BUILD_DIR)/iso/efi_tmp/efiboot.img
 	# UEFI standard say to us that EFI partition should be some FAT-related filesystem
 	mkfs.vfat $(BUILD_DIR)/iso/efi_tmp/efiboot.img
 	sudo umount -l $(BUILD_DIR)/iso/efi_tmp/efi_image || true
@@ -229,13 +229,13 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 	# bootloader and it conffiles in /EFI/BOOT/* on main ISO partition (with ISO9660 fs)
 	echo > $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 	echo "default=0" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
-	echo "splashimage=/EFI/BOOT/splash.xpm.gz" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	#echo "splashimage=/EFI/BOOT/splash.xpm.gz" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 	echo "timeout 300" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 	echo "hiddenmenu" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 	echo "title DVD Fuel Install (Static IP)" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 	# efiboot.img is a partition with filesystem now and /vmlinuz there will be pointed
 	# to root of it
-	echo "  kernel /vmlinuz biosdevname=0 ks=cdrom:/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "  kernel /vmlinuz biosdevname=0 ks=hd:sr0:/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 	echo "  initrd /initrd.img" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 	echo "title USB Fuel Install (Static IP)" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 	echo "  kernel /vmlinuz biosdevname=0 repo=hd:LABEL=\"$(ISO_VOLUME_ID)\":/ ks=hd:LABEL=\"$(ISO_VOLUME_ID)\":/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
@@ -247,8 +247,8 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/initrd.img $(BUILD_DIR)/iso/efi_tmp/efi_image/
 	sudo mkdir -p $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
 	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
-	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.efi $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
-	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/splash.xpm.gz $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
+	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.EFI $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
+	#sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/splash.xpm.gz $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
 	sudo umount $(BUILD_DIR)/iso/efi_tmp/efi_image
 	cp -f $(BUILD_DIR)/iso/efi_tmp/efiboot.img $(BUILD_DIR)/iso/isoroot-mkisofs/images/
 	sudo rm -rf $(BUILD_DIR)/iso/efi_tmp/
