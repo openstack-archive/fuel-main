@@ -1,4 +1,5 @@
 install
+cdrom
 text
 %include /tmp/source.ks
 {{reboot}}
@@ -15,6 +16,67 @@ skipx
 # NEVER ever place zerombr here, it breaks automated installation
 %include /tmp/bootloader.ks
 %include /tmp/partition.ks
+%include /tmp/post_partition.ks
+
+
+
+
+
+%packages --nobase --excludedocs
+@Core
+fuel
+fuel-library
+fuel-dockerctl
+authconfig
+bind-utils
+bridge-utils
+cronie
+crontabs
+curl
+#daemonize
+dhcp
+docker-io
+fuel-bootstrap-image
+fuel-bootstrap-image-builder
+fuel-createmirror
+# NOTE(kozhukalov): We don't need target centos images in 8.0
+# fuel-target-centos-images{{CENTOS_RELEASE}}
+fuel-package-updates
+fuelmenu
+fuel-docker-images
+gdisk
+lrzip
+lsof
+man
+mlocate
+nmap-ncat
+ntp
+ntpdate
+openssh-clients
+policycoreutils
+#python-daemon
+python-pypcap
+rsync
+puppet
+rubygem-netaddr
+rubygem-openstack
+selinux-policy-targeted
+strace
+#subscription-manager
+sysstat
+system-config-firewall-base
+tcpdump
+telnet
+vim-minimal
+virt-what
+wget
+yum
+yum-plugin-priorities
+%end
+
+
+
+
 
 # PREINSTALL SECTION
 # HERE ARE COMMANDS THAT WILL BE LAUNCHED BEFORE
@@ -190,7 +252,7 @@ dd if=/dev/zero of=/dev/${tgtdrive} bs=10M count=10
 sleep 3
 hdparm -z /dev/${tgtdrive}
 parted -s /dev/${tgtdrive} mklabel gpt
-parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary 0 24
+parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary 0% 24
 parted -s /dev/${tgtdrive} set 1 bios_grub on
 parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary fat16 24 224
 parted -s /dev/${tgtdrive} set 2 boot on
@@ -206,20 +268,24 @@ if echo ${tgtdrive} | grep -q -e cciss ; then
 else
     bootdev=${tgtdrive}
 fi
-echo > /tmp/partition.ks
-echo "partition /boot --onpart=/dev/${bootdev}3" >> /tmp/partition.ks
-echo "partition /boot/efi --onpart=/dev/${bootdev}2" >> /tmp/partition.ks
-echo "partition pv.001 --ondisk=${tgtdrive} --size=41000 --grow" >> /tmp/partition.ks
-echo "volgroup os pv.001" >> /tmp/partition.ks
-echo "logvol swap --vgname=os --recommended --name=swap" >> /tmp/partition.ks
-echo "logvol / --vgname=os --size=10000 --name=root --fstype=ext4" >> /tmp/partition.ks
-echo "logvol /var --vgname=os --size=10000 --percent 30 --grow --name=var --fstype=ext4" >> /tmp/partition.ks
-echo "logvol /var/lib/docker --vgname=os --size=17000  --percent 20 --grow --name=varlibdocker --fstype=ext4" >> /tmp/partition.ks
-echo "logvol /var/log --vgname=os --size=4096 --percent 50 --grow --name=varlog --fstype=ext4" >> /tmp/partition.ks
+
+cat << EOF > /tmp/partition.ks
+part /boot --onpart=/dev/${bootdev}3
+part /boot/efi --onpart=/dev/${bootdev}2
+part pv.001 --ondisk=${tgtdrive} --size=1 --grow
+part pv.002 --ondisk=${tgtdrive} --size=20000
+volgroup os pv.001
+volgroup docker pv.002
+logvol swap --vgname=os --recommended --name=swap
+logvol / --vgname=os --size=10000 --name=root --fstype=ext4
+logvol /var --vgname=os --size=10000 --name=var --fstype=ext4
+logvol /var/log --vgname=os --size=4000 --grow --name=varlog --fstype=ext4
+EOF
+
 
 
 # bootloader
-echo "bootloader --location=partition --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
+echo "bootloader --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
 
 # Anaconda can not install grub 0.97 on disks which are >4T.
 # The reason is that grub does not support such large geometries
@@ -234,59 +300,12 @@ echo "echo \"root (hd0,2)\" >> /tmp/grub.script" >> /tmp/post_partition.ks
 echo "echo \"install /grub/stage1 (hd0) /grub/stage2 p /grub/grub.conf\" >> /tmp/grub.script" >> /tmp/post_partition.ks
 echo "echo quit >> /tmp/grub.script" >> /tmp/post_partition.ks
 echo "cat /tmp/grub.script | chroot /mnt/sysimage /sbin/grub --no-floppy --batch" >> /tmp/post_partition.ks
-
+echo "%end" >> /tmp/post_partition.ks
 %end
 
-%packages --nobase --excludedocs
-@Core
-fuel
-fuel-library >= {{PRODUCT_VERSION}}
-fuel-dockerctl
-authconfig
-bind-utils
-cronie
-crontabs
-curl
-daemonize
-dhcp
-docker-io
-fuel-bootstrap-image
-fuel-bootstrap-image-builder
-fuel-createmirror
-# NOTE(kozhukalov): We don't need target centos images in 8.0
-# fuel-target-centos-images{{CENTOS_RELEASE}}
-fuel-package-updates
-fuelmenu
-fuel-docker-images
-gdisk
-lrzip
-lsof
-man
-mlocate
-nmap-ncat
-ntp
-ntpdate
-openssh-clients
-policycoreutils
-python-daemon
-rsync
-ruby21-puppet
-ruby21-rubygem-netaddr
-ruby21-rubygem-openstack
-selinux-policy-targeted
-strace
-subscription-manager
-sysstat
-system-config-firewall-base
-tcpdump
-telnet
-vim-enhanced
-virt-what
-wget
-yum
-yum-plugin-priorities
 
-%include /tmp/post_partition.ks
+
+
 
 # POSTINSTALL SECTION
 # HERE ARE COMMANDS THAT WILL BE LAUNCHED JUST AFTER
@@ -299,6 +318,11 @@ mkdir -p /var/log/coredump
 echo -e "kernel.core_pattern=/var/log/coredump/core.%e.%p.%h.%t" >> /etc/sysctl.conf
 chmod 777 /var/log/coredump
 echo -e "* soft core unlimited\n* hard core unlimited" >> /etc/security/limits.conf
+%end
+
+
+
+
 
 # Mount installation media in chroot
 %post --nochroot --log=/mnt/sysimage/root/anaconda-post-before-chroot.log
@@ -323,6 +347,11 @@ case "${repo}" in
     fi
   ;;
 esac
+%end
+
+
+
+
 
 %post --log=/root/anaconda-post-after-chroot.log
 #!/bin/bash
@@ -489,6 +518,12 @@ cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 mkdir -p /var/lib/hiera
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
+# Deploy docker images and ctl tools if we built ISO with docker containers support
+lvcreate -y -Wy -Zy --size 1GB --name metadata docker
+lvcreate -y -Wy -Zy --extents 100%VG --name data docker
+echo -e 'other_args="--storage-opt dm.datadev=/dev/mapper/docker-data --storage-opt dm.metadatadev=/dev/mapper/docker-metadata"
+ulimit -n 102400' > /etc/sysconfig/docker
+
 # Prepare local repository specification
 rm /etc/yum.repos.d/CentOS*.repo
 cat > /etc/yum.repos.d/nailgun.repo << EOF
@@ -639,6 +674,25 @@ mv "\$tmpissue" /etc/issue
 
 EOF
 
+# TODO(isuzdal) uncomment this after all changes testing
+## Enable once root autologin for initial setup
+#mkdir -p /etc/systemd/system/getty@tty1.service.d/
+#cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf << 'EOF'
+#[Service]
+#ExecStart=
+#ExecStart=-/sbin/agetty --autologin root --noclear %I 115200 linux
+#EOF
+#
+## Exec bootstrap_admin_node.sh if autologin enabled
+#cat >> /root/.bashrc << 'EOF'
+#if [[ "$(tty)" == "/dev/tty1" && -f /etc/systemd/system/getty@tty1.service.d/autologin.conf ]]; then
+#	rm -f /etc/systemd/system/getty@tty1.service.d/autologin.conf
+#	/bin/systemctl daemon-reload
+#	if [ -x /usr/local/sbin/bootstrap_admin_node.sh ]; then
+#		/usr/local/sbin/bootstrap_admin_node.sh
+#	fi
+#fi
+#EOF
 
 # Unmounting source
 umount -f ${SOURCE}
