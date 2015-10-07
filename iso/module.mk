@@ -247,7 +247,7 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/isolinux/initrd.img $(BUILD_DIR)/iso/efi_tmp/efi_image/
 	sudo mkdir -p $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
 	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
-	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.efi $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
+	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.EFI $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
 	sudo cp -f $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/splash.xpm.gz $(BUILD_DIR)/iso/efi_tmp/efi_image/EFI/BOOT/
 	sudo umount $(BUILD_DIR)/iso/efi_tmp/efi_image
 	cp -f $(BUILD_DIR)/iso/efi_tmp/efiboot.img $(BUILD_DIR)/iso/isoroot-mkisofs/images/
