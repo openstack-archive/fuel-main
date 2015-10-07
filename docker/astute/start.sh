@@ -5,7 +5,12 @@
 rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
-puppet apply -v /etc/puppet/modules/nailgun/examples/astute-only.pp
-pgrep supervisord >/dev/null && /usr/bin/supervisorctl shutdown
+# Create loop devices if needed for ami-creator to setup image
+for loopdev in $(seq 1 9); do
+    mknod "/dev/loop${loopdev}" -m0660 b 7 ${loopdev} ||:
+done
+
 mkdir -p /var/log/astute
-/usr/bin/supervisord -n
+
+puppet apply --debug --verbose /etc/puppet/modules/nailgun/examples/astute-only.pp
+
