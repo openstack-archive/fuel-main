@@ -1,4 +1,8 @@
 #!/bin/bash
+mkdir -p /var/log/puppet
+exec > >(tee -i /var/log/puppet/bootstrap_admin_node.log)
+exec 2>&1
+
 FUEL_RELEASE=$(grep release: /etc/fuel/version.yaml | cut -d: -f2 | tr -d '" ')
 
 function countdown() {
