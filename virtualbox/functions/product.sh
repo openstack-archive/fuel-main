@@ -37,7 +37,7 @@ is_product_vm_operational() {
         expect "*?assword:*"
         send "$password\r"
         expect "$prompt"
-        send "grep 'Fuel node deployment' /var/log/puppet/bootstrap_admin_node.log\r"
+        send "grep --color=none 'Fuel node deployment' /var/log/puppet/bootstrap_admin_node.log\r"
         expect "$prompt"
         send "logout\r"
         expect "$prompt"
@@ -54,12 +54,15 @@ ENDOFEXPECT
     IFS="${NIFS}"
 
     for line in $result; do
+        echo "LINE: => ${line}"
         IFS="${OIFS}"
         if [[ "$line" == Fuel*complete* ]]; then
             IFS="${NIFS}"
+            echo "GOT COMPLETE"
             return 0;
         elif [[ "$line" == Fuel*FAILED* ]]; then
             IFS="${NIFS}"
+            echo "GOT FAILED"
             echo "$line" 1>&2
             exit 1
         fi
