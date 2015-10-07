@@ -17,4 +17,4 @@ kernel = images/pxeboot/vmlinuz
 initrd = images/pxeboot/initrd.img
 
 [stage2]
-mainimage = images/install.img
+mainimage = LiveOS/squashfs.img
