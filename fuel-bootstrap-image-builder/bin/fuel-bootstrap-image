@@ -15,6 +15,9 @@ global_conf="/etc/fuel-bootstrap-image.conf"
 [ -z "$KERNEL_FLAVOR" ] && KERNEL_FLAVOR="-generic-lts-trusty"
 [ -z "$ARCH" ] && ARCH="amd64"
 [ -z "$DESTDIR" ] && DESTDIR="/var/www/nailgun/bootstrap/ubuntu"
+if [ -z "${EXTRA_CONF_FILES+x}" ]; then
+	EXTRA_CONF_FILES="$datadir/ubuntu/files"
+fi
 
 # Packages required for the master node to discover a bootstrap node
 BOOTSTRAP_FUEL_PKGS_DFLT="openssh-client openssh-server ntp mcollective nailgun-agent nailgun-mcagents nailgun-net-check fuel-agent"
@@ -258,7 +261,9 @@ dev_fixup ()
 copy_conf_files ()
 {
 	local root="$1"
-	rsync -rlptDK "$datadir/ubuntu/files/" "${root%/}"
+	if [ -n "$EXTRA_CONF_FILES" ]; then
+		rsync -rlptDK "${EXTRA_CONF_FILES%/}/" "${root%/}"
+	fi
 	sed -i $root/etc/shadow -e '/^root/c\root:$6$oC7haQNQ$LtVf6AI.QKn9Jb89r83PtQN9fBqpHT9bAFLzy.YVxTLiFgsoqlPY3awKvbuSgtxYHx4RUcpUqMotp.WZ0Hwoj.:15441:0:99999:7:::'
 }
 
