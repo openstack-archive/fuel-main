@@ -28,7 +28,6 @@ cd %{name}-%{version}
 mkdir -p %{buildroot}/var/www/nailgun/docker/{images,sources,utils}
 install -m 644 %{SOURCE0} %{buildroot}/var/www/nailgun/docker/images/fuel-images.tar.lrz
 cp -R sources %{buildroot}/var/www/nailgun/docker/
-cp -R utils %{buildroot}/var/www/nailgun/docker/
 
 %clean
 rm -rf %{buildroot}
@@ -54,4 +53,3 @@ fi
 %defattr(-,root,root)
 /var/www/nailgun/docker/images/fuel-images.tar.lrz
 /var/www/nailgun/docker/sources/*
-/var/www/nailgun/docker/utils/*
