@@ -54,4 +54,3 @@ fi
 %defattr(-,root,root)
 /var/www/nailgun/docker/images/fuel-images.tar.lrz
 /var/www/nailgun/docker/sources/*
-/var/www/nailgun/docker/utils/*
