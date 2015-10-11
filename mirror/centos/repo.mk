@@ -77,9 +77,9 @@ $(BUILD_DIR)/mirror/centos/requirements-rpm-0.txt: $(SOURCE_DIR)/requirements-rp
 $(BUILD_DIR)/mirror/centos/urls.list: $(BUILD_DIR)/mirror/centos/requirements-rpm-0.txt \
 		$(BUILD_DIR)/mirror/centos/yum-config.done
 	touch "$(BUILD_DIR)/mirror/centos/conflicting-packages-0.lst"
-# 1st pass - find out which packages conflict
-# 2nd pass - get the URLs of non-conflicting packages
-# 3rd pass (under the else clause) - process the conflicting rpms one by one
+	# 1st pass - find out which packages conflict
+	# 2nd pass - get the URLs of non-conflicting packages
+	# 3rd pass (under the else clause) - process the conflicting rpms one by one
 	count=0; \
 	while true; do \
 		if [ $$count -gt 1 ]; then \
@@ -142,7 +142,7 @@ $(BUILD_DIR)/mirror/centos/urls.list: $(BUILD_DIR)/mirror/centos/requirements-rp
 		fi; \
 		count=$$((count+1)); \
 	done
-# yumdownloader -q prints logs to stdout, filter them out
+	# yumdownloader -q prints logs to stdout, filter them out
 	sed -rne '/\.rpm$$/ {p}' < $@.out > $@.pre
 	sort -u < $@.pre > $@.tmp
 	mv $@.tmp $@
