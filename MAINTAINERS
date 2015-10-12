@@ -1,0 +1,33 @@
+---
+description:
+  For Fuel team structure and contribution policy, see [1].
+
+  This is repository level MAINTAINERS file. All contributions to this
+  repository must be approved by one or more Core Reviewers [2].
+  If you are contributing to files (or create new directories) in
+  root folder of this repository, please contact Core Reviewers for
+  review and merge requests.
+
+  If you are contributing to subfolders of this repository, please
+  check 'maintainers' section of this file in order to find maintainers
+  for those specific modules.
+
+  It is mandatory to get +1 from one or more maintainers before asking
+  Core Reviewers for review/merge in order to decrease a load on Core Reviewers [3].
+  Exceptions are when maintainers are actually cores, or when maintainers
+  are not available for some reason (e.g. on vacation).
+
+  [1] https://review.openstack.org/#/c/225376/ (to be replaced by html link once merged)
+  [2] https://review.openstack.org/#/admin/groups/995,members
+  [3] http://lists.openstack.org/pipermail/openstack-dev/2015-August/072406.html
+
+  Please keep this file in YAML format in order to allow helper scripts
+  to read this as a configuration data.
+
+maintainers:
+  - name:   Sergey Kulanov
+    email:  skulanov@mirantis.com
+    IRC:    sergk
+  - name:   Alexei Sheplyakov
+    email:  asheplyakov@mirantis.com
+    IRC:    asheplyakov
