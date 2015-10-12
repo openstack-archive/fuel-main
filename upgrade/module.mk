@@ -10,6 +10,8 @@ all: upgrade-lrzip openstack-yaml
 upgrade-lrzip: UPGRADERS ?= "host-system docker openstack"
 upgrade-lrzip: $(UPGRADE_TARBALL_PATH).lrz
 
+PYTHON_VIRTUALENV_PKGS:=python-devel-2.6.6-52.el6.x86_64.rpm python-virtualenv-1.11.6-1.mira1.noarch.rpm
+
 ########################
 # UPGRADE LRZIP ARTIFACT
 ########################
@@ -55,6 +57,15 @@ endif
 	cd $(BUILD_DIR)/repos/fuel-nailgun/fuel_upgrade_system/fuel_upgrade && $(BUILD_DIR)/upgrade/venv/bin/python setup.py sdist --dist-dir $(BUILD_DIR)/upgrade/deps
 	$(ACTION.TOUCH)
 
+# FIXME: (skulanov)
+# since we don't have python-virtualenv on our release mirror
+# and not going to publish it over updates channel
+# we need to download and install packages manually
+$(addprefix $(BUILD_DIR)/upgrade/,$(PYTHON_VIRTUALENV_PKGS)):
+	@mkdir -p $(@D)
+	wget -nv -O $@.tmp http://mirror.fuel-infra.org/fwm/6.1/centos/os/x86_64/Packages/$(@F)
+	mv $@.tmp $@
+
 # Save pip artifact, if needed
 $(BUILD_DIR)/upgrade/$(SAVE_UPGRADE_PIP_ART): $(BUILD_DIR)/upgrade/deps.done
 	mkdir -p $(@D)
@@ -69,7 +80,8 @@ $(ARTS_DIR)/$(SAVE_UPGRADE_PIP_ART): $(BUILD_DIR)/upgrade/$(SAVE_UPGRADE_PIP_ART
 ########################
 $(BUILD_DIR)/upgrade/common-part.tar: \
 		$(ARTS_DIR)/$(VERSION_YAML_ART_NAME) \
-		$(BUILD_DIR)/upgrade/deps.done
+		$(BUILD_DIR)/upgrade/deps.done \
+		$(addprefix $(BUILD_DIR)/upgrade/,$(PYTHON_VIRTUALENV_PKGS))
 	mkdir -p $(@D)
 	rm -f $@
 	tar rf $@ -C $(BUILD_DIR)/upgrade --xform s:^:upgrade/: deps
