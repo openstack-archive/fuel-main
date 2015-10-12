@@ -1,0 +1,12 @@
+Verified+2: Jenkins
+Code-Review+2: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Workflow+1: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Code-Review+1: Aleksandr Mogylchenko <amogylchenko@mirantis.com>
+Code-Review+1: Sergey Kulanov <skulanov@mirantis.com>
+Code-Review+1: Artem Silenkov <asilenkov@mirantis.com>
+Code-Review+1: melissaml <ma.lei@99cloud.net>
+Submitted-by: Jenkins
+Submitted-at: Mon, 12 Oct 2015 07:33:01 +0000
+Reviewed-on: https://review.openstack.org/232496
+Project: stackforge/fuel-main
+Branch: refs/heads/master
