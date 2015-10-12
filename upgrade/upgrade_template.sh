@@ -17,10 +17,24 @@ function error {
 }
 
 
+function install_python-virtualenv ()
+{
+    local pkgs="python-devel-2.6.6-52.el6.x86_64.rpm python-virtualenv-1.11.6-1.mira1.noarch.rpm"
+
+    for pkg in $pkgs; do
+      rpm -i "${UPGRADE_PATH}/${pkg}"
+    done
+}
+
 function prepare_virtualenv {
 
+  # FIXME: (skulanov)
+  # since we don't have python-virtualenv on our release mirror
+  # and not going to publish it over updates channel
+  # we need to download and install packages manually
+
   if ! which virtualenv >/dev/null; then
-    yum -y install python-virtualenv || error "Failed to install python-virtualenv"
+    install_python-virtualenv || error "Failed to install python-virtualenv"
   fi
 
   rm -rf $VIRTUALENV_PATH
