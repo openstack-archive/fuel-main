@@ -198,6 +198,8 @@ rm -f /sbin/sln
 #  ldconfig
 /sbin/ldconfig
 
+# Suppress hiera warnings
+mkdir -p /etc/puppet /var/lib/fuel/ibp
+touch /etc/puppet/hiera.yaml /var/lib/hiera/common.yaml
+
 %end
-
-
