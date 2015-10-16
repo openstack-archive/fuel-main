@@ -325,7 +325,6 @@ screen
 seabios
 selinux-policy
 send2syslog
-shotgun
 snappy
 socat
 subscription-manager
