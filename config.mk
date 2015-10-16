@@ -19,7 +19,7 @@ LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 DEPS_DIR?=$(TOP_DIR)/deps
 DEPS_DIR:=$(abspath $(DEPS_DIR))
 
-PRODUCT_VERSION:=7.0
+PRODUCT_VERSION:=8.0
 
 # This variable is used for naming of auxillary objects
 # related to product: repositories, mirrors etc
@@ -34,7 +34,6 @@ PRODUCT_NAME:=mos
 CURRENT_VERSION:=$(PRODUCT_VERSION)
 
 PACKAGE_VERSION=$(PRODUCT_VERSION).0
-UPGRADE_VERSIONS?=$(CURRENT_VERSION)
 
 # Path to pre-built artifacts
 DEPS_DIR_CURRENT?=$(DEPS_DIR)/$(CURRENT_VERSION)
@@ -66,8 +65,8 @@ MASTER_DNS?=10.20.0.1
 MASTER_NETMASK?=255.255.255.0
 MASTER_GW?=10.20.0.1
 
-CENTOS_MAJOR:=6
-CENTOS_MINOR:=6
+CENTOS_MAJOR?=6
+CENTOS_MINOR?=6
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
 CENTOS_IMAGE_RELEASE:=$(CENTOS_MAJOR)$(CENTOS_MINOR)
@@ -81,19 +80,8 @@ UBUNTU_ARCH:=amd64
 UBUNTU_IMAGE_RELEASE:=$(UBUNTU_MAJOR)$(UBUNTU_MINOR)
 SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
-PATCHING_CI?=0
-
-ifeq ($(PATCHING_CI),0)
 # Rebuld packages locally (do not use upstream versions)
 BUILD_PACKAGES?=1
-else
-# we are using patching feature
-# so we are not going to build 1-st level packages
-BUILD_PACKAGES:=0
-# but is going to use release repo
-RELEASE_CENTOS_MIRROR?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)-release/centos/os/$(CENTOS_ARCH)
-YUM_REPOS:=proprietary release
-endif
 
 # by default we are not allowed to downgrade rpm packages,
 # setting this flag to 0 will cause to use repo priorities only (!)
@@ -103,13 +91,14 @@ DENY_RPM_DOWNGRADE?=1
 NO_UI_OPTIMIZE:=0
 
 # Repos and versions
-FUELLIB_COMMIT?=stable/7.0
-NAILGUN_COMMIT?=stable/7.0
-PYTHON_FUELCLIENT_COMMIT?=stable/7.0
-FUEL_AGENT_COMMIT?=stable/7.0
-FUEL_NAILGUN_AGENT_COMMIT?=stable/7.0
-ASTUTE_COMMIT?=stable/7.0
-OSTF_COMMIT?=stable/7.0
+FUELLIB_COMMIT?=master
+NAILGUN_COMMIT?=master
+PYTHON_FUELCLIENT_COMMIT?=master
+FUEL_AGENT_COMMIT?=master
+FUEL_NAILGUN_AGENT_COMMIT?=master
+ASTUTE_COMMIT?=master
+OSTF_COMMIT?=master
+CREATEMIRROR_COMMIT?=master
 
 FUELLIB_REPO?=https://github.com/stackforge/fuel-library.git
 NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
@@ -118,6 +107,7 @@ FUEL_AGENT_REPO?=https://github.com/stackforge/fuel-agent.git
 FUEL_NAILGUN_AGENT_REPO?=https://github.com/stackforge/fuel-nailgun-agent.git
 ASTUTE_REPO?=https://github.com/stackforge/fuel-astute.git
 OSTF_REPO?=https://github.com/stackforge/fuel-ostf.git
+CREATEMIRROR_REPO?=https://github.com/stackforge/fuel-mirror.git
 
 # Gerrit URLs and commits
 FUELLIB_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-library
@@ -127,6 +117,7 @@ FUEL_AGENT_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-agent
 FUEL_NAILGUN_AGENT_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-nailgun-agent
 ASTUTE_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-astute
 OSTF_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-ostf
+CREATEMIRROR_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-mirror
 
 FUELLIB_GERRIT_COMMIT?=none
 NAILGUN_GERRIT_COMMIT?=none
@@ -135,6 +126,7 @@ FUEL_AGENT_GERRIT_COMMIT?=none
 FUEL_NAILGUN_AGENT_GERRIT_COMMIT?=none
 ASTUTE_GERRIT_COMMIT?=none
 OSTF_GERRIT_COMMIT?=none
+CREATEMIRROR_GERRIT_COMMIT?=none
 FUELMAIN_GERRIT_COMMIT?=none
 
 LOCAL_MIRROR_CENTOS:=$(LOCAL_MIRROR)/centos
@@ -222,10 +214,14 @@ MIRROR_UBUNTU_SUITE?=$(UBUNTU_RELEASE)
 MIRROR_UBUNTU_SECTION?=main universe multiverse restricted
 MIRROR_MOS_UBUNTU_METHOD?=http
 MIRROR_MOS_UBUNTU?=perestroika-repo-tst.infra.mirantis.net
-MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/7.0
+MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/$(PRODUCT_VERSION)
 MIRROR_MOS_UBUNTU_SUITE?=$(PRODUCT_NAME)$(PRODUCT_VERSION)
+MIRROR_MOS_SANDBOX_UBUNTU_SUITE?=$(MIRROR_MOS_UBUNTU_SUITE)
 MIRROR_MOS_UBUNTU_SECTION?=main restricted
-MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
+# NOTE(kozhukalov): We are getting rid of staging mirrors (FWM) which are built using 'make mirror' command.
+# But we still need a place where we can download docker base images. They are quite stable
+# and we just put them manually under this URL.
+MIRROR_DOCKER?=http://mirror.fuel-infra.org/docker/$(PRODUCT_VERSION)
 
 # MIRROR_FUEL affects build process only if YUM_REPOS variable contains 'fuel'.
 # Otherwise it is ignored entirely.
@@ -278,7 +274,7 @@ USE_UPGRADE_PIP_ART_HTTP_LINK?=
 # If not empty, will try to download prepeared upstream puppet modules source,
 # which used like requirements for build fuel-library package.
 # List of modules, which SHOULD be passed via this file can be found:
-# https://github.com/stackforge/fuel-library/blob/stable/7.0/deployment/Puppetfile
+# https://github.com/stackforge/fuel-library/blob/master/deployment/Puppetfile
 #
 # Usage example:
 # USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES?=http://127.0.0.1/files/upstream_modules.tar.gz
