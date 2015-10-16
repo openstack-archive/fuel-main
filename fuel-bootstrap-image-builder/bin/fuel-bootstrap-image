@@ -347,6 +347,8 @@ mk_squashfs_image ()
 	mv $DESTDIR/linux.${tmp} $DESTDIR/linux
 	mv $DESTDIR/root.squashfs.${tmp} $DESTDIR/root.squashfs
 
+	chmod 644 $DESTDIR/initramfs.img $DESTDIR/linux $DESTDIR/root.squashfs
+
 	umount "$root/mnt/dst"
 	umount "$root/mnt/src"
 	umount "$root/mnt"
