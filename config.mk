@@ -216,6 +216,7 @@ MIRROR_MOS_UBUNTU_METHOD?=http
 MIRROR_MOS_UBUNTU?=perestroika-repo-tst.infra.mirantis.net
 MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/$(PRODUCT_VERSION)
 MIRROR_MOS_UBUNTU_SUITE?=$(PRODUCT_NAME)$(PRODUCT_VERSION)
+MIRROR_MOS_SANDBOX_UBUNTU_SUITE?=$(MIRROR_MOS_UBUNTU_SUITE)
 MIRROR_MOS_UBUNTU_SECTION?=main restricted
 # NOTE(kozhukalov): We are getting rid of staging mirrors (FWM) which are built using 'make mirror' command.
 # But we still need a place where we can download docker base images. They are quite stable
