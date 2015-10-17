@@ -100,24 +100,24 @@ ASTUTE_COMMIT?=master
 OSTF_COMMIT?=master
 CREATEMIRROR_COMMIT?=master
 
-FUELLIB_REPO?=https://github.com/stackforge/fuel-library.git
-NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
-PYTHON_FUELCLIENT_REPO?=https://github.com/stackforge/python-fuelclient.git
-FUEL_AGENT_REPO?=https://github.com/stackforge/fuel-agent.git
-FUEL_NAILGUN_AGENT_REPO?=https://github.com/stackforge/fuel-nailgun-agent.git
-ASTUTE_REPO?=https://github.com/stackforge/fuel-astute.git
-OSTF_REPO?=https://github.com/stackforge/fuel-ostf.git
-CREATEMIRROR_REPO?=https://github.com/stackforge/fuel-mirror.git
+FUELLIB_REPO?=https://github.com/openstack/fuel-library.git
+NAILGUN_REPO?=https://github.com/openstack/fuel-web.git
+PYTHON_FUELCLIENT_REPO?=https://github.com/openstack/python-fuelclient.git
+FUEL_AGENT_REPO?=https://github.com/openstack/fuel-agent.git
+FUEL_NAILGUN_AGENT_REPO?=https://github.com/openstack/fuel-nailgun-agent.git
+ASTUTE_REPO?=https://github.com/openstack/fuel-astute.git
+OSTF_REPO?=https://github.com/openstack/fuel-ostf.git
+CREATEMIRROR_REPO?=https://github.com/openstack/fuel-mirror.git
 
 # Gerrit URLs and commits
-FUELLIB_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-library
-NAILGUN_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-web
-PYTHON_FUELCLIENT_GERRIT_URL?=https://review.openstack.org/stackforge/python-fuelclient
-FUEL_AGENT_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-agent
-FUEL_NAILGUN_AGENT_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-nailgun-agent
-ASTUTE_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-astute
-OSTF_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-ostf
-CREATEMIRROR_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-mirror
+FUELLIB_GERRIT_URL?=https://review.openstack.org/openstack/fuel-library
+NAILGUN_GERRIT_URL?=https://review.openstack.org/openstack/fuel-web
+PYTHON_FUELCLIENT_GERRIT_URL?=https://review.openstack.org/openstack/python-fuelclient
+FUEL_AGENT_GERRIT_URL?=https://review.openstack.org/openstack/fuel-agent
+FUEL_NAILGUN_AGENT_GERRIT_URL?=https://review.openstack.org/openstack/fuel-nailgun-agent
+ASTUTE_GERRIT_URL?=https://review.openstack.org/openstack/fuel-astute
+OSTF_GERRIT_URL?=https://review.openstack.org/openstack/fuel-ostf
+CREATEMIRROR_GERRIT_URL?=https://review.openstack.org/openstack/fuel-mirror
 
 FUELLIB_GERRIT_COMMIT?=none
 NAILGUN_GERRIT_COMMIT?=none
@@ -273,7 +273,7 @@ USE_UPGRADE_PIP_ART_HTTP_LINK?=
 # If not empty, will try to download prepeared upstream puppet modules source,
 # which used like requirements for build fuel-library package.
 # List of modules, which SHOULD be passed via this file can be found:
-# https://github.com/stackforge/fuel-library/blob/master/deployment/Puppetfile
+# https://github.com/openstack/fuel-library/blob/master/deployment/Puppetfile
 #
 # Usage example:
 # USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES?=http://127.0.0.1/files/upstream_modules.tar.gz
