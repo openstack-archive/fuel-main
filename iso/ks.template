@@ -639,6 +639,21 @@ mv "\$tmpissue" /etc/issue
 
 EOF
 
+# CentOS 7 related changes
+# In case of systemd, let the rc.local script be called for backward compatibility
+if [ -x /usr/bin/systemctl ] ; then
+    # Enable rc.local in systemd by creating the symlink to the rc-local.service in the multi-user.target
+    # rc-local.service is to be called for the multiuser.target
+    ln -s /etc/systemd/system/multi-user.target.wants/rc-local.service /usr/lib/systemd/system/rc-local.service
+fi
+
+# CentOS 7 has network interfaces disable by default, in contrast to CentOS 6.x
+# Lets enable it by changing the parameter ONBOOT=yes in the config interface files
+for intf in $(get_ethernet_interfaces); do
+    if [ -f /etc/sysconfig/network-scripts/ifcfg-"$intf" ] ; then
+         sed -i -e 's/^ONBOOT=no/ONBOOT=yes/' /etc/sysconfig/network-scripts/ifcfg-"$intf"
+    fi
+done
 
 # Unmounting source
 umount -f ${SOURCE}
