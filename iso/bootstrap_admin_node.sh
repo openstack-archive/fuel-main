@@ -58,6 +58,14 @@ udevadm settle
 ADMIN_INTERFACE=$(get_ethernet_interfaces | sort -V | head -1)
 export ADMIN_INTERFACE
 
+# CentOS 7 has network interfaces disable by default, in contrast to CentOS 6.x
+# Lets enable it by changing the parameter ONBOOT=yes in the config interface files
+for intf in $(get_ethernet_interfaces); do
+    if [ -f /etc/sysconfig/network-scripts/ifcfg-"$intf" ] ; then
+         sed -i -e 's/^ONBOOT=no/ONBOOT=yes/' /etc/sysconfig/network-scripts/ifcfg-"$intf"
+    fi
+done
+
 showmenu="no"
 if [ -f /etc/fuel/bootstrap_admin_node.conf ]; then
   . /etc/fuel/bootstrap_admin_node.conf
