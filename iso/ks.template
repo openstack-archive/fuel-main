@@ -616,7 +616,7 @@ function get_ethernet_interfaces() {
   done
 }
 first=yes
-for intf in \$(get_ethernet_interfaces()) ; do
+for intf in \$(get_ethernet_interfaces) ; do
 ip = "\$ip_list |\$(ip -4 -o addr show dev \$intf | awk '{ print \$4 }' | cut -d/ -f1)"
 if [ "\$first" = "yes" ]; then
   ipstr="Fuel UI is available on: https://\$ip:8443"
