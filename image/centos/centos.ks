@@ -100,6 +100,9 @@ EOF
 # prevent udev rules from remapping nics
 touch /etc/udev/rules.d/75-persistent-net-generator.rules
 
+#install mlx4_en together with mlx4_core
+echo "install mlx4_core /sbin/modprobe --ignore-install mlx4_core && /sbin/modprobe mlx4_en" >> /etc/modprobe.d/mlx4_core.conf
+
 #setup getty on ttyS0
 echo "ttyS0" >> /etc/securetty
 cat <<EOF > /etc/init/ttyS0.conf
