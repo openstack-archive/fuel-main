@@ -18,9 +18,15 @@ gpgcheck=0" \
 ADD etc /etc
 ADD start.sh /usr/local/bin/start.sh
 
+# TODO(bpiotrowski): remove old file path after new ISO is used on CI
 RUN mkdir -p /var/lib/fuel/ibp; \
-    /usr/bin/puppet apply --detailed-exitcodes -d -v \
-        /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp; \
+    if [[ -f /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp ]]; then \
+        /usr/bin/puppet apply --detailed-exitcodes -d -v \
+            /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp; \
+    else \
+        /usr/bin/puppet apply --detailed-exitcodes -d -v \
+            /etc/puppet/modules/nailgun/examples/mcollective-only.pp; \
+    fi; \
     [[ $? == 0 || $? == 2 ]]
 
 RUN echo -e "\
