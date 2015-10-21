@@ -5,7 +5,12 @@
 rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
-puppet apply -d -v /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp
+# TODO(bpiotrowski): remove old file path after new ISO is used on CI
+if [[ -f /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp ]]; then
+  puppet apply -d -v /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp
+else
+  puppet apply -d -v /etc/puppet/modules/nailgun/examples/mcollective-only.pp
+fi
 
 #Stop daemon and restart it in the foreground
 service mcollective stop
