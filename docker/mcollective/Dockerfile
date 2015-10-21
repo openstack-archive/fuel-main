@@ -20,7 +20,7 @@ ADD start.sh /usr/local/bin/start.sh
 
 RUN mkdir -p /var/lib/fuel/ibp; \
     /usr/bin/puppet apply --detailed-exitcodes -d -v \
-        /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp; \
+        /etc/puppet/modules/nailgun/examples/mcollective-only.pp; \
     [[ $? == 0 || $? == 2 ]]
 
 RUN echo -e "\
