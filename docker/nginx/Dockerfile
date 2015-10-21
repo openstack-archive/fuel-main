@@ -16,7 +16,7 @@ gpgcheck=0" \
 ADD etc /etc
 ADD start.sh /usr/local/bin/start.sh
 
-RUN mkdir -p /var/www/nailgun;chmod 755 /var/www/nailgun
+RUN mkdir -p /var/www/nailgun;chmod 755 /var/www/nailgun \
     puppet apply --detailed-exitcodes -d -v \
         /etc/puppet/modules/nailgun/examples/nginx-only.pp; \
     [[ $? == 0 || $? == 2 ]]
