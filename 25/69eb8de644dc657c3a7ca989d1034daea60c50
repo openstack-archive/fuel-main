@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Code-Review+2: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Workflow+1: Vitaly Sedelnik <vsedelnik@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Thu, 22 Oct 2015 13:20:59 +0000
+Reviewed-on: https://review.openstack.org/238496
+Project: openstack/fuel-main
+Branch: refs/heads/stable/7.0
