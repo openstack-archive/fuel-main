@@ -17,17 +17,21 @@ description:
   Exceptions are when maintainers are actually cores, or when maintainers
   are not available for some reason (e.g. on vacation).
 
-  [1] https://review.openstack.org/#/c/225376/ (to be replaced by html link once merged)
-  [2] https://review.openstack.org/#/admin/groups/995,members
+  [1] http://specs.fuel-infra.org/fuel-specs-master/policy/team-structure.html
+  [2] https://review.openstack.org/#/admin/groups/659,members
   [3] http://lists.openstack.org/pipermail/openstack-dev/2015-August/072406.html
 
   Please keep this file in YAML format in order to allow helper scripts
   to read this as a configuration data.
 
 maintainers:
-  - name:   Sergey Kulanov
-    email:  skulanov@mirantis.com
-    IRC:    sergk
-  - name:   Alexei Sheplyakov
-    email:  asheplyakov@mirantis.com
-    IRC:    asheplyakov
+
+- ./:
+
+    - name:   Alexei Sheplyakov
+      email:  asheplyakov@mirantis.com
+      IRC:    asheplyakov
+
+    - name:   Sergey Kulanov
+      email:  skulanov@mirantis.com
+      IRC:    sergk
