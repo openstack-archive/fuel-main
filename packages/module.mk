@@ -77,6 +77,8 @@ $(eval $(call prepare_git_source,fuel-nailgun-agent,fuel-nailgun-agent-$(PACKAGE
 $(eval $(call prepare_git_source,fuel-main,fuel-main-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD,$(FUELMAIN_GERRIT_COMMIT)))
 #FUEL-CREATEMIRROR PKGS
 $(eval $(call prepare_git_source,fuel-createmirror,fuel-createmirror-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-createmirror,HEAD,$(CREATEMIRROR_GERRIT_COMMIT)))
+#NETWORK-CHECKER PKGS
+$(eval $(call prepare_git_source,network-checker,network-checker-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/network-checker,HEAD,$(CREATEMIRROR_GERRIT_COMMIT)))
 
 include $(SOURCE_DIR)/packages/rpm/module.mk
 include $(SOURCE_DIR)/packages/deb/module.mk
