@@ -87,7 +87,8 @@ fuelmenu \
 fuel-nailgun \
 fuel-nailgun-agent \
 fuel-ostf \
-python-fuelclient
+python-fuelclient \
+shotgun
 
 $(eval $(foreach pkg,$(packages_list),$(call build_rpm,$(pkg))$(NEWLINE)))
 

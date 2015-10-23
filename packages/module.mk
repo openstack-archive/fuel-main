@@ -79,6 +79,8 @@ $(eval $(call prepare_git_source,fuel-main,fuel-main-$(PACKAGE_VERSION).tar.gz,$
 $(eval $(call prepare_git_source,fuel-createmirror,fuel-createmirror-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-createmirror,HEAD,$(CREATEMIRROR_GERRIT_COMMIT)))
 #FUEL-MENU PKGS
 $(eval $(call prepare_git_source,fuelmenu,fuelmenu-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuelmenu,HEAD,$(FUELMENU_GERRIT_COMMIT)))
+#SHOTGUN PKGS
+$(eval $(call prepare_git_source,shotgun,shotgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/shotgun,HEAD,$(SHOTGUN_GERRIT_COMMIT)))
 
 include $(SOURCE_DIR)/packages/rpm/module.mk
 include $(SOURCE_DIR)/packages/deb/module.mk
