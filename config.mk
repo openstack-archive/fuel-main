@@ -99,6 +99,7 @@ FUEL_NAILGUN_AGENT_COMMIT?=master
 ASTUTE_COMMIT?=master
 OSTF_COMMIT?=master
 CREATEMIRROR_COMMIT?=master
+SHOTGUN_COMMIT?=master
 
 FUELLIB_REPO?=https://github.com/openstack/fuel-library.git
 NAILGUN_REPO?=https://github.com/openstack/fuel-web.git
@@ -108,6 +109,7 @@ FUEL_NAILGUN_AGENT_REPO?=https://github.com/openstack/fuel-nailgun-agent.git
 ASTUTE_REPO?=https://github.com/openstack/fuel-astute.git
 OSTF_REPO?=https://github.com/openstack/fuel-ostf.git
 CREATEMIRROR_REPO?=https://github.com/openstack/fuel-mirror.git
+SHOTGUN_REPO?=https://github.com/openstack/shotgun.git
 
 # Gerrit URLs and commits
 FUELLIB_GERRIT_URL?=https://review.openstack.org/openstack/fuel-library
@@ -118,6 +120,7 @@ FUEL_NAILGUN_AGENT_GERRIT_URL?=https://review.openstack.org/openstack/fuel-nailg
 ASTUTE_GERRIT_URL?=https://review.openstack.org/openstack/fuel-astute
 OSTF_GERRIT_URL?=https://review.openstack.org/openstack/fuel-ostf
 CREATEMIRROR_GERRIT_URL?=https://review.openstack.org/openstack/fuel-mirror
+SHOTGUN_GERRIT_URL?=https://review.openstack.org/openstack/shotgun
 
 FUELLIB_GERRIT_COMMIT?=none
 NAILGUN_GERRIT_COMMIT?=none
@@ -128,6 +131,7 @@ ASTUTE_GERRIT_COMMIT?=none
 OSTF_GERRIT_COMMIT?=none
 CREATEMIRROR_GERRIT_COMMIT?=none
 FUELMAIN_GERRIT_COMMIT?=none
+SHOTGUN_GERRIT_COMMIT?=none
 
 LOCAL_MIRROR_CENTOS:=$(LOCAL_MIRROR)/centos
 LOCAL_MIRROR_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_CENTOS)/os/$(CENTOS_ARCH)
