@@ -20,7 +20,7 @@ if [ -z "${EXTRA_CONF_FILES+x}" ]; then
 fi
 
 # Packages required for the master node to discover a bootstrap node
-BOOTSTRAP_FUEL_PKGS_DFLT="openssh-client openssh-server ntp mcollective nailgun-agent nailgun-mcagents nailgun-net-check fuel-agent"
+BOOTSTRAP_FUEL_PKGS_DFLT="openssh-client openssh-server ntp mcollective nailgun-agent nailgun-mcagents network-checker fuel-agent"
 [ -z "$BOOTSTRAP_FUEL_PKGS" ] && BOOTSTRAP_FUEL_PKGS="$BOOTSTRAP_FUEL_PKGS_DFLT"
 
 if [ -n "$http_proxy" ]; then
