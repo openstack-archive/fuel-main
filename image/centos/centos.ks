@@ -147,7 +147,7 @@ grub
 dracut
 make
 mlocate
-nailgun-net-check
+network-checker
 ntp
 openssh
 openssh-clients

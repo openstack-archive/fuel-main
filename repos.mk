@@ -46,6 +46,7 @@ $(eval $(call build_repo,astute,$(ASTUTE_REPO),$(ASTUTE_COMMIT),$(ASTUTE_GERRIT_
 $(eval $(call build_repo,fuel-library,$(FUELLIB_REPO),$(FUELLIB_COMMIT),$(FUELLIB_GERRIT_URL),$(FUELLIB_GERRIT_COMMIT)))
 $(eval $(call build_repo,fuel-ostf,$(OSTF_REPO),$(OSTF_COMMIT),$(OSTF_GERRIT_URL),$(OSTF_GERRIT_COMMIT)))
 $(eval $(call build_repo,fuel-createmirror,$(CREATEMIRROR_REPO),$(CREATEMIRROR_COMMIT),$(CREATEMIRROR_GERRIT_URL),$(CREATEMIRROR_GERRIT_COMMIT)))
+$(eval $(call build_repo,network-checker,$(NETWORKCHECKER_REPO),$(NETWORKCHECKER_COMMIT),$(NETWORKCHECKER_GERRIT_URL),$(NETWORKCHECKER_GERRIT_COMMIT)))
 
 $(BUILD_DIR)/repos/fuel-main.done:
 	ln -s $(SOURCE_DIR) $(BUILD_DIR)/repos/fuel-main
