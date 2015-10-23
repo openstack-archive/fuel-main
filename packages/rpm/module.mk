@@ -87,6 +87,7 @@ fuelmenu \
 fuel-nailgun \
 fuel-nailgun-agent \
 fuel-ostf \
+network-checker \
 python-fuelclient \
 shotgun
 

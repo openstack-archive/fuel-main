@@ -26,7 +26,7 @@ Requires: fuel-provisioning-scripts >= %{version}
 Requires: fuel-release >= %{version}
 # NOTE(kozhukalov): We don't need target centos images in 8.0
 # Requires: fuel-target-centos-images6.6 >= %{version}
-Requires: nailgun-net-check >= %{version}
+Requires: network-checker >= %{version}
 Requires: python-fuelclient >= %{version}
 Requires: yum
 
