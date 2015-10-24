@@ -167,14 +167,13 @@ passwd -l root
 
 # ami-creator requires grub during the install, so we remove it (and
 # its dependencies) in %post
-rpm -e grub redhat-logos
+rpm -e grub
 rm -rf /boot
 
 # some packages get installed even though we ask for them not to be,
 # and they don't have any external dependencies that should make
 # anaconda install them
-rpm -e MAKEDEV ethtool upstart initscripts iputils policycoreutils iptables \
-    iproute
+rpm -e MAKEDEV policycoreutils
 
 # Remove files that are known to take up lots of space but leave
 # directories intact since those may be required by new rpms.
