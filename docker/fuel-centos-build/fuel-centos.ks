@@ -167,7 +167,7 @@ passwd -l root
 
 # ami-creator requires grub during the install, so we remove it (and
 # its dependencies) in %post
-rpm -e grub redhat-logos
+rpm -e grub
 rm -rf /boot
 
 # some packages get installed even though we ask for them not to be,
