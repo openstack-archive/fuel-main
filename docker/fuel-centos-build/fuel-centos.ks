@@ -202,4 +202,7 @@ rm -f /sbin/sln
 mkdir -p /etc/puppet /var/lib/fuel/ibp
 touch /etc/puppet/hiera.yaml /var/lib/hiera/common.yaml
 
+# Sudo does not need TTYs
+sed -i '/requiretty/s/^/#/g' /etc/sudoers
+
 %end
