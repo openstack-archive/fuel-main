@@ -240,7 +240,7 @@ echo "cat /tmp/grub.script | chroot /mnt/sysimage /sbin/grub --no-floppy --batch
 %packages --nobase --excludedocs
 @Core
 fuel
-fuel-library
+fuel-library >= {{PRODUCT_VERSION}}
 fuel-dockerctl
 authconfig
 bind-utils

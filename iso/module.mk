@@ -162,7 +162,7 @@ $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(KSYAM
 	python $(SOURCE_DIR)/iso/ks.py \
 		-t $(SOURCE_DIR)/iso/ks.template \
 		-c $(KSYAML) \
-		-u '{"CENTOS_RELEASE": "$(CENTOS_RELEASE)"}' \
+		-u '{"CENTOS_RELEASE": "$(CENTOS_RELEASE)", "PRODUCT_VERSION": "$(PRODUCT_VERSION)"}' \
 		-o $@.tmp
 	mv $@.tmp $@
 
