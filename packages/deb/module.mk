@@ -72,6 +72,12 @@ $(BUILD_DIR)/packages/deb/repocleanup.done: $(packages_list:%=$(BUILD_DIR)/packa
 $(BUILD_DIR)/packages/deb/build.done:
 	$(ACTION.TOUCH)
 
-fuel_debian_packages:=fuel-nailgun astute fuel-agent fuel-library$(PRODUCT_VERSION) fuel-nailgun-agent fuel-createmirror
+fuel_debian_packages:=fuel-nailgun \
+astute \
+fuel-agent \
+fuel-library$(PRODUCT_VERSION) \
+fuel-nailgun-agent \
+fuel-createmirror \
+network-checker
 
 $(eval $(foreach pkg,$(fuel_debian_packages),$(call build_deb,$(pkg))$(NEWLINE)))
