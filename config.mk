@@ -41,7 +41,6 @@ DEPS_DIR_CURRENT:=$(abspath $(DEPS_DIR_CURRENT))
 
 # Artifacts names
 ISO_NAME?=fuel-$(PRODUCT_VERSION)
-OPENSTACK_PATCH_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-patch
 VBOX_SCRIPTS_NAME?=vbox-scripts-$(PRODUCT_VERSION)
 BOOTSTRAP_ART_NAME?=bootstrap.tar.gz
 DOCKER_ART_NAME?=fuel-images.tar.lrz
@@ -49,8 +48,6 @@ VERSION_YAML_ART_NAME?=version.yaml
 CENTOS_REPO_ART_NAME?=centos-repo.tar
 UBUNTU_REPO_ART_NAME?=ubuntu-repo.tar
 PUPPET_ART_NAME?=puppet.tgz
-OPENSTACK_YAML_ART_NAME?=openstack.yaml
-
 
 
 # Where we put artifacts
@@ -280,4 +277,3 @@ expand_repo_url=$(shell url=$1; echo $${url} | grep -q -e '.*\.target\.txt$$' &&
 #MIRROR_CENTOS_KERNEL:=$(call expand_repo_url,$(MIRROR_CENTOS_KERNEL))
 #SANDBOX_MIRROR_CENTOS_UPSTREAM:=$(call expand_repo_url,$(SANDBOX_MIRROR_CENTOS_UPSTREAM))
 MIRROR_FUEL:=$(call expand_repo_url,$(MIRROR_FUEL))
-

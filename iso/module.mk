@@ -1,7 +1,7 @@
 .PHONY: all iso version-yaml centos-repo ubuntu-repo
 .DELETE_ON_ERROR: $(ISO_PATH)
 
-all: iso version-yaml openstack-yaml
+all: iso version-yaml
 
 ISOROOT:=$(BUILD_DIR)/iso/isoroot
 
@@ -17,17 +17,11 @@ $(ARTS_DIR)/$(VERSION_YAML_ART_NAME): $(ISOROOT)/$(VERSION_YAML_ART_NAME)
 
 $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,PRODUCT_VERSION)
 $(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,FEATURE_GROUPS)
-$(ISOROOT)/$(VERSION_YAML_ART_NAME): $(BUILD_DIR)/repos/repos.done \
-		$(ISOROOT)/openstack_version
+$(ISOROOT)/$(VERSION_YAML_ART_NAME): $(BUILD_DIR)/repos/repos.done
 	mkdir -p $(@D)
 	echo "VERSION:" > $@
 	echo "  feature_groups:" >> $@
 	$(foreach group,$(FEATURE_GROUPS),echo "    - $(group)" >> $@;)
-	echo "  production: \"$(PRODUCTION)\"" >> $@
-	echo "  release: \"$(PRODUCT_VERSION)\"" >> $@
-	echo -n "  openstack_version: \"" >> $@
-	cat $(ISOROOT)/openstack_version | tr -d '\n' >> $@
-	echo "\"" >> $@
 	echo "  api: \"1.0\"" >> $@
 ifdef BUILD_NUMBER
 	echo "  build_number: \"$(BUILD_NUMBER)\"" >> $@
@@ -126,21 +120,6 @@ $(BUILD_DIR)/iso/isoroot-dotfiles.done: \
 		$(ISOROOT)/.treeinfo
 	$(ACTION.TOUCH)
 
-$(ISOROOT)/openstack_version: $(BUILD_DIR)/iso/$(OPENSTACK_YAML_ART_NAME)
-	mkdir -p $(@D)
-	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$(BUILD_DIR)/iso/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $@
-
-
-openstack-yaml: $(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME)
-
-$(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME): $(BUILD_DIR)/iso/$(OPENSTACK_YAML_ART_NAME)
-	$(ACTION.COPY)
-
-$(BUILD_DIR)/iso/$(OPENSTACK_YAML_ART_NAME): $(BUILD_DIR)/repos/fuel-nailgun.done
-	mkdir -p $(@D)
-	cp $(BUILD_DIR)/repos/fuel-nailgun/nailgun/nailgun/fixtures/openstack.yaml $@
-
-
 $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done \
 		$(ISOROOT)/isolinux/isolinux.cfg \
@@ -150,7 +129,6 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/bootstrap_admin_node.conf \
 		$(ISOROOT)/send2syslog.py \
 		$(ISOROOT)/version.yaml \
-		$(ISOROOT)/openstack_version
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
