@@ -48,6 +48,7 @@ $(eval $(call build_repo,fuel-ostf,$(OSTF_REPO),$(OSTF_COMMIT),$(OSTF_GERRIT_URL
 $(eval $(call build_repo,fuel-createmirror,$(CREATEMIRROR_REPO),$(CREATEMIRROR_COMMIT),$(CREATEMIRROR_GERRIT_URL),$(CREATEMIRROR_GERRIT_COMMIT)))
 $(eval $(call build_repo,fuelmenu,$(FUELMENU_REPO),$(FUELMENU_COMMIT),$(FUELMENU_GERRIT_URL),$(FUELMENU_GERRIT_COMMIT)))
 $(eval $(call build_repo,shotgun,$(SHOTGUN_REPO),$(SHOTGUN_COMMIT),$(SHOTGUN_GERRIT_URL),$(SHOTGUN_GERRIT_COMMIT)))
+$(eval $(call build_repo,fuel-upgrade,$(FUELUPGRADE_REPO),$(FUELUPGRADE_COMMIT),$(FUELUPGRADE_GERRIT_URL),$(FUELUPGRADE_GERRIT_COMMIT)))
 
 $(BUILD_DIR)/repos/fuel-main.done:
 	ln -s $(SOURCE_DIR) $(BUILD_DIR)/repos/fuel-main
