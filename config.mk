@@ -159,58 +159,58 @@ LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
 USE_MIRROR?=ext
 
 ifeq ($(USE_MIRROR),ext)
-YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
+MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/os/x86_64/
+MIRROR_CENTOS?=http://vault.centos.org/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://vault.centos.org/$(CENTOS_RELEASE)
+SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=mirror.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
+MIRROR_DOCKER?=http://mirror.fuel-infra.org/docker/$(PRODUCT_VERSION)
 endif
 
 ifeq ($(USE_MIRROR),srt)
-YUM_REPOS?=proprietary
+MIRROR_FUEL?=http://osci-mirror-srt.srt.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/os/x86_64/
 MIRROR_CENTOS?=http://osci-mirror-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=osci-mirror-srt.srt.mirantis.net
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://osci-mirror-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)/docker
+MIRROR_DOCKER?=http://osci-mirror-srt.srt.mirantis.net/docker/$(PRODUCT_VERSION)
 endif
 
 ifeq ($(USE_MIRROR),msk)
-YUM_REPOS?=proprietary
+MIRROR_FUEL?=http://osci-mirror-msk.msk.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/os/x86_64/
 MIRROR_CENTOS?=http://osci-mirror-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://osci-mirror-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)/docker
+MIRROR_DOCKER?=http://osci-mirror-msk.msk.mirantis.net/docker/$(PRODUCT_VERSION)
 endif
 
 ifeq ($(USE_MIRROR),hrk)
-YUM_REPOS?=proprietary
+MIRROR_FUEL?=http://osci-mirror-kha.kha.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/os/x86_64/
 MIRROR_CENTOS?=http://osci-mirror-kha.kha.mirantis.net/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=osci-mirror-kha.kha.mirantis.net
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://osci-mirror-kha.kha.mirantis.net/fwm/$(PRODUCT_VERSION)/docker
+MIRROR_DOCKER?=http://osci-mirror-kha.kha.mirantis.net/docker/$(PRODUCT_VERSION)
 endif
 
 ifeq ($(USE_MIRROR),usa)
-YUM_REPOS?=proprietary
+MIRROR_FUEL?=http://mirror.seed-us1.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/os/x86_64/
 MIRROR_CENTOS?=http://mirror.seed-us1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=mirror.seed-us1.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://mirror.seed-us1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
+MIRROR_DOCKER?=http://mirror.seed-us1.fuel-infra.org/docker/$(PRODUCT_VERSION)
 endif
 
 ifeq ($(USE_MIRROR),cz)
-YUM_REPOS?=proprietary
+MIRROR_FUEL?=http://mirror.seed-cz1.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/os/x86_64/
 MIRROR_CENTOS?=http://mirror.seed-cz1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=mirror.seed-cz1.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://mirror.seed-cz1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
+MIRROR_DOCKER?=http://mirror.seed-cz1.fuel-infra.org/docker/$(PRODUCT_VERSION)
 endif
 
 # Which repositories to use for making local centos mirror.
