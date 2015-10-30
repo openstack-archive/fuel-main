@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Workflow+1: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Code-Review+2: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Code-Review+1: Bulat Gaifullin <bgaifullin@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 30 Oct 2015 07:57:28 +0000
+Reviewed-on: https://review.openstack.org/240224
+Project: openstack/fuel-main
+Branch: refs/heads/master
