@@ -103,19 +103,9 @@ endef
 define yum_repo_fuel
 [fuel]
 name=Mirantis OpenStack Custom Packages
-#mirrorlist=http://download.mirantis.com/epel-fuel-grizzly-3.1/mirror.internal.list
 baseurl=$(MIRROR_FUEL)
 gpgcheck=0
 enabled=1
-priority=20
-endef
-
-define yum_repo_proprietary
-[proprietary]
-name = CentOS $(CENTOS_RELEASE) - Proprietary
-baseurl = $(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
-gpgcheck = 0
-enabled = 1
 priority=20
 endef
 
