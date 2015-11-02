@@ -237,7 +237,7 @@ echo "cat /tmp/grub.script | chroot /mnt/sysimage /sbin/grub --no-floppy --batch
 
 %end
 
-%packages --nobase --excludedocs
+%packages --nobase
 @Core
 fuel
 fuel-library >= {{PRODUCT_VERSION}}
