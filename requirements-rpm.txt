@@ -155,6 +155,7 @@ python-dogpile-cache
 python-dogpile-core
 python-ecdsa
 python-empy
+python-enum
 python-ethtool
 python-eventlet
 python-fabric
