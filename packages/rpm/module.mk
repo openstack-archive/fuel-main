@@ -72,7 +72,7 @@ else
 $(BUILD_DIR)/packages/rpm/$1-repocleanup.done: SPECFILE:=$(SOURCE_DIR)/packages/rpm/specs/$1.spec
 endif
 $(BUILD_DIR)/packages/rpm/$1-repocleanup.done: $(BUILD_DIR)/mirror/centos/repo.done
-	python $(SOURCE_DIR)/packages/rpm/genpkgnames.py $$(SPECFILE) | xargs -I{} sudo find $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages -regex '.*/{}-[^-]+-[^-]+' -delete
+	python $(SOURCE_DIR)/packages/rpm/genpkgnames.py $$(SPECFILE) | xargs -I{} sudo find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages -regex '.*/{}-[^-]+-[^-]+' -delete
 	$$(ACTION.TOUCH)
 endef
 
@@ -95,9 +95,9 @@ $(eval $(foreach pkg,$(packages_list),$(call build_rpm,$(pkg))$(NEWLINE)))
 
 $(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/bootstrap/fuel-bootstrap-image-builder-rpm.done
 $(BUILD_DIR)/packages/rpm/repo.done:
-	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
-	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
-		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages \;
+	createrepo -g $(LOCAL_MIRROR_MOS_CENTOS)/os/comps.xml \
+		-o $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/fuel-docker-images
@@ -117,9 +117,9 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 	sudo cp $(SOURCE_DIR)/packages/rpm/specs/fuel-docker-images.spec $(SANDBOX)/tmp && \
 	sudo chroot $(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/fuel-docker-images.spec
 	cp $(SANDBOX)/tmp/RPMS/*/fuel-docker-images-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
-	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' | xargs cp -u --target-directory=$(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages
-	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
-		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' | xargs cp -u --target-directory=$(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages
+	createrepo -g $(LOCAL_MIRROR_MOS_CENTOS)/os/comps.xml \
+		-o $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
@@ -145,9 +145,9 @@ $(eval $(foreach pkg,$(fuel_rpm_packages_late),$(call build_rpm,$(pkg),-late)$(N
 
 $(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/bootstrap/fuel-bootstrap-image-builder-rpm.done
 $(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/packages/rpm/repo.done
-	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u --target-directory $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages {} +
-	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
-		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u --target-directory $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages {} +
+	createrepo -g $(LOCAL_MIRROR_MOS_CENTOS)/os/comps.xml \
+		-o $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/packages/rpm/build-late.done: $(BUILD_DIR)/packages/rpm/repo-late.done
