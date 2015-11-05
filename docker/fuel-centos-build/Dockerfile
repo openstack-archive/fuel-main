@@ -7,6 +7,10 @@ RUN echo -e "\
 [nailgun]\n\
 name=Nailgun Local Repo\n\
 baseurl=file:///repo/os/x86_64/\n\
+gpgcheck=0\n\
+[mos]\n\
+name=MOS Local Repo\n\
+baseurl=file:///mos-repo/os/x86_64/\n\
 gpgcheck=0" \
         > /etc/yum.repos.d/nailgun.repo
 
