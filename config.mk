@@ -147,6 +147,8 @@ FUELUPGRADE_GERRIT_COMMIT?=none
 
 LOCAL_MIRROR_CENTOS:=$(LOCAL_MIRROR)/centos
 LOCAL_MIRROR_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_CENTOS)/os/$(CENTOS_ARCH)
+LOCAL_MIRROR_MOS_CENTOS:=$(LOCAL_MIRROR)/mos-centos
+LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_MOS_CENTOS)/os/$(CENTOS_ARCH)
 LOCAL_MIRROR_UBUNTU:=$(LOCAL_MIRROR)/ubuntu
 LOCAL_MIRROR_UBUNTU_OS_BASEURL:=$(LOCAL_MIRROR_UBUNTU)
 LOCAL_MIRROR_DOCKER:=$(LOCAL_MIRROR)/docker
@@ -162,6 +164,7 @@ ifeq ($(USE_MIRROR),ext)
 MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
 MIRROR_CENTOS?=http://vault.centos.org/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
+MIRROR_MOS_CENTOS?=mirror.fuel-infra.org
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=mirror.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
@@ -170,6 +173,7 @@ endif
 
 ifeq ($(USE_MIRROR),srt)
 MIRROR_FUEL?=http://osci-mirror-srt.srt.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
+MIRROR_MOS_CENTOS?=osci-mirror-srt.srt.mirantis.net
 MIRROR_UBUNTU?=osci-mirror-srt.srt.mirantis.net
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://osci-mirror-srt.srt.mirantis.net/docker/$(PRODUCT_VERSION)
@@ -177,6 +181,7 @@ endif
 
 ifeq ($(USE_MIRROR),msk)
 MIRROR_FUEL?=http://osci-mirror-msk.msk.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
+MIRROR_MOS_CENTOS?=osci-mirror-msk.msk.mirantis.net
 MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://osci-mirror-msk.msk.mirantis.net/docker/$(PRODUCT_VERSION)
@@ -184,6 +189,7 @@ endif
 
 ifeq ($(USE_MIRROR),hrk)
 MIRROR_FUEL?=http://osci-mirror-kha.kha.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
+MIRROR_MOS_CENTOS?=osci-mirror-kha.kha.mirantis.net
 MIRROR_UBUNTU?=osci-mirror-kha.kha.mirantis.net
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://osci-mirror-kha.kha.mirantis.net/docker/$(PRODUCT_VERSION)
@@ -191,6 +197,7 @@ endif
 
 ifeq ($(USE_MIRROR),usa)
 MIRROR_FUEL?=http://mirror.seed-us1.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
+MIRROR_MOS_CENTOS?=mirror.seed-us1.fuel-infra.org
 MIRROR_UBUNTU?=mirror.seed-us1.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://mirror.seed-us1.fuel-infra.org/docker/$(PRODUCT_VERSION)
@@ -198,6 +205,7 @@ endif
 
 ifeq ($(USE_MIRROR),cz)
 MIRROR_FUEL?=http://mirror.seed-cz1.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
+MIRROR_MOS_CENTOS?=mirror.seed-cz1.fuel-infra.org
 MIRROR_UBUNTU?=mirror.seed-cz1.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://mirror.seed-cz1.fuel-infra.org/docker/$(PRODUCT_VERSION)
@@ -218,6 +226,9 @@ MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
 MIRROR_UBUNTU_ROOT?=/pkgs/ubuntu/
 MIRROR_UBUNTU_SUITE?=$(UBUNTU_RELEASE)
 MIRROR_UBUNTU_SECTION?=main universe multiverse restricted
+MIRROR_MOS_CENTOS_METHOD?=http
+MIRROR_MOS_CENTOS?=perestroika-repo-tst.infra.mirantis.net
+MIRROR_MOS_CENTOS_ROOT?=/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/
 MIRROR_MOS_UBUNTU_METHOD?=http
 MIRROR_MOS_UBUNTU?=perestroika-repo-tst.infra.mirantis.net
 MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/$(PRODUCT_VERSION)
