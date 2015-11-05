@@ -12,6 +12,7 @@ selinux --disabled
 unsupported_hardware
 # SKIP CONFIGURING X
 skipx
+repo --name="MOS Centos repository" --baseurl=file://media/OpenStack_Fuel/mos-repo/os/x86_64/
 # NEVER ever place zerombr here, it breaks automated installation
 %include /tmp/bootloader.ks
 %include /tmp/partition.ks
