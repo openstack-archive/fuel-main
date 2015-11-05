@@ -122,8 +122,17 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
+# in case BUILD_PACKAGES=0 we have to build only fuel-bootstrap-image-builder
+ifeq (1,$(strip $(BUILD_PACKAGES)))
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
+else
+$(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/bootstrap/fuel-bootstrap-image-builder-rpm.done
+	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages \;
+	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
+	-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+endif
 	$(ACTION.TOUCH)
+
 
 #######################################
 # This section is for building container
@@ -144,7 +153,12 @@ fuel-bootstrap-image
 $(eval $(foreach pkg,$(fuel_rpm_packages_late),$(call build_rpm,$(pkg),-late)$(NEWLINE)))
 
 $(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/bootstrap/fuel-bootstrap-image-builder-rpm.done
+# BUILD_PACKAGES=0 - for late packages we need to be sure that centos mirror is ready
+# BUILD_PACKAGES=1 - for late packages we need to be sure that fuel-* packages was build beforehand
+$(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/mirror/centos/repo.done
+ifneq (0,$(strip $(BUILD_PACKAGES)))
 $(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/packages/rpm/repo.done
+endif
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u --target-directory $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages {} +
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
