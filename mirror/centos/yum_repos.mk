@@ -107,6 +107,7 @@ baseurl=$(MIRROR_FUEL)
 gpgcheck=0
 enabled=1
 priority=20
+exclude=*debuginfo*
 endef
 
 # Accept EXTRA_RPM_REPOS in a form of a list of: name,url,priority
