@@ -53,8 +53,6 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)
 	tar xf $(CENTOS_DEP_FILE) -C $(ISOROOT) --xform s:^centos-repo/::
-	createrepo -g $(ISOROOT)/comps.xml \
-		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 else
 $(BUILD_DIR)/iso/isoroot-centos.done: \
@@ -65,9 +63,9 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)
 	rsync -rp $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(ISOROOT)
+	rsync -rp $(LOCAL_MIRROR_MOS_CENTOS) $(ISOROOT)
+	rsync -rp $(LOCAL_MIRROR)/extra-repos $(ISOROOT)
 	rsync -rp $(LOCAL_MIRROR)/centos-packages.changelog $(ISOROOT)
-	createrepo -g $(ISOROOT)/comps.xml \
-		-u media://`head -1 $(ISOROOT)/.discinfo` $(ISOROOT)
 	$(ACTION.TOUCH)
 endif
 
@@ -146,6 +144,24 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
 $(ISOROOT)/.treeinfo: $(SOURCE_DIR)/iso/.treeinfo ; $(ACTION.COPY)
+
+# It's a callable object.
+# Usage: $(call create_ks_repo_entry,repo)
+# where:
+# repo=repo_name,http://path_to_the_repo,repo_priority
+# repo_priority is a number from 1 to 99
+define create_ks_repo_entry
+repo --name="$(call get_repo_name,$1)" --baseurl=file:///mnt/source/extra-repos/$(call get_repo_name,$1) --cost=$(call get_repo_priority,$1)
+endef
+
+$(ISOROOT)/ks.yaml: \
+	export ks_contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(space)$(call create_ks_repo_entry,$(repo))\n)
+$(ISOROOT)/ks.yaml:
+	@mkdir -p $(@D)
+	cp $(KSYAML) $@
+	/bin/echo "extra_repos:" >> $@
+	/bin/echo -e "$${ks_contents}" >> $@
+
 $(ISOROOT)/isolinux/isolinux.cfg: $(SOURCE_DIR)/iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
 $(ISOROOT)/isolinux/splash.jpg: $(call depv,FEATURE_GROUPS)
 ifeq ($(filter mirantis,$(FEATURE_GROUPS)),mirantis)
@@ -153,11 +169,10 @@ $(ISOROOT)/isolinux/splash.jpg: $(SOURCE_DIR)/iso/isolinux/splash.jpg ; $(ACTION
 else
 $(ISOROOT)/isolinux/splash.jpg: $(SOURCE_DIR)/iso/isolinux/splash_community.jpg ; $(ACTION.COPY)
 endif
-$(ISOROOT)/ks.cfg: $(call depv,KSYAML)
-$(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(KSYAML)
+$(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(ISOROOT)/ks.yaml
 	python $(SOURCE_DIR)/iso/ks.py \
 		-t $(SOURCE_DIR)/iso/ks.template \
-		-c $(KSYAML) \
+		-c $(ISOROOT)/ks.yaml \
 		-u '{"CENTOS_RELEASE": "$(CENTOS_RELEASE)", "PRODUCT_VERSION": "$(PRODUCT_VERSION)"}' \
 		-o $@.tmp
 	mv $@.tmp $@
