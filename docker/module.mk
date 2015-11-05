@@ -39,6 +39,7 @@ $(BUILD_DIR)/docker/$1.done: \
 		$(BUILD_DIR)/repos/repos.done \
 		$(BUILD_DIR)/packages/rpm/build.done \
 		$(BUILD_DIR)/docker/fuel-centos.done \
+		$(BUILD_DIR)/bootstrap/fuel-bootstrap-image-builder-rpm.done \
 		$(BUILD_DIR)/iso/isoroot/$(VERSION_YAML_ART_NAME) \
 		$(BUILD_DIR)/docker/repo-container-up.done
 	mkdir -p "$(BUILD_DIR)/docker/containers" && \
