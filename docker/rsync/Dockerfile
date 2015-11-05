@@ -7,7 +7,11 @@ RUN rm -rf /etc/yum.repos.d/*; \
     echo -e "\
 [nailgun]\n\
 name=Nailgun Local Repo\n\
-baseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/os/x86_64/\n\
+baseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/repo/os/x86_64/\n\
+gpgcheck=0\n\
+[mos]\n\
+name=MOS Local Repo\n\
+baseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/mos-repo/os/x86_64/\n\
 gpgcheck=0" \
         > /etc/yum.repos.d/nailgun.repo; \
     yum clean expire-cache; \
@@ -24,6 +28,10 @@ RUN echo -e "\
 [nailgun]\n\
 name=Nailgun Local Repo\n\
 baseurl=file:/var/www/nailgun/centos/x86_64\n\
+gpgcheck=0\n\
+[mos]\n\
+name=MOS Local Repo\n\
+baseurl=file:/var/www/nailgun/mos-centos/x86_64\n\
 gpgcheck=0" \
         > /etc/yum.repos.d/nailgun.repo; \
     yum clean all; \
