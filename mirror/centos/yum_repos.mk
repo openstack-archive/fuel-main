@@ -107,6 +107,7 @@ baseurl=$(MIRROR_FUEL)
 gpgcheck=0
 enabled=1
 priority=20
+exclude=*debuginfo*
 endef
 
 # Accept EXTRA_RPM_REPOS in a form of a list of: name,url,priority
@@ -127,4 +128,15 @@ baseurl = $(call get_repo_url,$1)
 gpgcheck = 0
 enabled = 1
 priority = $(call get_repo_priority,$1)
+exclude=*debuginfo*
 endef
+
+define create_fuelnode_repo
+[$(call get_repo_name,$1)]
+name = Repo "$(call get_repo_name,$1)"
+baseurl = file:///var/www/nailgun/extra-repos/$(call get_repo_name,$1)
+gpgcheck = 0
+enabled = 1
+priority = $(call get_repo_priority,$1)
+endef
+
