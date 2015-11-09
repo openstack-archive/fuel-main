@@ -12,6 +12,7 @@ License: Apache
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
+Requires: fuel-admin-user
 
 %description
 Fuel target centos images package
@@ -31,5 +32,5 @@ install -p -D -m 644 -t %{buildroot}/var/www/nailgun/targetimages %{name}/*
 rm -rf $RPM_BUILD_ROOT
 
 %files
-%defattr(-,root,root)
+%defattr(-,fueladmin,fueladmin)
 /var/www/nailgun/targetimages/*

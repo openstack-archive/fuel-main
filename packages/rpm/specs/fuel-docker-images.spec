@@ -11,6 +11,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}
 Source0:   fuel-images.tar.lrz
 Source1:   fuel-images-sources.tar.gz
 URL:       http://mirantis.com
+Requires:  fuel-admin-user
 Requires:  docker-io
 Requires:  lrzip
 %description
@@ -23,6 +24,9 @@ cp %{SOURCE0} %{name}-%{version}
 tar xzvf %{SOURCE1} -C %{name}-%{version}
 
 %install
+if id fueladmin; then
+  usermod -g docker fueladmin
+fi
 cd %{name}-%{version}
 mkdir -p %{buildroot}/var/www/nailgun/docker/{images,sources,utils}
 install -m 644 %{SOURCE0} %{buildroot}/var/www/nailgun/docker/images/fuel-images.tar.lrz
@@ -37,7 +41,7 @@ rm -f /var/www/nailgun/docker/images/fuel-images.tar
 lrzip -d -o /var/www/nailgun/docker/images/fuel-images.tar /var/www/nailgun/docker/images/fuel-images.tar.lrz
 
 %files
-%defattr(-,root,root)
+%defattr(-,fueladmin,fueladmin)
 /var/www/nailgun/docker/images/fuel-images.tar.lrz
 /var/www/nailgun/docker/sources/*
 /var/www/nailgun/docker/utils/*

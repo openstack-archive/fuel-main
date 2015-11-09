@@ -402,6 +402,11 @@ OPENSTACK_VERSION=`cat ${SOURCE}/openstack_version`
 
 wwwdir="/var/www/nailgun"
 repodir="${wwwdir}/${OPENSTACK_VERSION}"
+mkdir -p $repodir
+chown -R fueladmin:fueladmin $wwwdir
+
+# Wrap into "su fueladmin" to preserve permissions
+su fueladmin <<DONE
 
 # Copying Centos files
 mkdir -p ${repodir}/centos/x86_64
@@ -427,6 +432,9 @@ touch ${repodir}/ubuntu/x86_64/images/initrd.gz
 ln -s ${repodir}/centos ${wwwdir}/centos
 ln -s ${repodir}/ubuntu ${wwwdir}/ubuntu
 
+DONE
+
+
 # --------------------------
 # UNPACKING PUPPET MANIFESTS
 # --------------------------
@@ -442,7 +450,7 @@ ln -s ${repodir}/ubuntu ${wwwdir}/ubuntu
 # place modules and manifests
 #tar zxf ${SOURCE}/puppet-slave.tgz -C /etc/puppet/${OPENSTACK_VERSION}/modules
 #cp /etc/puppet/${OPENSTACK_VERSION}/modules/osnailyfacter/examples/site.pp /etc/puppet/${OPENSTACK_VERSION}/manifests/site.pp
-cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/${OPENSTACK_VERSION}/manifests/
+su fueladmin -c "cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/${OPENSTACK_VERSION}/manifests/"
 
 # make links for backward compatibility
 #pushd /etc/puppet
@@ -452,7 +460,10 @@ cp ${SOURCE}/centos-versions.yaml ${SOURCE}/ubuntu-versions.yaml /etc/puppet/${O
 
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 mkdir -p /var/lib/hiera
-touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
+chown -R fueladmin:fueladmin /var/lib/hiera
+# TODO dnikishov: clean this up later maybe?
+chown -R fueladmin:fueladmin /etc/puppet/
+su fueladmin -c "touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml"
 
 # Prepare local repository specification
 rm /etc/yum.repos.d/CentOS*.repo
@@ -498,6 +509,10 @@ echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
 # Copying version.yaml file. It contains COMMIT_SHA of last commit.
 RELEASE=$(awk '/release/{gsub(/"/, "");print $2}' ${SOURCE}/version.yaml)
 mkdir -p /etc/nailgun /etc/fuel/${RELEASE} /etc/fuel/release_versions
+chown -R fueladmin:fueladmin /etc/nailgun
+chown -R fueladmin:fueladmin /etc/fuel
+
+su fueladmin <<DONE
 cp ${SOURCE}/version.yaml /etc/nailgun/version.yaml
 cp ${SOURCE}/version.yaml /etc/fuel/${RELEASE}/version.yaml
 ln -s /etc/fuel/${RELEASE}/version.yaml /etc/fuel/version.yaml
@@ -505,6 +520,7 @@ cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_v
 
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
+DONE
 
 ###Run fuel menu
 [ -z "$showmenu" ] && showmenu="no"
@@ -524,8 +540,12 @@ Server is running on \m platform
 Fuel UI is available on:
 http://:8000
 
-Default administrator login:    root
-Default administrator password: r00tme
+Default root login:    root
+Default root password: r00tme
+
+Default administrator login:    fueladmin
+Default administrator password: fuel
+
 
 Default Fuel UI login: admin
 Default Fuel UI password: admin
@@ -583,10 +603,20 @@ sed -i 's/getty/getty --noclear/' /etc/init/tty.conf
 # Disabling starting first console from start-ttys service
 sed -i --follow-symlinks -e 's/ACTIVE_CONSOLES=.*/ACTIVE_CONSOLES=\/dev\/tty\[2-6\]/' /etc/sysconfig/init
 
+#TODO dnikishov: remove this once library part is merged
 # Copying default bash settings to the root directory
 cp -f /etc/skel/.bash* /root/
+cp -f /etc/skel/.bash* /home/fueladmin/
 
 # Blacklist i2c_piix4 module for VirtualBox so it does not create kernel errors
 [[ $(virt-what) = "virtualbox" ]] && echo "blacklist i2c_piix4" > /etc/modprobe.d/blacklist-i2c-piix4.conf
+
+#TODO dnikishov: remove this once library part is merged
+# copy bootstrap rsa key
+cp -r /root/.ssh /home/fueladmin/
+
+#TODO dnikishov: remove this once library part is merged
+# Set directory permissions for fueladmin
+chown -R fueladmin:fueladmin /home/fueladmin
 
 %end

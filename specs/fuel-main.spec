@@ -19,6 +19,7 @@ BuildRequires: python-setuptools
 BuildRequires: python-pbr
 BuildArch: noarch
 
+Requires:    fuel-admin-user
 Requires:    python
 Requires:    PyYAML
 Requires:    python-argparse
@@ -51,7 +52,7 @@ rm -f %{_bindir}/fuel-image
 rm -rf $RPM_BUILD_ROOT
 
 %files
-%defattr(-,root,root)
+%defattr(-,fueladmin,fueladmin)
 %{_bindir}/build_ubuntu_image.py
 %{_bindir}/create_separate_images.sh
 
@@ -63,6 +64,7 @@ License: Apache
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
+Requires: fuel-admin-user
 Requires: fuel-bootstrap-image >= %{version}
 Requires: fuel-dockerctl >= 6.1
 Requires: fuel-docker-images >= %{version}
@@ -76,8 +78,31 @@ Requires: python-fuelclient >= %{version}
 Requires: yum
 
 %description -n fuel
-Fuel for OpenStack is a lifecycle management utility for 
+Fuel for OpenStack is a lifecycle management utility for
 managing OpenStack.
 
 %files -n fuel
-%defattr(-,root,root)
+%defattr(-,fueladmin,fueladmin)
+
+%package -n fuel-admin-user
+Summary: Fuel admin user for OpenStack
+Version: %{version}
+Release: %{release}
+License: Apache
+BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
+Prefix: %{_prefix}
+BuildArch: noarch
+Requires: sudo
+Requires: yum
+
+%description -n fuel-admin-user
+Fuel for OpenStack is a lifecycle management utility for
+managing OpenStack.
+
+%post -n fuel-admin-user
+id fueladmin || useradd -p fueladmin fueladmin
+test -d %{buildroot}/etc/sudoers.d/ || mkdir -p %{buildroot}/etc/sudoers.d
+test -e %{buildroot}/etc/sudoers.d/fueladmin  || echo "fueladmin ALL=(ALL) ALL" > %{buildroot}/etc/sudoers.d/fueladmin
+
+%files -n fuel-admin-user
+%defattr(-,fueladmin,fueladmin)
