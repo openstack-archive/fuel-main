@@ -41,7 +41,6 @@ DEPS_DIR_CURRENT:=$(abspath $(DEPS_DIR_CURRENT))
 
 # Artifacts names
 ISO_NAME?=fuel-$(PRODUCT_VERSION)
-UPGRADE_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-upgrade
 OPENSTACK_PATCH_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-patch
 VBOX_SCRIPTS_NAME?=vbox-scripts-$(PRODUCT_VERSION)
 BOOTSTRAP_ART_NAME?=bootstrap.tar.gz
@@ -57,7 +56,6 @@ TARGET_CENTOS_IMG_ART_NAME?=centos_target_images.tar
 
 # Where we put artifacts
 ISO_PATH:=$(ARTS_DIR)/$(ISO_NAME).iso
-UPGRADE_TARBALL_PATH:=$(ARTS_DIR)/$(UPGRADE_TARBALL_NAME).tar
 VBOX_SCRIPTS_PATH:=$(ARTS_DIR)/$(VBOX_SCRIPTS_NAME).zip
 
 MASTER_IP?=10.20.0.2
@@ -258,22 +256,6 @@ SANDBOX_COPY_CERTS?=0
 
 # Development option only:
 # Please don’t change them if you don’t know what they do ##
-
-# If not empty, will try save "build/upgrade/deps" pip cache from upgrade module only,
-# to file  $(ARTS_DIR)/$(SAVE_UPGRADE_PIP_ART)
-# Example:
-# SAVE_UPGRADE_PIP_ART?=fuel-dev.art_pip_from_upg_module.tar.gz
-SAVE_UPGRADE_PIP_ART?=
-
-# If not empty, will try to download this archive and use like pip cache
-# for creating upgrade module.
-# Example:
-# USE_UPGRADE_PIP_ART_HTTP_LINK?=http://127.0.0.1/files/deps.pip.tar.gz
-# Content example:
-# deps.pip.tar.gz:\
-#  \argparse-1.2.1.tar.gz
-#  \docker-py-0.3.2.tar.gz
-USE_UPGRADE_PIP_ART_HTTP_LINK?=
 
 # Work-around for: LP1482667
 # If not empty, will try to download prepeared upstream puppet modules source,

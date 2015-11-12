@@ -74,5 +74,4 @@ include $(SOURCE_DIR)/packages/module.mk
 include $(SOURCE_DIR)/docker/module.mk
 include $(SOURCE_DIR)/bootstrap/module.mk
 include $(SOURCE_DIR)/iso/module.mk
-include $(SOURCE_DIR)/upgrade/module.mk
 include $(SOURCE_DIR)/virtualbox.mk
