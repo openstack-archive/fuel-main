@@ -25,6 +25,7 @@ dhcp
 dnsmasq
 docker-io
 dpkg
+dpkg-dev
 dpkg-devel
 erlang
 ethtool
