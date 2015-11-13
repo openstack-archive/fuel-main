@@ -258,6 +258,7 @@ fuel-createmirror
 fuel-package-updates
 fuelmenu
 fuel-docker-images
+fuel-bootstrap-cli
 gdisk
 lrzip
 lsof
