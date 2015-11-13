@@ -6,6 +6,7 @@ augeas-libs
 bakefile
 @Base
 bash
+biosdevname
 bzip2
 ceph
 cloud-init
