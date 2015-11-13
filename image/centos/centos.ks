@@ -136,6 +136,7 @@ ql2500-firmware
 megaraid_sas
 hpsa
 bind-utils
+biosdevname
 cronie
 crontabs
 curl
