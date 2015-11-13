@@ -231,10 +231,10 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 	echo "title DVD Fuel Install (Static IP)" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 	# efiboot.img is a partition with filesystem now and /vmlinuz there will be pointed
 	# to root of it
-	echo "  kernel /vmlinuz biosdevname=0 ks=cdrom:/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "  kernel /vmlinuz net.ifnames=1 biosdevname=1 ks=cdrom:/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 	echo "  initrd /initrd.img" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 	echo "title USB Fuel Install (Static IP)" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
-	echo "  kernel /vmlinuz biosdevname=0 repo=hd:LABEL=\"$(ISO_VOLUME_ID)\":/ ks=hd:LABEL=\"$(ISO_VOLUME_ID)\":/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
+	echo "  kernel /vmlinuz net.ifnames=1 biosdevname=1 repo=hd:LABEL=\"$(ISO_VOLUME_ID)\":/ ks=hd:LABEL=\"$(ISO_VOLUME_ID)\":/ks.cfg ip=$(MASTER_IP) gw=$(MASTER_GW) dns1=$(MASTER_DNS) netmask=$(MASTER_NETMASK) hostname=fuel.domain.tld showmenu=yes" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 	echo "  initrd /initrd.img" >> $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf
 
 	# But many UEFI implementations will use our efiboot.img and if we want to boot from it,

@@ -219,7 +219,7 @@ echo "logvol /var/log --vgname=os --size=4096 --percent 50 --grow --name=varlog 
 
 
 # bootloader
-echo "bootloader --location=partition --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
+echo "bootloader --location=partition --driveorder=${tgtdrive} --append='net.ifnames=1 biosdevname=1 crashkernel=none'" > /tmp/bootloader.ks
 
 # Anaconda can not install grub 0.97 on disks which are >4T.
 # The reason is that grub does not support such large geometries
@@ -244,6 +244,7 @@ fuel-library >= {{PRODUCT_VERSION}}
 fuel-dockerctl
 authconfig
 bind-utils
+biosdevname
 cronie
 crontabs
 curl

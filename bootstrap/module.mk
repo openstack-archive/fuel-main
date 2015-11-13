@@ -32,6 +32,7 @@ BOOTSTRAP_RPMS:=\
 	ql2200-firmware \
 	ql23xx-firmware \
 	crontabs \
+	biosdevname \
 	dhclient \
 	dmidecode \
 	iputils \
