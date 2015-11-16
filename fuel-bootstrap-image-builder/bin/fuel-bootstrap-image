@@ -37,6 +37,13 @@ BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS xz-utils squashfs-tools"
 # - mdadm depends on mail-transport-agent, default one is postfix => use msmtp instead
 BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS msmtp-mta"
 
+path_chroot ()
+{
+        #PATH variable is different on CentOS and Ubuntu, which results
+        #in failures to run basic commands
+        PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' chroot "$@"
+}
+
 apt_setup ()
 {
 	local root="$1"
@@ -91,7 +98,7 @@ run_apt_get ()
 {
 	local root="$1"
 	shift
-	chroot "$root" env \
+	path_chroot "$root" env \
 		LC_ALL=C \
 		DEBIAN_FRONTEND=noninteractive \
 		DEBCONF_NONINTERACTIVE_SEEN=true \
@@ -234,7 +241,7 @@ restore_resolv_conf ()
 make_utf8_locale ()
 {
 	local root="$1"
-	chroot "$root" /bin/sh -c "locale-gen en_US.UTF-8 && dpkg-reconfigure locales"
+	path_chroot "$root" /bin/sh -c "locale-gen en_US.UTF-8 && dpkg-reconfigure locales"
 }
 
 # XXX: CentOS version of debootstrap produces a broken /dev:
@@ -250,11 +257,11 @@ dev_fixup ()
 	if [ ! -L "$root/dev/fd" ]; then
 		rm -rf "$root/dev/fd"
 		# Ask MAKEDEV to re-create /dev/fd, /dev/stdin, etc
-		chroot "$root" /bin/sh -c "cd /dev && MAKEDEV fd"
+		path_chroot "$root" /bin/sh -c "cd /dev && MAKEDEV fd"
 	fi
 	if [ ! -c "$root/dev/null" ]; then
 		# basic device nodes are missing => create them
-		chroot "$root" /bin/sh -c "cd /dev && MAKEDEV std"
+		path_chroot "$root" /bin/sh -c "cd /dev && MAKEDEV std"
 	fi
 }
 
@@ -311,7 +318,7 @@ recompress_initramfs ()
 	local initramfs_conf="$root/etc/initramfs-tools/initramfs.conf"
 	sed -i $initramfs_conf -re 's/COMPRESS\s*=\s*gzip/COMPRESS=xz/'
 	rm -f $root/boot/initrd*
-	chroot "$root" \
+	path_chroot "$root" \
 		env \
 		LC_ALL=C \
 		DEBIAN_FRONTEND=noninteractive \
@@ -342,7 +349,7 @@ mk_squashfs_image ()
 	if ! mountpoint -q "$root/proc"; then
 		mount -t proc sandboxproc "$root/proc"
 	fi
-	chroot "$root" mksquashfs /mnt/src /mnt/dst/root.squashfs.${tmp} -comp xz -no-progress -noappend
+	path_chroot "$root" mksquashfs /mnt/src /mnt/dst/root.squashfs.${tmp} -comp xz -no-progress -noappend
 	mv $DESTDIR/initramfs.img.${tmp} $DESTDIR/initramfs.img
 	mv $DESTDIR/linux.${tmp} $DESTDIR/linux
 	mv $DESTDIR/root.squashfs.${tmp} $DESTDIR/root.squashfs
