@@ -1,7 +1,7 @@
 .PHONY: all iso version-yaml centos-repo ubuntu-repo
 .DELETE_ON_ERROR: $(ISO_PATH)
 
-all: iso version-yaml
+all: iso version-yaml openstack-yaml
 
 ISOROOT:=$(BUILD_DIR)/iso/isoroot
 
@@ -128,9 +128,20 @@ $(BUILD_DIR)/iso/isoroot-dotfiles.done: \
 		$(ISOROOT)/.treeinfo
 	$(ACTION.TOUCH)
 
-$(ISOROOT)/openstack_version: $(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)
+$(ISOROOT)/openstack_version: $(BUILD_DIR)/iso/$(OPENSTACK_YAML_ART_NAME)
 	mkdir -p $(@D)
-	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$(BUILD_DIR)/upgrade/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $@
+	python -c "import yaml; print filter(lambda r: r['fields'].get('name'), yaml.load(open('$(BUILD_DIR)/iso/$(OPENSTACK_YAML_ART_NAME)')))[0]['fields']['version']" > $@
+
+
+openstack-yaml: $(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME)
+
+$(ARTS_DIR)/$(OPENSTACK_YAML_ART_NAME): $(BUILD_DIR)/iso/$(OPENSTACK_YAML_ART_NAME)
+	$(ACTION.COPY)
+
+$(BUILD_DIR)/iso/$(OPENSTACK_YAML_ART_NAME): $(BUILD_DIR)/repos/fuel-nailgun.done
+	mkdir -p $(@D)
+	cp $(BUILD_DIR)/repos/fuel-nailgun/nailgun/nailgun/fixtures/openstack.yaml $@
+
 
 $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done \
@@ -259,4 +270,3 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 		-isohybrid-gpt-basdat \
 		-o $@ $(BUILD_DIR)/iso/isoroot-mkisofs
 	implantisomd5 $@
-

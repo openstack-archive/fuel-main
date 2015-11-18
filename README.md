@@ -28,8 +28,6 @@ Directory structure:
   Scripts that are used for building Fuel RPM and DEB packages.
 - ```specs```
   RPM spec for fuel and fuel-release packages.
-- ```upgrade```
-  Scripts that are used for building Fuel upgrade tarball. (being deprecated)
 - ```utils```
   Auxiliary scripts. (being deprecated)
 - ```virtualbox```
