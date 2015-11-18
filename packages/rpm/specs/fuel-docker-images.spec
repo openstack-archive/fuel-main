@@ -24,7 +24,9 @@ tar xzvf %{SOURCE1} -C %{name}-%{version}
 
 %install
 cd %{name}-%{version}
-mkdir -p %{buildroot}/var/www/nailgun/docker/{images,sources,utils}
+mkdir -p %{buildroot}/var/www/nailgun/docker/images
+mkdir -p %{buildroot}/var/www/nailgun/docker/sources
+mkdir -p %{buildroot}/var/www/nailgun/docker/utils
 install -m 644 %{SOURCE0} %{buildroot}/var/www/nailgun/docker/images/fuel-images.tar.lrz
 cp -R sources %{buildroot}/var/www/nailgun/docker/
 
