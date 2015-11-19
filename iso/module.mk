@@ -162,7 +162,7 @@ $(ISOROOT)/.treeinfo: $(SOURCE_DIR)/iso/.treeinfo ; $(ACTION.COPY)
 # repo=repo_name,http://path_to_the_repo,repo_priority
 # repo_priority is a number from 1 to 99
 define create_ks_repo_entry
-repo --name="$(call get_repo_name,$1)" --baseurl=file:///mnt/source/extra-repos/$(call get_repo_name,$1) --cost=$(call get_repo_priority,$1)
+repo --name="$(call get_repo_name,$1)" --baseurl=file:///run/install/repo/extra-repos/$(call get_repo_name,$1) --cost=$(call get_repo_priority,$1)
 endef
 
 $(ISOROOT)/ks.yaml: \
