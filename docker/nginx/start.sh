@@ -10,5 +10,7 @@ chmod -R 755 /var/www/nailgun
 chmod -R 755 /var/www/nailgun/* 2>/dev/null
 chmod -R 755 /usr/share/nailgun/static 2>/dev/null
 
-puppet apply -v /etc/puppet/modules/nailgun/examples/nginx-only.pp
-nginx -g 'daemon off;'
+systemctl daemon-reload
+
+puppet apply --debug --verbose --color false --detailed-exitcodes \
+  /etc/puppet/modules/nailgun/examples/nginx-only.pp
