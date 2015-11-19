@@ -35,6 +35,59 @@ clearpart --all
 # Disk partitioning information
 part / --fstype="ext4" --size=8192
 
+
+
+
+
+%packages --nobase --ignoremissing
+@Core
+dbus
+authconfig
+bfa-firmware
+ql2100-firmware
+ql2200-firmware
+ql23xx-firmware
+ql2400-firmware
+ql2500-firmware
+megaraid_sas
+hpsa
+bind-utils
+cronie
+crontabs
+curl
+gcc
+gdisk
+kernel
+kernel-firmware
+grub
+dracut
+make
+mlocate
+network-checker
+ntp
+openssh
+openssh-clients
+openssh-server
+system-config-firewall-base
+telnet
+virt-what
+vim-minimal
+wget
+yum
+yum-utils
+yum-plugin-priorities
+perl
+daemonize
+rsync
+mdadm
+lvm2
+cloud-init
+%end
+
+
+
+
+
 %post
 rm /etc/yum.repos.d/*
 cat > /etc/yum.repos.d/local.repo <<EOF
@@ -47,11 +100,10 @@ rpm -e --nodeps ruby
 echo ruby rubygems ruby-augeas ruby-devel rubygem-openstack rubygem-netaddr puppet mcollective nailgun-agent nailgun-mcagents | xargs -n1 yum install --exclude=ruby21* -y
 
 # install fedora kernel
-echo kernel-lt kernel-lt-devel kernel-lt-headers linux-firmware | xargs -n1 yum install -y --skip-broken
+echo kernel kernel-devel kernel-headers linux-firmware | xargs -n1 yum install -y --skip-broken
 rm /etc/yum.repos.d/*
 
 
-%post
 # make sure firstboot doesn't start
 echo "RUN_FIRSTBOOT=NO" > /etc/sysconfig/firstboot
 
@@ -124,46 +176,3 @@ rm -rf /root/anaconda-ks.cfg
 rm -rf /var/log/anaconda*
 %end
 
-%packages --nobase --ignoremissing
-@Core
-authconfig
-bfa-firmware
-ql2100-firmware
-ql2200-firmware
-ql23xx-firmware
-ql2400-firmware
-ql2500-firmware
-megaraid_sas
-hpsa
-bind-utils
-cronie
-crontabs
-curl
-gcc
-gdisk
-kernel
-kernel-firmware
-grub
-dracut
-make
-mlocate
-network-checker
-ntp
-openssh
-openssh-clients
-openssh-server
-system-config-firewall-base
-telnet
-virt-what
-vim
-wget
-yum
-yum-utils
-yum-plugin-priorities
-perl
-daemonize
-rsync
-mdadm
-lvm2
-cloud-init
-%end
