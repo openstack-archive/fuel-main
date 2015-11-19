@@ -5,7 +5,9 @@
 rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
-puppet apply -v /etc/puppet/modules/nailgun/examples/astute-only.pp
-pgrep supervisord >/dev/null && /usr/bin/supervisorctl shutdown
 mkdir -p /var/log/astute
-/usr/bin/supervisord -n
+
+
+systemctl daemon-reload
+puppet apply --debug --verbose --color false --detailed-exitcodes \
+  /etc/puppet/modules/nailgun/examples/astute-only.pp
