@@ -12,7 +12,7 @@ clean-rpm:
 
 RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
 
-$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=rpm-build tar yum yum-utils
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=ruby rpm-build tar python-setuptools python-pbr nodejs npm yum yum-utils git
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/buildd
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
@@ -73,7 +73,7 @@ else
 $(BUILD_DIR)/packages/rpm/$1-repocleanup.done: SPECFILE:=$(SOURCE_DIR)/packages/rpm/specs/$1.spec
 endif
 $(BUILD_DIR)/packages/rpm/$1-repocleanup.done: $(BUILD_DIR)/mirror/centos/mos-repo.done
-	python $(SOURCE_DIR)/packages/rpm/genpkgnames.py $$(SPECFILE) | xargs -I{} sudo find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages -regex '.*/{}-[^-]+-[^-]+' -delete
+	python $(SOURCE_DIR)/packages/rpm/genpkgnames.py $$(SPECFILE) | xargs -I{} sudo find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages -type f -regex '.*/{}-[^-]+-[^-]+' -delete
 	$$(ACTION.TOUCH)
 endef
 
@@ -98,7 +98,6 @@ $(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/bootstrap/fuel-bootstrap-image
 $(BUILD_DIR)/packages/rpm/repo.done:
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u {} $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages \;
 	createrepo -g $(LOCAL_MIRROR_MOS_CENTOS)/comps.xml \
-		-u media://`head -1 $(SOURCE_DIR)/iso/.discinfo` \
 		-o $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
@@ -123,7 +122,6 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 	cp $(SANDBOX)/tmp/RPMS/*/fuel-docker-images-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' | xargs cp -u --target-directory=$(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages
 	createrepo -g $(LOCAL_MIRROR_MOS_CENTOS)/comps.xml \
-		-u media://`head -1 $(SOURCE_DIR)/iso/.discinfo` \
 		-o $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
@@ -167,7 +165,6 @@ $(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/packages/rpm/repo.done
 endif
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u --target-directory $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages {} +
 	createrepo -g $(LOCAL_MIRROR_MOS_CENTOS)/comps.xml \
-		-u media://`head -1 $(SOURCE_DIR)/iso/.discinfo` \
 		-o $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
