@@ -5,18 +5,24 @@
 rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
-puppet apply -d -v /etc/puppet/modules/nailgun/examples/hiera-for-container.pp
+
+puppet apply --debug --verbose --color false --detailed-exitcodes \
+  /etc/puppet/modules/nailgun/examples/hiera-for-container.pp
 
 # TODO(bpiotrowski): remove old file path after new ISO is used on CI
 if [[ -f /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp ]]; then
-  puppet apply -d -v /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp
+  puppet apply --debug --verbose --color false --detailed-exitcodes \
+    /etc/puppet/modules/mcollective/examples/mcollective-server-only.pp
 else
-  puppet apply -d -v /etc/puppet/modules/nailgun/examples/mcollective-only.pp
+  puppet apply --debug --verbose --color false --detailed-exitcodes \
+    /etc/puppet/modules/nailgun/examples/mcollective-only.pp
 fi
 
+
+for loopdev in $(seq 0 7); do
+  mknod "/dev/loop${loopdev}" -m0660 b 7 ${loopdev} || :
+done
+
+
 #Stop daemon and restart it in the foreground
-service mcollective stop
-
-sed -e 's/daemonize[[:space:]]*=[[:space:]]*1/daemonize = 0/g' -i /etc/mcollective/server.cfg
-/usr/sbin/mcollectived --pid=/var/run/mcollectived.pid --config=/etc/mcollective/server.cfg
-
+systemctl restart mcollective.service
