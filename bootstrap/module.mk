@@ -58,7 +58,12 @@ BOOTSTRAP_RPMS_CUSTOM:=\
 	nailgun-agent \
 	nailgun-mcagents \
 	network-checker \
-	fuel-agent
+	fuel-agent \
+	rubygem-mime-types \
+	rubygem-ffi \
+	rubygem-ffi-yajl \
+	rubygem-mixlib-shellout \
+	rubygem-wmi-lite
 
 define yum_local_repo
 [mirror]
@@ -138,7 +143,7 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 	sudo cp -r $(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py $(INITRAMROOT)/usr/bin
 
 	# Enabling pre-init boot interface discovery
-	sudo chroot $(INITRAMROOT) chkconfig setup-bootdev on
+	#sudo chroot $(INITRAMROOT) chkconfig setup-bootdev on
 
 	# Setting root password into r00tme
 	sudo sed -i -e '/^root/c\root:$$6$$oC7haQNQ$$LtVf6AI.QKn9Jb89r83PtQN9fBqpHT9bAFLzy.YVxTLiFgsoqlPY3awKvbuSgtxYHx4RUcpUqMotp.WZ0Hwoj.:15441:0:99999:7:::' $(INITRAMROOT)/etc/shadow
