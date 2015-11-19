@@ -25,6 +25,5 @@ endef
 
 define extra_repo_metadata
 set -ex ; createrepo -g $(LOCAL_MIRROR)/extra-repos/$(call get_repo_name,$1)/comps.xml \
-    -u media://`head -1 $(SOURCE_DIR)/iso/.discinfo` \
     -o $(LOCAL_MIRROR)/extra-repos/$(call get_repo_name,$1)/ $(LOCAL_MIRROR)/extra-repos/$(call get_repo_name,$1)/
 endef
