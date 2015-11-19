@@ -1,6 +1,7 @@
 install
 text
-%include /tmp/source.ks
+#%include /tmp/source.ks
+cdrom
 {{reboot}}
 lang en_US.UTF-8
 keyboard us
@@ -12,11 +13,69 @@ selinux --disabled
 unsupported_hardware
 # SKIP CONFIGURING X
 skipx
-repo --name="MOS Centos repository" --baseurl=file:///mnt/source/mos-centos/ --cost=100
+repo --name="mos-centos" --baseurl=file:///run/install/repo/mos-centos/ --cost=100
 {{extra_repos}}
 # NEVER ever place zerombr here, it breaks automated installation
 %include /tmp/bootloader.ks
 %include /tmp/partition.ks
+%include /tmp/post_partition.ks
+
+
+
+
+
+%packages --nobase
+@Core
+fuel
+fuel-library
+fuel-dockerctl
+authconfig
+bind-utils
+bridge-utils
+cronie
+crontabs
+curl
+dhcp
+docker
+fuel-bootstrap-image
+fuel-bootstrap-image-builder
+fuel-createmirror
+# NOTE(kozhukalov): We don't need target centos images in 8.0
+# fuel-target-centos-images{{CENTOS_RELEASE}}
+fuel-package-updates
+fuelmenu
+fuel-docker-images
+gdisk
+lrzip
+lsof
+man
+mlocate
+nmap-ncat
+ntp
+ntpdate
+openssh-clients
+policycoreutils
+python-pypcap
+rsync
+puppet
+rubygem-netaddr
+rubygem-openstack
+selinux-policy-targeted
+strace
+sysstat
+system-config-firewall-base
+tcpdump
+telnet
+vim-minimal
+virt-what
+wget
+yum
+yum-plugin-priorities
+%end
+
+
+
+
 
 # PREINSTALL SECTION
 # HERE ARE COMMANDS THAT WILL BE LAUNCHED BEFORE
@@ -40,7 +99,13 @@ default_drive=`echo ${drives} ${removable_drives} | awk '{print $1}'`
 
 installdrive="undefined"
 forceformat="no"
-for I in `cat /proc/cmdline`; do case "$I" in *=*) eval $I;; esac ; done
+for I in $(cat /proc/cmdline); do
+  case "$I" in
+    *=*)
+      if ! [[ "${I}" =~ "." ]]; then eval "$I"; fi
+    ;;
+  esac
+done
 
 set ${drives} ${removable_drives}
 numdrives=`echo $#`
@@ -187,12 +252,12 @@ else
     echo "cdrom" > /tmp/source.ks
 fi
 
-vgremove -ff os
+vgdisplay -c | cut -d':' -f1 | xargs vgremove -ff
 dd if=/dev/zero of=/dev/${tgtdrive} bs=10M count=10
 sleep 3
 hdparm -z /dev/${tgtdrive}
 parted -s /dev/${tgtdrive} mklabel gpt
-parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary 0 24
+parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary 0% 24
 parted -s /dev/${tgtdrive} set 1 bios_grub on
 parted -a none -s /dev/${tgtdrive} unit MiB mkpart primary fat16 24 224
 parted -s /dev/${tgtdrive} set 2 boot on
@@ -208,20 +273,24 @@ if echo ${tgtdrive} | grep -q -e cciss ; then
 else
     bootdev=${tgtdrive}
 fi
-echo > /tmp/partition.ks
-echo "partition /boot --onpart=/dev/${bootdev}3" >> /tmp/partition.ks
-echo "partition /boot/efi --onpart=/dev/${bootdev}2" >> /tmp/partition.ks
-echo "partition pv.001 --ondisk=${tgtdrive} --size=41000 --grow" >> /tmp/partition.ks
-echo "volgroup os pv.001" >> /tmp/partition.ks
-echo "logvol swap --vgname=os --recommended --name=swap" >> /tmp/partition.ks
-echo "logvol / --vgname=os --size=10000 --name=root --fstype=ext4" >> /tmp/partition.ks
-echo "logvol /var --vgname=os --size=10000 --percent 30 --grow --name=var --fstype=ext4" >> /tmp/partition.ks
-echo "logvol /var/lib/docker --vgname=os --size=17000  --percent 20 --grow --name=varlibdocker --fstype=ext4" >> /tmp/partition.ks
-echo "logvol /var/log --vgname=os --size=4096 --percent 50 --grow --name=varlog --fstype=ext4" >> /tmp/partition.ks
+
+cat << EOF > /tmp/partition.ks
+part /boot --onpart=/dev/${bootdev}3
+part /boot/efi --onpart=/dev/${bootdev}2
+part pv.001 --ondisk=${tgtdrive} --size=1 --grow
+part pv.002 --ondisk=${tgtdrive} --size=20000
+volgroup os pv.001
+volgroup docker pv.002
+logvol swap --vgname=os --recommended --name=swap
+logvol / --vgname=os --size=10000 --name=root --fstype=ext4
+logvol /var --vgname=os --size=10000 --name=var --fstype=ext4
+logvol /var/log --vgname=os --size=4000 --grow --name=varlog --fstype=ext4
+EOF
+
 
 
 # bootloader
-echo "bootloader --location=partition --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
+echo "bootloader --driveorder=${tgtdrive} --append=' biosdevname=0 crashkernel=none'" > /tmp/bootloader.ks
 
 # Anaconda can not install grub 0.97 on disks which are >4T.
 # The reason is that grub does not support such large geometries
@@ -236,81 +305,50 @@ echo "echo \"root (hd0,2)\" >> /tmp/grub.script" >> /tmp/post_partition.ks
 echo "echo \"install /grub/stage1 (hd0) /grub/stage2 p /grub/grub.conf\" >> /tmp/grub.script" >> /tmp/post_partition.ks
 echo "echo quit >> /tmp/grub.script" >> /tmp/post_partition.ks
 echo "cat /tmp/grub.script | chroot /mnt/sysimage /sbin/grub --no-floppy --batch" >> /tmp/post_partition.ks
+echo "%end" >> /tmp/post_partition.ks
+%end
+
+
+
+# POSTINSTALL SECTIONS
+# HERE ARE COMMANDS THAT WILL BE LAUNCHED JUST AFTER
+# INSTALLATION ITSELF COMPLETED
+
+
+# Parse /proc/cmdline and save for next steps
+%post --log=/root/anaconda-parse-cmdline.log
+#!/bin/bash
+set -x
+
+for I in $(cat /proc/cmdline); do
+  case "$I" in
+    *=*)
+      if ! [[ "${I}" =~ "." ]]; then echo "${I}" >> /root/anaconda.cmdline.vars; fi
+    ;;
+  esac
+done
+
+source /root/anaconda.cmdline.vars
+
+if [[ ! -z $ifname ]]; then
+  echo "adminif=$(udevadm info --query=property -p /sys/class/net/${ifname%%:*} | \
+    awk -F\= '{ if ($1 == "ID_NET_NAME_PATH") print $2}')" >> /root/anaconda.cmdline.vars
+fi
 
 %end
 
-%packages --nobase
-@Core
-fuel
-fuel-library >= {{PRODUCT_VERSION}}
-fuel-dockerctl
-authconfig
-bind-utils
-cronie
-crontabs
-curl
-daemonize
-dhcp
-docker-io
-fuel-bootstrap-image
-fuel-bootstrap-image-builder
-fuel-createmirror
-# NOTE(kozhukalov): We don't need target centos images in 8.0
-# fuel-target-centos-images{{CENTOS_RELEASE}}
-fuel-package-updates
-fuelmenu
-fuel-docker-images
-gdisk
-lrzip
-lsof
-man
-mlocate
-nmap-ncat
-ntp
-ntpdate
-openssh-clients
-policycoreutils
-python-daemon
-rsync
-ruby21-puppet
-ruby21-rubygem-netaddr
-ruby21-rubygem-openstack
-selinux-policy-targeted
-strace
-subscription-manager
-sysstat
-system-config-firewall-base
-tcpdump
-telnet
-vim-enhanced
-virt-what
-wget
-yum
-yum-plugin-priorities
 
-%include /tmp/post_partition.ks
 
-# POSTINSTALL SECTION
-# HERE ARE COMMANDS THAT WILL BE LAUNCHED JUST AFTER
-# INSTALLATION ITSELF COMPLETED
-%post
-echo -e "modprobe nf_conntrack_ipv4\nmodprobe nf_conntrack_ipv6\nmodprobe nf_conntrack_tftp\nmodprobe nf_nat_tftp" >> /etc/rc.modules
-chmod +x /etc/rc.modules
-echo -e "net.nf_conntrack_max=1048576" >> /etc/sysctl.conf
-mkdir -p /var/log/coredump
-echo -e "kernel.core_pattern=/var/log/coredump/core.%e.%p.%h.%t" >> /etc/sysctl.conf
-chmod 777 /var/log/coredump
-echo -e "* soft core unlimited\n* hard core unlimited" >> /etc/security/limits.conf
+
 
 # Mount installation media in chroot
 %post --nochroot --log=/mnt/sysimage/root/anaconda-post-before-chroot.log
-#!/bin/sh
-
+#!/bin/bash
 set -x
 
-SOURCE="/mnt/sysimage/tmp/source"
+source "/mnt/sysimage/root/anaconda.cmdline.vars"
 
-for I in `cat /proc/cmdline`; do case "$I" in *=*) eval $I;; esac ; done
+SOURCE="/mnt/sysimage/tmp/source"
 
 mkdir -p "${SOURCE}"
 
@@ -325,105 +363,20 @@ case "${repo}" in
     fi
   ;;
 esac
+%end
 
-%post --log=/root/anaconda-post-after-chroot.log
+
+
+
+
+%post --log=/root/anaconda-post-configure-repos.log
 #!/bin/bash
-
 set -x
-
-function save_cfg {
-    scrFile="/etc/sysconfig/network-scripts/ifcfg-$admin_interface"
-    search="domain $domain\nsearch $domain"
-    sed -i -e 's#^\(HOSTNAME=\).*$#\1'"$hostname"'#' /etc/sysconfig/network
-    grep -q "^\s*$ip\s+$hostname" /etc/hosts || echo "$ip $hostname" >> /etc/hosts
-    echo "${search}\nnameserver 127.0.0.1" > /etc/resolv.conf
-    [ $dns1 ] && echo -e "${search}\nnameserver $dns1" > /etc/resolv.conf
-    [ $dns1 ] && echo -e "${search}\nnameserver $dns1" > /etc/dnsmasq.upstream
-    [ $dns2 ] && echo "nameserver $dns2" >> /etc/resolv.conf
-    [ $dns2 ] && echo "nameserver $dns2" >> /etc/dnsmasq.upstream
-
-    echo DEVICE=$admin_interface > $scrFile
-    echo ONBOOT=yes >> $scrFile
-    echo NM_CONTROLLED=no >> $scrFile
-    echo HWADDR=$hwaddr >> $scrFile
-    echo USERCTL=no >> $scrFile
-    echo PEERDNS=no >> $scrFile
-    if [ $ip ]; then
-        echo BOOTPROTO=static >> $scrFile
-        echo IPADDR=$ip >> $scrFile
-        echo NETMASK=$netmask >> $scrFile
-    else
-        echo BOOTPROTO=dhcp >> $scrFile
-    fi
-    scrDHCPFile="/etc/sysconfig/network-scripts/ifcfg-$dhcp_interface"
-    #Ignore gateway and set up DHCP if it is used, otherwise apply it
-    if [ $dhcp_interface ] && [ "$dhcp_interface" != "$admin_interface" ]; then
-        echo "DEVICE=$dhcp_interface" > $scrDHCPFile
-        echo "BOOTPROTO=dhcp" >> $scrDHCPFile
-        echo "ONBOOT=yes" >> $scrDHCPFile
-        echo "USERCTL=no" >> $scrDHCPFile
-    else
-        echo GATEWAY=$gw >> /etc/sysconfig/network
-    fi
-    [ -n "$build_images" -a "$build_images" != "0" ] && echo -e "$build_images" > /root/.build_images
-}
-
-function get_ethernet_interfaces() {
-  # Get list of all ethernet interfaces, non-virtual, not a wireless
-  for DEV in /sys/class/net/* ; do
-     # Take only links into account, skip files
-     if test ! -L $DEV ; then
-        continue
-     fi
-     DEVPATH=$(readlink -f $DEV)
-     # Avoid virtual devices like loopback, tunnels, bonding, vlans ...
-     case $DEVPATH in
-          */virtual/*)
-             continue
-          ;;
-     esac
-     IF=${DEVPATH##*/}
-     # Check ethernet only
-     case "`cat $DEV/type`" in
-          1)
-          # TYPE=1 is ethernet, may also be wireless, bond, tunnel ...
-          # Virtual lo, bound, vlan, tunneling has been skipped before
-          if test -d $DEV/wireless -o -L $DEV/phy80211 ;
-          then
-               continue
-          else
-          # Catch ethernet non-virtual device
-               echo $IF
-          fi
-          ;;
-          *) continue
-          ;;
-     esac
-  done
-}
-
-# Default FQDN
-hostname="nailgun.mirantis.com"
-
-for I in `cat /proc/cmdline`; do case "$I" in *=*) eval $I;; esac ; done
-hostname=$hostname
-domain=${hostname#*.}
-ip=$ip
-netmask=$netmask
-gw=$gw
-first_eth_intf=$(get_ethernet_interfaces | sort -V | head -1)
-admin_interface=${admin_interface:-$first_eth_intf}
-hwaddr=`ifconfig $admin_interface | grep -i hwaddr | sed -e 's#^.*hwaddr[[:space:]]*##I'`
-dhcp_interface=$dhcp_interface
-build_images=$build_images
-wait_for_external_config=$wait_for_external_config
-save_cfg
 
 # Mounting installation source
 SOURCE=/tmp/source
 FS=/tmp/fs
 
-echo
 mkdir -p ${SOURCE}
 mkdir -p ${FS}
 
@@ -452,7 +405,7 @@ cp -r ${SOURCE}/repodata ${repodir}/centos/x86_64
 cp -r ${SOURCE}/Packages ${repodir}/centos/x86_64
 cp -r ${SOURCE}/mos-centos/repodata ${repodir}/mos-centos/x86_64
 cp -r ${SOURCE}/mos-centos/Packages ${repodir}/mos-centos/x86_64
-cp -r ${SOURCE}/extra-repos ${wwwdir}/
+cp -r ${SOURCE}/extra-repos ${repodir}/
 cp ${SOURCE}/.treeinfo ${repodir}/centos/x86_64
 
 # Copying Ubuntu files
@@ -470,26 +423,10 @@ touch ${repodir}/ubuntu/x86_64/images/initrd.gz
 # make links for backward compatibility
 ln -s ${repodir}/centos ${wwwdir}/centos
 ln -s ${repodir}/ubuntu ${wwwdir}/ubuntu
+ln -s ${repodir}/mos-centos ${wwwdir}/mos-centos
+ln -s ${repodir}/extra-repos ${wwwdir}/extra-repos
 
 mkdir -p ${wwwdir}/targetimages
-
-# --------------------------
-# UNPACKING PUPPET MANIFESTS
-# --------------------------
-
-# create folders
-#mkdir -p /etc/puppet/${OPENSTACK_VERSION}/manifests/
-#mkdir -p /etc/puppet/${OPENSTACK_VERSION}/modules/
-#rm -rf /etc/puppet/modules/
-
-# TODO(ikalnitsky): investigate why we need this
-#cp ${SOURCE}/puppet-slave.tgz ${wwwdir}/
-
-# make links for backward compatibility
-#pushd /etc/puppet
-#ln -s ${OPENSTACK_VERSION}/manifests/ /etc/puppet/manifests
-#ln -s ${OPENSTACK_VERSION}/modules/ /etc/puppet/modules
-#popd
 
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
 mkdir -p /var/lib/hiera
@@ -508,6 +445,24 @@ name=MOS Local Repo
 baseurl=file:/var/www/nailgun/${OPENSTACK_VERSION}/mos-centos/x86_64
 gpgcheck=0
 EOF
+%end
+
+
+
+
+
+%post --log=/root/anaconda-post-configure-sysconfig.log
+#!/bin/bash
+set -x
+
+source "/root/anaconda.cmdline.vars"
+SOURCE=/tmp/source
+
+# Set correct docker volume group
+echo "VG=docker" >> /etc/sysconfig/docker-storage-setup
+
+# Disable create iptables rules by docker
+echo "DOCKER_NETWORK_OPTIONS=--iptables=false" > /etc/sysconfig/docker-network
 
 # Disable subscription-manager plugins
 sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/product-id.conf || :
@@ -534,11 +489,8 @@ https://docs.mirantis.com/openstack/fuel/fuel-7.0/reference-architecture.html#fu
 
 EOF
 
-# Copying bootstrap_admin_node.sh, chmod it and
-# adding /etc/init/bootstrap_admin_node.conf
-cp ${SOURCE}/bootstrap_admin_node.sh /usr/local/sbin/bootstrap_admin_node.sh
-chmod 0777 /usr/local/sbin/bootstrap_admin_node.sh
-cp ${SOURCE}/bootstrap_admin_node.conf /etc/init/bootstrap_admin_node.conf
+# Install bootstrap_admin_node.sh and enabling it
+install -m 0777 -D ${SOURCE}/bootstrap_admin_node.sh /usr/local/sbin/bootstrap_admin_node.sh
 echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
 
 # Copying version.yaml file. It contains COMMIT_SHA of last commit.
@@ -552,20 +504,13 @@ cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_v
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
 
-# Run fuel menu
-[ -z "$showmenu" ] && showmenu="no"
-
-# Pause during bootstrap_admin_node to wait for external config
-[ -z "$wait_for_external_config" ] && wait_for_external_config="no"
-
-
 # Prepare bootstrap_admin_node config
 cat > /etc/fuel/bootstrap_admin_node.conf << EOF
 #Set to yes to run Fuel Setup
 #Set to no to accept default settings
-ADMIN_INTERFACE=${admin_interface}
-showmenu=${showmenu}
-wait_for_external_config=${wait_for_external_config}
+ADMIN_INTERFACE=${adminif}
+showmenu=${showmenu:-no}
+wait_for_external_config=${wait_for_external_config:-no}
 EOF
 
 # Prepare custom /etc/issue logon banner and script for changing IP in it
@@ -576,7 +521,7 @@ cat > /etc/issue << EOF
 Server is running on \m platform
 
 Fuel UI is available on:
-https://:8443
+https://\4{${adminif:-eth0}}:8443
 
 Default administrator login:    root
 Default administrator password: r00tme
@@ -588,69 +533,6 @@ Please change root password on first login.
 
 EOF
 
-
-cat >> '/etc/rc.local' << EOF
-#Collect info about network addresses
-function get_ethernet_interfaces() {
-  # Return IP addresses for ethernet interfaces
-  # exclude wireless, bond, vlan, loopback, tunnels ...
-  for DEV in /sys/class/net/* ; do
-    # Take only links into account, skip files
-    if test ! -L \$DEV ; then
-        continue
-    fi
-    DEVPATH=\$(readlink -f \$DEV)
-    # Drop virtual devices like loopback, tunnels, bonding, vlans ...
-    case \$DEVPATH in
-       */virtual/*)
-           continue
-      ;;
-    esac
-    IF=\${DEVPATH##*/}
-    # Check ethernet only
-    case "`cat \$DEV/type`" in
-         1)
-            # TYPE=1 is ethernet, may also be wireless
-            # Virtual (lo, bound, vlan, tunnel ...) have been skipped before
-            if test -d \$DEV/wireless -o -L \$DEV/phy80211 ;
-            then
-                 continue
-            else
-                 # Catch ethernet non-virtual device
-                 # Get IP address if assigned
-                       echo $IF
-             fi
-             ;;
-          *) continue
-             ;;
-    esac
-  done
-}
-first=yes
-for intf in \$(get_ethernet_interfaces) ; do
-ip = "\$ip_list |\$(ip -4 -o addr show dev \$intf | awk '{ print \$4 }' | cut -d/ -f1)"
-if [ "\$first" = "yes" ]; then
-  ipstr="Fuel UI is available on: https://\$ip:8443"
-  first=no
-else
-  ipstr=\$(printf "%s\n%25s%s" "\$ipstr" " " "https://\$ip:8443")
-fi
-done
-tmpissue=\$(mktemp)
-while read -r line; do
-  if [[ "\$line" =~ "Fuel UI is available on" ]]; then
-    echo -e "\$ipstr" >> \$tmpissue
-  elif [[ "\$line" =~ :8443$ ]]; then
-    :
-  else
-    echo -e "\$line" >> \$tmpissue
-  fi
-done < /etc/issue
-mv "\$tmpissue" /etc/issue
-
-EOF
-
-
 # Unmounting source
 umount -f ${SOURCE}
 rm -rf ${SOURCE}
@@ -660,19 +542,8 @@ rm -rf ${FS}
 
 echo "tos orphan 7" >> /etc/ntp.conf
 
-# Do not show error message on ntpdate failure. Customers should not be confused
-# if admin node does not have access to the internet time servers.
-sed -i /etc/rc.d/init.d/ntpdate -e 's/\([ $RETVAL -eq 0 ] && success || \)failure/\1success/'
-
 # Disabling splash
-sed -i --follow-symlinks -e '/^\skernel/ s/rhgb//' /etc/grub.conf
-sed -i --follow-symlinks -e '/^\skernel/ s/quiet//' /etc/grub.conf
-
-# Disabling console clearing
-sed -i 's/getty/getty --noclear/' /etc/init/tty.conf
-
-# Disabling starting first console from start-ttys service
-sed -i --follow-symlinks -e 's/ACTIVE_CONSOLES=.*/ACTIVE_CONSOLES=\/dev\/tty\[2-6\]/' /etc/sysconfig/init
+sed -i --follow-symlinks -e '/^\slinux16/ s/rhgb/debug/' /boot/grub2/grub.cfg
 
 # Copying default bash settings to the root directory
 cp -f /etc/skel/.bash* /root/
@@ -682,6 +553,50 @@ cp -f /etc/skel/.bash* /root/
 
 # Disable sshd until after Fuel Setup if not running on VirtualBox
 # TODO(mattymo): Remove VBox exception after LP#1487047 is fixed
-[[ $(virt-what) = "virtualbox" ]] || chkconfig sshd off
+[[ $(virt-what) = "virtualbox" ]] || systemctl disable sshd
 
 %end
+
+
+
+
+
+%post --log=/root/anaconda-post-configure-autologon.log
+#!/bin/bash
+set -x
+
+# Enable once root autologin for initial setup
+mkdir -p /etc/systemd/system/getty@tty1.service.d/
+cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf << 'EOF'
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin root --noclear %I 115200 linux
+EOF
+
+# Exec bootstrap_admin_node.sh if autologin enabled
+cat >> /root/.bashrc << 'EOF'
+if [[ "$(tty)" == "/dev/tty1" && -f /etc/systemd/system/getty@tty1.service.d/autologin.conf ]]; then
+	rm -Rf "/etc/systemd/system/getty@tty1.service.d"
+	/bin/systemctl daemon-reload
+	if [ -x /usr/local/sbin/bootstrap_admin_node.sh ]; then
+		exec /usr/local/sbin/bootstrap_admin_node.sh
+	fi
+fi
+EOF
+%end
+
+
+%post --nochroot --log=/mnt/sysimage/root/anaconda-post-interface-settings.log
+#!/bin/bash
+set -x
+
+source "/mnt/sysimage/root/anaconda.cmdline.vars"
+
+if [[ ! -z $adminif ]]; then
+  rm -f /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-${ifname%%:*}
+  sed "s/${ifname%%:*}/${adminif}/g" \
+    /etc/sysconfig/network-scripts/ifcfg-${ifname%%:*} > \
+    /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-${adminif}
+fi
+%end
+
