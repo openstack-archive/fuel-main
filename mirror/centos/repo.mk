@@ -186,6 +186,5 @@ $(BUILD_DIR)/mirror/centos/repo.done: \
 		$(BUILD_DIR)/mirror/centos/yum.done \
 		| $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
-		-u media://`head -1 $(SOURCE_DIR)/iso/.discinfo` \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/
 	$(ACTION.TOUCH)
