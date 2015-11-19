@@ -73,6 +73,14 @@ gpgcheck=0
 enabled=1
 endef
 
+define yum_local_extra_repo
+[extra-repo-$(call get_repo_name,$1)]
+name=MOS Mirror Extra - $(call get_repo_name,$1)
+baseurl=file://$(LOCAL_MIRROR)/extra_repos/$(call get_repo_name,$1)
+gpgcheck=0
+enabled=1
+endef
+
 define bootstrap_yum_conf
 [main]
 cachedir=$(BUILD_DIR)/bootstrap/cache
@@ -92,7 +100,7 @@ endef
 #FIXME Partial-Bug: #1403088
 YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --exclude=ruby-2.1.1  --exclude=ruby21 --installroot=$(INITRAMROOT) -y --nogpgcheck
 
-KERNEL_PATTERN:=kernel-lt-3.10.*
+KERNEL_PATTERN:=kernel-3.10.0*
 KERNEL_FIRMWARE_PATTERN:=linux-firmware*
 
 clean: clean-bootstrap
@@ -109,7 +117,7 @@ $(BUILD_DIR)/bootstrap/initramfs.img: \
 
 $(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/centos/build.done
 	mkdir -p $(BUILD_DIR)/bootstrap
-	find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		(cd $(BUILD_DIR)/bootstrap/; cpio -imd './boot/vmlinuz*')
 	mv $(BUILD_DIR)/bootstrap/boot/vmlinuz* $(BUILD_DIR)/bootstrap/linux
 	rm -r $(BUILD_DIR)/bootstrap/boot
@@ -117,7 +125,8 @@ $(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/centos/build.done
 
 $(BUILD_DIR)/bootstrap/etc/yum.conf: export contents:=$(bootstrap_yum_conf)
 $(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo: export contents:=$(yum_local_repo)
-$(BUILD_DIR)/bootstrap/etc/yum.conf $(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo:
+$(BUILD_DIR)/bootstrap/etc/yum.repos.d/extra.repo: export contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(space)$(call yum_local_extra_repo,$(repo))\n)
+$(BUILD_DIR)/bootstrap/etc/yum.conf $(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo $(BUILD_DIR)/bootstrap/etc/yum.repos.d/extra.repo:
 	mkdir -p $(@D)
 	/bin/echo -e "$${contents}" > $@
 
@@ -130,7 +139,8 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 		$(call find-files,$(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py) \
 		$(SOURCE_DIR)/bootstrap/ssh/id_rsa.pub \
 		$(BUILD_DIR)/bootstrap/etc/yum.conf \
-		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo
+		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo \
+		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/extra.repo
 
 	# Rebuilding rpmdb
 	sudo rpm --root=$(INITRAMROOT) --rebuilddb
@@ -173,7 +183,8 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 		$(BUILD_DIR)/mirror/centos/build.done \
 		$(BUILD_DIR)/packages/rpm/build.done \
 		$(BUILD_DIR)/bootstrap/etc/yum.conf \
-		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo
+		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo \
+		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/extra.repo
 
 	# Installing centos-release package
 	sudo rpm -i --root=$(INITRAMROOT) \
@@ -192,6 +203,7 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 	sudo mkdir -p $(INITRAMROOT)/var/lib/rpm
 
 	# Installing rpms
+	sudo grep -rn . $(BUILD_DIR)/bootstrap/etc/yum*
 	$(YUM) install $(BOOTSTRAP_RPMS)
 
 	# Disabling mail server (it have been installed as a dependency)
@@ -204,9 +216,9 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 # Perhaps this stuff should be moved to global config.mk
 
 	# Installing kernel modules
-	find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/modules/*' './boot/vmlinuz*' )
-	find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/firmware/*' )
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'libmlx4*' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './etc/*' './usr/lib64/*' )
