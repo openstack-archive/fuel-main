@@ -1,4 +1,8 @@
 #!/bin/bash
+mkdir -p /var/log/puppet
+exec > >(tee -i /var/log/puppet/bootstrap_admin_node.log)
+exec 2>&1
+
 FUEL_RELEASE=$(grep release: /etc/fuel/version.yaml | cut -d: -f2 | tr -d '" ')
 
 function countdown() {
@@ -49,20 +53,92 @@ function get_ethernet_interfaces() {
   done
 }
 
+# Get value of a key from ifcfg-* files
+# Usage:
+#   get_ifcfg_value NAME /etc/sysconfig/network-scripts/ifcfg-eth0
+function get_ifcfg_value {
+    local key=$1
+    local path=$2
+    local value=''
+    if [[ -f ${path} ]]; then
+        value=$(awk -F\= "\$1==\"${key}\" {print \$2}" ${path})
+        value=${value//\"/}
+    fi
+    echo ${value}
+}
+
+# Workaround to fix dracut network configuration approach:
+#   Bring down all network interfaces which have the same IP
+#   address statically configured as 'primary' interface
+function ifdown_ethernet_interfaces {
+    local adminif_ipaddr
+    local if_config
+    local if_name
+    local if_ipaddr
+
+    adminif_ipaddr=$(get_ifcfg_value IPADDR /etc/sysconfig/network-scripts/ifcfg-${ADMIN_INTERFACE})
+    for if_config in $(find /etc/sysconfig/network-scripts -name 'ifcfg-*' ! -name 'ifcfg-lo'); do
+        if_name=$(get_ifcfg_value NAME $if_config)
+        if [[ "${if_name}" == "${ADMIN_INTERFACE}" ]]; then
+            continue
+        fi
+        if_ipaddr=$(get_ifcfg_value IPADDR $if_config)
+        if [[ "${if_ipaddr}" == "${adminif_ipaddr}" ]]; then
+            echo "Interface '${if_name}' uses the same ip '${if_ipaddr}' as admin interface '${ADMIN_INTERFACE}', removing ..."
+            ifdown ${if_name}
+            rm -f ${if_config}
+        fi
+    done
+}
+
+# Check if interface name is valid by checking that
+# a config file with NAME equal to given name exists.
+function ifname_valid {
+    local adminif_name=$1
+    local if_name
+    local if_config
+    for if_config in $(find /etc/sysconfig/network-scripts -name 'ifcfg-*' ! -name 'ifcfg-lo'); do
+        if_name=$(get_ifcfg_value NAME $if_config)
+        if [[ "${if_name}" == "${adminif_name}" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 export LANG=en_US.UTF8
 # Be sure, that network devices have been initialized
 udevadm trigger --subsystem-match=net
 udevadm settle
-# Take the very first ethernet interface as an admin interface
-ADMIN_INTERFACE=$(get_ethernet_interfaces | sort -V | head -1)
+
+# Import bootstrap_admin_node.conf if exists
+if [ -f /etc/fuel/bootstrap_admin_node.conf ]; then
+    source /etc/fuel/bootstrap_admin_node.conf
+fi
+
+# Set defaults to unset / empty variables
+# Although eth0 is not always valid it's a good well-known default
+# If there is no such interface it will fail to pass ifname_valid
+# check and will be replaced.
+ADMIN_INTERFACE=${ADMIN_INTERFACE:-'eth0'}
+showmenu=${showmenu:-'no'}
+
+# Now check that ADMIN_INTERFACE points to a valid interface
+# If it doesn't fallback to getting the first interface name
+# from a list of all available interfaces sorted alphabetically
+if ! ifname_valid $ADMIN_INTERFACE; then
+    # Take the very first ethernet interface as an admin interface
+    ADMIN_INTERFACE=$(get_ethernet_interfaces | sort -V | head -1)
+fi
+
+echo "Applying admin interface '$ADMIN_INTERFACE'"
 export ADMIN_INTERFACE
 
-showmenu="no"
-if [ -f /etc/fuel/bootstrap_admin_node.conf ]; then
-  . /etc/fuel/bootstrap_admin_node.conf
-  echo "Applying admin interface '$ADMIN_INTERFACE'"
-fi
+echo "Bringing down ALL network interfaces except '${ADMIN_INTERFACE}'"
+ifdown_ethernet_interfaces
+systemctl restart network
 
 echo "Applying default Fuel settings..."
 set -x
@@ -92,8 +168,13 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
 fi
 
 # Enable sshd
-chkconfig sshd on
-service sshd start
+systemctl enable sshd
+systemctl start sshd
+
+# Enable iptables
+systemctl enable iptables.service
+systemctl start iptables.service
+
 
 if [ "$wait_for_external_config" == "yes" ]; then
   wait_timeout=3000
@@ -226,6 +307,11 @@ if [ $? -ge 4 ];then
   fail
 fi
 
+# Sync time
+systemctl stop ntpd
+systemctl start ntpdate ||:
+systemctl start ntpd
+
 rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
 
 dockerctl check || fail
@@ -239,7 +325,7 @@ fi
 cat > /etc/yum.repos.d/mos${FUEL_RELEASE}-updates.repo << EOF
 [mos${FUEL_RELEASE}-updates]
 name=mos${FUEL_RELEASE}-updates
-baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos${FUEL_RELEASE}-centos6-fuel/updates/x86_64/
+baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos${FUEL_RELEASE}-centos\$releasever-fuel/updates/x86_64/
 gpgcheck=0
 skip_if_unavailable=1
 EOF
@@ -248,7 +334,7 @@ EOF
 cat > /etc/yum.repos.d/mos${FUEL_RELEASE}-security.repo << EOF
 [mos${FUEL_RELEASE}-security]
 name=mos${FUEL_RELEASE}-security
-baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos${FUEL_RELEASE}-centos6-fuel/security/x86_64/
+baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos${FUEL_RELEASE}-centos\$releasever-fuel/security/x86_64/
 gpgcheck=0
 skip_if_unavailable=1
 EOF
@@ -290,3 +376,5 @@ fuel notify --topic "${level}" --send $(echo "${message}" | tr '\r\n' ' ')
 # advice how to treat this.
 
 echo "Fuel node deployment complete!"
+# Sleep for agetty autologon
+sleep 3
