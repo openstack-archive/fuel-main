@@ -7,7 +7,6 @@ $(BUILD_DIR)/mirror/centos/mos-download.done: $(BUILD_DIR)/mirror/centos/yum-con
 
 $(BUILD_DIR)/mirror/centos/mos-repo.done: $(BUILD_DIR)/mirror/centos/mos-download.done
 	createrepo -g $(LOCAL_MIRROR_MOS_CENTOS)/comps.xml \
-	    -u media://`head -1 $(SOURCE_DIR)/iso/.discinfo` \
 	    -o $(LOCAL_MIRROR_MOS_CENTOS)/ $(LOCAL_MIRROR_MOS_CENTOS)/
 	$(ACTION.TOUCH)
 
