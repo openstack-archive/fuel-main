@@ -16,8 +16,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
 Requires: fuel-bootstrap-image >= %{version}
-Requires: fuel-dockerctl >= 8.0
-Requires: fuel-docker-images >= %{version}
 Requires: fuel-library8.0
 Requires: fuelmenu >= %{version}
 Requires: fuel-provisioning-scripts >= %{version}
