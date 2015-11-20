@@ -15,10 +15,6 @@ Directory structure:
 - ```fuel-bootstrap-image```
   Scripts which allow us to build Ubuntu based bootstrap ramdisk on the
   Fuel master node in runtime. The status of this ramdisk is experimental.
-- ```image```
-  Scripts to build CentOS based target operating system image. We install
-  this image on the Fuel slave nodes. This image being installed on a node provides
-  fully functional standalone operating system. (being deprecated)
 - ```iso```
   Scripts that are used for building Fuel ISO.
 - ```mirror```

@@ -116,10 +116,6 @@ $(eval $(call prepare_file_source,fuel-bootstrap-image,linux,$(BUILD_DIR)/bootst
 $(eval $(call prepare_file_source,fuel-bootstrap-image,initramfs.img,$(BUILD_DIR)/bootstrap/initramfs.img,$(BUILD_DIR)/bootstrap/initramfs.img))
 $(eval $(call prepare_file_source,fuel-bootstrap-image,bootstrap.rsa,$(SOURCE_DIR)/bootstrap/ssh/id_rsa,$(SOURCE_DIR)/bootstrap/ssh/id_rsa))
 
-# fuel-target-centos-images sources
-# NOTE(kozhukalov): We don't need target centos images in 8.0
-# $(eval $(call prepare_file_source,fuel-target-centos-images$(CENTOS_RELEASE),fuel-target-centos-images$(CENTOS_RELEASE).tar,$(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME),$(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME)))
-
 .PHONY: packages-late packages-rpm-late
 
 $(BUILD_DIR)/packages/build-late.done: \
