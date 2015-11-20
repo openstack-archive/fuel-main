@@ -101,30 +101,6 @@ $(BUILD_DIR)/packages/rpm/repo.done:
 		-o $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/packages/rpm/fuel-docker-images.done: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/fuel-docker-images
-$(BUILD_DIR)/packages/rpm/fuel-docker-images.done: SPECFILE:=$(SOURCE_DIR)/packages/rpm/specs/fuel-docker-images.spec
-$(BUILD_DIR)/packages/rpm/fuel-docker-images.done: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
-
-$(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
-		$(BUILD_DIR)/repos/repos.done \
-		$(BUILD_DIR)/packages/rpm/buildd.tar.gz \
-		$(BUILD_DIR)/packages/rpm/repo-late.done \
-		$(BUILD_DIR)/docker/build.done
-	python $(SOURCE_DIR)/packages/rpm/genpkgnames.py $(SPECFILE) | xargs -I{} sudo find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages -regex '.*/{}-[^-]+-[^-]+' -delete
-	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
-	mkdir -p $(SANDBOX) && \
-	sudo tar xzf $(BUILD_DIR)/packages/rpm/buildd.tar.gz -C $(SANDBOX) && \
-	mkdir -p $(SANDBOX)/tmp/SOURCES && \
-	sudo cp -r $(BUILD_DIR)/docker/$(DOCKER_ART_NAME) $(SANDBOX)/tmp/SOURCES && \
-	(cd $(BUILD_DIR)/docker && sudo tar czf $(SANDBOX)/tmp/SOURCES/fuel-images-sources.tar.gz sources utils) && \
-	sudo cp $(SPECFILE) $(SANDBOX)/tmp && \
-	sudo chroot $(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/fuel-docker-images.spec
-	cp $(SANDBOX)/tmp/RPMS/*/fuel-docker-images-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
-	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' | xargs cp -u --target-directory=$(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages
-	createrepo -g $(LOCAL_MIRROR_MOS_CENTOS)/comps.xml \
-		-o $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
-	$(ACTION.TOUCH)
-
 # in case BUILD_PACKAGES=0 we have to build only fuel-bootstrap-image-builder
 ifeq (1,$(strip $(BUILD_PACKAGES)))
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
