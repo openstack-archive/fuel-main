@@ -383,7 +383,7 @@ if [ ${old_sysctl_vm_value} -lt 65535 ]; then
 fi
 
 # apply puppet
-puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
+puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/site.pp
 if [ $? -ge 4 ];then
   fail
 fi
@@ -395,7 +395,6 @@ systemctl start ntpd
 
 rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
 
-dockerctl check || fail
 bash /etc/rc.local
 
 if [ "`get_bootstrap_flavor`" = "ubuntu" ]; then
