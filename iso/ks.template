@@ -253,8 +253,6 @@ docker-io
 fuel-bootstrap-image
 fuel-bootstrap-image-builder
 fuel-createmirror
-# NOTE(kozhukalov): We don't need target centos images in 8.0
-# fuel-target-centos-images{{CENTOS_RELEASE}}
 fuel-package-updates
 fuelmenu
 fuel-docker-images
