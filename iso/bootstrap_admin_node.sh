@@ -178,59 +178,18 @@ Perhaps your Internet connection is broken. Please fix the problem and run
 # (even if we don't use Ubuntu based bootstrap)
 make_ubuntu_bootstrap_stub
 
-service docker start
-
-if [ -f /root/.build_images ]; then
-  #Fail on all errors
-  set -e
-  trap fail EXIT
-
-  echo "Loading Fuel base image for Docker..."
-  docker load -i /var/www/nailgun/docker/images/fuel-images.tar
-
-  echo "Building Fuel Docker images..."
-  WORKDIR=$(mktemp -d /tmp/docker-buildXXX)
-  SOURCE=/var/www/nailgun/docker
-  REPO_CONT_ID=$(docker -D run -d -p 80 -v /var/www/nailgun:/var/www/nailgun fuel/centos sh -c 'mkdir /var/www/html/os;ln -sf /var/www/nailgun/centos/x86_64 /var/www/html/os/x86_64;/usr/sbin/apachectl -DFOREGROUND')
-  RANDOM_PORT=$(docker port $REPO_CONT_ID 80 | cut -d':' -f2)
-
-  for imagesource in /var/www/nailgun/docker/sources/*; do
-    if ! [ -f "$imagesource/Dockerfile" ]; then
-      echo "Skipping ${imagesource}..."
-      continue
-    fi
-    image=$(basename "$imagesource")
-    cp -R "$imagesource" $WORKDIR/$image
-    mkdir -p $WORKDIR/$image/etc
-    cp -R /etc/puppet /etc/fuel $WORKDIR/$image/etc
-    sed -e "s/_PORT_/${RANDOM_PORT}/" -i $WORKDIR/$image/Dockerfile
-    sed -r -e 's/^"?PRODUCTION"?:.*/PRODUCTION: "docker-build"/' -i $WORKDIR/$image/etc/fuel/astute.yaml
-    # FIXME(kozhukalov): Once this patch https://review.openstack.org/#/c/219581/ is merged
-    # remove this line. fuel-library is to use PRODUCTION value from astute.yaml instead of
-    # the same value from version.yaml. It is a part of version.yaml deprecation plan.
-    sed -e 's/production:.*/production: "docker-build"/' -i $WORKDIR/$image/etc/fuel/version.yaml
-    docker build -t fuel/${image}_${FUEL_RELEASE} $WORKDIR/$image
-  done
-  docker rm -f $REPO_CONT_ID
-  rm -rf "$WORKDIR"
-
-  #Remove trap for normal deployment
-  trap - EXIT
-  set +e
-else
-  echo "Loading docker images. (This may take a while)"
-  docker load -i /var/www/nailgun/docker/images/fuel-images.tar
-fi
+# puppet can not be run w/o this hack (the problem is in settings.yaml template)
+mkdir -p /root/.ssh
+chmod 700 /root/.ssh
+touch /root/.ssh/id_rsa.pub
+chmod 600 /root/.ssh/id_rsa.pub
 
 # apply puppet
-puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
+puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/site.pp
 if [ $? -ge 4 ];then
   fail
 fi
 
-rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
-
-dockerctl check || fail
 bash /etc/rc.local
 
 if [ "`get_bootstrap_flavor`" = "ubuntu" ]; then
