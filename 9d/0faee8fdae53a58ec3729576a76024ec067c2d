@@ -1,0 +1,13 @@
+Verified+2: Jenkins
+Code-Review+1: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Code-Review+1: zhangguoqing <zhang.guoqing@99cloud.net>
+Code-Review+2: Vladimir Kuklin <vkuklin@mirantis.com>
+Code-Review+1: Damian Szeluga <dszeluga@mirantis.com>
+Code-Review+1: Sergey Kulanov <skulanov@mirantis.com>
+Code-Review+1: Michal Rostecki <mrostecki@mirantis.com>
+Workflow+1: Vitaly Sedelnik <vsedelnik@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Fri, 20 Nov 2015 10:30:46 +0000
+Reviewed-on: https://review.openstack.org/239952
+Project: openstack/fuel-main
+Branch: refs/heads/stable/7.0
