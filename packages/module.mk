@@ -113,8 +113,7 @@ $(eval $(call prepare_file_source,fuel-bootstrap-image,bootstrap.rsa,$(SOURCE_DI
 .PHONY: packages-late packages-rpm-late
 
 $(BUILD_DIR)/packages/build-late.done: \
-		$(BUILD_DIR)/packages/rpm/build-late.done \
-		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done
+		$(BUILD_DIR)/packages/rpm/build-late.done
 	$(ACTION.TOUCH)
 
 packages-late: $(BUILD_DIR)/packages/build-late.done

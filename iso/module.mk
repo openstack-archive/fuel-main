@@ -118,14 +118,6 @@ endif
 #	tar zcf $(ISOROOT)/puppet-slave.tgz -C $(BUILD_DIR)/iso/puppet .
 
 ########################
-# DOCKER
-########################
-# DOCKER_ART_NAME is defined in /docker/module.mk
-$(ISOROOT)/docker.done: $(BUILD_DIR)/docker/build.done \
-		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done
-	$(ACTION.TOUCH)
-
-########################
 # Extra files
 ########################
 
@@ -187,9 +179,6 @@ $(ISOROOT)/bootstrap_admin_node.conf: $(SOURCE_DIR)/iso/bootstrap_admin_node.con
 $(ISOROOT)/send2syslog.py: $(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py ; $(ACTION.COPY)
 $(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/fuel-nailgun.done
 
-ifeq ($(PRODUCTION),docker)
-$(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/docker.done
-endif
 
 ########################
 # Iso image root file system.
