@@ -129,6 +129,7 @@ python-httplib2
 python-imgcreate
 python-importlib
 python-ipaddr
+python-ironicclient
 python-iso8601
 python-itsdangerous
 python-jinja2
