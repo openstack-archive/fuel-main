@@ -215,8 +215,7 @@ echo "partition pv.001 --ondisk=${tgtdrive} --size=41000 --grow" >> /tmp/partiti
 echo "volgroup os pv.001" >> /tmp/partition.ks
 echo "logvol swap --vgname=os --recommended --name=swap" >> /tmp/partition.ks
 echo "logvol / --vgname=os --size=10000 --name=root --fstype=ext4" >> /tmp/partition.ks
-echo "logvol /var --vgname=os --size=10000 --percent 30 --grow --name=var --fstype=ext4" >> /tmp/partition.ks
-echo "logvol /var/lib/docker --vgname=os --size=17000  --percent 20 --grow --name=varlibdocker --fstype=ext4" >> /tmp/partition.ks
+echo "logvol /var --vgname=os --size=20000 --percent 50 --grow --name=var --fstype=ext4" >> /tmp/partition.ks
 echo "logvol /var/log --vgname=os --size=4096 --percent 50 --grow --name=varlog --fstype=ext4" >> /tmp/partition.ks
 
 
@@ -243,7 +242,6 @@ echo "cat /tmp/grub.script | chroot /mnt/sysimage /sbin/grub --no-floppy --batch
 @Core
 fuel
 fuel-library >= {{PRODUCT_VERSION}}
-fuel-dockerctl
 authconfig
 bind-utils
 cronie
@@ -259,7 +257,6 @@ fuel-createmirror
 # fuel-target-centos-images{{CENTOS_RELEASE}}
 fuel-package-updates
 fuelmenu
-fuel-docker-images
 gdisk
 lrzip
 lsof
