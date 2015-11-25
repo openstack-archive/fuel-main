@@ -113,7 +113,7 @@ endef
 # Accept EXTRA_RPM_REPOS in a form of a list of: name,url,priority
 # Accept EXTRA_RPM_REPOS in a form of list of (default priority=10): name,url
 get_repo_name=$(shell echo $1 | cut -d ',' -f 1)
-get_repo_url=$(shell echo $1 | cut -d ',' -f2)
+get_repo_url=$(shell url=$$(echo $1 | cut -d ',' -f2); echo $${url} | grep -q -e '.*\.target\.txt$$' && echo "$${url%/*}/$$(curl $$url)/x86_64/" || echo $${url})
 get_repo_priority=$(shell val=`echo $1 | cut -d ',' -f3`; echo $${val:-10})
 
 # It's a callable object.
