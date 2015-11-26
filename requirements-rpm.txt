@@ -230,9 +230,8 @@ ruby21-mcollective
 ruby21-puppet
 ruby21-rubygem-activesupport
 ruby21-rubygem-amq-client
-ruby21-rubygem-amqp
+ruby21-rubygem-bunny
 ruby21-rubygem-amq-protocol
-ruby21-rubygem-eventmachine
 ruby21-rubygem-i18n
 ruby21-rubygem-json
 ruby21-rubygem-json_pure

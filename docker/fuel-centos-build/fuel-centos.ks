@@ -133,7 +133,7 @@ ruby21-mcollective
 ruby21-rubygem-mcollective-client
 ruby21-puppet
 ruby21-rubygem-activesupport
-ruby21-rubygem-amqp
+ruby21-rubygem-bunny
 ruby21-rubygem-mcollective-client
 ruby21-rubygem-symboltable
 ruby21-rubygem-rest-client
