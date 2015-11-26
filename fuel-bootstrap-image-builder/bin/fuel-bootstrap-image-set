@@ -1,13 +1,12 @@
 #!/bin/sh
 # Script for switching between the Ubuntu and CentOS based bootstrap images.
 # Usage: fuel-bootstrap-image-set centos|ubuntu
+# FIXME(azvyagintsev) https://bugs.launchpad.net/fuel/+bug/1522066
 set -e
 MYSELF="${0##*/}"
 ASTUTE_YAML="/etc/fuel/astute.yaml"
 cobbler_manifest="/etc/puppet/modules/nailgun/examples/cobbler-only.pp"
 astute_manifest="/etc/puppet/modules/nailgun/examples/astute-only.pp"
-ubuntu_bootstrap_dir="/var/www/nailgun/bootstrap/ubuntu"
-bootstrap_conf="/etc/fuel-bootstrap-image.conf"
 
 run_puppet () {
 	local container="$1"
@@ -25,34 +24,6 @@ run_puppet () {
 		$MYSELF: container: $container
 		EOF
 		exit 1
-	fi
-}
-
-maybe_build_ubuntu_bootstrap ()
-{
-	local log='/var/log/fuel-bootstrap-image-build.log'
-	local need_rebuild=''
-	for item in linux initramfs.img root.squashfs; do
-		if [ ! -f "$ubuntu_bootstrap_dir/$item" ]; then
-			need_rebuild='yes'
-		fi
-	done
-	if ! grep -qE '^\s*BOOTSTRAP_SSH_KEYS\s*[=]' "$bootstrap_conf" 2>/dev/null; then
-		echo >> "$bootstrap_conf"
-		echo "BOOTSTRAP_SSH_KEYS=\"/root/.ssh/id_rsa.pub\"" >> "$bootstrap_conf"
-	fi
-	if [ -n "$need_rebuild" ]; then
-		cat >&2 <<-EOF
-		$MYSELF: info: Ubuntu bootstrap image does not exist, building one
-		$MYSELF: info: build log is available at $log
-		EOF
-		if ! fuel-bootstrap-image >>"$log" 2>&1; then
-			cat >&2 <<-EOF
-			$MYSELF: error: failed to build Ubuntu bootstrap image
-			$MYSELF: error: see $log for more details
-			EOF
-			exit 1
-		fi
 	fi
 }
 
@@ -77,10 +48,6 @@ verify_bootstrap_flavor () {
 			;;
 		ubuntu|Ubuntu)
 			flavor='ubuntu'
-			cat >&2 <<-EOF
-			$MYSELF: WARNING: Ubuntu based bootstrap is EXPERIMENTAL.
-			$MYSELF: WARNING: Use at your own risk.
-			EOF
 			;;
 		*)
 			cat >&2 <<-EOF
@@ -105,9 +72,6 @@ write_astute_yaml () {
 switch_bootstrap () {
 	local flavor="$1"
 	verify_bootstrap_flavor "$flavor"
-	if [ "$flavor" = "ubuntu" ]; then
-		maybe_build_ubuntu_bootstrap
-	fi
 	write_astute_yaml "$flavor"
 	run_puppet cobbler "$cobbler_manifest"
 	# XXX: sometimes dnsmasq stops after cobbler sync
