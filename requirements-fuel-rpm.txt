@@ -2,7 +2,6 @@ fencing-agent
 fuel
 fuel-agent
 fuel-bootstrap-cli
-fuel-createmirror
 fuel-dockerctl
 fuel-ha-utils
 fuel-library
@@ -13,7 +12,6 @@ fuel-nailgun
 fuel-notify
 fuel-openstack-metadata
 fuel-ostf
-fuel-package-updates
 fuel-provisioning-scripts
 fuel-rabbit-fence
 fuel-release
@@ -21,6 +19,7 @@ ironic-fa-bootstrap-configs
 nailgun-agent
 nailgun-mcagents
 network-checker
+python-fuel-mirror
 python-fuelclient
 ruby21-nailgun-mcagents
 ruby21-rubygem-astute
