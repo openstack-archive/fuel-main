@@ -73,6 +73,17 @@ gpgcheck=0
 enabled=1
 endef
 
+# add extra repo to bootstrap
+define yum_local_extra_repo
+[$(call get_repo_name,$1)]
+name = Extra repo "$(call get_repo_name,$1)"
+baseurl = file://$(LOCAL_MIRROR)/extra-repos/$(call get_repo_name,$1)
+gpgcheck = 0
+enabled = 1
+priority = $(call get_repo_priority,$1)
+exclude=*debuginfo*
+endef
+
 define bootstrap_yum_conf
 [main]
 cachedir=$(BUILD_DIR)/bootstrap/cache
@@ -115,9 +126,16 @@ $(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/centos/build.done
 	rm -r $(BUILD_DIR)/bootstrap/boot
 	touch $(BUILD_DIR)/bootstrap/linux
 
+$(BUILD_DIR)/bootstrap/etc/yum.repos.d/extra.repo: $(call depv,EXTRA_RPM_REPOS)
+$(BUILD_DIR)/bootstrap/etc/yum.repos.d/extra.repo: \
+		export contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(call yum_local_extra_repo,$(repo))\n)
+$(BUILD_DIR)/bootstrap/etc/yum.repos.d/extra.repo:
+	@mkdir -p $(@D)
+	/bin/echo -e "$${contents}" > $@
+
 $(BUILD_DIR)/bootstrap/etc/yum.conf: export contents:=$(bootstrap_yum_conf)
 $(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo: export contents:=$(yum_local_repo)
-$(BUILD_DIR)/bootstrap/etc/yum.conf $(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo:
+$(BUILD_DIR)/bootstrap/etc/yum.conf $(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo: $(BUILD_DIR)/bootstrap/etc/yum.repos.d/extra.repo
 	mkdir -p $(@D)
 	/bin/echo -e "$${contents}" > $@
 
