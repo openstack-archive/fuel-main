@@ -81,10 +81,10 @@ endef
 packages_list:=\
 astute \
 fuel-agent \
-fuel-createmirror \
 fuel-library$(PRODUCT_VERSION) \
 fuel-main \
 fuelmenu \
+fuel-mirror \
 fuel-nailgun \
 fuel-nailgun-agent \
 fuel-ostf \
