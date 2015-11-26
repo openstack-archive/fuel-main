@@ -247,7 +247,6 @@ ruby21-rubygem-net-ssh-multi
 ruby21-rubygem-open4
 ruby21-rubygem-openstack
 ruby21-rubygem-Platform
-ruby21-rubygem-popen4
 ruby21-rubygem-raemon
 ruby21-rubygem-rest-client
 ruby21-rubygem-rgen

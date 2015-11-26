@@ -137,7 +137,6 @@ ruby21-rubygem-amqp
 ruby21-rubygem-mcollective-client
 ruby21-rubygem-symboltable
 ruby21-rubygem-rest-client
-ruby21-rubygem-popen4
 ruby21-rubygem-raemon
 ruby21-rubygem-net-ssh
 ruby21-rubygem-net-ssh-gateway
