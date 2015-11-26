@@ -127,9 +127,9 @@ hostname "$HOSTNAME"
 # and egg problem. Fortunately cobbler is pretty happy with empty files
 # so it's easy to break the loop.
 make_ubuntu_bootstrap_stub () {
-	local bootstrap_dir='/var/www/nailgun/bootstrap/ubuntu'
+	local bootstrap_dir='/var/www/nailgun/bootstraps/active_bootstrap'
 	mkdir -p $bootstrap_dir
-	for item in linux initramfs.img; do
+	for item in vmlinuz initrd.img; do
 		touch "$bootstrap_dir/$item"
 	done
 }
