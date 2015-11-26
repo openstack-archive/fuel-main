@@ -1,7 +1,7 @@
 fencing-agent
 fuel
 fuel-agent
-fuel-createmirror
+fuel-mirror
 fuel-dockerctl
 fuel-ha-utils
 fuel-library
@@ -12,7 +12,6 @@ fuel-nailgun
 fuel-notify
 fuel-openstack-metadata
 fuel-ostf
-fuel-package-updates
 fuel-provisioning-scripts
 fuel-rabbit-fence
 fuel-release
