@@ -77,7 +77,7 @@ astute \
 fuel-agent \
 fuel-library$(PRODUCT_VERSION) \
 fuel-nailgun-agent \
-fuel-createmirror \
-network-checker
+network-checker \
+fuel-mirror
 
 $(eval $(foreach pkg,$(fuel_debian_packages),$(call build_deb,$(pkg))$(NEWLINE)))
