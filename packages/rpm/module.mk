@@ -81,7 +81,6 @@ endef
 packages_list:=\
 astute \
 fuel-agent \
-fuel-createmirror \
 fuel-library$(PRODUCT_VERSION) \
 fuel-main \
 fuelmenu \
@@ -90,6 +89,7 @@ fuel-nailgun-agent \
 fuel-ostf \
 network-checker \
 python-fuelclient \
+python-fuel-mirror \
 shotgun
 
 $(eval $(foreach pkg,$(packages_list),$(call build_rpm,$(pkg))$(NEWLINE)))

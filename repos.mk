@@ -45,7 +45,7 @@ $(eval $(call build_repo,fuel-nailgun-agent,$(FUEL_NAILGUN_AGENT_REPO),$(FUEL_NA
 $(eval $(call build_repo,astute,$(ASTUTE_REPO),$(ASTUTE_COMMIT),$(ASTUTE_GERRIT_URL),$(ASTUTE_GERRIT_COMMIT)))
 $(eval $(call build_repo,fuel-library,$(FUELLIB_REPO),$(FUELLIB_COMMIT),$(FUELLIB_GERRIT_URL),$(FUELLIB_GERRIT_COMMIT)))
 $(eval $(call build_repo,fuel-ostf,$(OSTF_REPO),$(OSTF_COMMIT),$(OSTF_GERRIT_URL),$(OSTF_GERRIT_COMMIT)))
-$(eval $(call build_repo,fuel-createmirror,$(CREATEMIRROR_REPO),$(CREATEMIRROR_COMMIT),$(CREATEMIRROR_GERRIT_URL),$(CREATEMIRROR_GERRIT_COMMIT)))
+$(eval $(call build_repo,fuel-mirror,$(FUEL_MIRROR_REPO),$(FUEL_MIRROR_COMMIT),$(FUEL_MIRROR_GERRIT_URL),$(FUEL_MIRROR_GERRIT_COMMIT)))
 $(eval $(call build_repo,fuelmenu,$(FUELMENU_REPO),$(FUELMENU_COMMIT),$(FUELMENU_GERRIT_URL),$(FUELMENU_GERRIT_COMMIT)))
 $(eval $(call build_repo,shotgun,$(SHOTGUN_REPO),$(SHOTGUN_COMMIT),$(SHOTGUN_GERRIT_URL),$(SHOTGUN_GERRIT_COMMIT)))
 $(eval $(call build_repo,network-checker,$(NETWORKCHECKER_REPO),$(NETWORKCHECKER_COMMIT),$(NETWORKCHECKER_GERRIT_URL),$(NETWORKCHECKER_GERRIT_COMMIT)))
