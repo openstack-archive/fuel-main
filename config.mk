@@ -18,12 +18,13 @@ LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 # Path to pre-built artifacts
 DEPS_DIR?=$(TOP_DIR)/deps
 DEPS_DIR:=$(abspath $(DEPS_DIR))
-
+ARCH:=PPC
 PRODUCT_VERSION:=7.0
 
 # This variable is used for naming of auxillary objects
 # related to product: repositories, mirrors etc
-PRODUCT_NAME:=mos
+# product_name is edited for ppc arch
+PRODUCT_NAME:=mos-ppc
 
 # This variable is used mostly for
 # keeping things uniform. Some files
@@ -41,18 +42,18 @@ DEPS_DIR_CURRENT?=$(DEPS_DIR)/$(CURRENT_VERSION)
 DEPS_DIR_CURRENT:=$(abspath $(DEPS_DIR_CURRENT))
 
 # Artifacts names
-ISO_NAME?=fuel-$(PRODUCT_VERSION)
-UPGRADE_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-upgrade
+ISO_NAME?=fuel-$(ARCH)-$(PRODUCT_VERSION)
+UPGRADE_TARBALL_NAME?=fuel-$(ARCH)-$(PRODUCT_VERSION)-upgrade
 OPENSTACK_PATCH_TARBALL_NAME?=fuel-$(PRODUCT_VERSION)-patch
 VBOX_SCRIPTS_NAME?=vbox-scripts-$(PRODUCT_VERSION)
 BOOTSTRAP_ART_NAME?=bootstrap.tar.gz
 DOCKER_ART_NAME?=fuel-images.tar.lrz
 VERSION_YAML_ART_NAME?=version.yaml
-CENTOS_REPO_ART_NAME?=centos-repo.tar
-UBUNTU_REPO_ART_NAME?=ubuntu-repo.tar
+PPC_REPO_ART_NAME?=$(ARCH)-repo.tar
 PUPPET_ART_NAME?=puppet.tgz
 OPENSTACK_YAML_ART_NAME?=openstack.yaml
-TARGET_CENTOS_IMG_ART_NAME?=centos_target_images.tar
+TARGET_PPC_IMG_ART_NAME?=$(ARCH)_target_images.tar
+
 
 
 
@@ -66,19 +67,13 @@ MASTER_DNS?=10.20.0.1
 MASTER_NETMASK?=255.255.255.0
 MASTER_GW?=10.20.0.1
 
-CENTOS_MAJOR:=6
-CENTOS_MINOR:=6
-CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
-CENTOS_ARCH:=x86_64
+PPC_MAJOR:=1
+PPC_MINOR:=1.5
+PPC_RELEASE:=$(PPC_MAJOR).$(PPC_MINOR)
+
+PPC_ARCH:=ppc64
+PPC_IMAGE_RELEASE:=$(PPC_MAJOR)$(PPC_MINOR)
 CENTOS_IMAGE_RELEASE:=$(CENTOS_MAJOR)$(CENTOS_MINOR)
-UBUNTU_RELEASE:=trusty
-UBUNTU_MAJOR:=14
-UBUNTU_MINOR:=04
-UBUNTU_RELEASE_NUMBER:=$(UBUNTU_MAJOR).$(UBUNTU_MINOR)
-UBUNTU_KERNEL_FLAVOR?=lts-trusty
-UBUNTU_NETBOOT_FLAVOR?=netboot
-UBUNTU_ARCH:=amd64
-UBUNTU_IMAGE_RELEASE:=$(UBUNTU_MAJOR)$(UBUNTU_MINOR)
 SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
 # Rebuld packages locally (do not use upstream versions)
@@ -126,10 +121,9 @@ ASTUTE_GERRIT_COMMIT?=none
 OSTF_GERRIT_COMMIT?=none
 FUELMAIN_GERRIT_COMMIT?=none
 
-LOCAL_MIRROR_CENTOS:=$(LOCAL_MIRROR)/centos
-LOCAL_MIRROR_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_CENTOS)/os/$(CENTOS_ARCH)
-LOCAL_MIRROR_UBUNTU:=$(LOCAL_MIRROR)/ubuntu
-LOCAL_MIRROR_UBUNTU_OS_BASEURL:=$(LOCAL_MIRROR_UBUNTU)
+LOCAL_MIRROR_PPC:=$(LOCAL_MIRROR)/$(PPC_ARCH)
+LOCAL_MIRROR_PPC_OS_BASEURL:=$(LOCAL_MIRROR_PPC)/os/$(PPC_ARCH)
+
 LOCAL_MIRROR_DOCKER:=$(LOCAL_MIRROR)/docker
 LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
 
@@ -144,58 +138,11 @@ YUM_REPOS?=proprietary
 MIRROR_CENTOS?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://vault.centos.org/$(CENTOS_RELEASE)
-MIRROR_UBUNTU?=mirror.fuel-infra.org
-MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 endif
 
-ifeq ($(USE_MIRROR),srt)
-YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://osci-mirror-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)/centos
-MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-MIRROR_UBUNTU?=osci-mirror-srt.srt.mirantis.net
-MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://osci-mirror-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)/docker
-endif
-
-ifeq ($(USE_MIRROR),msk)
-YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://osci-mirror-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)/centos
-MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
-MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://osci-mirror-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)/docker
-endif
-
-ifeq ($(USE_MIRROR),hrk)
-YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://osci-mirror-kha.kha.mirantis.net/fwm/$(PRODUCT_VERSION)/centos
-MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-MIRROR_UBUNTU?=osci-mirror-kha.kha.mirantis.net
-MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://osci-mirror-kha.kha.mirantis.net/fwm/$(PRODUCT_VERSION)/docker
-endif
-
-ifeq ($(USE_MIRROR),usa)
-YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://mirror.seed-us1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
-MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-MIRROR_UBUNTU?=mirror.seed-us1.fuel-infra.org
-MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://mirror.seed-us1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
-endif
-
-ifeq ($(USE_MIRROR),cz)
-YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://mirror.seed-cz1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
-MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-MIRROR_UBUNTU?=mirror.seed-cz1.fuel-infra.org
-MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://mirror.seed-cz1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
-endif
-
-# Which repositories to use for making local centos mirror.
-# Possible values you can find out from mirror/centos/yum_repos.mk file.
+# Which repositories to use for making local PPC mirror.
+# Possible values you can find out from mirror/PPC/yum_repos.mk file.
 # The actual name will be constracted prepending "yum_repo_" prefix.
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
@@ -204,16 +151,6 @@ MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSIO
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
-MIRROR_UBUNTU_METHOD?=http
-MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
-MIRROR_UBUNTU_ROOT?=/pkgs/ubuntu/
-MIRROR_UBUNTU_SUITE?=$(UBUNTU_RELEASE)
-MIRROR_UBUNTU_SECTION?=main universe multiverse restricted
-MIRROR_MOS_UBUNTU_METHOD?=http
-MIRROR_MOS_UBUNTU?=perestroika-repo-tst.infra.mirantis.net
-MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/7.0
-MIRROR_MOS_UBUNTU_SUITE?=$(PRODUCT_NAME)$(PRODUCT_VERSION)
-MIRROR_MOS_UBUNTU_SECTION?=main restricted
 MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 
 # MIRROR_FUEL affects build process only if YUM_REPOS variable contains 'fuel'.
