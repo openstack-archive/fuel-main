@@ -36,6 +36,8 @@ BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS xz-utils squashfs-tools"
 # Smaller tools providing the standard ones.
 # - mdadm depends on mail-transport-agent, default one is postfix => use msmtp instead
 BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS msmtp-mta"
+# - biosdevname required to support ethX naming schema
+BOOTSTRAP_PKGS="$BOOTSTRAP_PKGS biosdevname"
 
 #CentOS 7 has $PATH variable which is different from Ubuntu one.
 #This eliminates the difference
