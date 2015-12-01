@@ -67,13 +67,12 @@ MASTER_DNS?=10.20.0.1
 MASTER_NETMASK?=255.255.255.0
 MASTER_GW?=10.20.0.1
 
-PPC_MAJOR:=1
-PPC_MINOR:=1.5
-PPC_RELEASE:=$(PPC_MAJOR).$(PPC_MINOR)
+REDOS_MAJOR:=1
+REDOS_MINOR:=1.5
+REDOS_RELEASE:=$(REDOS_MAJOR).$(REDOS_MINOR)
 
-PPC_ARCH:=ppc64
-PPC_IMAGE_RELEASE:=$(PPC_MAJOR)$(PPC_MINOR)
-CENTOS_IMAGE_RELEASE:=$(CENTOS_MAJOR)$(CENTOS_MINOR)
+REDOS_ARCH:=ppc64
+REDOS_IMAGE_RELEASE:=$(REDOS_MAJOR)$(REDOS_MINOR)
 SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
 # Rebuld packages locally (do not use upstream versions)
@@ -121,8 +120,8 @@ ASTUTE_GERRIT_COMMIT?=none
 OSTF_GERRIT_COMMIT?=none
 FUELMAIN_GERRIT_COMMIT?=none
 
-LOCAL_MIRROR_PPC:=$(LOCAL_MIRROR)/$(PPC_ARCH)
-LOCAL_MIRROR_PPC_OS_BASEURL:=$(LOCAL_MIRROR_PPC)/os/$(PPC_ARCH)
+LOCAL_MIRROR_REDOS:=$(LOCAL_MIRROR)/$(REDOS_ARCH)
+LOCAL_MIRROR_REDOS_OS_BASEURL:=$(LOCAL_MIRROR_REDOS)/os/$(REDOS_ARCH)
 
 LOCAL_MIRROR_DOCKER:=$(LOCAL_MIRROR)/docker
 LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
@@ -135,9 +134,9 @@ USE_MIRROR?=ext
 
 ifeq ($(USE_MIRROR),ext)
 YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
-MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://vault.centos.org/$(CENTOS_RELEASE)
+MIRROR_REDOS?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/redos
+MIRROR_REDOS_KERNEL?=$(MIRROR_REDOS)
+SANDBOX_MIRROR_REDOS_UPSTREAM?=http://vault.centos.org/$(CENTOS_RELEASE)
 MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 endif
 
@@ -147,9 +146,9 @@ endif
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
 YUM_REPOS?=official fuel subscr_manager
-MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
-MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+MIRROR_REDOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(REDOS_RELEASE)
+MIRROR_REDOS_KERNEL?=$(MIRROR_REDOS)
+SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(REDOS_RELEASE)
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
 MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 
