@@ -63,9 +63,10 @@ MASTER_DNS?=10.20.0.1
 MASTER_NETMASK?=255.255.255.0
 MASTER_GW?=10.20.0.1
 
-CENTOS_MAJOR?=6
-CENTOS_MINOR?=6
-CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
+CENTOS_MAJOR?=7
+CENTOS_MINOR?=1
+CENTOS_BUILD?=1503
+CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR).$(CENTOS_BUILD)
 CENTOS_ARCH:=x86_64
 CENTOS_IMAGE_RELEASE:=$(CENTOS_MAJOR)$(CENTOS_MINOR)
 UBUNTU_RELEASE:=trusty
@@ -160,7 +161,7 @@ USE_MIRROR?=ext
 
 ifeq ($(USE_MIRROR),ext)
 MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
-MIRROR_CENTOS?=http://vault.centos.org/$(CENTOS_RELEASE)
+MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=mirror.fuel-infra.org
@@ -208,7 +209,7 @@ endif
 # The actual name will be constracted prepending "yum_repo_" prefix.
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
-YUM_REPOS?=official fuel subscr_manager
+YUM_REPOS?=official extras fuel
 MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
