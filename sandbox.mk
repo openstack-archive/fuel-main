@@ -3,7 +3,7 @@
 define yum_local_repo
 [upstream-local-mirror]
 name=Local upstream mirror
-baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+baseurl=file:///mirrors/local_mirror/centos
 gpgcheck=0
 enabled=1
 priority=10
@@ -11,7 +11,7 @@ endef
 define yum_local_mos_repo
 [mos-local-mirror]
 name=Mirantis mirror
-baseurl=file://$(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
+baseurl=file:///mirrors/local_mirror/mos-centos
 gpgcheck=0
 enabled=1
 priority=10
@@ -37,18 +37,18 @@ priority=3
 endef
 define sandbox_yum_conf
 [main]
-cachedir=$(SANDBOX)/cache
+cachedir=/tmp/cache
 keepcache=0
 debuglevel=2
-logfile=$(SANDBOX)/yum.log
+logfile=/tmp/yum.log
 exclude=*.i686.rpm
 exactarch=1
 obsoletes=1
 gpgcheck=0
 plugins=1
-pluginpath=$(SANDBOX)/etc/yum-plugins
-pluginconfpath=$(SANDBOX)/etc/yum/pluginconf.d
-reposdir=$(SANDBOX)/etc/yum.repos.d
+pluginpath=/etc/yum-plugins
+pluginconfpath=/etc/yum/pluginconf.d
+reposdir=/etc/yum.repos.d
 endef
 
 SANDBOX_PACKAGES:=bash yum
@@ -70,6 +70,7 @@ $(yum_local_mos_repo)
 EOF
 mkdir -p $(SANDBOX)/etc/yum/pluginconf.d/
 mkdir -p $(SANDBOX)/etc/yum-plugins/
+mkdir -p $(SANDBOX)/mirrors
 cp $(SOURCE_DIR)/mirror/centos/yum-priorities-plugin.py $(SANDBOX)/etc/yum-plugins/priorities.py
 cat > $(SANDBOX)/etc/yum/pluginconf.d/priorities.conf << EOF
 [main]
@@ -83,7 +84,8 @@ sudo rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
 echo 'Rebuilding RPM DB'
 sudo rpm --root=$(SANDBOX) --rebuilddb
 echo 'Installing packages for Sandbox'
-sudo /bin/sh -c 'export TMPDIR=$(SANDBOX)/tmp/yum TMP=$(SANDBOX)/tmp/yum; echo $(SANDBOX_PACKAGES) | xargs -n1 yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install'
+mount | grep -q $(SANDBOX)/local_mirror || sudo mount --bind $(LOCAL_MIRROR) $(SANDBOX)/mirrors
+echo $(SANDBOX_PACKAGES) | xargs -n1 sudo chroot $(SANDBOX) yum -y --nogpgcheck install
 mount | grep -q $(SANDBOX)/proc || sudo mount --bind /proc $(SANDBOX)/proc
 mount | grep -q $(SANDBOX)/dev || sudo mount --bind /dev $(SANDBOX)/dev
 endef
@@ -91,6 +93,7 @@ endef
 define SANDBOX_DOWN
 sudo umount $(SANDBOX)/proc || true
 sudo umount $(SANDBOX)/dev || true
+sudo umount $(SANDBOX)/mirrors || true
 endef
 
 define apt_sources_list
