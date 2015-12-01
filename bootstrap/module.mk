@@ -36,6 +36,7 @@ BOOTSTRAP_RPMS:=\
 	dmidecode \
 	iputils \
 	logrotate \
+	lshw \
 	mcollective \
 	mingetty \
 	nc \
