@@ -63,7 +63,7 @@ BOOTSTRAP_RPMS_CUSTOM:=\
 define yum_local_repo
 [mirror]
 name=Mirantis mirror
-baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+baseurl=file://$(LOCAL_MIRROR_REDOS_OS_BASEURL)
 gpgcheck=0
 enabled=1
 endef
@@ -165,18 +165,18 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: $(call depv,BOOTSTRAP_RPMS)
 $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
-		$(BUILD_DIR)/mirror/centos/build.done \
+		$(BUILD_DIR)/mirror/redos/build.done \
 		$(BUILD_DIR)/packages/rpm/build.done \
 		$(BUILD_DIR)/bootstrap/etc/yum.conf \
 		$(BUILD_DIR)/bootstrap/etc/yum.repos.d/base.repo
 
-	# Installing centos-release package
+	# Installing redos-release package
 	sudo rpm -i --root=$(INITRAMROOT) \
-		`find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
-		echo "centos-release already installed"
+		`find $(LOCAL_MIRROR_REDOS_OS_BASEURL) -name "redos-release*rpm" | head -1` || \
+		echo "redos-release already installed"
 
-	# Removing default repositories (centos-release package provides them)
-	sudo rm -f $(INITRAMROOT)/etc/yum.repos.d/Cent*
+	# Removing default repositories (redis-release package provides them)
+	sudo rm -f $(INITRAMROOT)/etc/yum.repos.d/RedOS*
 
 	# Rebuilding rpmdb
 	sudo rpm --root=$(INITRAMROOT) --rebuilddb
