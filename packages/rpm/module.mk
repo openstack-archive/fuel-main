@@ -12,7 +12,7 @@ clean-rpm:
 
 RPM_SOURCES:=$(BUILD_DIR)/packages/rpm/SOURCES
 
-$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=rpm-build tar yum yum-utils
+$(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX_PACKAGES:=@buildsys-build yum-utils
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/buildd
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
@@ -58,7 +58,7 @@ $(BUILD_DIR)/packages/rpm/$1.done:
 	mkdir -p $$(SANDBOX)/tmp/SOURCES && \
 	sudo cp -r $(BUILD_DIR)/packages/sources/$1/* $$(SANDBOX)/tmp/SOURCES && \
 	sudo cp $$(SPECFILE) $$(SANDBOX)/tmp && \
-	sudo /bin/sh -c 'export TMPDIR=$$(SANDBOX)/tmp/yum TMP=$$(SANDBOX)/tmp/yum; yum-builddep -y -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) $$(SANDBOX)/tmp/$1.spec'
+	sudo chroot $$(SANDBOX) yum-builddep -y /tmp/$1.spec
 	test -f $$(SANDBOX)/tmp/SOURCES/version && \
 		sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" --define "release `awk -F'=' '/RELEASE/ {print $$$$2}' $$(SANDBOX)/tmp/SOURCES/version`" -ba /tmp/$1.spec || \
 		sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/$1.spec
