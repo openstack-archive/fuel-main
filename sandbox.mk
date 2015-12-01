@@ -1,9 +1,17 @@
 .PHONY: show-ubuntu-sandbox-repos show-centos-sandbox-repos
 
 define yum_local_repo
-[mirror]
-name=Mirantis mirror
+[upstream-local-mirror]
+name=Local upstream mirror
 baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+gpgcheck=0
+enabled=1
+priority=10
+endef
+define yum_local_mos_repo
+[mos-local-mirror]
+name=Mirantis mirror
+baseurl=file://$(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
 gpgcheck=0
 enabled=1
 priority=10
@@ -58,6 +66,7 @@ cat > $(SANDBOX)/etc/yum.repos.d/base.repo <<EOF
 $(yum_upstream_repo)
 $(yum_epel_repo)
 $(yum_local_repo)
+$(yum_local_mos_repo)
 EOF
 mkdir -p $(SANDBOX)/etc/yum/pluginconf.d/
 mkdir -p $(SANDBOX)/etc/yum-plugins/
@@ -192,8 +201,10 @@ show-centos-sandbox-repos: export sandbox_yum_conf_content:=$(sandbox_yum_conf)
 show-centos-sandbox-repos: export yum_upstream_repo_content:=$(yum_upstream_repo)
 show-centos-sandbox-repos: export yum_epel_repo_content:=$(yum_epel_repo)
 show-centos-sandbox-repos: export yum_local_repo_content:=$(yum_local_repo)
+show-centos-sandbox-repos: export yum_local_mos_repo_content:=$(yum_local_mos_repo)
 show-centos-sandbox-repos:
 	/bin/echo -e "$${sandbox_yum_conf_content}\n"
 	/bin/echo -e "$${yum_upstream_repo_content}\n"
 	/bin/echo -e "$${yum_epel_repo_content}\n"
 	/bin/echo -e "$${yum_local_repo_content}\n"
+	/bin/echo -e "$${yum_local_mos_repo_content}\n"
