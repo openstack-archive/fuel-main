@@ -471,6 +471,9 @@ mkdir -p ${wwwdir}/targetimages
 # UNPACKING PUPPET MANIFESTS
 # --------------------------
 
+#Make a symlink for mos-centos in /var/www/nailgun
+ln -s ${repodir}/mos-centos ${wwwdir}/mos-centos
+
 # create folders
 #mkdir -p /etc/puppet/${OPENSTACK_VERSION}/manifests/
 #mkdir -p /etc/puppet/${OPENSTACK_VERSION}/modules/
