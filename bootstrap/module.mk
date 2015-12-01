@@ -62,13 +62,8 @@ BOOTSTRAP_RPMS_CUSTOM:=\
 
 define yum_local_repo
 [mirror]
-name=Upstream mirror
+name=Mirantis mirror
 baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
-gpgcheck=0
-enabled=1
-[mos-mirror]
-name=MOS mirror
-baseurl=file://$(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
 gpgcheck=0
 enabled=1
 endef
@@ -109,7 +104,7 @@ $(BUILD_DIR)/bootstrap/initramfs.img: \
 
 $(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/centos/build.done
 	mkdir -p $(BUILD_DIR)/bootstrap
-	find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		(cd $(BUILD_DIR)/bootstrap/; cpio -imd './boot/vmlinuz*')
 	mv $(BUILD_DIR)/bootstrap/boot/vmlinuz* $(BUILD_DIR)/bootstrap/linux
 	rm -r $(BUILD_DIR)/bootstrap/boot
@@ -199,14 +194,10 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 	-sudo chroot $(INITRAMROOT) chkconfig postfix off
 	-sudo chroot $(INITRAMROOT) chown smmsp:smmsp /var/spool/clientmqueue
 
-# FIXME (vparakhin): there's no single RPM repo anymore, therefore
-# source mirrors for kernel, modules and libs are specified explicitly.
-# Perhaps this stuff should be moved to global config.mk
-
 	# Installing kernel modules
-	find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/modules/*' './boot/vmlinuz*' )
-	find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/firmware/*' )
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'libmlx4*' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './etc/*' './usr/lib64/*' )
