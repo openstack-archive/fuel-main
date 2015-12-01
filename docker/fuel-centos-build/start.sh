@@ -19,9 +19,7 @@ for loopdev in `seq 1 9`; do
 done
 
 # Start webserver and wait for it to be up
-mkdir -p /var/www/html/repo
-ln -s /repo/os /var/www/html/repo/os
-ln -s /mos-repo /var/www/html/
+ln -s /repo/os /var/www/html/os
 service httpd start
 
 cd /export
