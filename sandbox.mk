@@ -3,19 +3,21 @@
 define yum_local_repo
 [upstream-local-mirror]
 name=Local upstream mirror
-baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
+baseurl=file:///mirrors/centos/os/x86_64
 gpgcheck=0
 enabled=1
 priority=10
 endef
+
 define yum_local_mos_repo
 [mos-local-mirror]
 name=Mirantis mirror
-baseurl=file://$(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
+baseurl=file:///mirrors/mos-centos
 gpgcheck=0
 enabled=1
 priority=10
 endef
+
 define yum_upstream_repo
 [upstream]
 name=Upstream mirror
@@ -28,6 +30,7 @@ baseurl=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/updates/$(CENTOS_ARCH)/
 gpgcheck=0
 priority=1
 endef
+
 define yum_epel_repo
 [epel]
 name=epel mirror
@@ -35,7 +38,24 @@ baseurl=$(SANDBOX_MIRROR_EPEL)/$(CENTOS_MAJOR)/$(CENTOS_ARCH)/
 gpgcheck=0
 priority=3
 endef
+
 define sandbox_yum_conf
+[main]
+cachedir=/tmp/cache
+keepcache=0
+debuglevel=2
+logfile=/tmp/yum.log
+exclude=*.i686.rpm
+exactarch=1
+obsoletes=1
+gpgcheck=0
+plugins=1
+pluginpath=/etc/yum-plugins
+pluginconfpath=/etc/yum/pluginconf.d
+reposdir=/etc/yum.repos.d
+endef
+
+define external_sandbox_yum_conf
 [main]
 cachedir=$(SANDBOX)/cache
 keepcache=0
@@ -59,17 +79,19 @@ mkdir -p $(SANDBOX)/etc/yum.repos.d
 cat > $(SANDBOX)/etc/yum.conf <<EOF
 $(sandbox_yum_conf)
 EOF
+cat > $(SANDBOX)/etc/external.yum.conf <<EOF
+$(external_sandbox_yum_conf)
+EOF
 
 cp /etc/resolv.conf $(SANDBOX)/etc/resolv.conf
 cp /etc/hosts $(SANDBOX)/etc/hosts
 cat > $(SANDBOX)/etc/yum.repos.d/base.repo <<EOF
 $(yum_upstream_repo)
 $(yum_epel_repo)
-$(yum_local_repo)
-$(yum_local_mos_repo)
 EOF
 mkdir -p $(SANDBOX)/etc/yum/pluginconf.d/
 mkdir -p $(SANDBOX)/etc/yum-plugins/
+mkdir -p $(SANDBOX)/mirrors
 cp $(SOURCE_DIR)/mirror/centos/yum-priorities-plugin.py $(SANDBOX)/etc/yum-plugins/priorities.py
 cat > $(SANDBOX)/etc/yum/pluginconf.d/priorities.conf << EOF
 [main]
@@ -79,18 +101,29 @@ full_match=1
 EOF
 sudo rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
 echo "centos-release already installed"
-sudo rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
+sudo /bin/sh -c 'export TMPDIR=$(SANDBOX)/tmp/yum TMP=$(SANDBOX)/tmp/yum; yum -c $(SANDBOX)/etc/external.yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install yum'
+sudo rm -vf $(SANDBOX)/etc/yum.repos.d/Cent*
 echo 'Rebuilding RPM DB'
 sudo rpm --root=$(SANDBOX) --rebuilddb
 echo 'Installing packages for Sandbox'
-sudo /bin/sh -c 'export TMPDIR=$(SANDBOX)/tmp/yum TMP=$(SANDBOX)/tmp/yum; echo $(SANDBOX_PACKAGES) | xargs -n1 yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install'
+mount | grep -q $(SANDBOX)/mirrors || sudo mount --bind $(LOCAL_MIRROR) $(SANDBOX)/mirrors
 mount | grep -q $(SANDBOX)/proc || sudo mount --bind /proc $(SANDBOX)/proc
 mount | grep -q $(SANDBOX)/dev || sudo mount --bind /dev $(SANDBOX)/dev
+cat > $(SANDBOX)/etc/yum.repos.d/base.repo <<EOF
+$(yum_upstream_repo)
+$(yum_epel_repo)
+$(yum_local_repo)
+$(yum_local_mos_repo)
+EOF
+echo $(SANDBOX_PACKAGES) | xargs -n1 sudo chroot $(SANDBOX) yum -y --nogpgcheck install
+sudo rm -vf $(SANDBOX)/etc/yum.repos.d/epel*
+sudo rm -vf $(SANDBOX)/etc/yum.repos.d/Cent*
 endef
 
 define SANDBOX_DOWN
 sudo umount $(SANDBOX)/proc || true
 sudo umount $(SANDBOX)/dev || true
+sudo umount $(SANDBOX)/mirrors || true
 endef
 
 define apt_sources_list
