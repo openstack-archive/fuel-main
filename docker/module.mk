@@ -68,16 +68,17 @@ $(BUILD_DIR)/docker/fuel-centos.done: \
 	sudo docker build -t fuel/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build && \
 	mkdir -p $(BUILD_DIR)/docker/fuel-centos/ && \
 	echo "Generating fuel/centos base image. Refer to $(BUILD_DIR)/docker/fuel-centos-build.log if it fails." && \
-	sudo docker -D run --net=bridge --rm -a stdout -a stderr -i -t --privileged -v $(LOCAL_MIRROR_CENTOS):/repo:ro -v $(BUILD_DIR)/docker/fuel-centos:/export fuel/fuel-centos-build 2>&1 > $(BUILD_DIR)/docker/fuel-centos-build.log && \
+	sudo docker -D run --net=bridge --rm -a stdout -a stderr -i -t --privileged -v $(LOCAL_MIRROR_CENTOS):/repo:ro -v $(LOCAL_MIRROR_MOS_CENTOS):/mos-repo:ro -v $(BUILD_DIR)/docker/fuel-centos:/export fuel/fuel-centos-build 2>&1 > $(BUILD_DIR)/docker/fuel-centos-build.log && \
 	sudo $(SOURCE_DIR)/docker/fuel-centos-build/img2docker.sh $(BUILD_DIR)/docker/fuel-centos/fuel-centos.img fuel/centos
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/docker/repo-container-up.done: \
 		$(BUILD_DIR)/docker/fuel-centos.done
 	-sudo docker rm -f "$(REPO_CONTAINER)"
-	sudo docker -D run -d -p 80 -v $(LOCAL_MIRROR_CENTOS):/var/www/html --name "$(REPO_CONTAINER)" fuel/centos /usr/sbin/apachectl -DFOREGROUND
+	sudo docker -D run -d -p 80 -v $(LOCAL_MIRROR_CENTOS):/var/www/html/repo -v $(LOCAL_MIRROR_MOS_CENTOS):/var/www/html/mos-repo --name "$(REPO_CONTAINER)" fuel/centos /usr/sbin/apachectl -DFOREGROUND
 	REPO_PORT=`sudo docker port $(REPO_CONTAINER) 80 | cut -d':' -f2` && \
-	wget -t10 -T1 --waitretry 1 --retry-connrefused --no-proxy http://127.0.0.1:$${REPO_PORT}/os/x86_64/repodata/repomd.xml
+	wget -t10 -T1 -O /dev/null --waitretry 1 --retry-connrefused --no-proxy http://127.0.0.1:$${REPO_PORT}/repo/os/x86_64/repodata/repomd.xml && \
+	wget -t10 -T1 -O /dev/null --waitretry 1 --retry-connrefused --no-proxy http://127.0.0.1:$${REPO_PORT}/mos-repo/repodata/repomd.xml
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/docker/sources.done: \

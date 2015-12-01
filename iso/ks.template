@@ -12,6 +12,8 @@ selinux --disabled
 unsupported_hardware
 # SKIP CONFIGURING X
 skipx
+repo --name="MOS Centos repository" --baseurl=file:///mnt/source/mos-centos/ --cost=100
+{{extra_repos}}
 # NEVER ever place zerombr here, it breaks automated installation
 %include /tmp/bootloader.ks
 %include /tmp/partition.ks
@@ -443,10 +445,14 @@ repodir="${wwwdir}/${OPENSTACK_VERSION}"
 
 # Copying Centos files
 mkdir -p ${repodir}/centos/x86_64
+mkdir -p ${repodir}/mos-centos/x86_64
 cp -r ${SOURCE}/images ${repodir}/centos/x86_64
 cp -r ${SOURCE}/isolinux ${repodir}/centos/x86_64
 cp -r ${SOURCE}/repodata ${repodir}/centos/x86_64
 cp -r ${SOURCE}/Packages ${repodir}/centos/x86_64
+cp -r ${SOURCE}/mos-centos/repodata ${repodir}/mos-centos/x86_64
+cp -r ${SOURCE}/mos-centos/Packages ${repodir}/mos-centos/x86_64
+cp -r ${SOURCE}/extra-repos ${wwwdir}/
 cp ${SOURCE}/.treeinfo ${repodir}/centos/x86_64
 
 # Copying Ubuntu files
@@ -465,11 +471,16 @@ touch ${repodir}/ubuntu/x86_64/images/initrd.gz
 ln -s ${repodir}/centos ${wwwdir}/centos
 ln -s ${repodir}/ubuntu ${wwwdir}/ubuntu
 
+#Make a symlink for mos-centos in /var/www/nailgun in iso/ks.template 
+ln -s ${repodir}/mos-centos ${wwwdir}/mos-centos
+
 mkdir -p ${wwwdir}/targetimages
 
 # --------------------------
 # UNPACKING PUPPET MANIFESTS
 # --------------------------
+
+
 
 # create folders
 #mkdir -p /etc/puppet/${OPENSTACK_VERSION}/manifests/
@@ -491,10 +502,15 @@ touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
 # Prepare local repository specification
 rm /etc/yum.repos.d/CentOS*.repo
+cp ${SOURCE}/extra-repos/extra.repo /etc/yum.repos.d/
 cat > /etc/yum.repos.d/nailgun.repo << EOF
 [nailgun]
 name=Nailgun Local Repo
 baseurl=file:/var/www/nailgun/${OPENSTACK_VERSION}/centos/x86_64
+gpgcheck=0
+[mos]
+name=MOS Local Repo
+baseurl=file:/var/www/nailgun/${OPENSTACK_VERSION}/mos-centos/x86_64
 gpgcheck=0
 EOF
 

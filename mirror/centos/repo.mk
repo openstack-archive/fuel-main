@@ -1,6 +1,6 @@
 include $(SOURCE_DIR)/mirror/centos/yum_repos.mk
 
-.PHONY: show-yum-urls-centos show-yum-repos-centos
+.PHONY: show-yum-urls-centos show-yum-urls-centos-full show-yum-repos-centos
 
 MIRROR_CENTOS_OS_BASEURL?=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 
@@ -157,10 +157,14 @@ $(BUILD_DIR)/mirror/centos/urls.list: $(BUILD_DIR)/mirror/centos/requirements-rp
 # yumdownloader -q prints logs to stdout, filter them out
 	sed -rne '/\.rpm$$/ {p}' < $@.out > $@.pre
 	sort -u < $@.pre > $@.tmp
-	mv $@.tmp $@
+	mv $@.tmp $@.full
+	grep "$(MIRROR_CENTOS)" $@.full > $@
 
 show-yum-urls-centos: $(BUILD_DIR)/mirror/centos/urls.list
 	cat $<
+
+show-yum-urls-centos-full: $(BUILD_DIR)/mirror/centos/urls.list
+	cat $(BUILD_DIR)/mirror/centos/urls.list.full
 
 show-yum-repos-centos: \
 		$(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo \
@@ -182,5 +186,6 @@ $(BUILD_DIR)/mirror/centos/repo.done: \
 		$(BUILD_DIR)/mirror/centos/yum.done \
 		| $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
+		-u media://`head -1 $(SOURCE_DIR)/iso/.discinfo` \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/
 	$(ACTION.TOUCH)
