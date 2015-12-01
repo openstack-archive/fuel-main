@@ -191,7 +191,7 @@ if [ -f /root/.build_images ]; then
   echo "Building Fuel Docker images..."
   WORKDIR=$(mktemp -d /tmp/docker-buildXXX)
   SOURCE=/var/www/nailgun/docker
-  REPO_CONT_ID=$(docker -D run -d -p 80 -v /var/www/nailgun:/var/www/nailgun fuel/centos sh -c 'mkdir /var/www/html/os;ln -sf /var/www/nailgun/centos/x86_64 /var/www/html/os/x86_64;/usr/sbin/apachectl -DFOREGROUND')
+  REPO_CONT_ID=$(docker -D run -d -p 80 -v /var/www/nailgun:/var/www/nailgun fuel/centos sh -c 'mkdir -p /var/www/html/repo/os;ln -sf /var/www/nailgun/centos/x86_64 /var/www/html/repo/os/x86_64;ln -s /var/www/nailgun/mos-centos/x86_64 /var/www/html/mos-repo;/usr/sbin/apachectl -DFOREGROUND')
   RANDOM_PORT=$(docker port $REPO_CONT_ID 80 | cut -d':' -f2)
 
   for imagesource in /var/www/nailgun/docker/sources/*; do
