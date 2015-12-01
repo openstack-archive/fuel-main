@@ -21,7 +21,7 @@ help:
 	@echo '  clean - remove build directory and resetting .done flags'
 	@echo '  deep_clean - clean + removing $(LOCAL_MIRROR) directory'
 	@echo
-	@echo 'To build system using one of the proprietary mirrors use '
+	@echo 'To build system using one botof the proprietary mirrors use '
 	@echo 'the following commands:'
 	@echo
 	@echo 'Saratov office (default):'
