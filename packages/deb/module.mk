@@ -78,6 +78,7 @@ fuel-agent \
 fuel-library$(PRODUCT_VERSION) \
 fuel-mirror \
 fuel-nailgun-agent \
-network-checker
+network-checker \
+python-fuelclient
 
 $(eval $(foreach pkg,$(fuel_debian_packages),$(call build_deb,$(pkg))$(NEWLINE)))
