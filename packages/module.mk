@@ -82,7 +82,7 @@ $(eval $(call prepare_git_source,fuelmenu,fuelmenu-$(PACKAGE_VERSION).tar.gz,$(B
 #SHOTGUN PKGS
 $(eval $(call prepare_git_source,shotgun,shotgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/shotgun,HEAD,$(SHOTGUN_GERRIT_COMMIT)))
 #NETWORK-CHECKER PKGS
-$(eval $(call prepare_git_source,network-checker,network-checker-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/network-checker,HEAD,$(CREATEMIRROR_GERRIT_COMMIT)))
+$(eval $(call prepare_git_source,network-checker,network-checker-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/network-checker,HEAD,$(NETWORKCHECKER_GERRIT_COMMIT)))
 
 include $(SOURCE_DIR)/packages/rpm/module.mk
 include $(SOURCE_DIR)/packages/deb/module.mk
