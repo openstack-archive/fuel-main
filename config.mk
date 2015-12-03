@@ -220,7 +220,7 @@ MIRROR_UBUNTU_SUITE?=$(UBUNTU_RELEASE)
 MIRROR_UBUNTU_SECTION?=main universe multiverse restricted
 MIRROR_MOS_UBUNTU_METHOD?=http
 MIRROR_MOS_UBUNTU?=perestroika-repo-tst.infra.mirantis.net
-MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/$(PRODUCT_VERSION)
+MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/$(PRODUCT_VERSION).target.txt
 MIRROR_MOS_UBUNTU_SUITE?=$(PRODUCT_NAME)$(PRODUCT_VERSION)
 MIRROR_MOS_UBUNTU_SECTION?=main restricted
 # NOTE(kozhukalov): We are getting rid of staging mirrors (FWM) which are built using 'make mirror' command.
@@ -231,7 +231,7 @@ MIRROR_DOCKER?=http://mirror.fuel-infra.org/docker/$(PRODUCT_VERSION)
 # MIRROR_FUEL affects build process only if YUM_REPOS variable contains 'fuel'.
 # Otherwise it is ignored entirely.
 # MIRROR_FUEL?=http://perestroika-repo-tst.infra.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64
-MIRROR_FUEL?=http://perestroika-repo-tst.infra.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64
+MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os.target.txt
 
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.
@@ -272,3 +272,12 @@ SANDBOX_COPY_CERTS?=0
 #  \apt/metadata.json
 #  \concat/metadata.json
 USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES?=
+
+
+# If the URL given ended with target.txt then is't a pointer to a snapshot that
+# should be unlinked. If it is not - return it as is.
+expand_repo_url=$(shell url=$1; echo $${url} | grep -q -e '.*\.target\.txt$$' && echo "$${url%/*}/$$(curl -sSf $$url | head -1)/x86_64/" || echo $${url})
+
+# Expand repo URLs now
+MIRROR_FUEL:=$(call expand_repo_url,$(MIRROR_FUEL))
+MIRROR_MOS_UBUNTU_ROOR:=$(call expand_repo_url,$(MIRROR_MOS_UBUNTU_ROOT))
