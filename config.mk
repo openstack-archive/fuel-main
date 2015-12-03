@@ -159,7 +159,7 @@ LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
 USE_MIRROR?=ext
 
 ifeq ($(USE_MIRROR),ext)
-MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
+MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os.target.txt/x86_64
 MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_MAJOR)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
@@ -220,7 +220,7 @@ MIRROR_UBUNTU_SUITE?=$(UBUNTU_RELEASE)
 MIRROR_UBUNTU_SECTION?=main universe multiverse restricted
 MIRROR_MOS_UBUNTU_METHOD?=http
 MIRROR_MOS_UBUNTU?=perestroika-repo-tst.infra.mirantis.net
-MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/$(PRODUCT_VERSION)
+MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/$(PRODUCT_VERSION).target.txt
 MIRROR_MOS_UBUNTU_SUITE?=$(PRODUCT_NAME)$(PRODUCT_VERSION)
 MIRROR_MOS_UBUNTU_SECTION?=main restricted
 # NOTE(kozhukalov): We are getting rid of staging mirrors (FWM) which are built using 'make mirror' command.
@@ -230,7 +230,7 @@ MIRROR_DOCKER?=http://mirror.fuel-infra.org/docker/$(PRODUCT_VERSION)
 
 # MIRROR_FUEL affects build process only if YUM_REPOS variable contains 'fuel'.
 # Otherwise it is ignored entirely.
-MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os.target.txt
+MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os.target.txt/x86_64
 
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.
@@ -272,13 +272,47 @@ SANDBOX_COPY_CERTS?=0
 #  \concat/metadata.json
 USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES?=
 
-# If the URL given ended with target.txt then is't a pointer to a snapshot that
-# should be unlinked. If it is not - return it as is.
-expand_repo_url=$(shell url=$1; echo $${url} | grep -q -e '.*\.target\.txt$$' && echo "$${url%/*}/$$(curl -sSf $$url | head -1)/x86_64/" || echo $${url})
+# $(1): URL
+# $(2): string for substitution (usually - same as URL)
+#
+# If URL contains some foo.target.txt, get path to snapshot, perform
+# substitution of foo.target.txt with snapshot path in string and
+# return it.
+# Return original string if substitution should/can not be performed.
+# Return empty string in case of error.
+expand_target=$(shell $(expand_target_script))
+define expand_target_script
+url='$(1)';
+str='$(2)';
 
-# Expand repo URLs now
-#MIRROR_CENTOS:=$(call expand_repo_url,$(MIRROR_CENTOS))
-#MIRROR_CENTOS_KERNEL:=$(call expand_repo_url,$(MIRROR_CENTOS_KERNEL))
-#SANDBOX_MIRROR_CENTOS_UPSTREAM:=$(call expand_repo_url,$(SANDBOX_MIRROR_CENTOS_UPSTREAM))
-MIRROR_FUEL:=$(call expand_repo_url,$(MIRROR_FUEL))
+if echo "$${url}" | grep -q '\.target\.txt';
+then
+  if ! echo "$${url}" | grep -q '^https\?://';
+  then
+    echo "expand_target: Warning, cannot expand using non-http URL $${url}" >&2;
+    echo $${str};
+    exit 0;
+  fi;
 
+  target_txt_url=$$(echo "$${url}" | grep -o '.*target.txt');
+  snapshot_path=$$(curl -sSf "$${target_txt_url}" | head -1);
+  ec=$$?;
+  if [[ $$ec -gt 0 || -z $$snapshot_path ]];
+  then
+    echo "expand_target: Error occured during expansion using URL $${url} ; snapshot path: '$$snapshot_path' ; curl exit code: $$ec" >&2;
+    exit "$$ec";
+  fi;
+  target_txt=$${target_txt_url##*/};
+  echo "$${str}" | sed "s|/$${target_txt}|/$${snapshot_path}|";
+else
+  echo "$${str}";
+fi
+endef
+
+check_expand_target=$(if $(strip $(1)),,$(error "expand_target: ERROR"))
+
+# Expand repo URLs
+override MIRROR_FUEL:=$(call expand_target,$(MIRROR_FUEL),$(MIRROR_FUEL))
+$(call check_expand_target,$(MIRROR_FUEL))
+override MIRROR_MOS_UBUNTU_ROOT:=$(call expand_target,$(MIRROR_MOS_UBUNTU_METHOD)://$(MIRROR_MOS_UBUNTU)$(MIRROR_MOS_UBUNTU_ROOT),$(MIRROR_MOS_UBUNTU_ROOT))
+$(call check_expand_target,$(MIRROR_MOS_UBUNTU_ROOT))
