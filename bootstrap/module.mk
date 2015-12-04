@@ -97,7 +97,7 @@ endef
 #FIXME Partial-Bug: #1403088
 YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --exclude=ruby-2.1.1  --exclude=ruby21 --installroot=$(INITRAMROOT) -y --nogpgcheck
 
-KERNEL_PATTERN:=kernel-lt-3.10.*
+KERNEL_PATTERN:=kernel-3.10.0*
 KERNEL_FIRMWARE_PATTERN:=linux-firmware*
 
 clean: clean-bootstrap
@@ -114,7 +114,7 @@ $(BUILD_DIR)/bootstrap/initramfs.img: \
 
 $(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/centos/build.done
 	mkdir -p $(BUILD_DIR)/bootstrap
-	find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		(cd $(BUILD_DIR)/bootstrap/; cpio -imd './boot/vmlinuz*')
 	mv $(BUILD_DIR)/bootstrap/boot/vmlinuz* $(BUILD_DIR)/bootstrap/linux
 	rm -r $(BUILD_DIR)/bootstrap/boot
@@ -213,9 +213,9 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 # Perhaps this stuff should be moved to global config.mk
 
 	# Installing kernel modules
-	find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/modules/*' './boot/vmlinuz*' )
-	find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/firmware/*' )
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'libmlx4*' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './etc/*' './usr/lib64/*' )
