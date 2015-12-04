@@ -77,8 +77,7 @@ switch_bootstrap () {
 	# XXX: sometimes dnsmasq stops after cobbler sync
 	maybe_restart_dnsmasq
 	run_puppet astute "$astute_manifest"
-	# XXX: astute puppet manifest should take care to restart astuted on its own
-	dockerctl shell astute killall -sHUP supervisord
+	dockerctl shell astute service astute status
 }
 
 switch_bootstrap $1
