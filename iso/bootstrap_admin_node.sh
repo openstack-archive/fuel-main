@@ -238,13 +238,14 @@ get_bootstrap_skip () {
 # Actually build the bootstrap image
 build_ubuntu_bootstrap () {
 	local log='/var/log/fuel-bootstrap-image-build.log'
+        local ret=1
 	echo "Bulding default ubuntu-bootstrap image" >&2
 	if fuel-bootstrap -v --debug build --activate --notify-webui >>"$log" 2>&1; then
 		ret=0
 	fi
         if [ $ret -ne 0 ]; then
 		# FIXME Add correct how-to url and problem description
-		warning="WARNING: Failed to build the bootstrap image, see $log 
+		warning="WARNING: Failed to build the bootstrap image, see $log
 for details. Perhaps your Internet connection is broken. Please fix the problem and run
 \`fuel-bootstrap build --activate --notify-webui\`"
                 fuel notify --topic warning --send "$warning"
