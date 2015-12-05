@@ -3,7 +3,7 @@ Name=Setup boot device
 ConditionFileExecutable=/usr/bin/setup-bootdev
 ConditionPathExists=/etc/sysconfig/network-scripts/network-functions
 Before=network.service mcollective.service ntpdate.service ntpd.service
-After=systemd-udevd.service
+After=sysinit.target
 
 [Service]
 Type=oneshot
