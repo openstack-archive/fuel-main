@@ -1,6 +1,20 @@
 #!/bin/bash
 set -e
 
+service_try_count=15
+service_sleep_time=1
+while [ 0 -lt ${service_try_count} ]; do
+	stat=$(systemctl show systemd-udev-trigger -p SubState)
+	if [[ "${stat##*=}" != "exited" ]]; then
+		echo "Waiting for udev exited (${service_try_count})"
+		sleep ${service_sleep_time}
+		service_try_count=$(expr ${service_try_count} - 1)
+	else
+		echo "Udev is exited, continue to setup boot device"
+		break
+	fi
+done
+
 source /etc/sysconfig/network-scripts/network-functions
 
 get_bootdev() {
