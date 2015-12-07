@@ -12,6 +12,7 @@ chown -R rabbitmq:rabbitmq /var/log/rabbitmq
 
 systemctl daemon-reload
 puppet apply --debug --verbose --color false --detailed-exitcodes \
+  --logdest /var/log/puppet/rabbitmq.log \
   /etc/puppet/modules/nailgun/examples/rabbitmq-only.pp || [[ $? == 2 ]]
 
 

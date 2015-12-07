@@ -13,4 +13,5 @@ chmod -R 755 /usr/share/nailgun/static 2>/dev/null
 systemctl daemon-reload
 
 puppet apply --debug --verbose --color false --detailed-exitcodes \
+  --logdest /var/log/puppet/nginx.log \
   /etc/puppet/modules/nailgun/examples/nginx-only.pp

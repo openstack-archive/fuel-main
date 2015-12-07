@@ -14,6 +14,7 @@ ln -sf /etc/fuel/version.yaml /etc/nailgun/version.yaml
 systemctl daemon-reload
 
 puppet apply --debug --verbose --color false --detailed-exitcodes \
+  --logdest /var/log/puppet/nailgun.log \
   /etc/puppet/modules/nailgun/examples/nailgun-only.pp
 
 

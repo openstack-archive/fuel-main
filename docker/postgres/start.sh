@@ -16,6 +16,7 @@ fi
 systemctl daemon-reload
 
 puppet apply --debug --verbose --color false --detailed-exitcodes \
+  --logdest /var/log/puppet/postgres.log \
   /etc/puppet/modules/nailgun/examples/postgres-only.pp
 
 
