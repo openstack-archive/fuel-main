@@ -259,6 +259,10 @@ make_ubuntu_bootstrap_stub
 
 service docker start
 
+echo "Set vm.min_free_kbytes..."
+old_sysctl_vm_value=$(sysctl -n vm.min_free_kbytes)
+sysctl vm.min_free_kbytes=65535
+
 if [ -f /root/.build_images ]; then
   #Fail on all errors
   set -e
@@ -300,6 +304,9 @@ else
   echo "Loading docker images. (This may take a while)"
   docker load -i /var/www/nailgun/docker/images/fuel-images.tar
 fi
+
+echo "Restore sysctl vm.min_free_kbytes value..."
+sysctl -v vm.min_free_kbytes=${old_sysctl_vm_value}
 
 # apply puppet
 puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
