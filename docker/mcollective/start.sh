@@ -6,9 +6,11 @@ rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
 puppet apply --debug --verbose --color false --detailed-exitcodes \
+  --logdest /var/log/puppet/mcollective-hiera.log \
   /etc/puppet/modules/nailgun/examples/hiera-for-container.pp
 
 puppet apply --debug --verbose --color false --detailed-exitcodes \
+  --logdest /var/log/puppet/mcollective.log \
   /etc/puppet/modules/nailgun/examples/mcollective-only.pp
 
 for loopdev in $(seq 1 9); do

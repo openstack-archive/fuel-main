@@ -9,4 +9,5 @@ rpm --rebuilddb
 systemctl daemon-reload
 
 puppet apply --debug --verbose --color false --detailed-exitcodes \
+  --logdest /var/log/puppet/keystone.log \
   /etc/puppet/modules/nailgun/examples/keystone-only.pp || [[ $? == 2 ]]

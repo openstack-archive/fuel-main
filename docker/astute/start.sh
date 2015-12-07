@@ -10,4 +10,5 @@ mkdir -p /var/log/astute
 
 systemctl daemon-reload
 puppet apply --debug --verbose --color false --detailed-exitcodes \
+  --logdest /var/log/puppet/astute.log \
   /etc/puppet/modules/nailgun/examples/astute-only.pp

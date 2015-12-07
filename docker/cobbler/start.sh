@@ -24,9 +24,11 @@ fi
 systemctl daemon-reload
 
 puppet apply --debug --verbose --color false --detailed-exitcodes \
+  --logdest /var/log/puppet/cobbler.log \
   /etc/puppet/modules/nailgun/examples/cobbler-only.pp || [[ $? == 2 ]]
 
 puppet apply --debug --verbose --color false --detailed-exitcodes \
+  --logdest /var/log/puppet/cobbler-dhcp-default-range.log \
   /etc/puppet/modules/nailgun/examples/dhcp-default-range.pp || [[ $? == 2 ]]
 
 
