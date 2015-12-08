@@ -39,12 +39,11 @@ dhcp
 docker
 fuel-bootstrap-image
 fuel-bootstrap-image-builder
-fuel-createmirror
 # NOTE(kozhukalov): We don't need target centos images in 8.0
 # fuel-target-centos-images{{CENTOS_RELEASE}}
-fuel-package-updates
 fuelmenu
 fuel-docker-images
+fuel-mirror
 gdisk
 lrzip
 lsof
@@ -425,7 +424,7 @@ touch ${repodir}/ubuntu/x86_64/images/initrd.gz
 # make links for backward compatibility
 ln -s ${repodir}/centos ${wwwdir}/centos
 ln -s ${repodir}/ubuntu ${wwwdir}/ubuntu
-#Make a symlink for mos-centos in /var/www/nailgun in iso/ks.template 
+#Make a symlink for mos-centos in /var/www/nailgun in iso/ks.template
 ln -s ${repodir}/mos-centos ${wwwdir}/mos-centos
 ln -s ${repodir}/extra-repos ${wwwdir}/extra-repos
 
@@ -605,4 +604,3 @@ if [[ ! -z $adminif ]]; then
     /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-${adminif}
 fi
 %end
-
