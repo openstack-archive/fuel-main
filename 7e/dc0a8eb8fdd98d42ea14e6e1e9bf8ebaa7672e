@@ -1,0 +1,14 @@
+Verified+2: Jenkins
+Code-Review+1: Sergey Slipushenko <sslypushenko@mirantis.com>
+Code-Review+1: Fedor Zhadaev <fzhadaev@mirantis.com>
+Code-Review+1: Artur Svechnikov <asvechnikov@mirantis.com>
+Code-Review+1: Albert Syriy <asyriy@mirantis.com>
+Code-Review+2: Sergey Kulanov <skulanov@mirantis.com>
+Workflow+1: Sergey Kulanov <skulanov@mirantis.com>
+Code-Review+1: Maksim Malchuk <mmalchuk@mirantis.com>
+Code-Review+1: sryabin <sryabin@mirantis.com>
+Submitted-by: Jenkins
+Submitted-at: Tue, 08 Dec 2015 12:24:41 +0000
+Reviewed-on: https://review.openstack.org/253596
+Project: openstack/fuel-main
+Branch: refs/heads/master
