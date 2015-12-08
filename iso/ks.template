@@ -425,7 +425,7 @@ touch ${repodir}/ubuntu/x86_64/images/initrd.gz
 # make links for backward compatibility
 ln -s ${repodir}/centos ${wwwdir}/centos
 ln -s ${repodir}/ubuntu ${wwwdir}/ubuntu
-#Make a symlink for mos-centos in /var/www/nailgun in iso/ks.template 
+#Make a symlink for mos-centos in /var/www/nailgun in iso/ks.template
 ln -s ${repodir}/mos-centos ${wwwdir}/mos-centos
 ln -s ${repodir}/extra-repos ${wwwdir}/extra-repos
 
@@ -517,15 +517,21 @@ wait_for_external_config=${wait_for_external_config:-no}
 EOF
 
 # Prepare custom /etc/issue logon banner and script for changing IP in it
-cat > /etc/issue << EOF
+# We can have several interface naming schemes applied and several interface
+# UI will listen on
+ipstr=""
+NL=$'\n'
+for ip in `ip -o -4 a | grep -e "e[nt][hopsx].*" | awk '{print \$4 }' | cut -d/ -f1`; do
+  ipstr="${ipstr}https://${ip}:8443${NL}"
+done
+cat > /etc/issue <<EOF
 #########################################
 #       Welcome to the Fuel server      #
 #########################################
 Server is running on \m platform
 
 Fuel UI is available on:
-https://\4{${adminif:-eth0}}:8443
-
+$ipstr
 Default administrator login:    root
 Default administrator password: r00tme
 
