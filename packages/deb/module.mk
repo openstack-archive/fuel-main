@@ -44,7 +44,7 @@ $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/repos/repos.done
 
 	DEBFULLNAME=`awk -F'=' '/DEBFULLNAME/ {print $$$$2}' $(BUILD_DIR)/packages/sources/$1/version` \
 		DEBEMAIL=`awk -F'=' '/DEBEMAIL/ {print $$$$2}' $(BUILD_DIR)/packages/sources/$1/version` \
-		sudo -E dch -c $$(SANDBOX_UBUNTU)/tmp/$1/debian/changelog -b --force-distribution \
+		sudo -E dch -c $$(SANDBOX_UBUNTU)/tmp/$1/debian/changelog -D trusty -b --force-distribution \
 		-v $(PACKAGE_VERSION)-`awk -F'=' '/RELEASE/ {print $$$$2}' $(BUILD_DIR)/packages/sources/$1/version` \
 		"`awk -F'=' '/DEBMSG/ {print $$$$2}' $(BUILD_DIR)/packages/sources/$1/version`"
 	dpkg-checkbuilddeps $(BUILD_DIR)/repos/$1/debian/control 2>&1 | sed 's/^dpkg-checkbuilddeps: Unmet build dependencies: //g' | sed 's/([^()]*)//g;s/|//g' | sudo tee $$(SANDBOX_UBUNTU)/tmp/$1.installdeps
