@@ -81,6 +81,7 @@ name=CentOS-$(CENTOS_RELEASE) - Extras
 baseurl=$(MIRROR_CENTOS)/extras/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
+exclude=*i686
 priority=90
 
 [centosplus]
