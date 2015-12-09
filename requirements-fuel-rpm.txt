@@ -2,7 +2,9 @@ fencing-agent
 fuel
 fuel-agent
 fuel-bootstrap-cli
+fuel-bootstrap-image
 fuel-dockerctl
+fuel-docker-images
 fuel-ha-utils
 fuel-library
 fuelmenu
@@ -21,6 +23,6 @@ nailgun-agent
 nailgun-mcagents
 network-checker
 python-fuelclient
-ruby21-nailgun-mcagents
-ruby21-rubygem-astute
+python-packetary
+rubygem-astute
 shotgun
