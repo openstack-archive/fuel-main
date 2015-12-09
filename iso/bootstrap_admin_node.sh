@@ -353,7 +353,7 @@ EOF
 
 #Check if repo is accessible
 echo "Checking for access to updates repository..."
-repourl=$(grep baseurl /etc/yum.repos.d/*updates* 2>/dev/null | cut -d'=' -f2- | head -1)
+repourl=$(yum repolist all -v | awk '{if ($1 ~ "baseurl" && $3 ~ "updates") print $3}' | head -1)
 if urlaccesscheck check "$repourl" ; then
   UPDATE_ISSUES=0
 else
