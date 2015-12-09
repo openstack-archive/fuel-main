@@ -57,11 +57,12 @@ $(BUILD_DIR)/packages/rpm/$1.done:
 	sudo mount --bind /dev $$(SANDBOX)/dev && \
 	sudo mount --bind $$(LOCAL_MIRROR) $$(SANDBOX)/mirrors && \
 	mkdir -p $$(SANDBOX)/tmp/SOURCES && \
-	sudo cp -r $(BUILD_DIR)/packages/sources/$1/* $$(SANDBOX)/tmp/SOURCES && \
+	sudo cp -r $(BUILD_DIR)/packages/sources/$1/* $$(SANDBOX)/tmp/SOURCES
+	-test -f $(BUILD_DIR)/packages/sources/$1/changelog && cat $(BUILD_DIR)/packages/sources/$1/changelog >> $$(SPECFILE)
 	sudo cp $$(SPECFILE) $$(SANDBOX)/tmp && \
 	sudo chroot $$(SANDBOX) yum-builddep -y /tmp/$1.spec
 	test -f $$(SANDBOX)/tmp/SOURCES/version && \
-		sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" --define "release `awk -F'=' '/RELEASE/ {print $$$$2}' $$(SANDBOX)/tmp/SOURCES/version`" -ba /tmp/$1.spec || \
+		sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" --define "release `awk -F'=' '/RPMRELEASE/ {print $$$$2}' $$(SANDBOX)/tmp/SOURCES/version`" -ba /tmp/$1.spec || \
 		sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/$1.spec
 	cp $$(SANDBOX)/tmp/RPMS/*/*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	sudo sh -c "$$$${SANDBOX_DOWN}"
