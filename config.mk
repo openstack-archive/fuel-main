@@ -132,18 +132,18 @@ PYTHON_FUELCLIENT_COMMIT?=stable/6.1
 ASTUTE_COMMIT?=stable/6.1
 OSTF_COMMIT?=stable/6.1
 
-FUELLIB_REPO?=https://github.com/stackforge/fuel-library.git
-NAILGUN_REPO?=https://github.com/stackforge/fuel-web.git
-PYTHON_FUELCLIENT_REPO?=https://github.com/stackforge/python-fuelclient.git
-ASTUTE_REPO?=https://github.com/stackforge/fuel-astute.git
-OSTF_REPO?=https://github.com/stackforge/fuel-ostf.git
+FUELLIB_REPO?=https://github.com/openstack/fuel-library.git
+NAILGUN_REPO?=https://github.com/openstack/fuel-web.git
+PYTHON_FUELCLIENT_REPO?=https://github.com/openstack/python-fuelclient.git
+ASTUTE_REPO?=https://github.com/openstack/fuel-astute.git
+OSTF_REPO?=https://github.com/openstack/fuel-ostf.git
 
 # Gerrit URLs and commits
-FUELLIB_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-library
-NAILGUN_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-web
-PYTHON_FUELCLIENT_GERRIT_URL?=https://review.openstack.org/stackforge/python-fuelclient
-ASTUTE_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-astute
-OSTF_GERRIT_URL?=https://review.openstack.org/stackforge/fuel-ostf
+FUELLIB_GERRIT_URL?=https://review.openstack.org/openstack/fuel-library
+NAILGUN_GERRIT_URL?=https://review.openstack.org/openstack/fuel-web
+PYTHON_FUELCLIENT_GERRIT_URL?=https://review.openstack.org/openstack/python-fuelclient
+ASTUTE_GERRIT_URL?=https://review.openstack.org/openstack/fuel-astute
+OSTF_GERRIT_URL?=https://review.openstack.org/openstack/fuel-ostf
 
 FUELLIB_GERRIT_COMMIT?=none
 NAILGUN_GERRIT_COMMIT?=none
