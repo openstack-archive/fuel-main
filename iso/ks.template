@@ -44,6 +44,7 @@ fuel-bootstrap-image-builder
 fuelmenu
 fuel-docker-images
 fuel-mirror
+fuel-openstack-metadata
 gdisk
 lrzip
 lsof
@@ -388,7 +389,8 @@ elif test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
     mount -o loop ${FS}/nailgun.iso ${SOURCE}
 fi
 
-OPENSTACK_VERSION=`cat ${SOURCE}/openstack_version`
+# this file is provided by fuel-openstack-metadata package
+OPENSTACK_VERSION=`cat /etc/fuel_openstack_version`
 
 # ----------------------
 # UNPACKING REPOSITORIES
