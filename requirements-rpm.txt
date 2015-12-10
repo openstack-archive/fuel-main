@@ -16,6 +16,7 @@ cronie
 cronie-anacron
 crontabs
 Cython
+daemonize
 debootstrap
 deltarpm
 dhcp
