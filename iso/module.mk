@@ -1,56 +1,31 @@
-.PHONY: all iso version-yaml centos-repo ubuntu-repo
+.PHONY: all iso
 .DELETE_ON_ERROR: $(ISO_PATH)
 
-all: iso version-yaml
+all: iso
 
 ISOROOT:=$(BUILD_DIR)/iso/isoroot
 
 iso: $(ISO_PATH)
 
-########################
-# VERSION-YAML ARTIFACT
-########################
-version-yaml: $(ARTS_DIR)/$(VERSION_YAML_ART_NAME)
+###################
+# BUILD IDENTIFIERS
+###################
 
-$(ARTS_DIR)/$(VERSION_YAML_ART_NAME): $(ISOROOT)/$(VERSION_YAML_ART_NAME)
-	$(ACTION.COPY)
-
-$(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,PRODUCT_VERSION)
-$(ISOROOT)/$(VERSION_YAML_ART_NAME): $(call depv,FEATURE_GROUPS)
-$(ISOROOT)/$(VERSION_YAML_ART_NAME): $(BUILD_DIR)/repos/repos.done
-	mkdir -p $(@D)
-	echo "VERSION:" > $@
-	echo "  feature_groups:" >> $@
-	$(foreach group,$(FEATURE_GROUPS),echo "    - $(group)" >> $@;)
-	echo "  production: \"$(PRODUCTION)\"" >> $@
-	echo "  release: \"$(PRODUCT_VERSION)\"" >> $@
-	echo "  api: \"1.0\"" >> $@
 ifdef BUILD_NUMBER
-	echo "  build_number: \"$(BUILD_NUMBER)\"" >> $@
+$(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/fuel_build_number
+$(ISOROOT)/fuel_build_number:
+	echo "$(BUILD_NUMBER)" > $@
 endif
+
 ifdef BUILD_ID
-	echo "  build_id: \"$(BUILD_ID)\"" >> $@
+$(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/fuel_build_id
+$(ISOROOT)/fuel_build_id:
+	echo "$(BUILD_ID)" > $@
 endif
-	cat $(BUILD_DIR)/repos/version.yaml >> $@
 
-########################
-# CENTOS MIRROR ARTIFACT
-########################
-centos-repo: $(ARTS_DIR)/$(CENTOS_REPO_ART_NAME)
-
-$(ARTS_DIR)/$(CENTOS_REPO_ART_NAME): $(BUILD_DIR)/iso/isoroot-centos.done
-	mkdir -p $(@D)
-	tar cf $@ -C $(ISOROOT) --xform s:^:centos-repo/: comps.xml  EFI  images  isolinux  Packages  repodata
-
-CENTOS_DEP_FILE:=$(call find-files,$(DEPS_DIR_CURRENT)/$(CENTOS_REPO_ART_NAME))
-
-ifdef CENTOS_DEP_FILE
-$(BUILD_DIR)/iso/isoroot-centos.done: \
-		$(BUILD_DIR)/iso/isoroot-dotfiles.done
-	mkdir -p $(ISOROOT)
-	tar xf $(CENTOS_DEP_FILE) -C $(ISOROOT) --xform s:^centos-repo/::
-	$(ACTION.TOUCH)
-else
+###############
+# CENTOS MIRROR
+###############
 $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/mirror/make-changelog.done \
@@ -63,26 +38,10 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 	rsync -rp $(LOCAL_MIRROR)/extra-repos $(ISOROOT)
 	rsync -rp $(LOCAL_MIRROR)/centos-packages.changelog $(ISOROOT)
 	$(ACTION.TOUCH)
-endif
 
-########################
-# UBUNTU MIRROR ARTIFACT
-########################
-ubuntu-repo: $(ARTS_DIR)/$(UBUNTU_REPO_ART_NAME)
-
-$(ARTS_DIR)/$(UBUNTU_REPO_ART_NAME): $(BUILD_DIR)/iso/isoroot-ubuntu.done
-	mkdir -p $(@D)
-	tar cf $@ -C $(ISOROOT)/ubuntu --xform s:^./:ubuntu-repo/: .
-
-UBUNTU_DEP_FILE:=$(call find-files,$(DEPS_DIR_CURRENT)/$(UBUNTU_REPO_ART_NAME))
-
-ifdef UBUNTU_DEP_FILE
-$(BUILD_DIR)/iso/isoroot-ubuntu.done: \
-		$(BUILD_DIR)/iso/isoroot-dotfiles.done
-	mkdir -p $(ISOROOT)/ubuntu
-	tar xf $(UBUNTU_DEP_FILE) -C $(ISOROOT)/ubuntu --xform s:^ubuntu-repo/::
-	$(ACTION.TOUCH)
-else
+###############
+# UBUNTU MIRROR
+###############
 $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/mirror/make-changelog.done \
@@ -92,24 +51,13 @@ $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 	rsync -rp $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ $(ISOROOT)/ubuntu/
 	rsync -rp $(LOCAL_MIRROR)/ubuntu-packages.changelog $(ISOROOT)
 	$(ACTION.TOUCH)
-endif
-
-########################
-# PUPPET
-########################
-# PUPPET_ART_NAME is defined in /puppet/module.mk
-# we need to repack puppet artifact because artifact
-# has puppet directory packed into it but we need to have an
-# archive of puppet modules packed into it
-#$(ISOROOT)/puppet-slave.tgz: $(BUILD_DIR)/puppet/$(PUPPET_ART_NAME)
-#	tar zxf $(BUILD_DIR)/puppet/$(PUPPET_ART_NAME) -C $(BUILD_DIR)/iso
-#	tar zcf $(ISOROOT)/puppet-slave.tgz -C $(BUILD_DIR)/iso/puppet .
 
 ########################
 # DOCKER
 ########################
 # DOCKER_ART_NAME is defined in /docker/module.mk
-$(ISOROOT)/docker.done: $(BUILD_DIR)/docker/build.done \
+$(ISOROOT)/docker.done: \
+		$(BUILD_DIR)/docker/build.done \
 		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done
 	$(ACTION.TOUCH)
 
@@ -129,8 +77,7 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/ks.cfg \
 		$(ISOROOT)/bootstrap_admin_node.sh \
 		$(ISOROOT)/bootstrap_admin_node.conf \
-		$(ISOROOT)/send2syslog.py \
-		$(ISOROOT)/version.yaml
+		$(ISOROOT)/send2syslog.py
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
@@ -175,9 +122,7 @@ $(ISOROOT)/bootstrap_admin_node.conf: $(SOURCE_DIR)/iso/bootstrap_admin_node.con
 $(ISOROOT)/send2syslog.py: $(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py ; $(ACTION.COPY)
 $(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/fuel-nailgun.done
 
-ifeq ($(PRODUCTION),docker)
 $(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/docker.done
-endif
 
 ########################
 # Iso image root file system.
@@ -188,7 +133,6 @@ $(BUILD_DIR)/iso/isoroot.done: \
 		$(BUILD_DIR)/iso/isoroot-ubuntu.done \
 		$(BUILD_DIR)/iso/isoroot-files.done
 	$(ACTION.TOUCH)
-
 
 ########################
 # Building CD and USB stick images

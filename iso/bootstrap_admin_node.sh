@@ -3,7 +3,7 @@ mkdir -p /var/log/puppet
 exec > >(tee -i /var/log/puppet/bootstrap_admin_node.log)
 exec 2>&1
 
-FUEL_RELEASE=$(grep release: /etc/fuel/version.yaml | cut -d: -f2 | tr -d '" ')
+FUEL_RELEASE=$(cat /etc/fuel_release)
 BOOTSTRAP_NODE_CONFIG="/etc/fuel/bootstrap_admin_node.conf"
 bs_build_log='/var/log/fuel-bootstrap-image-build.log'
 bs_status=0
@@ -356,10 +356,6 @@ if [ -f /root/.build_images ]; then
     cp -R /etc/puppet /etc/fuel $WORKDIR/$image/etc
     sed -e "s/_PORT_/${RANDOM_PORT}/" -i $WORKDIR/$image/Dockerfile
     sed -r -e 's/^"?PRODUCTION"?:.*/PRODUCTION: "docker-build"/' -i $WORKDIR/$image/etc/fuel/astute.yaml
-    # FIXME(kozhukalov): Once this patch https://review.openstack.org/#/c/219581/ is merged
-    # remove this line. fuel-library is to use PRODUCTION value from astute.yaml instead of
-    # the same value from version.yaml. It is a part of version.yaml deprecation plan.
-    sed -e 's/production:.*/production: "docker-build"/' -i $WORKDIR/$image/etc/fuel/version.yaml
     docker build -t fuel/${image}_${FUEL_RELEASE} $WORKDIR/$image
   done
   docker rm -f $REPO_CONT_ID

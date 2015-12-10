@@ -6,10 +6,6 @@ rm -f /var/lib/rpm/__db.*
 rpm --rebuilddb
 
 
-#Workaround so nailgun can see version.yaml
-ln -sf /etc/fuel/version.yaml /etc/nailgun/version.yaml
-
-
 #Run puppet to apply custom config
 systemctl daemon-reload
 
