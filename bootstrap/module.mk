@@ -2,26 +2,12 @@
 
 include $(SOURCE_DIR)/bootstrap/ubuntu.mk
 
-bootstrap: $(ARTS_DIR)/$(BOOTSTRAP_ART_NAME)
+bootstrap: $(BUILD_DIR)/bootstrap/build.done
 
-$(ARTS_DIR)/$(BOOTSTRAP_ART_NAME): \
-		$(BUILD_DIR)/bootstrap/build.done
-	mkdir -p $(@D)
-	tar zcf $@ -C $(BUILD_DIR) bootstrap/linux bootstrap/initramfs.img
-
-BOOTSTRAP_DEP_FILE:=$(call find-files,$(DEPS_DIR_CURRENT)/$(BOOTSTRAP_ART_NAME))
-
-ifdef BOOTSTRAP_DEP_FILE
-$(BUILD_DIR)/bootstrap/build.done: $(BOOTSTRAP_DEP_FILE)
-	mkdir -p $(@D)
-	tar zxf $(BOOTSTRAP_DEP_FILE) -C $(BUILD_DIR)
-	$(ACTION.TOUCH)
-else
 $(BUILD_DIR)/bootstrap/build.done: \
 		$(BUILD_DIR)/bootstrap/linux \
 		$(BUILD_DIR)/bootstrap/initramfs.img
 	$(ACTION.TOUCH)
-endif
 
 INITRAMROOT:=$(BUILD_DIR)/bootstrap/initram-root
 

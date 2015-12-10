@@ -392,6 +392,10 @@ fi
 # this file is provided by fuel-openstack-metadata package
 OPENSTACK_VERSION=`cat /etc/fuel_openstack_version`
 
+# build identifiers
+test -e ${SOURCE}/build_number && cp ${SOURCE}/build_number /etc/build_number
+test -e ${SOURCE}/build_id && cp ${SOURCE}/build_id /etc/build_id
+
 # ----------------------
 # UNPACKING REPOSITORIES
 # ----------------------
@@ -496,14 +500,6 @@ EOF
 # Install bootstrap_admin_node.sh and enabling it
 install -m 0777 -D ${SOURCE}/bootstrap_admin_node.sh /usr/local/sbin/bootstrap_admin_node.sh
 echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
-
-# Copying version.yaml file. It contains COMMIT_SHA of last commit.
-RELEASE=$(awk '/release/{gsub(/"/, "");print $2}' ${SOURCE}/version.yaml)
-mkdir -p /etc/nailgun /etc/fuel/${RELEASE} /etc/fuel/release_versions
-cp ${SOURCE}/version.yaml /etc/nailgun/version.yaml
-cp ${SOURCE}/version.yaml /etc/fuel/${RELEASE}/version.yaml
-ln -s /etc/fuel/${RELEASE}/version.yaml /etc/fuel/version.yaml
-cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_version`.yaml
 
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
