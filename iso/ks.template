@@ -437,7 +437,6 @@ mkdir -p /var/lib/hiera
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
 # Prepare local repository specification
-rm /etc/yum.repos.d/CentOS*.repo
 cp ${SOURCE}/extra-repos/extra.repo /etc/yum.repos.d/
 cat > /etc/yum.repos.d/nailgun.repo << EOF
 [nailgun]
