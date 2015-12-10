@@ -63,12 +63,26 @@ $(BUILD_DIR)/repos/fuel-library$(PRODUCT_VERSION).done: $(BUILD_DIR)/repos/fuel-
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/repos/repos.done:
-	version_yaml=$(BUILD_DIR)/repos/version.yaml; \
-	for repo in $(strip $(fuel_components_repos)); do \
-		repo_commit_id=`git --git-dir=$(BUILD_DIR)/repos/$$repo/.git rev-parse --verify HEAD`; \
-		echo "  $${repo}_sha: \"$${repo_commit_id}\""; \
-	done > $${version_yaml}.tmp; \
-	fuelmain_commit_id=`git rev-parse --verify HEAD`; \
-	echo "  fuelmain_sha: \"$${fuelmain_commit_id}\"" >> $${version_yaml}.tmp; \
-	mv $${version_yaml}.tmp $${version_yaml}
 	$(ACTION.TOUCH)
+
+.PHONY: version-yaml listing
+
+listing:
+	find $(BUILD_DIR) > $(BUILD_DIR)/listing-build.txt
+	find $(LOCAL_MIRROR) > $(BUILD_DIR)/listing-local-mirror.txt
+
+
+# Remove this once BUILD_PACKAGES=0 is used by default
+version-yaml: $(ARTS_DIR)/version.yaml
+
+$(ARTS_DIR)/version.yaml: $(BUILD_DIR)/version.yaml
+	$(ACTION.COPY)
+
+$(BUILD_DIR)/version.yaml: $(BUILD_DIR)/repos/repos.done
+    for repo in $(strip $(fuel_components_repos)); do \
+	repo_commit_id=`git --git-dir=$(BUILD_DIR)/repos/$$repo/.git rev-parse --verify HEAD`; \
+	echo "  $${repo}_sha: \"$${repo_commit_id}\""; \
+	done > $@.tmp; \
+	fuelmain_commit_id=`git rev-parse --verify HEAD`; \
+	echo "  fuelmain_sha: \"$${fuelmain_commit_id}\"" >> $@.tmp; \
+	mv $@.tmp $@

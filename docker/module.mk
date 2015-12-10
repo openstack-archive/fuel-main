@@ -2,23 +2,8 @@
 containers:=astute cobbler mcollective nailgun keystone nginx ostf rsync rsyslog rabbitmq postgres
 REPO_CONTAINER:=fuel-repo-container
 
-docker: $(ARTS_DIR)/$(DOCKER_ART_NAME)
+docker: $(BUILD_DIR)/docker/build.done
 
-$(ARTS_DIR)/$(DOCKER_ART_NAME): \
-		$(BUILD_DIR)/docker/build.done
-	mkdir -p $(@D)
-	cp $(BUILD_DIR)/docker/$(DOCKER_ART_NAME) $@
-
-DOCKER_DEP_FILE:=$(call find-files,$(DEPS_DIR_CURRENT)/$(DOCKER_ART_NAME))
-
-ifdef DOCKER_DEP_FILE
-$(BUILD_DIR)/docker/build.done: \
-		$(DOCKER_DEP_FILE) \
-		$(BUILD_DIR)/docker/sources.done
-	mkdir -p $(@D)
-	cp $(DOCKER_DEP_FILE) $(BUILD_DIR)/docker/$(DOCKER_ART_NAME)
-	$(ACTION.TOUCH)
-else
 # Lrzip all containers into single archive
 $(BUILD_DIR)/docker/build.done: \
 		$(BUILD_DIR)/docker/fuel-centos.done \
@@ -28,18 +13,14 @@ $(BUILD_DIR)/docker/build.done: \
 	rm -f $(BUILD_DIR)/docker/fuel-images.tar
 	sudo docker rm -f "$(REPO_CONTAINER)" || true
 	$(ACTION.TOUCH)
-endif
 
 define build_container
-ifndef DOCKER_DEP_FILE
 $(BUILD_DIR)/docker/build.done: $(BUILD_DIR)/docker/$1.done
-endif
 $(BUILD_DIR)/docker/$1.done: \
 		$(BUILD_DIR)/mirror/centos/build.done \
 		$(BUILD_DIR)/repos/repos.done \
 		$(BUILD_DIR)/packages/rpm/build.done \
 		$(BUILD_DIR)/docker/fuel-centos.done \
-		$(BUILD_DIR)/iso/isoroot/$(VERSION_YAML_ART_NAME) \
 		$(BUILD_DIR)/docker/repo-container-up.done
 	@echo ""
 	@echo "========================================"
@@ -52,8 +33,6 @@ $(BUILD_DIR)/docker/$1.done: \
 	test -n "$(EXTRA_RPM_REPOS)" || sed -e "/_EXTRA_RPM_REPOS_/d" -i $(BUILD_DIR)/docker/$1/Dockerfile
 	sed -e "s|_EXTRA_RPM_REPOS_|$(EXTRA_RPM_REPOS)|" -i $(BUILD_DIR)/docker/$1/Dockerfile
 	mkdir -p $(BUILD_DIR)/docker/$1/etc/fuel
-	cp $(BUILD_DIR)/iso/isoroot/version.yaml $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml
-	sed -e 's/production:.*/production: "docker-build"/' -i $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml
 	cp $(SOURCE_DIR)/docker/docker-astute.yaml $(BUILD_DIR)/docker/$1/etc/fuel/astute.yaml
 	sudo docker build --force-rm -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
 	sudo docker run --name=FUEL_$1_$(PRODUCT_VERSION) \
