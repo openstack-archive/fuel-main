@@ -15,9 +15,6 @@ ARTS_DIR:=$(abspath $(ARTS_DIR))
 # Path for cache of downloaded packages
 LOCAL_MIRROR?=$(TOP_DIR)/local_mirror
 LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
-# Path to pre-built artifacts
-DEPS_DIR?=$(TOP_DIR)/deps
-DEPS_DIR:=$(abspath $(DEPS_DIR))
 
 PRODUCT_VERSION?=9.0
 
@@ -25,31 +22,15 @@ PRODUCT_VERSION?=9.0
 # related to product: repositories, mirrors etc
 PRODUCT_NAME:=mos
 
-# This variable is used mostly for
-# keeping things uniform. Some files
-# contain versions as a part of their paths
-# but building process for current version differs from
-# ones for other versions which are supposed
-# to come from DEPS_DIR "as is"
 CURRENT_VERSION:=$(PRODUCT_VERSION)
 
 PACKAGE_VERSION?=9.0.0
 FUEL_LIBRARY_VERSION?=9.0
 
-# Path to pre-built artifacts
-DEPS_DIR_CURRENT?=$(DEPS_DIR)/$(CURRENT_VERSION)
-DEPS_DIR_CURRENT:=$(abspath $(DEPS_DIR_CURRENT))
-
 # Artifacts names
 ISO_NAME?=fuel-$(PRODUCT_VERSION)
 VBOX_SCRIPTS_NAME?=vbox-scripts-$(PRODUCT_VERSION)
-BOOTSTRAP_ART_NAME?=bootstrap.tar.gz
 DOCKER_ART_NAME?=fuel-images.tar.lrz
-VERSION_YAML_ART_NAME?=version.yaml
-CENTOS_REPO_ART_NAME?=centos-repo.tar
-UBUNTU_REPO_ART_NAME?=ubuntu-repo.tar
-PUPPET_ART_NAME?=puppet.tgz
-
 
 # Where we put artifacts
 ISO_PATH:=$(ARTS_DIR)/$(ISO_NAME).iso
@@ -236,12 +217,7 @@ MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PROD
 # Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm,priority bar,ftp://repo.foo,priority"
 EXTRA_RPM_REPOS?=
 
-# Comma or space separated list. Available feature groups:
-#   experimental - allow experimental options
-#   mirantis - enable Mirantis logos and support page
-FEATURE_GROUPS?=experimental
 comma:=,
-FEATURE_GROUPS:=$(subst $(comma), ,$(FEATURE_GROUPS))
 
 # Path to yaml configuration file to build ISO ks.cfg
 KSYAML?=$(SOURCE_DIR)/iso/ks.yaml

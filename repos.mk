@@ -54,12 +54,4 @@ $(BUILD_DIR)/repos/fuel-library$(FUEL_LIBRARY_VERSION).done: $(BUILD_DIR)/repos/
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/repos/repos.done:
-	version_yaml=$(BUILD_DIR)/repos/version.yaml; \
-	for repo in $(strip $(fuel_components_repos)); do \
-		repo_commit_id=`git --git-dir=$(BUILD_DIR)/repos/$$repo/.git rev-parse --verify HEAD`; \
-		echo "  $${repo}_sha: \"$${repo_commit_id}\""; \
-	done > $${version_yaml}.tmp; \
-	fuelmain_commit_id=`git rev-parse --verify HEAD`; \
-	echo "  fuelmain_sha: \"$${fuelmain_commit_id}\"" >> $${version_yaml}.tmp; \
-	mv $${version_yaml}.tmp $${version_yaml}
 	$(ACTION.TOUCH)
