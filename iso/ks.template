@@ -1,7 +1,6 @@
 install
 text
-#%include /tmp/source.ks
-cdrom
+%include /tmp/source.ks
 {{reboot}}
 lang en_US.UTF-8
 keyboard us
@@ -244,10 +243,28 @@ fi
 tgtdrive=$(echo $tgtdrive | sed -e 's/!/\//')
 
 # source
-if test -e /dev/disk/by-label/will_be_substituted_with_ISO_VOLUME_ID; then
-    echo "harddrive --partition=LABEL=will_be_substituted_with_ISO_VOLUME_ID --dir=/" > /tmp/source.ks
-elif test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
-    echo "harddrive --partition=UUID=will_be_substituted_with_actual_uuid --dir=/" > /tmp/source.ks
+iso_volume_id=will_be_substituted_with_ISO_VOLUME_ID
+iso_disk_uuid=will_be_substituted_with_actual_uuid
+
+cdrom_device=
+if [ -e /proc/sys/dev/cdrom/info ]; then
+    cdrom_device=$(cat /proc/sys/dev/cdrom/info | awk '/drive name:/{print $3}')
+fi
+
+if [ -e /dev/disk/by-label/${iso_volume_id} ]; then
+    real_device=$(readlink -e /dev/disk/by-label/${iso_volume_id})
+    if [ "${real_device}" == "/dev/${cdrom_device}" ]; then
+        echo "cdrom" > /tmp/source.ks
+    else
+        echo "harddrive --partition=LABEL=${iso_volume_id} --dir=/" > /tmp/source.ks
+    fi
+elif [ -e /dev/disk/by-uuid/${iso_disk_uuid} ]; then
+    real_device=$(readlink -e /dev/disk/by-uuid/${iso_disk_uuid})
+    if [ "${real_device}" == "/dev/${cdrom_device}" ]; then
+        echo "cdrom" > /tmp/source.ks
+    else
+        echo "harddrive --partition=UUID=${iso_disk_uuid} --dir=/" > /tmp/source.ks
+    fi
 else
     echo "cdrom" > /tmp/source.ks
 fi
