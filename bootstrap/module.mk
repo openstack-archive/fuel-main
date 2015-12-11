@@ -50,7 +50,7 @@ BOOTSTRAP_RPMS:=\
 	scapy \
 	tcpdump \
 	vconfig \
-	vim-minimal \
+	vim \
 	wget
 
 

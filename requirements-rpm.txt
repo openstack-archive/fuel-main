@@ -268,7 +268,7 @@ tmux
 uwsgi
 uwsgi-plugin-common
 uwsgi-plugin-python
-vim-minimal
+vim
 wxGTK
 xinetd
 yum
