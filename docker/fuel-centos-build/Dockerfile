@@ -6,6 +6,7 @@ MAINTAINER Matthew Mosesohn mmosesohn@mirantis.com
 ENV container docker
 ENV EXTRA_RPM_REPOS _EXTRA_RPM_REPOS_
 
+RUN yum -y swap -- remove systemd-container systemd-container-libs -- install systemd systemd-libs
 RUN yum -y update
 RUN yum clean all
 RUN yum -y install dbus
