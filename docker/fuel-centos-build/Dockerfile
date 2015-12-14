@@ -1,11 +1,12 @@
 #fuel/centos-docker-build
-FROM centos:centos7
+FROM centos:centos_CENTOS_RELESE_
 
 MAINTAINER Matthew Mosesohn mmosesohn@mirantis.com
 
 ENV container docker
 ENV EXTRA_RPM_REPOS _EXTRA_RPM_REPOS_
 
+RUN echo _CENTOS_RELEASE_ > /etc/yum/var/releasever
 RUN yum -y update
 RUN yum clean all
 RUN yum -y install dbus
