@@ -553,7 +553,7 @@ rm -rf ${FS}
 echo "tos orphan 7" >> /etc/ntp.conf
 
 # Disabling splash
-sed -i --follow-symlinks -e '/^\slinux16/ s/rhgb/debug/' /boot/grub2/grub.cfg
+sed -i --follow-symlinks -e '/^\slinux16/ s/rhgb//' /boot/grub2/grub.cfg
 
 # Copying default bash settings to the root directory
 cp -f /etc/skel/.bash* /root/
