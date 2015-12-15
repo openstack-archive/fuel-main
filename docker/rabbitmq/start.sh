@@ -18,6 +18,6 @@ puppet apply --debug --verbose --color false --detailed-exitcodes \
 
 systemctl stop rabbitmq-server.service
 # Just in case stopping service fails
-pkill -u rabbitmq
+pkill -u rabbitmq || :
 
 systemctl start rabbitmq-server.service
