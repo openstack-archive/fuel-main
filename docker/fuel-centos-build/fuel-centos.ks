@@ -231,8 +231,7 @@ for service in dev-mqueue.mount dev-hugepages.mount \
     systemd-binfmt.service systemd-reboot.service \
     NetworkManager-dispatcher.service irqbalance.service \
     systemd-initctl.socket systemd-shutdownd.socket \
-    system.slice systemd-ask-password-plymouth.path systemd-ask-password-wall.path \
-    systemd-journal-flush.service systemd-journald.service systemd-journald.socket; do
+    system.slice systemd-ask-password-plymouth.path systemd-ask-password-wall.path; do
   ln -snf /dev/null /etc/systemd/system/${service}
 done
 
