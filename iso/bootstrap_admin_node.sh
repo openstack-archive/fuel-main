@@ -4,6 +4,7 @@ exec > >(tee -i /var/log/puppet/bootstrap_admin_node.log)
 exec 2>&1
 
 FUEL_RELEASE=$(grep release: /etc/fuel/version.yaml | cut -d: -f2 | tr -d '" ')
+BOOTSTRAP_NODE_CONFIG="/etc/fuel/bootstrap_admin_node.conf"
 
 function countdown() {
   local i
@@ -114,14 +115,15 @@ udevadm trigger --subsystem-match=net
 udevadm settle
 
 # Import bootstrap_admin_node.conf if exists
-if [ -f /etc/fuel/bootstrap_admin_node.conf ]; then
-    source /etc/fuel/bootstrap_admin_node.conf
+if [ -f "${BOOTSTRAP_NODE_CONFIG}" ]; then
+    source "${BOOTSTRAP_NODE_CONFIG}"
 fi
 
 # Set defaults to unset / empty variables
 # Although eth0 is not always valid it's a good well-known default
 # If there is no such interface it will fail to pass ifname_valid
 # check and will be replaced.
+OLD_ADMIN_INTERFACE=${ADMIN_INTERFACE}
 ADMIN_INTERFACE=${ADMIN_INTERFACE:-'eth0'}
 showmenu=${showmenu:-'no'}
 
@@ -131,6 +133,12 @@ showmenu=${showmenu:-'no'}
 if ! ifname_valid $ADMIN_INTERFACE; then
     # Take the very first ethernet interface as an admin interface
     ADMIN_INTERFACE=$(get_ethernet_interfaces | sort -V | head -1)
+fi
+
+if [[ "${OLD_ADMIN_INTERFACE}" != "${ADMIN_INTERFACE}" ]]; then
+  echo "Saving ADMIN_INTERFACE value"
+  sed -ie "s/^ADMIN_INTERFACE=.*/ADMIN_INTERFACE=${ADMIN_INTERFACE}/g" \
+    ${BOOTSTRAP_NODE_CONFIG}
 fi
 
 echo "Applying admin interface '$ADMIN_INTERFACE'"
