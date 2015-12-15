@@ -14,10 +14,3 @@ systemctl daemon-reload
 puppet apply --debug --verbose --color false --detailed-exitcodes \
   --logdest /var/log/puppet/rabbitmq.log \
   /etc/puppet/modules/nailgun/examples/rabbitmq-only.pp || [[ $? == 2 ]]
-
-
-systemctl stop rabbitmq-server.service
-# Just in case stopping service fails
-pkill -u rabbitmq
-
-systemctl start rabbitmq-server.service
