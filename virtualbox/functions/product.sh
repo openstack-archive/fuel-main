@@ -103,6 +103,29 @@ check_internet_connection() {
     return 1
 }
 
+getifname() {
+        if [ "${MASTER_IS_CENTOS7:-1}" = 1 ]; then
+                case "$1" in
+                eth0)
+                        echo -n "${IFACE_0:-enp0s3}";;
+                eth1)
+                        echo -n "${IFACE_1:-enp0s4}";;
+                eth2)
+                        echo -n "${IFACE_2:-enp0s5}";;
+                eth3)
+                        echo -n "${IFACE_3:-enp0s6}";;
+                eth4)
+                        echo -n "${IFACE_4:-enp0s7}";;
+                eth5)
+                        echo -n "${IFACE_5:-enp0s8}";;
+                *)
+                        echo -n "$1";;
+                esac
+        else
+                echo -n "$1"
+        fi
+}
+
 enable_outbound_network_for_product_vm() {
     ip=$1
     username=$2
@@ -183,13 +206,13 @@ enable_outbound_network_for_product_vm() {
         expect "*?assword:*"
         send "$password\r"
         expect "$prompt"
-        send "file=/etc/sysconfig/network-scripts/ifcfg-eth$interface_id\r"
+        send "file=/etc/sysconfig/network-scripts/ifcfg-$(getifname eth$interface_id)\r"
         expect "$prompt"
         send "hwaddr=\\\$(grep HWADDR \\\$file)\r"
         expect "$prompt"
         send "uuid=\\\$(grep UUID \\\$file)\r"
         expect "$prompt"
-        send "echo -e \"\\\$hwaddr\\n\\\$uuid\\nDEVICE=eth$interface_id\\nTYPE=Ethernet\\nONBOOT=yes\\nNM_CONTROLLED=no\\nBOOTPROTO=dhcp\\nPEERDNS=no\" > \\\$file\r"
+        send "echo -e \"\\\$hwaddr\\n\\\$uuid\\nDEVICE=$(getifname eth$interface_id)\\nTYPE=Ethernet\\nONBOOT=yes\\nNM_CONTROLLED=no\\nBOOTPROTO=dhcp\\nPEERDNS=no\" > \\\$file\r"
         expect "$prompt"
         send "sed \"s/GATEWAY=.*/GATEWAY=\"$gateway_ip\"/g\" -i /etc/sysconfig/network\r"
         expect "$prompt"
@@ -197,15 +220,15 @@ enable_outbound_network_for_product_vm() {
         expect "$prompt"
         send "sed \"s/DNS_UPSTREAM:.*/DNS_UPSTREAM: \\\$(grep \'^nameserver\' /etc/dnsmasq.upstream | cut -d \' \' -f2)/g\" -i /etc/fuel/astute.yaml\r"
         expect "$prompt"
-        send "sed -i 's/ONBOOT=no/ONBOOT=yes/g' /etc/sysconfig/network-scripts/ifcfg-eth1\r"
+        send "sed -i 's/ONBOOT=no/ONBOOT=yes/g' /etc/sysconfig/network-scripts/ifcfg-$(getifname eth1)\r"
         expect "$prompt"
-        send "sed -i 's/NM_CONTROLLED=yes/NM_CONTROLLED=no/g' /etc/sysconfig/network-scripts/ifcfg-eth1\r"
+        send "sed -i 's/NM_CONTROLLED=yes/NM_CONTROLLED=no/g' /etc/sysconfig/network-scripts/ifcfg-$(getifname eth1)\r"
         expect "$prompt"
-        send "sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/g' /etc/sysconfig/network-scripts/ifcfg-eth1\r"
+        send "sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/g' /etc/sysconfig/network-scripts/ifcfg-$(getifname eth1)\r"
         expect "$prompt"
-        send " echo \"IPADDR=$master_ip_pub_net\" >> /etc/sysconfig/network-scripts/ifcfg-eth1\r"
+        send " echo \"IPADDR=$master_ip_pub_net\" >> /etc/sysconfig/network-scripts/ifcfg-$(getifname eth1)\r"
         expect "$prompt"
-        send " echo \"NETMASK=$mask\" >> /etc/sysconfig/network-scripts/ifcfg-eth1\r"
+        send " echo \"NETMASK=$mask\" >> /etc/sysconfig/network-scripts/ifcfg-$(getifname eth1)\r"
         expect "$prompt"
         send "/sbin/iptables -t nat -A POSTROUTING -s $master_pub_net/24 \! -d $master_pub_net/24 -j MASQUERADE\r"
         expect "$prompt"
