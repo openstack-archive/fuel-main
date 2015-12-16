@@ -140,6 +140,14 @@ echo "Bringing down ALL network interfaces except '${ADMIN_INTERFACE}'"
 ifdown_ethernet_interfaces
 systemctl restart network
 
+if [ "$(cat /sys/class/dmi/id/sys_vendor)" == "QEMU" ]; then
+  net_driver=$(readlink -m /sys/class/net/${ADMIN_INTERFACE}/device/driver/module/)
+  if [ "${net_driver##*/}" == "e1000" ]; then
+    echo "Disabling offloading on ${ADMIN_INTERFACE}"
+    ethtool -K ${ADMIN_INTERFACE} gso off gro off tso off
+  fi
+fi
+
 echo "Applying default Fuel settings..."
 set -x
 fuelmenu --save-only --iface=$ADMIN_INTERFACE
