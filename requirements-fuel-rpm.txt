@@ -18,6 +18,7 @@ fuel-ostf
 fuel-provisioning-scripts
 fuel-rabbit-fence
 fuel-release
+fuel-umm
 ironic-fa-bootstrap-configs
 nailgun-agent
 nailgun-mcagents
