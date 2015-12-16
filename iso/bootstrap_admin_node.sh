@@ -140,6 +140,11 @@ echo "Bringing down ALL network interfaces except '${ADMIN_INTERFACE}'"
 ifdown_ethernet_interfaces
 systemctl restart network
 
+if [[ $(ethtool -k $ADMIN_INTERFACE | awk '$1 == "tcp-segmentation-offload:" {print $2}') == "on" ]]; then
+	echo "Disabling tso on $ADMIN_INTERFACE"
+	ethtool -K $ADMIN_INTERFACE tso off
+fi
+
 echo "Applying default Fuel settings..."
 set -x
 fuelmenu --save-only --iface=$ADMIN_INTERFACE
