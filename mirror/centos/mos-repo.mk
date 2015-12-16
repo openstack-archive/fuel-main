@@ -1,7 +1,11 @@
 $(BUILD_DIR)/mirror/centos/mos-download.done: $(BUILD_DIR)/mirror/centos/yum-config.done
 	mkdir -p $(@D)
 	mkdir -p $(LOCAL_MIRROR_MOS_CENTOS)
-	set -ex ; reposync --norepopath --downloadcomps --plugins --delete --arch=$(CENTOS_ARCH) \
+	set -ex; \
+	cat $(BUILD_DIR)/mirror/centos/etc/yum.conf; \
+	yum -c $(BUILD_DIR)/mirror/centos/etc/yum.conf clean all; \
+	yum -c $(BUILD_DIR)/mirror/centos/etc/yum.conf make cache; \
+	reposync --norepopath --downloadcomps --plugins --delete --arch=$(CENTOS_ARCH) \
 	    -c $(BUILD_DIR)/mirror/centos/etc/yum.conf --repoid=fuel -p $(LOCAL_MIRROR_MOS_CENTOS)
 	$(ACTION.TOUCH)
 
