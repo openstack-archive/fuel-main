@@ -6,6 +6,7 @@ $(BUILD_DIR)/mirror/centos/mos-download.done: $(BUILD_DIR)/mirror/centos/yum-con
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/centos/mos-repo.done: $(BUILD_DIR)/mirror/centos/mos-download.done
+	yum clean metadata
 	createrepo -g $(LOCAL_MIRROR_MOS_CENTOS)/comps.xml \
 	    -o $(LOCAL_MIRROR_MOS_CENTOS)/ $(LOCAL_MIRROR_MOS_CENTOS)/
 	$(ACTION.TOUCH)
