@@ -154,6 +154,8 @@ LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
 # download of all the packages directly from internet
 USE_MIRROR?=ext
 
+MIRROR_FUEL:=http://mirror.fuel-infra.org/mos-repos/centos/mos8.0-centos7-fuel/snapshots/os-2015-12-09-000001/x86_64/
+
 ifeq ($(USE_MIRROR),ext)
 MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
 MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_MAJOR)
