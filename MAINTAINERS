@@ -35,3 +35,33 @@ maintainers:
     - name:   Sergey Kulanov
       email:  skulanov@mirantis.com
       IRC:    sergk
+
+    - name:   Vitaly Parakhin
+      email:  vparakhin@mirantis.com
+      IRC:    brain461
+
+- specs/: &MOS_packaging_team
+
+    - name:   Mikhail Ivanov
+      email:  mivanov@mirantis.com
+      IRC:    mivanov
+
+    - name:   Artem Silenkov
+      email:  asilenkov@mirantis.com
+      IRC:    asilenkov
+
+    - name:   Alexander Tsamutali
+      email:  atsamutali@mirantis.com
+      IRC:    astsmtl
+
+    - name:   Daniil Trishkin
+      email:  dtrishkin@mirantis.com
+      IRC:    dtrishkin
+
+    - name:   Ivan Udovichenko
+      email:  iudovichenko@mirantis.com
+      IRC:    tlbr
+
+    - name:   Igor Yozhikov
+      email:  iyozhikov@mirantis.com
+      IRC:    IgorYozhikov
