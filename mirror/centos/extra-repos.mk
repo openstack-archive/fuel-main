@@ -18,9 +18,12 @@ $(BUILD_DIR)/mirror/centos/extra-repos.done:
 	$(ACTION.TOUCH)
 
 define extra_repo_download
-set -ex ; reposync --downloadcomps --plugins --delete --arch=$(CENTOS_ARCH) \
-    -c $(BUILD_DIR)/mirror/centos/etc/yum.conf --repoid=$(call get_repo_name,$1) \
-    -p $(LOCAL_MIRROR)/extra-repos/
+$(eval TEMP_CACHE_DIR := $(shell mkdir -d))
+mkdir -p $(TEMP_CACHE_DIR)
+set -ex ; \
+    reposync --downloadcomps --plugins --delete --arch=$(CENTOS_ARCH) \
+    --config=$(BUILD_DIR)/mirror/centos/etc/yum.conf --repoid=$(call get_repo_name,$1) \
+    --tempcache=$(TEMP_CACHE_DIR) --download_path=$(LOCAL_MIRROR)/extra-repos/
 endef
 
 define extra_repo_metadata
