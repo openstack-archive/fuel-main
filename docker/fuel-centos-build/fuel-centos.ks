@@ -21,21 +21,15 @@ reboot
 
 %packages  --excludedocs --nobase
 @Core
--MAKEDEV
 -aic94xx-firmware
--atmel-firmware
--b43-openfwwf
--bfa-firmware
 -dhclient
+-dracut-network
 -efibootmgr
 -ethtool
 -initscripts
 -iproute
 -iptables
--iptables-ipv6
 -iputils
--ipw2100-firmware
--ipw2200-firmware
 -ivtv-firmware
 -iwl100-firmware
 -iwl1000-firmware
@@ -47,24 +41,15 @@ reboot
 -iwl6000g2a-firmware
 -iwl6050-firmware
 -kbd
--kernel-firmware
--libertas-usb8388-firmware
+-kexec-tools
+-linux-firmware
+-NetworkManager
 -openssh-server
 -postfix
 -policycoreutils
--ql2100-firmware
--ql2200-firmware
--ql23xx-firmware
--ql2400-firmware
--ql2500-firmware
--redhat-logos
--rt61pci-firmware
--rt73usb-firmware
 -selinux-policy
 -selinux-policy-targeted
--upstart
--xorg-x11-drv-ati-firmware
--zd1211-firmware
+-tuned
 cronie-anacron
 bzip2
 cobbler
@@ -161,20 +146,19 @@ dd if=/dev/urandom count=50 | md5sum | passwd --stdin root
 passwd -l root
 
 # create necessary devices
-/sbin/MAKEDEV /dev/console
+[ -c /dev/console ] || mknod -m 0600 /dev/console c 5 1
 
 # cleanup unwanted stuff
 
 # ami-creator requires grub during the install, so we remove it (and
 # its dependencies) in %post
-rpm -e grub redhat-logos
+rpm -e grub2
 rm -rf /boot
 
 # some packages get installed even though we ask for them not to be,
 # and they don't have any external dependencies that should make
 # anaconda install them
-rpm -e MAKEDEV ethtool upstart iputils policycoreutils iptables \
-    iproute
+rpm -e ethtool iputils iptables iproute
 
 # Remove files that are known to take up lots of space but leave
 # directories intact since those may be required by new rpms.
@@ -193,7 +177,7 @@ mv /usr/lib/locale/locale-archive  /usr/lib/locale/locale-archive.tmpl
 
 
 #  man pages and documentation
-find /usr/share/{man,doc,info,gnome/help} \
+find /usr/share/{man,doc,info} \
         -type f | xargs /bin/rm
 
 #  sln
