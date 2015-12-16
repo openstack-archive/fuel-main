@@ -140,6 +140,9 @@ echo "Bringing down ALL network interfaces except '${ADMIN_INTERFACE}'"
 ifdown_ethernet_interfaces
 systemctl restart network
 
+echo "Disabling offloading on ${ADMIN_INTERFACE}"
+ethtool -K ${ADMIN_INTERFACE} gso off gro off tso off
+
 echo "Applying default Fuel settings..."
 set -x
 fuelmenu --save-only --iface=$ADMIN_INTERFACE
