@@ -1,5 +1,5 @@
 %define name fuel-docker-images
-%{!?version: %define version 8.0.0}
+%{!?version: %define version 9.0.0}
 %{!?release: %define release 1}
 
 Name:    %{name}
