@@ -4,6 +4,31 @@ exec > >(tee -i /var/log/puppet/bootstrap_admin_node.log)
 exec 2>&1
 
 FUEL_RELEASE=$(grep release: /etc/fuel/version.yaml | cut -d: -f2 | tr -d '" ')
+bs_build_log='/var/log/fuel-bootstrap-image-build.log'
+### Long messages inside code makes them more complicated to read...
+# bootstrap messages
+# FIXME fix help links
+bs_skip_message="WARNING: Ubuntu bootstrap build has been skipped. \
+Please build and activate bootstra manually with CLI command \
+\`fuel-bootstrap build --activate\`. \
+While you don't activate any bootstrap - new nodes cannot be discovered \
+and added to cluster. \
+For more information please visit \
+https://docs.mirantis.com/openstack/fuel/fuel-master/"
+bs_error_message="WARNING: Failed to build the bootstrap image, see $bs_build_log \
+for details. Perhaps your Internet connection is broken. Please fix the \
+problem and run \`fuel-bootstrap build --activate\`. \
+While you don\'t activate any bootstrap - new nodes cannot be discovered \
+and added to cluster. \
+For more information please visit \
+https://docs.mirantis.com/openstack/fuel/fuel-master/"
+bs_progress_message="There is no active bootstrap. Bootstrap image building \
+is in progress. Usually it takes 15-20 minutes. It depends on your internet \
+connection and hardware performance. Please reboot failed  to discover nodes \
+after bootstrap image become available."
+bs_done_message="Default bootstrap image building done."
+bs_centos_message="WARNING: Deprecated Centos bootstrap has been chosen \
+and activated"
 
 function countdown() {
   local i
@@ -235,20 +260,30 @@ get_bootstrap_skip () {
 	EOF
 }
 
+
+send_ui_notify () {
+        # This notify can't be clouser or remove by user.
+        # For remove notify - send empty string
+        local message=$1
+        python <<-EOF
+	from fuel_bootstrap.utils import notifier
+	notifier.notify_webui('${message}')
+	EOF
+}
+
+
 # Actually build the bootstrap image
 build_ubuntu_bootstrap () {
 	local log='/var/log/fuel-bootstrap-image-build.log'
         local ret=1
-	echo "Bulding default ubuntu-bootstrap image" >&2
-	if fuel-bootstrap -v --debug build --activate --notify-webui >>"$log" 2>&1; then
+        echo ${bs_progress_message} >&2
+        send_ui_notify "${bs_progress_message}"
+	if fuel-bootstrap -v --debug build --activate >>"$log" 2>&1; then
 		ret=0
+                fuel notify --topic "done" --send "${bs_done_message}"
 	fi
         if [ $ret -ne 0 ]; then
-		# FIXME Add correct how-to url and problem description
-		warning="WARNING: Failed to build the bootstrap image, see $log
-for details. Perhaps your Internet connection is broken. Please fix the problem and run
-\`fuel-bootstrap build --activate --notify-webui\`"
-                fuel notify --topic warning --send "$warning"
+                send_ui_notify "${bs_error_message}"
         fi
         return $ret
 }
@@ -329,8 +364,14 @@ rmdir /var/log/remote && ln -s /var/log/docker-logs/remote /var/log/remote
 dockerctl check || fail
 bash /etc/rc.local
 
-if [ "`get_bootstrap_flavor`" = "ubuntu" ] && [ "`get_bootstrap_skip`" = "False" ]; then
-	build_ubuntu_bootstrap || true
+if [ "`get_bootstrap_flavor`" = "ubuntu" ]; then
+  if [ "`get_bootstrap_skip`" = "False" ]; then
+    build_ubuntu_bootstrap || true
+  else
+    send_ui_notify "${bs_skip_message}"
+  fi
+else
+  fuel notify --topic "warning" --send ${bs_centos_message}
 fi
 
 # Enable updates repository
