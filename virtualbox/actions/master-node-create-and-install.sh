@@ -57,11 +57,14 @@ fi
 echo
 start_vm $name
 
-# Wait until the machine gets installed and Puppet completes its run
-wait_for_product_vm_to_install $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
+# Wait until product VM needs outbound network/internet access
+wait_for_product_vm_to_download $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
 
 # Enable outbound network/internet access for the machine
 enable_outbound_network_for_product_vm $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" 3 $vm_master_nat_gateway
+
+# Wait until the machine gets installed and Puppet completes its run
+wait_for_product_vm_to_install $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
 
 # Report success
 echo
