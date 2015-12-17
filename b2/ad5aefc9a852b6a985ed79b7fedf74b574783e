@@ -1,0 +1,11 @@
+Code-Review+1: XiaBing Yao <yao.xiabing@99cloud.net>
+Code-Review+1: qingszhao <zhao.daqing@99cloud.net>
+Code-Review+2: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Code-Review+2: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Workflow+1: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 17 Dec 2015 12:07:15 +0000
+Reviewed-on: https://review.openstack.org/233431
+Project: openstack/fuel-main
+Branch: refs/heads/master
