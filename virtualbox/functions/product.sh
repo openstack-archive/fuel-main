@@ -22,11 +22,13 @@ source ./functions/shell.sh
 
 ssh_options='-oConnectTimeout=5 -oStrictHostKeyChecking=no -oCheckHostIP=no -oUserKnownHostsFile=/dev/null -oRSAAuthentication=no -oPubkeyAuthentication=no'
 
-is_product_vm_operational() {
+wait_for_line_in_puppet_bootstrap() {
     ip=$1
     username=$2
     password=$3
     prompt=$4
+    goodline=$5
+    badline=$6
 
     # Log in into the VM, see if Puppet has completed its run
     # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
@@ -37,36 +39,40 @@ is_product_vm_operational() {
         expect "*?assword:*"
         send "$password\r"
         expect "$prompt"
-        send "grep --color=none 'Fuel node deployment' /var/log/puppet/bootstrap_admin_node.log\r"
+        send "egrep --color=none -e '$goodline' -e '$badline' /var/log/puppet/bootstrap_admin_node.log\r"
         expect "$prompt"
         send "logout\r"
         expect "$prompt"
 ENDOFEXPECT
     )
 
-    # When you are launching command in a sub-shell, there are issues with IFS (internal field separator)
-    # and parsing output as a set of strings. So, we are saving original IFS, replacing it, iterating over lines,
-    # and changing it back to normal
-    #
-    # http://blog.edwards-research.com/2010/01/quick-bash-trick-looping-through-output-lines/
-    OIFS="${IFS}"
-    NIFS=$'\n'
-    IFS="${NIFS}"
-
-    for line in $result; do
-        IFS="${OIFS}"
-        if [[ "$line" == Fuel*complete* ]]; then
-            IFS="${NIFS}"
-            return 0;
-        elif [[ "$line" == Fuel*FAILED* ]]; then
-            IFS="${NIFS}"
-            echo "$line" 1>&2
-            exit 1
-        fi
-        IFS="${NIFS}"
-    done
-
+    echo "$result" | egrep "$badline" >&2 && return 1
+    echo "$result" | egrep -q "$goodline" && return 0
     return 1
+}
+
+is_product_vm_operational() {
+    wait_for_line_in_puppet_bootstrap "$@" "^Fuel.*complete" "^Fuel.*FAILED"
+}
+
+wait_for_product_vm_to_download() {
+    ip=$1
+    username=$2
+    password=$3
+    prompt=$4
+
+    echo "Waiting for product VM to download files. Please do NOT abort the script..."
+
+    # Loop until master node gets successfully installed
+    maxdelay=3000
+    while ! wait_for_line_in_puppet_bootstrap $ip $username $password "$prompt" "dockerctl build all|^Fuel.*complete" "^Fuel.*FAILED"; do
+        sleep 5
+        ((waited += 5))
+        if (( waited >= maxdelay )); then
+          echo "Installation timed out! ($maxdelay seconds)" 1>&2
+          exit 1
+        fi
+    done
 }
 
 wait_for_product_vm_to_install() {
@@ -153,7 +159,7 @@ enable_outbound_network_for_product_vm() {
     if execute test -f /etc/resolv.conf ; then
       nameserver="$(execute grep '^nameserver' /etc/resolv.conf | grep -v 'nameserver\s\s*127.' | head -3)"
     fi
-    if [ -z "$nameserver" -a execute test -x /usr/bin/nmcli ]; then
+    if [ -z "$nameserver" ] && execute test -x /usr/bin/nmcli; then
       # Get DNS from network manager
       if [ -n "`execute LANG=C nmcli nm | grep \"running\s\+connected\"`" ]; then
         nameserver="$(execute nmcli dev list | grep 'IP[46].DNS' | sed -e 's/IP[46]\.DNS\[[0-9]\+\]:\s\+/nameserver /'| grep -v 'nameserver\s\s*127.' | head -3)"
