@@ -51,7 +51,7 @@ name=CentOS-$(CENTOS_RELEASE) - Updates
 #mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=updates
 baseurl=$(MIRROR_CENTOS)/updates/$(CENTOS_ARCH)
 gpgcheck=0
-enabled=1
+enabled=0
 exclude=*i686 $(x86_rpm_packages_whitelist)
 priority=90
 
