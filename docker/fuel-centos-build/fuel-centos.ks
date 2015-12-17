@@ -146,7 +146,7 @@ supervisor
 sysstat
 tar
 tftp-server
-vim-minimal
+vim
 xinetd
 yum-plugin-priorities
 %end

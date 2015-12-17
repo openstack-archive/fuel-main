@@ -65,7 +65,7 @@ sysstat
 system-config-firewall-base
 tcpdump
 telnet
-vim-minimal
+vim
 virt-what
 wget
 yum
