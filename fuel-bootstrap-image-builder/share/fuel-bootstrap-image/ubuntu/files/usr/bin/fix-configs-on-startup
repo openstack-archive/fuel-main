@@ -1,0 +1,30 @@
+#!/bin/sh
+
+masternode_ip=`sed -rn 's/^.*url=http:\/\/(([0-9]{1,3}\.){3}[0-9]{1,3}).*$/\1/ p' /proc/cmdline`
+mco_user=$(sed 's/\ /\n/g' /proc/cmdline | grep mco_user | awk -F\= '{print $2}')
+mco_pass=$(sed 's/\ /\n/g' /proc/cmdline | grep mco_pass | awk -F\= '{print $2}')
+[ -z "$mco_user" ] && mco_user="mcollective"
+[ -z "$mco_pass" ] && mco_pass="marionette"
+
+# Send logs to master node.
+sed -i /etc/send2syslog.conf -re "s/@MASTER_NODE_IP@/$masternode_ip/"
+
+/usr/bin/send2syslog.py -i < /etc/send2syslog.conf
+
+# Set up NTP
+# Disable panic about huge clock offset
+sed -i '/^\s*tinker panic/ d' /etc/ntp.conf
+sed -i '1 i tinker panic 0' /etc/ntp.conf
+
+# Sync clock with master node
+sed -i "/^\s*server\b/ d" /etc/ntp.conf
+echo "server $masternode_ip burst iburst" >> /etc/ntp.conf
+
+service ntp restart
+
+# Update mcollective config
+sed -i "s/^plugin.rabbitmq.pool.1.host\b.*$/plugin.rabbitmq.pool.1.host = $masternode_ip/" /etc/mcollective/server.cfg
+sed -i "s/^plugin.rabbitmq.pool.1.user\b.*$/plugin.rabbitmq.pool.1.user = $mco_user/" /etc/mcollective/server.cfg
+sed -i "s/^plugin.rabbitmq.pool.1.password\b.*$/plugin.rabbitmq.pool.1.password= $mco_pass/" /etc/mcollective/server.cfg
+
+service mcollective restart
