@@ -62,6 +62,7 @@ logrotate
 lrzip
 lvm2
 mailcap
+mc
 mcollective
 mdadm
 mod_wsgi
