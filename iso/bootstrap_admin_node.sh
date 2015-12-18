@@ -184,6 +184,15 @@ fi
 echo "Applying admin interface '$ADMIN_INTERFACE'"
 export ADMIN_INTERFACE
 
+# Set irq affinity mask for admin_interface
+if [ "$(cat /sys/class/dmi/id/sys_vendor)" == "QEMU" ]; then
+	echo "Set irq affinity"
+  CORE_ID=0
+  irq=$(awk -v interface=${ADMIN_INTERFACE} \
+    '{if ($NF == interface) print $1}' /proc/interrupts)
+  printf '%0x' $[2**${CORE_ID}] > /proc/irq/${irq%%:*}/smp_affinity
+fi
+
 echo "Bringing down ALL network interfaces except '${ADMIN_INTERFACE}'"
 ifdown_ethernet_interfaces
 systemctl restart network
