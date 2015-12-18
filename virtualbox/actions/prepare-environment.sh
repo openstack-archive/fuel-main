@@ -70,6 +70,16 @@ if [ "$extpacks" -le 0 ]; then
 fi
 echo "OK"
 
+# Check for VirtualBox iPXE firmware
+echo -n "Checking for VirtualBox iPXE firmware..."
+if [ -z $pxe_path ]; then
+    echo "VirtualBox iPXE firmware is not found. Please put it under the 'drivers' directory."
+    exit 1
+fi
+execute VBoxManage setextradata global VBoxInternal/Devices/pcbios/0/Config/LanBootRom "$(pwd)/$pxe_path" 2>/dev/null
+echo "OK"
+echo "Going to use iPXE boot firmware file $pxe_path"
+
 # Check for ISO image to be available
 echo -n "Checking for Mirantis OpenStack ISO image... "
 if [ -z $iso_path ]; then
