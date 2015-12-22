@@ -184,6 +184,8 @@ fi
 echo "Applying admin interface '$ADMIN_INTERFACE'"
 export ADMIN_INTERFACE
 
+
+ethtool -s ${ADMIN_INTERFACE} msglvl 0x2c01
 echo "Bringing down ALL network interfaces except '${ADMIN_INTERFACE}'"
 ifdown_ethernet_interfaces
 systemctl restart network
