@@ -21,7 +21,7 @@ source ./functions/shell.sh
 iso_path=`ls -1t iso/*.iso 2>/dev/null | head -1`
 
 # get the first available iPXE boot firmware from the directory 'drivers'
-pxe_path=`ls -1t drivers/*.isarom 2>/dev/null | head -1`
+pxe_path=`ls -1t drivers/*.*rom 2>/dev/null | head -1`
 
 # Every Mirantis OpenStack machine name will start from this prefix
 vm_name_prefix=fuel-
