@@ -15,4 +15,6 @@ ADD setup.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/{setup,start}.sh
 
+VOLUME ["/etc/fuel-bootstrap-cli"]
+
 CMD ["/usr/sbin/init"]
