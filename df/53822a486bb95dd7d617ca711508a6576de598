@@ -1,0 +1,10 @@
+Code-Review+2: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Code-Review+1: Alexei Sheplyakov <asheplyakov@mirantis.com>
+Code-Review+2: Aleksandra Fedorova <afedorova@mirantis.com>
+Workflow+1: Aleksandra Fedorova <afedorova@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 24 Dec 2015 10:34:19 +0000
+Reviewed-on: https://review.openstack.org/259045
+Project: openstack/fuel-main
+Branch: refs/heads/master
