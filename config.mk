@@ -19,7 +19,7 @@ LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 DEPS_DIR?=$(TOP_DIR)/deps
 DEPS_DIR:=$(abspath $(DEPS_DIR))
 
-PRODUCT_VERSION:=9.0
+PRODUCT_VERSION?=9.0
 
 # This variable is used for naming of auxillary objects
 # related to product: repositories, mirrors etc
@@ -33,7 +33,7 @@ PRODUCT_NAME:=mos
 # to come from DEPS_DIR "as is"
 CURRENT_VERSION:=$(PRODUCT_VERSION)
 
-PACKAGE_VERSION=$(PRODUCT_VERSION).0
+PACKAGE_VERSION?=9.0.0
 
 # Path to pre-built artifacts
 DEPS_DIR_CURRENT?=$(DEPS_DIR)/$(CURRENT_VERSION)
@@ -227,7 +227,7 @@ MIRROR_DOCKER?=http://mirror.fuel-infra.org/docker/$(PRODUCT_VERSION)
 
 # MIRROR_FUEL affects build process only if YUM_REPOS variable contains 'fuel'.
 # Otherwise it is ignored entirely.
-MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os.target.txt
+MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel
 
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.
@@ -268,13 +268,3 @@ SANDBOX_COPY_CERTS?=0
 #  \apt/metadata.json
 #  \concat/metadata.json
 USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES?=
-
-# If the URL given ended with target.txt then is't a pointer to a snapshot that
-# should be unlinked. If it is not - return it as is.
-expand_repo_url=$(shell url=$1; echo $${url} | grep -q -e '.*\.target\.txt$$' && echo "$${url%/*}/$$(curl -sSf $$url | head -1)/x86_64/" || echo $${url})
-
-# Expand repo URLs now
-#MIRROR_CENTOS:=$(call expand_repo_url,$(MIRROR_CENTOS))
-#MIRROR_CENTOS_KERNEL:=$(call expand_repo_url,$(MIRROR_CENTOS_KERNEL))
-#SANDBOX_MIRROR_CENTOS_UPSTREAM:=$(call expand_repo_url,$(SANDBOX_MIRROR_CENTOS_UPSTREAM))
-MIRROR_FUEL:=$(call expand_repo_url,$(MIRROR_FUEL))
