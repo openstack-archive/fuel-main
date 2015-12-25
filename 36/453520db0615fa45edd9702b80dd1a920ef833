@@ -1,0 +1,9 @@
+Code-Review+1: Artem Silenkov <asilenkov@mirantis.com>
+Code-Review+2: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Workflow+1: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 25 Dec 2015 12:05:53 +0000
+Reviewed-on: https://review.openstack.org/258633
+Project: openstack/fuel-main
+Branch: refs/heads/master
