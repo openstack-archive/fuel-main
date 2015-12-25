@@ -45,13 +45,13 @@ endef
 
 # fuel-library offline build hook
 ifneq ($(USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES),)
-$(BUILD_DIR)/packages/sources/fuel-library$(PRODUCT_VERSION)/upstream_modules.tar.gz:
+$(BUILD_DIR)/packages/sources/fuel-library$(PACKAGE_VERSION)/upstream_modules.tar.gz:
 	@mkdir -p $(@D)
 	wget -nv $(USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES) -O $@.tmp
 	mv $@.tmp $@
 
-$(BUILD_DIR)/packages/source_fuel-library$(PRODUCT_VERSION).done: \
-	$(BUILD_DIR)/packages/sources/fuel-library$(PRODUCT_VERSION)/upstream_modules.tar.gz
+$(BUILD_DIR)/packages/source_fuel-library$(PACKAGE_VERSION).done: \
+	$(BUILD_DIR)/packages/sources/fuel-library$(PACKAGE_VERSION)/upstream_modules.tar.gz
 endif
 
 $(BUILD_DIR)/packages/source_%.done:
@@ -64,7 +64,7 @@ $(eval $(call prepare_git_source,fuel-ostf,fuel-ostf-$(PACKAGE_VERSION).tar.gz,$
 #ASTUTE_PKGS
 $(eval $(call prepare_git_source,astute,astute-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/astute,HEAD,$(ASTUTE_GERRIT_COMMIT)))
 #FUELLIB_PKGS
-$(eval $(call prepare_git_source,fuel-library$(PRODUCT_VERSION),fuel-library$(PRODUCT_VERSION)-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-library$(PRODUCT_VERSION),HEAD,$(FUELLIB_GERRIT_COMMIT)))
+$(eval $(call prepare_git_source,fuel-library$(PACKAGE_VERSION),fuel-library$(PACKAGE_VERSION)-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-library$(PACKAGE_VERSION),HEAD,$(FUELLIB_GERRIT_COMMIT)))
 #FUEL_PYTHON_PKGS
 $(eval $(call prepare_git_source,python-fuelclient,python-fuelclient-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/python-fuelclient,HEAD,$(PYTHON_FUELCLIENT_GERRIT_COMMIT)))
 #FUEL_AGENT_PKGS
@@ -101,8 +101,8 @@ packages-rpm: $(BUILD_DIR)/packages/rpm/build.done
 packages-deb: $(BUILD_DIR)/packages/deb/build.done
 
 #FIXME(aglarendil): make sources generation uniform
-#$(BUILD_DIR)/packages/source_fuel-library.done: $(BUILD_DIR)/packages/source_fuel-library$(PRODUCT_VERSION).done
-#	ln -s $(BUILD_DIR)/packages/sources/fuel-library$(PRODUCT_VERSION) $(BUILD_DIR)/packages/sources/fuel-library
+#$(BUILD_DIR)/packages/source_fuel-library.done: $(BUILD_DIR)/packages/source_fuel-library$(PACKAGE_VERSION).done
+#	ln -s $(BUILD_DIR)/packages/sources/fuel-library$(PACKAGE_VERSION) $(BUILD_DIR)/packages/sources/fuel-library
 #	$(ACTION.TOUCH)
 
 ###################################

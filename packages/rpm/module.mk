@@ -83,7 +83,7 @@ endef
 packages_list:=\
 astute \
 fuel-agent \
-fuel-library$(PRODUCT_VERSION) \
+fuel-library$(PACKAGE_VERSION) \
 fuel-main \
 fuelmenu \
 fuel-mirror \
