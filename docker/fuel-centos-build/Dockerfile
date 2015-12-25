@@ -14,7 +14,7 @@ RUN echo _CENTOS_RELEASE_ > /etc/yum/vars/releasever
 RUN yum -y swap -- remove systemd-container systemd-container-libs -- install systemd systemd-libs
 RUN yum -y update
 RUN yum clean all
-RUN yum -y install dbus
+#RUN yum -y install dbus
 
 RUN systemctl mask dev-mqueue.mount dev-hugepages.mount \
     systemd-remount-fs.service sys-kernel-config.mount \
@@ -22,8 +22,8 @@ RUN systemctl mask dev-mqueue.mount dev-hugepages.mount \
     display-manager.service graphical.target systemd-logind.service \
     firewalld.service
 
-ADD dbus.service /etc/systemd/system/dbus.service
-RUN systemctl enable dbus.service
+#ADD dbus.service /etc/systemd/system/dbus.service
+#RUN systemctl enable dbus.service
 
 RUN rm -f /etc/yum.repos.d/*
 

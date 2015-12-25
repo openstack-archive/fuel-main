@@ -64,7 +64,7 @@ fi
 
 # Start webserver and wait for it to be up
 /usr/sbin/httpd &
-/usr/lib/systemd/systemd-localed &
+#/usr/lib/systemd/systemd-localed &
 
 cd /export
 ami-creator -c /root/fuel-centos.ks -n fuel-centos
