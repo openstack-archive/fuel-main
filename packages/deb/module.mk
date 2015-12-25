@@ -75,7 +75,7 @@ $(BUILD_DIR)/packages/deb/build.done:
 fuel_debian_packages:=fuel-nailgun \
 astute \
 fuel-agent \
-fuel-library$(PRODUCT_VERSION) \
+fuel-library$(FUEL_LIBRARY_VERSION) \
 fuel-mirror \
 fuel-nailgun-agent \
 network-checker
