@@ -134,7 +134,6 @@ rubygem-amqp
 rubygem-mcollective-client
 rubygem-symboltable
 rubygem-rest-client
-rubygem-popen4
 rubygem-raemon
 rubygem-net-ssh
 rubygem-net-ssh-gateway
@@ -202,7 +201,7 @@ rm -f /sbin/sln
 #  ldconfig
 rm -rf /etc/ld.so.cache
 rm -rf /var/cache/ldconfig/*
-rm -rf /var/cache/yum/* 
+rm -rf /var/cache/yum/*
 
 # Suppress hiera warnings
 mkdir -p /etc/puppet /var/lib/fuel/ibp

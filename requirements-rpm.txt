@@ -213,7 +213,6 @@ rubygem-activesupport
 rubygem-amq-protocol
 rubygem-bunny
 rubygem-cstruct
-rubygem-eventmachine
 rubygem-extlib
 rubygem-ffi
 rubygem-ffi-yajl
@@ -233,10 +232,7 @@ rubygem-net-ssh
 rubygem-net-ssh-gateway
 rubygem-net-ssh-multi
 rubygem-ohai
-rubygem-open4
 rubygem-openstack
-rubygem-Platform
-rubygem-popen4
 rubygem-raemon
 rubygem-rdoc
 rubygem-rest-client
