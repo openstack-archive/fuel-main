@@ -149,6 +149,9 @@ LOCAL_MIRROR_UBUNTU_OS_BASEURL:=$(LOCAL_MIRROR_UBUNTU)
 LOCAL_MIRROR_DOCKER:=$(LOCAL_MIRROR)/docker
 LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
 
+USE_LOCAL_DOCKER_REGISTRY=none
+LOCAL_DOCKER_REGISTRY_URL=registry.fuel-infra.org/isuzdal
+
 # Use download.mirantis.com mirror by default. Other possible values are
 # 'msk', 'srt', 'usa', 'hrk', 'cz'
 # Setting any other value or removing of this variable will cause
