@@ -213,7 +213,7 @@ sudo chroot $(SANDBOX_UBUNTU) sh -xc "(cd  /usr/share/ca-certificates; find loca
 sudo chroot $(SANDBOX_UBUNTU) update-ca-certificates
 fi
 echo "Updating apt package database"
-sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p '$${TEMP}'; mkdir -p /tmp/user/0)"
+sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p /tmp/user/0)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get update
 if ! mountpoint -q $(SANDBOX_UBUNTU)/proc; then sudo mount -t proc sandboxproc $(SANDBOX_UBUNTU)/proc; fi
 echo "Installing additional packages: $(SANDBOX_DEB_PKGS)"
