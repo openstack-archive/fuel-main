@@ -82,6 +82,10 @@ $(BUILD_DIR)/docker/fuel-centos.done: \
 	test -n "$(EXTRA_RPM_REPOS)" || sed -e "/_EXTRA_RPM_REPOS_/d" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
 	sed -e "s|_CENTOS_RELEASE_|$(CENTOS_RELEASE)|" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
 	sed -e "s|_EXTRA_RPM_REPOS_|$(EXTRA_RPM_REPOS)|" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
+ifneq ($(USE_LOCAL_DOCKER_REGISTRY), none)
+	sed -e "s|^FROM.*|FROM $(LOCAL_DOCKER_REGISTRY_URL)/centos$(CENTOS_RELEASE)" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
+	docker pull $(LOCAL_DOCKER_REGISTRY_URL)/centos$(CENTOS_RELEASE)
+endif
 	sudo docker build -t fuel/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
 	mkdir -p $(BUILD_DIR)/docker/fuel-centos/
 	echo ">>> Generating fuel/centos base image..."
