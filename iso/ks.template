@@ -38,7 +38,6 @@ dhcp
 docker
 fuel-bootstrap-cli
 fuel-bootstrap-image
-fuel-bootstrap-image-builder
 # NOTE(kozhukalov): We don't need target centos images in 8.0
 # fuel-target-centos-images{{CENTOS_RELEASE}}
 fuelmenu
