@@ -1,5 +1,5 @@
 #fuel/centos-docker-build
-FROM centos:centos7
+FROM registry.fuel-infra.org/isuzdal/centos711503
 
 MAINTAINER Matthew Mosesohn mmosesohn@mirantis.com
 
