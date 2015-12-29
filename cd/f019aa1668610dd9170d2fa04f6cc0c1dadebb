@@ -1,0 +1,10 @@
+Code-Review+1: Artem Panchenko <apanchenko@mirantis.com>
+Code-Review+1: tatyana-leontovich <tleontovich@mirantis.com>
+Code-Review+2: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Workflow+1: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Tue, 29 Dec 2015 17:59:30 +0000
+Reviewed-on: https://review.openstack.org/262214
+Project: openstack/fuel-main
+Branch: refs/heads/master
