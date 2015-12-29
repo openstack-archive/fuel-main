@@ -268,8 +268,9 @@ make_ubuntu_bootstrap_stub () {
 get_bootstrap_flavor () {
 	local ASTUTE_YAML='/etc/fuel/astute.yaml'
 	python <<-EOF
-	from fuelmenu.fuelmenu import Settings
-	conf = Settings().read("$ASTUTE_YAML").get('BOOTSTRAP', {})
+	from yaml import load
+	with open("$ASTUTE_YAML", 'r') as f:
+	    conf = load(f).get('BOOTSTRAP', {})
 	print(conf.get('flavor', 'centos').lower())
 	EOF
 }
@@ -277,8 +278,9 @@ get_bootstrap_flavor () {
 get_bootstrap_skip () {
 	local ASTUTE_YAML='/etc/fuel/astute.yaml'
 	python <<-EOF
-	from fuelmenu.fuelmenu import Settings
-	conf = Settings().read("$ASTUTE_YAML").get('BOOTSTRAP', {})
+	from yaml import load
+	with open("$ASTUTE_YAML", 'r') as f:
+	    conf = load(f).get('BOOTSTRAP', {})
 	print(conf.get('skip_default_img_build', False))
 	EOF
 }
