@@ -25,12 +25,13 @@ source ./config.sh
 source ./functions/vm.sh
 source ./functions/network.sh
 
-# Delete host-only interfaces
+echo "Deleting old interfaces if exists..."
 if [[ "$rm_network" == "0" ]]; then
     delete_fuel_ifaces
 else
     delete_all_hostonly_interfaces
 fi
+echo
 
 # Create the required host-only interfaces
 for ip in $fuel_master_ips; do
