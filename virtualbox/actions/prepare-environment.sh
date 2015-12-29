@@ -19,11 +19,11 @@
 # This script performs initial check and configuration of the host system. It:
 #   - verifies that all available command-line tools are present on the host system
 #
-# We are avoiding using 'which' because of http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script 
+# We are avoiding using 'which' because of http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script
 #
 
 # Include the script with handy functions to operate VMs and VirtualBox networking
-source ./config.sh 
+source ./config.sh
 source ./functions/vm.sh
 source ./functions/network.sh
 source ./functions/shell.sh
@@ -45,6 +45,16 @@ echo -n "Checking for 'expect'... "
 execute type expect >/dev/null 2>&1
 if [ $? -eq 1 ]; then
   echo "\"expect\" is not available in the path, but it's required. Please install Tcl \"expect\" package. Aborting."
+  exit 1
+else
+  echo "OK"
+fi
+
+# Check for xxd
+echo -n "Checking for 'xxd'... "
+execute type xxd >/dev/null 2>&1
+if [ $? -eq 1 ]; then
+  echo "\"xxd\" is not available in the path, but it's required. Please install the \"xxd\" package. Aborting."
   exit 1
 else
   echo "OK"
@@ -108,7 +118,7 @@ echo -n "Checking if ipconfig or ifconfig installed... "
 case "$(execute uname)" in
   Linux | Darwin)
     if ! execute test -x /sbin/ifconfig ; then
-      echo "No ifconfig available at /sbin/ifconfig path! This path is hard-coded into VBoxNetAdpCtl utility." 
+      echo "No ifconfig available at /sbin/ifconfig path! This path is hard-coded into VBoxNetAdpCtl utility."
       echo "Please install ifconfig or create symlink to proper interface configuration utility. Aborting."
       exit 1
     fi
