@@ -1,3 +1,5 @@
+extra_centos_empty_installroot:=$(BUILD_DIR)/mirror/centos/dummy_extra_installroot
+
 $(BUILD_DIR)/mirror/centos/extra-repos-download.done: $(BUILD_DIR)/mirror/centos/yum-config.done
 $(BUILD_DIR)/mirror/centos/extra-repos-download.done:
 	mkdir -p $(LOCAL_MIRROR)/extra-repos
@@ -18,7 +20,11 @@ $(BUILD_DIR)/mirror/centos/extra-repos.done:
 	$(ACTION.TOUCH)
 
 define extra_repo_download
-set -ex ; reposync --downloadcomps --plugins --delete --arch=$(CENTOS_ARCH) \
+mkdir -p "$(extra_centos_empty_installroot)/cache" ;
+set -ex ; env TMPDIR="$(extra_centos_empty_installroot)/cache" \
+    TMP="$(extra_centos_empty_installroot)/cache" \
+    reposync --downloadcomps --plugins --delete --arch=$(CENTOS_ARCH) \
+    --cachedir="$(extra_centos_empty_installroot)/cache" \
     -c $(BUILD_DIR)/mirror/centos/etc/yum.conf --repoid=$(call get_repo_name,$1) \
     -p $(LOCAL_MIRROR)/extra-repos/
 endef
