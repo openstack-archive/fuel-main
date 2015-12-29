@@ -50,6 +50,26 @@ else
   echo "OK"
 fi
 
+# Check for ssh
+echo -n "Checking for 'ssh'... "
+execute type ssh >/dev/null 2>&1
+if [ $? -eq 1 ]; then
+  echo "\"ssh\" is not available in the path, but it's required. Please install the \"openssh\" package. Aborting."
+  exit 1
+else
+  echo "OK"
+fi
+
+# Check for xxd
+echo -n "Checking for 'xxd'... "
+execute type xxd >/dev/null 2>&1
+if [ $? -eq 1 ]; then
+  echo "\"xxd\" is not available in the path, but it's required. Please install the \"xxd\" package. Aborting."
+  exit 1
+else
+  echo "OK"
+fi
+
 # Check for VirtualBox
 echo "If you run this script under Cygwin, you may have to add path to VirtualBox directory to your PATH. "
 echo "Usually it is enough to run \"export PATH=\$PATH:\"/cygdrive/c/Program Files/Oracle/VirtualBox\" "
