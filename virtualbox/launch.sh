@@ -27,14 +27,17 @@ case "$(execute uname)" in
       ;;
 esac
 
-# Prepare the host system
+echo "Prepare the host system..."
 ./actions/prepare-environment.sh || exit 1
+echo
 
-# Check available memory on the host system
+echo "Check available memory on the host system..."
 ./actions/check-available-memory.sh || exit 1
+echo
 
-# Сlean previous installation if exists
+echo "Сlean previous installation if exists..."
 ./actions/clean-previous-installation.sh || exit 1
+echo
 
 # Сreate host-only interfaces
 ./actions/create-interfaces.sh || exit 1

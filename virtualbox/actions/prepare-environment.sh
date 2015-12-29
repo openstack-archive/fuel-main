@@ -130,4 +130,4 @@ esac
 echo "OK"
 
 # Report success
-echo "Setup is done."
+echo "Done."

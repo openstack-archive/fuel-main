@@ -26,13 +26,10 @@ pxe_path=`ls -1t drivers/*.*rom 2>/dev/null | head -1`
 # Every Mirantis OpenStack machine name will start from this prefix
 vm_name_prefix=fuel-
 
-# By default, all available network interfaces vboxnet won't be removed,
-# if their IP addresses don't match with fuel_master_ips (10.20.0.1 172.16.0.254
-# 172.16.1.1)
-# If you want to remove all existing vbox interfaces, then use rm_network=1
+# By default, all available vbox network interfaces will be removed.
 # 0 - don't remove all vbox networks. Remove only fuel networks if they exist
 # 1 - remove all vbox networks
-rm_network=0
+rm_network=1
 
 # Please add the IPs accordingly if you going to create non-default NICs number
 # 10.20.0.1/24   - Mirantis OpenStack Admin network
