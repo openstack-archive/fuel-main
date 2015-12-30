@@ -7,6 +7,7 @@ $(BUILD_DIR)/mirror/centos/mos-download.done: $(BUILD_DIR)/mirror/centos/yum-con
 	set -ex ; env TMPDIR="$(mos_centos_empty_installroot)/cache" \
 	TMP="$(mos_centos_empty_installroot)/cache" \
 	reposync --norepopath --downloadcomps --plugins --delete --arch=$(CENTOS_ARCH) \
+	    --cachedir="$(mos_centos_empty_installroot)/cache" \
 	    -c $(BUILD_DIR)/mirror/centos/etc/yum.conf --repoid=fuel -p $(LOCAL_MIRROR_MOS_CENTOS)
 	$(ACTION.TOUCH)
 
