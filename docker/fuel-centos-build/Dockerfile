@@ -23,7 +23,8 @@ RUN systemctl mask dev-mqueue.mount dev-hugepages.mount \
     firewalld.service
 
 ADD dbus.service /etc/systemd/system/dbus.service
-RUN systemctl enable dbus.service
+RUN systemctl reenable dbus.service
+RUN systemctl enable systemd-localed.service
 
 RUN rm -f /etc/yum.repos.d/*
 
@@ -35,4 +36,4 @@ RUN chmod +x /usr/local/bin/start.sh
 # Set default target
 RUN systemctl set-default multi-user.target
 
-CMD  ["/usr/lib/systemd/systemd"]
+CMD  ["/usr/sbin/init"]
