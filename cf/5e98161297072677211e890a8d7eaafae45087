@@ -1,0 +1,11 @@
+Code-Review+1: Maksim Malchuk <mmalchuk@mirantis.com>
+Code-Review+1: Kyrylo Galanov <kgalanov@mirantis.com>
+Code-Review+1: Peter Zhurba <pzhurba@mirantis.com>
+Code-Review+2: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Workflow+1: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 31 Dec 2015 13:20:27 +0000
+Reviewed-on: https://review.openstack.org/262168
+Project: openstack/fuel-main
+Branch: refs/heads/master
