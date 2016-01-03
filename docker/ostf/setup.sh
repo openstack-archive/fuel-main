@@ -34,6 +34,9 @@ packages="python-fuelclient postgresql-libs python-editor python-unicodecsv "
 packages+="python-saharaclient python-muranoclient python-cliff"
 echo $packages | xargs -n1 yum install -y
 
+#FIXME(mmalchuk) new python-saharaclient and python-muranoclient were merged
+#                but still have argparse requirement.
+sed -i 's/^\(argparse.*\)/#\1/' /usr/lib/python2.7/site-packages/*egg-info/requires.txt
 
 systemctl daemon-reload
 puppet apply --debug --verbose --color false --detailed-exitcodes \
