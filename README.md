@@ -3,6 +3,7 @@ FUEL
 
 This git repository contains Fuel ISO build scripts.
 
+
 Directory structure:
 - ```bootstrap```
   Scripts for building CentOS based bootstrap ramdisk. The Fuel discovery
