@@ -1,0 +1,11 @@
+Code-Review+1: Dmitry Teselkin <dteselkin@mirantis.com>
+Code-Review+1: Artur Kaszuba <akaszuba@mirantis.com>
+Code-Review+1: Dmitry Kaigarodsev <dkaiharodsev@mirantis.com>
+Code-Review+2: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Workflow+1: Igor Kalnitsky <ikalnitsky@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 08 Jan 2016 16:26:29 +0000
+Reviewed-on: https://review.openstack.org/265328
+Project: openstack/fuel-main
+Branch: refs/heads/master
