@@ -1,0 +1,9 @@
+Code-Review+1: Sergey Kulanov <skulanov@mirantis.com>
+Code-Review+2: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Workflow+1: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 08 Jan 2016 09:04:32 +0000
+Reviewed-on: https://review.openstack.org/264850
+Project: openstack/fuel-main
+Branch: refs/heads/stable/8.0
