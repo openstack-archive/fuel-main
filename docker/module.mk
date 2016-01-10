@@ -80,7 +80,7 @@ $(BUILD_DIR)/docker/fuel-centos.done: \
 	rm -rf $(BUILD_DIR)/docker/fuel-centos-build
 	cp -a $(SOURCE_DIR)/docker/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
 	test -n "$(EXTRA_RPM_REPOS)" || sed -e "/_EXTRA_RPM_REPOS_/d" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
-	sed -e "s|_CENTOS_RELEASE_|$(CENTOS_RELEASE)|" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
+	sed -e "s|_CENTOS_RELEASE_|$(CENTOS_RELEASE)|g" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
 	sed -e "s|_EXTRA_RPM_REPOS_|$(EXTRA_RPM_REPOS)|" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
 	sudo docker build -t fuel/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
 	mkdir -p $(BUILD_DIR)/docker/fuel-centos/
