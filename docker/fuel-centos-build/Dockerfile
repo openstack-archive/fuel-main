@@ -12,6 +12,7 @@ RUN echo _CENTOS_RELEASE_ > /etc/yum/vars/releasever
 #                  upgraded. They should be removed in a new docker image built
 #                  from scratch. After that this line can be safely removed.
 RUN yum -y swap -- remove systemd-container systemd-container-libs -- install systemd systemd-libs
+RUN sed -i 's/enabled=1/enabled=0/g' /etc/yum/pluginconf.d/fastestmirror.conf
 RUN yum -y update
 RUN yum clean all
 RUN yum -y install dbus
