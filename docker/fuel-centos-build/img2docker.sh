@@ -21,6 +21,9 @@ mount -o loop "$image" "$mount"
 
 cd "$mount"
 
+# Systemd failed with non-existent mount point :(
+sed -ie '/^LABEL=_/d' ${mount}/etc/fstab
+
 #this tar seems to cause issues such as rpmdb corruption
 #tar -cpSf - --acls --selinux --xattrs * | docker import - "$tag"
 
