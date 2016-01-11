@@ -7,11 +7,6 @@ ENV container docker
 ENV EXTRA_RPM_REPOS _EXTRA_RPM_REPOS_
 
 RUN echo _CENTOS_RELEASE_ > /etc/yum/vars/releasever
-# TODO(dteselkin): 'yum swap' was added to fix systemd-container* update issue.
-#                  systemd-container* packages were deprecated and cannot be
-#                  upgraded. They should be removed in a new docker image built
-#                  from scratch. After that this line can be safely removed.
-RUN yum --disablerepo=* --enablerepo=C_CENTOS_RELEASE_-base --enablerepo=C_CENTOS_RELEASE_-extras --enablerepo=C_CENTOS_RELEASE_-updates -y swap -- remove systemd-container systemd-container-libs -- install systemd systemd-libs
 RUN yum --disablerepo=* --enablerepo=C_CENTOS_RELEASE_-base --enablerepo=C_CENTOS_RELEASE_-extras --enablerepo=C_CENTOS_RELEASE_-updates -y update
 RUN yum clean all
 RUN yum --disablerepo=* --enablerepo=C_CENTOS_RELEASE_-base --enablerepo=C_CENTOS_RELEASE_-extras --enablerepo=C_CENTOS_RELEASE_-updates -y install dbus
