@@ -58,6 +58,7 @@ $(BUILD_DIR)/docker/$1.done: \
 	sudo docker build --force-rm -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
 	sudo docker run --name=FUEL_$1_$(PRODUCT_VERSION) \
 		--net=bridge -d -i -t --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro fuel/$1_$(PRODUCT_VERSION)
+	sudo docker exec -i FUEL_$1_$(PRODUCT_VERSION) sed -ie '/^LABEL=_/d' /etc/fstab
 	sudo docker exec -i FUEL_$1_$(PRODUCT_VERSION) /usr/local/bin/setup.sh 2>&1 \
 		|| (echo "CONTAINER BUILD FAILED, container '$1'"; exit 1)
 	sudo docker commit FUEL_$1_$(PRODUCT_VERSION) fuel/$1_$(PRODUCT_VERSION):latest
