@@ -322,12 +322,21 @@ echo "%end" >> /tmp/post_partition.ks
 #!/bin/bash
 set -x
 
-for I in $(cat /proc/cmdline); do
-  case "$I" in
-    *=*)
-      if ! [[ "${I}" =~ "." ]]; then echo "${I}" >> /root/anaconda.cmdline.vars; fi
-    ;;
-  esac
+# Parse cmdline to alter keys which contains dot in their names
+# Such keys can't be used as variables in bash,
+# so every dot is replaced with double underscore.
+# Double underscore needed to avoid possible naming collisions.
+for item in $(cat /proc/cmdline); do
+  if [[ "${item}" =~ '=' ]]; then
+    key="${item%%=*}"
+    value="${item#*=}"
+  else
+    key="${item}"
+    value='yes'
+  fi
+  key="${key//\./__}"
+  value="${value:-'yes'}"
+  echo "${key}=${value}" >> /root/anaconda.cmdline.vars
 done
 
 source /root/anaconda.cmdline.vars
