@@ -235,6 +235,13 @@ for service in dev-mqueue.mount dev-hugepages.mount \
   ln -snf /dev/null /etc/systemd/system/${service}
 done
 
+# Some services should be disabled instead of masked,
+# just because they use in some containers
+for service in crond.service rsyslog.service xinetd.service; do
+  [ -L /etc/systemd/system/multi-user.target.wants/${service} ] && \
+    rm -f /etc/systemd/system/multi-user.target.wants/${service}
+done
+
 # Set default target to multi-user.target
 ln -snf /usr/lib/systemd/system/multi-user.target /etc/systemd/system/default.target
 
