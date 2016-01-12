@@ -31,9 +31,7 @@ fuel-dockerctl
 authconfig
 bind-utils
 bridge-utils
-cronie
 crontabs
-curl
 dhcp
 docker
 fuel-bootstrap-cli
@@ -52,14 +50,11 @@ mlocate
 nmap-ncat
 ntp
 ntpdate
-openssh-clients
-policycoreutils
 python-pypcap
 rsync
 puppet
 rubygem-netaddr
 rubygem-openstack
-selinux-policy-targeted
 strace
 sysstat
 system-config-firewall-base
@@ -68,7 +63,6 @@ telnet
 vim
 virt-what
 wget
-yum
 yum-plugin-priorities
 %end
 
