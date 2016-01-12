@@ -2,6 +2,12 @@
 containers:=astute cobbler mcollective nailgun keystone nginx ostf rsync rsyslog rabbitmq postgres
 REPO_CONTAINER:=fuel-repo-container
 
+ifneq ($(USE_CURRENT_CENTOS),none)
+FUEL_DOCKER_FILE:=Dockerfile
+else
+FUEL_DOCKER_FILE:=Dockerfile.current
+endif
+
 docker: $(ARTS_DIR)/$(DOCKER_ART_NAME)
 
 $(ARTS_DIR)/$(DOCKER_ART_NAME): \
@@ -79,9 +85,9 @@ $(BUILD_DIR)/docker/fuel-centos.done: \
 		$(BUILD_DIR)/packages/rpm/build.done
 	rm -rf $(BUILD_DIR)/docker/fuel-centos-build
 	cp -a $(SOURCE_DIR)/docker/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
-	test -n "$(EXTRA_RPM_REPOS)" || sed -e "/_EXTRA_RPM_REPOS_/d" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
-	sed -e "s|_CENTOS_RELEASE_|$(CENTOS_RELEASE)|g" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
-	sed -e "s|_EXTRA_RPM_REPOS_|$(EXTRA_RPM_REPOS)|" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
+	test -n "$(EXTRA_RPM_REPOS)" || sed -e "/_EXTRA_RPM_REPOS_/d" -i $(BUILD_DIR)/docker/fuel-centos-build/$(FUEL_DOCKER_FILE)
+	sed -e "s|_CENTOS_RELEASE_|$(CENTOS_RELEASE)|g" -i $(BUILD_DIR)/docker/fuel-centos-build/$(FUEL_DOCKER_FILE)
+	sed -e "s|_EXTRA_RPM_REPOS_|$(EXTRA_RPM_REPOS)|" -i $(BUILD_DIR)/docker/fuel-centos-build/$(FUEL_DOCKER_FILE)
 	sudo docker build -t fuel/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
 	mkdir -p $(BUILD_DIR)/docker/fuel-centos/
 	echo ">>> Generating fuel/centos base image..."
