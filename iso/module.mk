@@ -194,11 +194,16 @@ $(BUILD_DIR)/iso/isoroot.done: \
 # Building CD and USB stick images
 ########################
 
+# ISO_VOLUME_ID can't have whitespaces or other non-alphanumeric characters 'as is'.
+# They must be represented as \xNN, where NN is the hexadecimal representation of the character.
+# For example, \x20 is a white space (" ").
+# This is the limitation of kickstart boot options.
+
 ifeq ($(filter mirantis,$(FEATURE_GROUPS)),mirantis)
-ISO_VOLUME_ID:="Mirantis_Fuel"
+ISO_VOLUME_ID:=Mirantis_Fuel
 ISO_VOLUME_PREP:="Mirantis Inc."
 else
-ISO_VOLUME_ID:="OpenStack_Fuel"
+ISO_VOLUME_ID:=OpenStack_Fuel
 ISO_VOLUME_PREP:="Fuel team"
 endif
 
