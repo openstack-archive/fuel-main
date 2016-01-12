@@ -60,6 +60,7 @@ MASTER_DNS?=10.20.0.1
 MASTER_NETMASK?=255.255.255.0
 MASTER_GW?=10.20.0.1
 
+USE_CURRENT_CENTOS?=none
 CENTOS_MAJOR?=7
 CENTOS_MINOR?=1
 CENTOS_BUILD?=1503
@@ -158,7 +159,11 @@ USE_MIRROR?=ext
 
 ifeq ($(USE_MIRROR),ext)
 MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
+ifeq ($(USE_CURRENT_CENTOS),none)
 MIRROR_CENTOS?=http://vault.centos.org/$(CENTOS_RELEASE)
+else
+MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_MAJOR)
+endif
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=mirror.fuel-infra.org
@@ -207,7 +212,11 @@ endif
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
 YUM_REPOS?=official extras fuel
+ifeq ($(USE_CURRENT_CENTOS),none)
 MIRROR_CENTOS?=http://vault.centos.org/$(CENTOS_RELEASE)
+else
+MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_MAJOR)
+endif
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel
