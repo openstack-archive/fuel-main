@@ -519,10 +519,6 @@ https://docs.mirantis.com/openstack/fuel/fuel-7.0/reference-architecture.html#fu
 
 EOF
 
-# Install bootstrap_admin_node.sh and enabling it
-install -m 0777 -D ${SOURCE}/bootstrap_admin_node.sh /usr/local/sbin/bootstrap_admin_node.sh
-echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
-
 # Copying version.yaml file. It contains COMMIT_SHA of last commit.
 RELEASE=$(awk '/release/{gsub(/"/, "");print $2}' ${SOURCE}/version.yaml)
 mkdir -p /etc/nailgun /etc/fuel/${RELEASE} /etc/fuel/release_versions
@@ -617,8 +613,8 @@ cat >> /root/.bashrc << 'EOF'
 if [[ "$(tty)" == "/dev/tty1" && -f /etc/systemd/system/getty@tty1.service.d/autologin.conf ]]; then
 	rm -Rf "/etc/systemd/system/getty@tty1.service.d"
 	/bin/systemctl daemon-reload
-	if [ -x /usr/local/sbin/bootstrap_admin_node.sh ]; then
-		exec /usr/local/sbin/bootstrap_admin_node.sh
+	if [ -x /usr/sbin/bootstrap_admin_node.sh ]; then
+		exec /usr/sbin/bootstrap_admin_node.sh
 	fi
 fi
 EOF

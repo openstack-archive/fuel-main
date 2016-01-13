@@ -9,6 +9,7 @@
 Name: %{name}
 Summary: Fuel for OpenStack
 URL:     http://mirantis.com
+Source0: bootstrap_admin_node.sh
 Version: %{version}
 Release: %{release}
 License: Apache
@@ -33,11 +34,15 @@ Fuel for OpenStack is a lifecycle management utility for
 managing OpenStack.
 
 %install
-mkdir -p %{buildroot}/etc
+%{__mkdir_p} %{buildroot}%{_sysconfdir}/sysconfig/
 echo %{fuel_release} > %{buildroot}%{_sysconfdir}/fuel_release
+echo "ENABLED=1" > %{buildroot}%{_sysconfdir}/sysconfig/$(basename %{SOURCE0} | cut -d'.' -f1)
+install -p -D -m 755 %{SOURCE0} %{buildroot}%{_sbindir}/$(basename %{SOURCE0})
 
 %files
 %defattr(-,root,root)
+%{_sysconfdir}/sysconfig/bootstrap_admin_node
+%attr(755,root,root) %{_sbindir}/bootstrap_admin_node.sh
 
 %package -n fuel-release
 
