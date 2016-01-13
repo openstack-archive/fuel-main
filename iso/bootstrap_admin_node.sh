@@ -7,6 +7,9 @@ FUEL_RELEASE=$(grep release: /etc/fuel/version.yaml | cut -d: -f2 | tr -d '" ')
 BOOTSTRAP_NODE_CONFIG="/etc/fuel/bootstrap_admin_node.conf"
 bs_build_log='/var/log/fuel-bootstrap-image-build.log'
 bs_status=0
+# Backup network configs to this folder. Folder will be created only if
+# backup process actually will be.
+bup_folder="/var/bootstrap_admin_node_bup_$(date +%Y-%m-%d-%H-%M-%S)/"
 ### Long messages inside code makes them more complicated to read...
 # bootstrap messages
 # FIXME fix help links
@@ -118,6 +121,9 @@ function ifdown_ethernet_interfaces {
     local if_ipaddr
 
     adminif_ipaddr=$(get_ifcfg_value IPADDR /etc/sysconfig/network-scripts/ifcfg-${ADMIN_INTERFACE})
+    if [[ -z "${adminif_ipaddr}" ]]; then
+        return
+    fi
     for if_config in $(find /etc/sysconfig/network-scripts -name 'ifcfg-*' ! -name 'ifcfg-lo'); do
         if_name=$(get_ifcfg_value NAME $if_config)
         if [[ "${if_name}" == "${ADMIN_INTERFACE}" ]]; then
@@ -127,7 +133,8 @@ function ifdown_ethernet_interfaces {
         if [[ "${if_ipaddr}" == "${adminif_ipaddr}" ]]; then
             echo "Interface '${if_name}' uses the same ip '${if_ipaddr}' as admin interface '${ADMIN_INTERFACE}', removing ..."
             ifdown ${if_name}
-            rm -f ${if_config}
+            mkdir -p "${bup_folder}"
+            mv -f "${if_config}" "${bup_folder}"
         fi
     done
 }
