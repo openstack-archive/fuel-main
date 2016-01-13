@@ -360,7 +360,7 @@ source /root/anaconda.cmdline.vars
 
 if [[ ! -z $ifname ]]; then
   echo "adminif=$(udevadm info --query=property -p /sys/class/net/${ifname%%:*} | \
-    awk -F\= '{ if ($1 == "ID_NET_NAME_PATH") print $2}')" >> /root/anaconda.cmdline.vars
+    awk -F\= '{ if ($1 == "ID_NET_NAME_ONBOARD") {print $2; exit} else if ($1 == "ID_NET_NAME_PATH") {print $2} }')" >> /root/anaconda.cmdline.vars
 fi
 
 %end
