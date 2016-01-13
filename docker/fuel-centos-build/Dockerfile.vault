@@ -6,9 +6,10 @@ MAINTAINER Matthew Mosesohn mmosesohn@mirantis.com
 ENV container docker
 ENV EXTRA_RPM_REPOS _EXTRA_RPM_REPOS_
 
-RUN yum -y update
-RUN yum -y install dbus
+RUN echo _CENTOS_RELEASE_ > /etc/yum/vars/releasever
+RUN yum --disablerepo=* --enablerepo=C_CENTOS_RELEASE_-base --enablerepo=C_CENTOS_RELEASE_-extras --enablerepo=C_CENTOS_RELEASE_-updates -y update
 RUN yum clean all
+RUN yum --disablerepo=* --enablerepo=C_CENTOS_RELEASE_-base --enablerepo=C_CENTOS_RELEASE_-extras --enablerepo=C_CENTOS_RELEASE_-updates -y install dbus
 
 RUN systemctl mask dev-mqueue.mount dev-hugepages.mount \
     systemd-remount-fs.service sys-kernel-config.mount \
