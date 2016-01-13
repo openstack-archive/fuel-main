@@ -1,6 +1,9 @@
 #TEMP fixme
 %define repo_name fuel-main
 
+#FIXME workaround for building in perestroika
+%define _unpackaged_files_terminate_build 0
+
 %define name fuel
 %{!?version: %define version 9.0.0}
 %{!?fuel_release: %define fuel_release 9.0}
@@ -37,10 +40,14 @@ managing OpenStack.
 
 %install
 rm -rf %{buildroot}
-mkdir -p %{buildroot}/etc
+mkdir -p %{buildroot}%{_sysconfdir}
+mkdir -p %{buildroot}%{_sbindir}
+mkdir -p %{buildroot}%{_sysconfdir}/sysconfig/
 echo %{fuel_release} > %{buildroot}%{_sysconfdir}/fuel_release
 install -D -m 700 -d %{buildroot}/root/.ssh
 install -p -m 600 %{_builddir}/%{name}-%{version}/bootstrap/ssh/id_rsa %{buildroot}/root/.ssh/bootstrap.rsa
+echo "ENABLED=1" > %{buildroot}%{_sysconfdir}/sysconfig/bootstrap_admin_node
+install -p -m 755 %{_builddir}/%{name}-%{version}/iso/bootstrap_admin_node.sh %{buildroot}%{_sbindir}/bootstrap_admin_node.sh
 
 %clean
 rm -rf %{buildroot}
@@ -64,3 +71,20 @@ This packages provides /etc/fuel_release file.
 %files -n fuel-release
 %defattr(-,root,root)
 %{_sysconfdir}/fuel_release
+
+%package -n fuel-setup
+
+Summary:   Fuel deployment script package
+Version:   %{version}
+Release:   %{release}
+License:   GPLv2
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+URL:       http://github.com/Mirantis
+
+%description -n fuel-setup
+This packages provides script to deploy Fuel components.
+
+%files -n fuel-setup
+%defattr(-,root,root)
+%{_sysconfdir}/sysconfig/bootstrap_admin_node
+%{_sbindir}/bootstrap_admin_node.sh
