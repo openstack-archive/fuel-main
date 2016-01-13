@@ -1,0 +1,10 @@
+Code-Review+1: Artem Silenkov <asilenkov@mirantis.com>
+Code-Review+1: Dmitry Teselkin <dteselkin@mirantis.com>
+Code-Review+2: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Workflow+1: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Wed, 13 Jan 2016 12:58:18 +0000
+Reviewed-on: https://review.openstack.org/266302
+Project: openstack/fuel-main
+Branch: refs/heads/master
