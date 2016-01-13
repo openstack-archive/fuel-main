@@ -57,6 +57,8 @@ endif
 $(BUILD_DIR)/packages/source_%.done:
 	$(ACTION.TOUCH)
 
+# FUEL PKGS
+$(eval $(call prepare_file_source,fuel-main,bootstrap_admin_node.sh,$(SOURCE_DIR)/iso/bootstrap_admin_node.sh,))
 #NAILGUN_PKGS
 $(eval $(call prepare_git_source,fuel-nailgun,fuel-nailgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-nailgun,HEAD,$(NAILGUN_GERRIT_COMMIT)))
 #FUEL_OSTF_PKGS

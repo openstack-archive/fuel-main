@@ -9,6 +9,7 @@
 Name: %{name}
 Summary: Fuel for OpenStack
 URL:     http://mirantis.com
+Source0: bootstrap_admin_node.sh
 Version: %{version}
 Release: %{release}
 Source0: %{name}-%{version}.tar.gz
