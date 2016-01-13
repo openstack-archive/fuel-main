@@ -519,10 +519,6 @@ https://docs.mirantis.com/openstack/fuel/fuel-7.0/reference-architecture.html#fu
 
 EOF
 
-# Install bootstrap_admin_node.sh and enabling it
-install -m 0777 -D ${SOURCE}/bootstrap_admin_node.sh /usr/local/sbin/bootstrap_admin_node.sh
-echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
-
 # Copying version.yaml file. It contains COMMIT_SHA of last commit.
 RELEASE=$(awk '/release/{gsub(/"/, "");print $2}' ${SOURCE}/version.yaml)
 mkdir -p /etc/nailgun /etc/fuel/${RELEASE} /etc/fuel/release_versions
