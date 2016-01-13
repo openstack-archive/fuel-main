@@ -77,7 +77,6 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(ISOROOT)/isolinux/isolinux.cfg \
 		$(ISOROOT)/isolinux/splash.jpg \
 		$(ISOROOT)/ks.cfg \
-		$(ISOROOT)/bootstrap_admin_node.sh \
 		$(ISOROOT)/send2syslog.py
 	$(ACTION.TOUCH)
 
@@ -118,7 +117,6 @@ $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(ISORO
 		-o $@.tmp
 	mv $@.tmp $@
 
-$(ISOROOT)/bootstrap_admin_node.sh: $(SOURCE_DIR)/iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
 $(ISOROOT)/send2syslog.py: $(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py ; $(ACTION.COPY)
 $(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/fuel-nailgun.done
 
