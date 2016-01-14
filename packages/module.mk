@@ -35,7 +35,7 @@ $(BUILD_DIR)/packages/sources/$1/$2:
 	echo "%changelog\n* `LC_TIME=C date +\"%a %b %d %Y\"` `git -C $3 log -1 --pretty=format:%an` \
 		<`git -C $3 log -1 --pretty=format:%ae`> - $(PACKAGE_VERSION)-1.mos`git -C $3 rev-list --no-merges $4 --count`\n-\
 		`git -C $3 rev-parse --short HEAD` `git -C $3 log -1 --pretty=%s`"  > $$(CHANGELOGFILE)
-	echo DEBRELEASE=1~u14.04+`git -C $3 rev-list --no-merges $4 --count` >> $$(VERSIONFILE)
+	echo DEBRELEASE=1~u14.04+mos`git -C $3 rev-list --no-merges $4 --count` >> $$(VERSIONFILE)
 	echo DEBFULLNAME=`git -C $3 log -1 --pretty=format:%an` >> $$(VERSIONFILE)
 	echo DEBEMAIL=`git -C $3 log -1 --pretty=format:%ae` >> $$(VERSIONFILE)
 	echo DEBMSG=`git -C $3 rev-parse --short HEAD` `git -C $3 log -1 --pretty=%s` >> $$(VERSIONFILE)
