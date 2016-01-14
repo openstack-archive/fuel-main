@@ -1,0 +1,11 @@
+Code-Review+1: Igor Belikov <ibelikov@mirantis.com>
+Code-Review+1: Vitaly Parakhin <vparakhin@mirantis.com>
+Code-Review+1: Aleksey Zvyagintsev <azvyagintsev@mirantis.com>
+Code-Review+2: Sergey Kulanov <skulanov@mirantis.com>
+Workflow+1: Sergey Kulanov <skulanov@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 14 Jan 2016 13:37:29 +0000
+Reviewed-on: https://review.openstack.org/266493
+Project: openstack/fuel-main
+Branch: refs/heads/master
