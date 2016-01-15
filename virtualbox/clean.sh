@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#    Copyright 2015 Mirantis, Inc.
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -16,19 +16,20 @@
 
 source ./functions/shell.sh
 
+# Check remote host/port settings
+check_remote_settings
+
 # Add VirtualBox directory to PATH
-case "$(execute uname)" in
-    CYGWIN*)
-        vbox_path_registry=`execute cat /proc/registry/HKEY_LOCAL_MACHINE/SOFTWARE/Oracle/VirtualBox/InstallDir`
-        vbox_path=`execute cygpath "$vbox_path_registry"| sed -e 's%/$%%'`
-        export PATH=$PATH:$vbox_path
-      ;;
-    *)
-      ;;
-esac
+add_virtualbox_path
 
 # Shutdown installation and clean environment
-./actions/prepare-environment.sh || exit 1
-./actions/clean-previous-installation.sh || exit 1
-./actions/delete-interfaces.sh || exit 1
+echo "Prepare the host system..."
+./actions/prepare-environment.sh clean || exit 1
+echo
 
+echo "Сlean previous installation if exists..."
+./actions/clean-previous-installation.sh || exit 1
+echo
+
+echo "Deleting old interfaces if exists..."
+./actions/delete-interfaces.sh || exit 1

@@ -1,7 +1,7 @@
 #!/bin/bash
 # set -x
 
-#    Copyright 2015 Mirantis, Inc.
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -24,7 +24,7 @@ source ./functions/vm.sh
 source ./functions/network.sh
 
 # Delete host-only interfaces
-if [[ "$rm_network" == "0" ]]; then
+if [[ "${rm_network}" == "0" ]]; then
     delete_fuel_ifaces
 else
     delete_all_hostonly_interfaces
