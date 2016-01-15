@@ -1,7 +1,7 @@
 #!/bin/bash
 # set -x
 
-#    Copyright 2013 Mirantis, Inc.
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -18,6 +18,7 @@
 #
 # This script performs initial check and configuration of the host system. It:
 #   - verifies that all available command-line tools are present on the host system
+#   - accepts one parameter value ('launch' or 'clean') which indicates how it is should be used
 #
 # We are avoiding using 'which' because of http://stackoverflow.com/questions/592620/check-if-a-program-exists-from-a-bash-script
 #
@@ -61,8 +62,6 @@ else
 fi
 
 # Check for VirtualBox
-echo "If you run this script under Cygwin, you may have to add path to VirtualBox directory to your PATH. "
-echo "Usually it is enough to run \"export PATH=\$PATH:\"/cygdrive/c/Program Files/Oracle/VirtualBox\" "
 echo -n "Checking for \"VBoxManage\"... "
 execute type VBoxManage >/dev/null 2>&1
 if [ $? -eq 1 ]; then
@@ -80,16 +79,25 @@ if [ "$extpacks" -le 0 ]; then
 fi
 echo "OK"
 
+# execute some checks only in the 'launch' mode
+if [ $1 == "launch" ]; then
+
 # Check for VirtualBox iPXE firmware
 echo -n "Checking for VirtualBox iPXE firmware..."
 if [ -z $pxe_path ]; then
     echo "SKIP"
-    echo "VirtualBox iPXE firmware is not found. Used standard firmware from the VirtualBox Extension Pack."
-    execute VBoxManage setextradata global VBoxInternal/Devices/pcbios/0/Config/LanBootRom
+    if [ -z "$REMOTE_HOST" ]; then
+        echo "VirtualBox iPXE firmware is not found. Used standard firmware from the VirtualBox Extension Pack."
+        execute VBoxManage setextradata global VBoxInternal/Devices/pcbios/0/Config/LanBootRom
+    fi
 else
-    execute VBoxManage setextradata global VBoxInternal/Devices/pcbios/0/Config/LanBootRom "$(pwd)/$pxe_path" 2>/dev/null
     echo "OK"
-    echo "Going to use iPXE boot firmware file $pxe_path"
+    if [ -z "$REMOTE_HOST" ]; then
+        execute VBoxManage setextradata global VBoxInternal/Devices/pcbios/0/Config/LanBootRom "$(pwd)/$pxe_path" 2>/dev/null
+        echo "Going to use iPXE boot firmware file $pxe_path"
+    else
+        echo "The iPXE boot on the remote system should be configured manually."
+    fi
 fi
 
 # Check for ISO image to be available
@@ -103,6 +111,8 @@ echo "Going to use Mirantis OpenStack ISO file $iso_path"
 
 # Copy ISO to host
 copy_if_required $iso_path
+
+fi # end 'launch' mode check
 
 # Check if SSH is installed. Cygwin does not install SSH by default.
 echo -n "Checking if SSH client installed... "
