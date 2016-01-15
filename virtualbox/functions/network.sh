@@ -67,7 +67,7 @@ is_hostonly_interface_present() {
   # Call VBoxManage directly instead of function, due to changed IFS
   local found_iface=(`execute VBoxManage list hostonlyifs | egrep "Name: + $name\$" | awk '/Name/ { $1 = ""; print substr($0, 2) }'`)
   # Change default divider back
-  case "$(execute uname)" in
+  case "$(uname)" in
     CYGWIN*)
       IFS=$OIFS
       ;;
@@ -87,18 +87,23 @@ check_if_iface_settings_applied() {
   ip=$2
   mask=$3
   echo "Verifying interface $name has IP $ip and mask $mask properly set."
-  OIFS=$IFS
-  case "$(execute uname)" in
+  case "$(uname)" in
     CYGWIN*)
+      OIFS=$IFS
       IFS=","
       ;;
     *)
-      IFS=$OIFS
       ;;
   esac
   local new_name=(`execute VBoxManage list hostonlyifs | egrep -A9 "Name: + $name\$" | awk '/Name/ { $1 = ""; print substr($0, 2) }'`)
-  IFS=$OIFS
-  sleep 2s
+  case "$(uname)" in
+    CYGWIN*)
+      IFS=$OIFS
+      ;;
+    *)
+      ;;
+  esac
+  sleep 12s
   local new_ip=(`execute VBoxManage list hostonlyifs | egrep -A9 "Name: + $name\$" | awk '/IPAddress:/ { print $2 }'`)
   local new_mask=(`execute VBoxManage list hostonlyifs | egrep -A9 "Name: + $name\$" | awk '/NetworkMask:/ { print $2 }'`)
   local new_dhcp=(`execute VBoxManage list hostonlyifs | egrep -A9 "Name: + $name\$" | awk '/DHCP:/ { print $2 }'`)
@@ -173,15 +178,14 @@ delete_fuel_ifaces() {
   local fuel_ifaces=$(get_fuel_ifaces)
   if [ ! -z "$fuel_ifaces" ]; then
     check_running_vms "$fuel_ifaces"
-    OIFS=$IFS
     IFS=","
     for interface in $fuel_ifaces; do
-      IFS=$OIFS
       echo "Deleting host-only interface: $interface..."
       execute VBoxManage hostonlyif remove "$interface"
       check_removed_iface "$interface"
     done
   fi
+  unset IFS
   echo "Done."
 }
 
@@ -190,14 +194,13 @@ delete_all_hostonly_interfaces() {
   local all_hostonly_interfaces=$(get_hostonly_interfaces)
   # Checking that the running virtual machines don't use removable host-only interfaces
   check_running_vms $all_hostonly_interfaces
-  OIFS=$IFS
   IFS=","
   # Delete every single hostonly interface in the system
   for interface in $all_hostonly_interfaces; do
-    IFS=$OIFS
     echo "Deleting host-only interface: ${interface}..."
     execute VBoxManage hostonlyif remove "${interface}"
     check_removed_iface "${interface}"
   done
+  unset IFS
   echo "Done."
 }
