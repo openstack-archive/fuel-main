@@ -24,7 +24,7 @@ source ./functions/vm.sh
 source ./functions/network.sh
 
 # Delete host-only interfaces
-if [[ "$rm_network" == "0" ]]; then
+if [[ "${rm_network}" == "0" ]]; then
     delete_fuel_ifaces
 else
     delete_all_hostonly_interfaces
