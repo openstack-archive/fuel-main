@@ -26,7 +26,7 @@ source ./functions/vm.sh
 source ./functions/network.sh
 
 echo "Deleting old interfaces if exists..."
-if [[ "$rm_network" == "0" ]]; then
+if [[ "${rm_network}" == "0" ]]; then
     delete_fuel_ifaces
 else
     delete_all_hostonly_interfaces
