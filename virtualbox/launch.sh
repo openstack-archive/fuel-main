@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#    Copyright 2013 Mirantis, Inc.
+#    Copyright 2016 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -16,19 +16,14 @@
 
 source ./functions/shell.sh
 
+# Check remote host/port settings
+check_remote_settings
+
 # Add VirtualBox directory to PATH
-case "$(execute uname)" in
-    CYGWIN*)
-        vbox_path_registry=`execute cat /proc/registry/HKEY_LOCAL_MACHINE/SOFTWARE/Oracle/VirtualBox/InstallDir`
-        vbox_path=`execute cygpath "$vbox_path_registry"| sed -e 's%/$%%'`
-        export PATH=$PATH:$vbox_path
-      ;;
-    *)
-      ;;
-esac
+add_virtualbox_path
 
 echo "Prepare the host system..."
-./actions/prepare-environment.sh || exit 1
+./actions/prepare-environment.sh launch || exit 1
 echo
 
 echo "Check available memory on the host system..."
