@@ -32,8 +32,8 @@ get_fuel_name_ifaces
 
 name="${vm_name_prefix}master"
 
+# Create master node VM
 create_vm $name "${host_nic_name[0]}" $vm_master_cpu_cores $vm_master_memory_mb $vm_master_disk_mb
-echo
 
 # Add additional NICs
 add_hostonly_adapter_to_vm $name 2 "${host_nic_name[1]}"
@@ -49,7 +49,7 @@ if [ ${headless} -eq 1 ]; then
   enable_vrde $name ${RDPport}
 fi
 
-if [ "$skipfuelmenu" = "yes" ]; then
+if [ "${skipfuelmenu}" = "yes" ]; then
   cmdline="$(grep 'append initrd' ../iso/isolinux/isolinux.cfg -m1 2> /dev/null | sed -e 's/^[ ]*append//')"
   cmdline="${cmdline:- initrd=initrd.img net.ifnames=0 biosdevname=0 ks=hd:sr0:/ks.cfg ip=10.20.0.2::10.20.0.1:255.255.255.0:fuel.domain.tld:eth0:off::: dns1=10.20.0.1 selinux=0}"
   boot_line="$(translate "$cmdline showmenu=no"$'\n')"
