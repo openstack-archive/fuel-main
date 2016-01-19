@@ -1,5 +1,11 @@
 .PHONY: show-ubuntu-sandbox-repos show-centos-sandbox-repos
 
+ifeq ($(CENTOS_USE_CR),none)
+export yum_local_cr_repo=0
+else
+export yum_local_cr_repo=1
+endif
+
 define yum_local_repo
 [upstream-local-mirror]
 name=Local upstream mirror
@@ -16,6 +22,15 @@ baseurl=file:///mirrors/mos-centos
 gpgcheck=0
 enabled=1
 priority=10
+endef
+
+define yum_local_cr_repo
+[cr-local-repo]
+name=Local cr mirror
+baseurl=file:///mirrors/centos/cr/x86_64
+gpgcheck=0
+enabled=$(value yum_local_cr_repo)
+priority=9
 endef
 
 define yum_upstream_repo
@@ -89,6 +104,7 @@ cp /etc/hosts $(SANDBOX)/etc/hosts
 cat > $(SANDBOX)/etc/yum.repos.d/base.repo <<EOF
 $(yum_upstream_repo)
 $(yum_epel_repo)
+$(yup_local_cr_repo)
 EOF
 mkdir -p $(SANDBOX)/etc/yum/pluginconf.d/
 mkdir -p $(SANDBOX)/etc/yum-plugins/
@@ -116,6 +132,7 @@ $(yum_upstream_repo)
 $(yum_epel_repo)
 $(yum_local_repo)
 $(yum_local_mos_repo)
+$(yup_local_cr_repo)
 EOF
 echo $(SANDBOX_PACKAGES) | xargs -n1 sudo chroot $(SANDBOX) yum -y --nogpgcheck install
 # clean all repos except the MOS + upsream + our epel
