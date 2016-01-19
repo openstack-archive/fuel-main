@@ -111,6 +111,15 @@ priority=20
 exclude=*debuginfo*
 endef
 
+define yum_repo_cr
+name=CentOS-$(CENTOS_RELEASE) CR repo
+baseurl=$(MIRROR_CENTOS)/cr/$(CENTOS_ARCH)
+gpgcheck=0
+enabled=1
+priority=21
+exclude=*i686 $(x86_rpm_packages_whitelist) *debuginfo*
+endef
+
 # Accept EXTRA_RPM_REPOS in a form of a list of: name,url,priority
 # Accept EXTRA_RPM_REPOS in a form of list of (default priority=10): name,url
 get_repo_name=$(shell echo $1 | cut -d ',' -f 1)
