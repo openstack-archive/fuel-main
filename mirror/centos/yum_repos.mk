@@ -129,7 +129,7 @@ baseurl = $(call get_repo_url,$1)
 gpgcheck = 0
 enabled = 1
 priority = $(call get_repo_priority,$1)
-exclude=*debuginfo*
+exclude=*i686 $(x86_rpm_packages_whitelist) *debuginfo*
 endef
 
 define create_fuelnode_repo

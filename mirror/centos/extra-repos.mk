@@ -30,6 +30,6 @@ set -ex ; env TMPDIR="$(extra_centos_empty_installroot)/cache" \
 endef
 
 define extra_repo_metadata
-set -ex ; createrepo -g $(LOCAL_MIRROR)/extra-repos/$(call get_repo_name,$1)/comps.xml \
-    -o $(LOCAL_MIRROR)/extra-repos/$(call get_repo_name,$1)/ $(LOCAL_MIRROR)/extra-repos/$(call get_repo_name,$1)/
+set -ex ;
+    createrepo -o $(LOCAL_MIRROR)/extra-repos/$(call get_repo_name,$1)/ $(LOCAL_MIRROR)/extra-repos/$(call get_repo_name,$1)/
 endef
