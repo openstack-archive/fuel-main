@@ -101,6 +101,14 @@ enabled=0
 priority=90
 endef
 
+define yum_cr_repo
+[cr]
+name=CentOS-$(CENTOS_RELEASE) - CR
+baseurl=$(MIRROR_CENTOS)/cr/$(CENTOS_ARCH)
+gpgcheck=0
+enabled=1
+endef
+
 define yum_repo_fuel
 [fuel]
 name=Mirantis OpenStack Custom Packages
