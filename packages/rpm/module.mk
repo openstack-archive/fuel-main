@@ -59,6 +59,7 @@ $(BUILD_DIR)/packages/rpm/$1.done:
 	mkdir -p $$(SANDBOX)/tmp/SOURCES && \
 	sudo cp -r $(BUILD_DIR)/packages/sources/$1/* $$(SANDBOX)/tmp/SOURCES
 	-test -f $(BUILD_DIR)/packages/sources/$1/changelog && cat $(BUILD_DIR)/packages/sources/$1/changelog >> $$(SPECFILE)
+	sudo chroot $$(SANDBOX) yum -y install rpm-build
 	sudo cp $$(SPECFILE) $$(SANDBOX)/tmp && \
 	sudo chroot $$(SANDBOX) yum-builddep -y /tmp/$1.spec
 	test -f $$(SANDBOX)/tmp/SOURCES/version && \
