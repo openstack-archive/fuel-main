@@ -18,6 +18,15 @@ enabled=1
 priority=10
 endef
 
+define yum_local_cr_repo
+[cr-local-repo]
+name=Local cr mirror
+baseurl=file:///mirrors/centos/cr/x86_64
+gpgcheck=0
+enabled=1
+priority=9
+endef
+
 define yum_upstream_repo
 [upstream]
 name=Upstream mirror
@@ -117,6 +126,11 @@ $(yum_epel_repo)
 $(yum_local_repo)
 $(yum_local_mos_repo)
 EOF
+ifneq ($(CENTOS_USE_CR),none)
+cat > $(SANDBOX)/etc/yum.repos.d/cr.repo <<EOF
+$(yup_local_cr_repo)
+EOF
+endif
 echo $(SANDBOX_PACKAGES) | xargs -n1 sudo chroot $(SANDBOX) yum -y --nogpgcheck install
 # clean all repos except the MOS + upsream + our epel
 sudo rm -vf $(SANDBOX)/etc/yum.repos.d/epel*
