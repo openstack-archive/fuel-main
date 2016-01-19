@@ -1,11 +1,23 @@
-.PHONY: all iso version-yaml centos-repo ubuntu-repo
+.PHONY: all iso version-yaml centos-repo ubuntu-repo listing
 .DELETE_ON_ERROR: $(ISO_PATH)
 
-all: iso version-yaml
+all: iso version-yaml listing
 
 ISOROOT:=$(BUILD_DIR)/iso/isoroot
 
 iso: $(ISO_PATH)
+
+listing: $(BUILD_DIR)/iso/isoroot.done $(BUILD_DIR)/mirror/build.done
+	-find $(BUILD_DIR) > $(BUILD_DIR)/listing-build.txt
+	-find $(LOCAL_MIRROR) > $(BUILD_DIR)/listing-local-mirror.txt
+	-find $(BUILD_DIR)/iso/isoroot \
+		-regextype posix-egrep \
+		-regex '.*(fuel|astute|network-checker|shotgun).*\.rpm' | \
+			while read package_file; do \
+				echo; \
+				echo $$(basename $$package_file); \
+				rpm -q --changelog -p $$package_file | head -2; \
+			done > $(BUILD_DIR)/listing-package-changelog.txt
 
 ########################
 # VERSION-YAML ARTIFACT
