@@ -97,8 +97,8 @@ for drv in `ls -1 /sys/block | grep "sd\|hd\|vd\|cciss"`; do
 done
 default_drive=`echo ${drives} ${removable_drives} | awk '{print $1}'`
 
-installdrive="undefined"
-forceformat="no"
+installdrive=${installdrive:-undefined}
+forceformat=${forceformat:-no}
 for I in $(cat /proc/cmdline); do
   case "$I" in
     *=*)
