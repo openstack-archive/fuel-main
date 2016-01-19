@@ -65,6 +65,7 @@ CENTOS_BUILD?=1503
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR).$(CENTOS_BUILD)
 CENTOS_ARCH:=x86_64
 CENTOS_IMAGE_RELEASE:=$(CENTOS_MAJOR)$(CENTOS_MINOR)
+CENTOS_USE_CR?=none
 UBUNTU_RELEASE:=trusty
 UBUNTU_MAJOR:=14
 UBUNTU_MINOR:=04
@@ -234,6 +235,9 @@ MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PROD
 # Repos must be separated by space.
 # Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm,priority bar,ftp://repo.foo,priority"
 EXTRA_RPM_REPOS?=
+ifneq $(CENTOS_USE_CR),none)
+EXTRA_RPM_REPOS+="cr"
+endif
 
 # Comma or space separated list. Available feature groups:
 #   experimental - allow experimental options
