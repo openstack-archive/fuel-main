@@ -63,3 +63,17 @@ $(BUILD_DIR)/repos/repos.done:
 	echo "  fuelmain_sha: \"$${fuelmain_commit_id}\"" >> $${version_yaml}.tmp; \
 	mv $${version_yaml}.tmp $${version_yaml}
 	$(ACTION.TOUCH)
+
+.PHONY: listing
+
+listing:
+	-find $(BUILD_DIR) > $(BUILD_DIR)/listing-build.txt
+	-find $(LOCAL_MIRROR) > $(BUILD_DIR)/listing-local-mirror.txt
+	-find $(BUILD_DIR)/iso/isoroot \
+		-regextype posix-egrep \
+		-regex '.*(fuel|astute|network-checker|shotgun).*\.rpm' | \
+			while read package_file; do \
+				echo; \
+				echo $$(basename $$package_file); \
+				rpm -q --changelog -p $$package_file | head -2; \
+			done > $(BUILD_DIR)/listing-package-changelog.txt
