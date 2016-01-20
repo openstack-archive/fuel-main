@@ -1,0 +1,9 @@
+Code-Review+1: Maksim Malchuk <mmalchuk@mirantis.com>
+Code-Review+2: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Workflow+1: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Wed, 20 Jan 2016 19:30:46 +0000
+Reviewed-on: https://review.openstack.org/269601
+Project: openstack/fuel-main
+Branch: refs/heads/stable/8.0
