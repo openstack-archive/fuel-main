@@ -97,6 +97,11 @@ function get_ethernet_interfaces() {
   done
 }
 
+function get_active_ethernet_interface() {
+  for iface in $(get_ethernet_interfaces); do
+    grep -q up /sys/class/net/${iface}/operstate && echo $iface && break
+  done
+}
 # Get value of a key from ifcfg-* files
 # Usage:
 #   get_ifcfg_value NAME /etc/sysconfig/network-scripts/ifcfg-eth0
@@ -179,7 +184,7 @@ showmenu=${showmenu:-'no'}
 # from a list of all available interfaces sorted alphabetically
 if ! ifname_valid $ADMIN_INTERFACE; then
     # Take the very first ethernet interface as an admin interface
-    ADMIN_INTERFACE=$(get_ethernet_interfaces | sort -V | head -1)
+    ADMIN_INTERFACE=$(get_active_ethernet_interface)
 fi
 
 if [[ "${OLD_ADMIN_INTERFACE}" != "${ADMIN_INTERFACE}" ]]; then
