@@ -65,7 +65,7 @@ wait_for_product_vm_to_download() {
 
     # Loop until master node gets successfully installed
     maxdelay=3000
-    while ! wait_for_line_in_puppet_bootstrap $ip $username $password "$prompt" "dockerctl build all|^Fuel.*complete" "^Fuel.*FAILED"; do
+    while ! wait_for_line_in_puppet_bootstrap $ip $username $password "$prompt" "build docker containers finished.|^Fuel.*complete" "^Fuel.*FAILED"; do
         sleep 5
         ((waited += 5))
         if (( waited >= maxdelay )); then
