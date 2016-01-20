@@ -116,25 +116,27 @@ function get_ifcfg_value {
 #   address statically configured as 'primary' interface
 function ifdown_ethernet_interfaces {
     local adminif_ipaddr
-    local if_config
     local if_name
     local if_ipaddr
+    local path
 
-    adminif_ipaddr=$(get_ifcfg_value IPADDR /etc/sysconfig/network-scripts/ifcfg-${ADMIN_INTERFACE})
+    adminif_ipaddr=$(ip -4 -o a s ${ADMIN_INTERFACE} | sed 's:/:\ :;s:\s\+:\ :g' | cut -d ' ' -f 4)
     if [[ -z "${adminif_ipaddr}" ]]; then
         return
     fi
-    for if_config in $(find /etc/sysconfig/network-scripts -name 'ifcfg-*' ! -name 'ifcfg-lo'); do
-        if_name=$(get_ifcfg_value NAME $if_config)
+    for if_name in $(ip -4 -o a | sed 's:/:\ :;s:\s\+:\ :g;/\slo\s/d' | cut -d ' ' -f 2); do
         if [[ "${if_name}" == "${ADMIN_INTERFACE}" ]]; then
             continue
         fi
-        if_ipaddr=$(get_ifcfg_value IPADDR $if_config)
+        if_ipaddr=$(ip -4 -o a s ${if_name} | sed 's:/:\ :;s:\s\+:\ :g' | cut -d ' ' -f 4)
         if [[ "${if_ipaddr}" == "${adminif_ipaddr}" ]]; then
             echo "Interface '${if_name}' uses the same ip '${if_ipaddr}' as admin interface '${ADMIN_INTERFACE}', removing ..."
             ifdown ${if_name}
             mkdir -p "${bup_folder}"
-            mv -f "${if_config}" "${bup_folder}"
+            path="/etc/sysconfig/network-scripts/ifcfg-${if_name}"
+            if [[ -f ${path} ]]; then
+                mv -f "${path}" "${bup_folder}"
+            fi
         fi
     done
 }
