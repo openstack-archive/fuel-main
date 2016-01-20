@@ -4,6 +4,7 @@ exec > >(tee -i /var/log/puppet/bootstrap_admin_node.log)
 exec 2>&1
 
 FUEL_RELEASE=$(cat /etc/fuel_release)
+ASTUTE_YAML='/etc/fuel/astute.yaml'
 BOOTSTRAP_NODE_CONFIG="/etc/fuel/bootstrap_admin_node.conf"
 bs_build_log='/var/log/fuel-bootstrap-image-build.log'
 bs_status=0
@@ -48,6 +49,8 @@ update_done_message="We recommend reviewing and applying Maintenance Updates \
 for this release of Mirantis OpenStack: \
 https://docs.mirantis.com/openstack/fuel/fuel-${FUEL_RELEASE}/\
 release-notes.html#maintenance-updates"
+fuelmenu_fail_message="Fuelmenu was not able to generate '/etc/astute.yaml' file! \
+Please, restart it manualy using 'fuelmenu' command."
 
 function countdown() {
   local i
@@ -222,6 +225,11 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
   fi
 fi
 
+if [ ! -f "${ASTUTE_YAML}" ]; then
+  echo ${fuelmenu_fail_message}
+  fail
+fi
+
 # Enable sshd
 systemctl enable sshd
 systemctl start sshd
@@ -273,7 +281,6 @@ make_ubuntu_bootstrap_stub () {
 }
 
 get_bootstrap_flavor () {
-	local ASTUTE_YAML='/etc/fuel/astute.yaml'
 	python <<-EOF
 	from yaml import safe_load
 	with open("$ASTUTE_YAML", 'r') as f:
@@ -283,7 +290,6 @@ get_bootstrap_flavor () {
 }
 
 get_bootstrap_skip () {
-	local ASTUTE_YAML='/etc/fuel/astute.yaml'
 	python <<-EOF
 	from yaml import safe_load
 	with open("$ASTUTE_YAML", 'r') as f:
