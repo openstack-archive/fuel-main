@@ -4,10 +4,6 @@ FUEL
 This git repository contains Fuel ISO build scripts.
 
 Directory structure:
-- ```bootstrap```
-  Scripts for building CentOS based bootstrap ramdisk. The Fuel discovery
-  agent (nailgun-agent) and Fuel operating system provisioning agent (fuel-agent)
-  are installed into this ramdisk.
 - ```docker```
   Scripts for building Docker containers are located. The Fuel
   master node is deployed using Docker. Every Fuel major component like Nailgun, Astute,
