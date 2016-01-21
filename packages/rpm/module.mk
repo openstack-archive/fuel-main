@@ -131,33 +131,3 @@ ifeq (1,$(strip $(BUILD_PACKAGES)))
 $(BUILD_DIR)/packages/rpm/build.done: $(BUILD_DIR)/packages/rpm/repo.done
 endif
 	$(ACTION.TOUCH)
-
-#######################################
-# This section is for building container
-# packages that depend on other packages.
-# For example, bootstrap image package
-# assumes passing through the following build stages
-# 1) upstream mirror
-# 2) fuel packages
-# 3) bootstrap image (depends on 1 and 2)
-# 4) bootstrap image package (depends on 3)
-#######################################
-
-fuel_rpm_packages_late:=\
-fuel-bootstrap-image
-
-$(eval $(foreach pkg,$(fuel_rpm_packages_late),$(call build_rpm,$(pkg),-late)$(NEWLINE)))
-
-# BUILD_PACKAGES=0 - for late packages we need to be sure that centos mirror is ready
-# BUILD_PACKAGES=1 - for late packages we need to be sure that fuel-* packages was build beforehand
-$(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/mirror/centos/repo.done
-ifeq (1,$(strip $(BUILD_PACKAGES)))
-$(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/packages/rpm/repo.done
-endif
-	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u --target-directory $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages {} +
-	createrepo -g $(LOCAL_MIRROR_MOS_CENTOS)/comps.xml \
-		-o $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)
-	$(ACTION.TOUCH)
-
-$(BUILD_DIR)/packages/rpm/build-late.done: $(BUILD_DIR)/packages/rpm/repo-late.done
-	$(ACTION.TOUCH)
