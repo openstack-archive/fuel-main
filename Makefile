@@ -16,7 +16,6 @@ help:
 	@echo
 	@echo 'Available targets:'
 	@echo '  all  - build product'
-	@echo '  bootstrap  - build bootstrap'
 	@echo '  iso  - build iso image'
 	@echo '  clean - remove build directory and resetting .done flags'
 	@echo '  deep_clean - clean + removing $(LOCAL_MIRROR) directory'
@@ -71,6 +70,5 @@ include $(SOURCE_DIR)/repos.mk
 include $(SOURCE_DIR)/mirror/module.mk
 include $(SOURCE_DIR)/packages/module.mk
 include $(SOURCE_DIR)/docker/module.mk
-include $(SOURCE_DIR)/bootstrap/module.mk
 include $(SOURCE_DIR)/iso/module.mk
 include $(SOURCE_DIR)/virtualbox.mk
