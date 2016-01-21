@@ -72,7 +72,7 @@ $(eval $(call prepare_git_source,fuel-agent,fuel-agent-$(PACKAGE_VERSION).tar.gz
 #FUEL_NAILGUN_AGENT_PKGS
 $(eval $(call prepare_git_source,fuel-nailgun-agent,fuel-nailgun-agent-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-nailgun-agent,HEAD,$(FUEL_NAILGUN_AGENT_GERRIT_COMMIT)))
 #FUEL-IMAGE PKGS
-$(eval $(call prepare_git_source,fuel-main,fuel-main-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD,$(FUELMAIN_GERRIT_COMMIT)))
+$(eval $(call prepare_git_source,fuel-main,fuel-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD,$(FUELMAIN_GERRIT_COMMIT)))
 #FUEL-MIRROR PKGS
 $(eval $(call prepare_git_source,fuel-mirror,fuel-mirror-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-mirror,HEAD,$(FUEL_MIRROR_GERRIT_COMMIT)))
 #FUEL-MENU PKGS
@@ -105,20 +105,13 @@ packages-deb: $(BUILD_DIR)/packages/deb/build.done
 #### LATE PACKAGES ################
 ###################################
 
-# fuel-bootstrap-image sources
-$(eval $(call prepare_file_source,fuel-bootstrap-image,linux,$(BUILD_DIR)/bootstrap/linux,$(BUILD_DIR)/bootstrap/linux))
-$(eval $(call prepare_file_source,fuel-bootstrap-image,initramfs.img,$(BUILD_DIR)/bootstrap/initramfs.img,$(BUILD_DIR)/bootstrap/initramfs.img))
-$(eval $(call prepare_file_source,fuel-bootstrap-image,bootstrap.rsa,$(SOURCE_DIR)/bootstrap/ssh/id_rsa,$(SOURCE_DIR)/bootstrap/ssh/id_rsa))
-
-.PHONY: packages-late packages-rpm-late
+.PHONY: packages-late
 
 $(BUILD_DIR)/packages/build-late.done: \
-		$(BUILD_DIR)/packages/rpm/build-late.done \
 		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done
 	$(ACTION.TOUCH)
 
 packages-late: $(BUILD_DIR)/packages/build-late.done
-packages-rpm-late: $(BUILD_DIR)/packages/rpm/build-late.done
 
 .PHONY: sources
 
