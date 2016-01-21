@@ -3,6 +3,10 @@ mkdir -p /var/log/puppet
 exec > >(tee -i /var/log/puppet/bootstrap_admin_node.log)
 exec 2>&1
 
+# Hide too verbose kernel messages to prevent tty being
+# filled with spam.
+sysctl -w kernel.printk='4 1 1 7'
+
 FUEL_RELEASE=$(cat /etc/fuel_release)
 BOOTSTRAP_NODE_CONFIG="/etc/fuel/bootstrap_admin_node.conf"
 bs_build_log='/var/log/fuel-bootstrap-image-build.log'
