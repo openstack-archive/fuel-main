@@ -628,3 +628,7 @@ if [[ ! -z $adminif ]]; then
     /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-${adminif}
 fi
 %end
+
+%post --log=/root/anaconda-post-configure-sysctl.log
+echo 'kernel.printk=4 1 1 7' > /etc/sysctl.d/98-printk.conf
+%end
