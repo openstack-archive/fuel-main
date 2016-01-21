@@ -1,8 +1,0 @@
-#!/bin/sh -e
-
-mountpoint -q /dev/pts || mount -t devpts devpts /dev/pts
-
-# FIXME(dteselkin) workaround for broken yajl package
-ln -nfs /usr/lib64/libyajl.so.2 /usr/lib64/libyajl.so
-
-touch /var/lock/subsys/local
