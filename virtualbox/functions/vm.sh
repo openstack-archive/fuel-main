@@ -108,9 +108,6 @@ create_vm() {
 
     # Create and attach the main hard drive
     add_disk_to_vm $name 0 $disk_mb
-
-    # Enable RDP
-    execute VBoxManage modifyvm $name --vrde on
 }
 
 add_hostonly_adapter_to_vm() {
