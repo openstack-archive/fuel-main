@@ -42,10 +42,11 @@ fuel_master_ips="10.20.0.1 172.16.0.254 172.16.1.1"
 # Network mask for fuel interfaces
 mask="255.255.255.0"
 
-# Determining the type of operating system and adding CPU core to the master node
+# Determining the type of operating system, set global variables and adding CPU core to the master node
   case "$(execute uname)" in
     Linux)
       os_type="linux"
+      net_sleep="2s"
       if [ "$(execute nproc)" -gt "1" ]; then
         vm_master_cpu_cores=2
       else
@@ -54,6 +55,7 @@ mask="255.255.255.0"
     ;;
     Darwin)
       os_type="darwin"
+      net_sleep="2s"
       mac_nproc=`execute sysctl -a | grep machdep.cpu.thread_count | sed 's/^machdep.cpu.thread_count\:[ \t]*//'`
       if [ "$mac_nproc" -gt "1" ]; then
         vm_master_cpu_cores=2
@@ -63,6 +65,7 @@ mask="255.255.255.0"
     ;;
     CYGWIN*)
       os_type="cygwin"
+      net_sleep="12s"
       if [ "$(execute nproc)" -gt "1" ]; then
         vm_master_cpu_cores=2
       else
