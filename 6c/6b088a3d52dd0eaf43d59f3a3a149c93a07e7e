@@ -1,0 +1,13 @@
+Code-Review+1: Kyrylo Galanov <kgalanov@mirantis.com>
+Code-Review+1: Serhii Ovsianikov <sovsianikov@mirantis.com>
+Code-Review+1: Matthew Mosesohn <mmosesohn@mirantis.com>
+Code-Review+1: Bulat Gaifullin <bgaifullin@mirantis.com>
+Code-Review+1: Stanislaw Bogatkin <sbogatkin@mirantis.com>
+Code-Review+2: Sergey Kulanov <skulanov@mirantis.com>
+Workflow+1: Sergey Kulanov <skulanov@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Sat, 23 Jan 2016 04:51:30 +0000
+Reviewed-on: https://review.openstack.org/271418
+Project: openstack/fuel-main
+Branch: refs/heads/stable/8.0
