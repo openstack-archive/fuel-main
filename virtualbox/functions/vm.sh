@@ -19,7 +19,7 @@
 source ./functions/shell.sh
 
 get_vm_base_path() {
-    echo `execute VBoxManage list systemproperties | egrep '^Default machine folder' | sed 's/^Default machine folder\:\s*//'`
+    echo `execute VBoxManage list systemproperties | egrep '^Default machine folder' | sed 's/^Default machine folder\:[ \t]*//'`
 }
 
 get_vms_running() {
