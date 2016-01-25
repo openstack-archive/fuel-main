@@ -19,7 +19,7 @@
 source ./functions/shell.sh
 
 get_hostonly_interfaces() {
-  local ifaces=`execute VBoxManage list hostonlyifs | egrep '^Name' | sed 's/^Name\:\s*//' | uniq | tr "\\n" ","`
+  local ifaces=`execute VBoxManage list hostonlyifs | egrep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`
   echo -e "${ifaces}"
 }
 
@@ -33,7 +33,7 @@ get_fuel_ifaces() {
     fuel_networks+="$fuel_network "
   done
   for ip in $fuel_networks; do
-    fuel_iface=`execute VBoxManage list hostonlyifs | egrep -B3 $ip | egrep '^Name' | sed 's/^Name\:\s*//' | uniq | tr "\\n" ","`
+    fuel_iface=`execute VBoxManage list hostonlyifs | egrep -B3 $ip | egrep '^Name' | sed 's/^Name\:[ \t]*//' | uniq | tr "\\n" ","`
     fuel_ifaces+="$fuel_iface"
   done
   echo $fuel_ifaces
