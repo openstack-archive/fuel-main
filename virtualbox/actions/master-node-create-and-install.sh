@@ -50,9 +50,9 @@ if [ ${headless} -eq 1 ]; then
 fi
 
 if [ "${skipfuelmenu}" = "yes" ]; then
-  cmdline="$(grep 'append initrd' ../iso/isolinux/isolinux.cfg -m1 2> /dev/null | sed -e 's/^[ ]*append//')"
-  cmdline="${cmdline:- initrd=initrd.img net.ifnames=0 biosdevname=0 ks=hd:sr0:/ks.cfg ip=10.20.0.2::10.20.0.1:255.255.255.0:fuel.domain.tld:eth0:off::: dns1=10.20.0.1 selinux=0}"
-  boot_line="$(translate "$cmdline showmenu=no"$'\n')"
+  cmdline="$(grep 'append initrd' ../iso/isolinux/isolinux.cfg -m1 2>/dev/null | sed -e 's/^[ ]*append[ ]*//')"
+  cmdline="${cmdline:-initrd=initrd.img net.ifnames=0 biosdevname=0 ks=hd:sr0:/ks.cfg ip=10.20.0.2::10.20.0.1:255.255.255.0:fuel.domain.tld:eth0:off::: dns1=10.20.0.1 selinux=0}"
+  boot_line="$(translate " vmlinuz $cmdline showmenu=no"$'\n')"
 fi
 
 # Start virtual machine with the master node
