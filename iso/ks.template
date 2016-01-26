@@ -27,7 +27,7 @@ repo --name="mos-centos" --baseurl=file:///run/install/repo/mos-centos/ --cost=1
 @Core
 fuel
 fuel-library
-fuel-dockerctl
+#fuel-dockerctl
 authconfig
 bind-utils
 bridge-utils
@@ -39,7 +39,7 @@ fuel-bootstrap-image
 # NOTE(kozhukalov): We don't need target centos images in 8.0
 # fuel-target-centos-images{{CENTOS_RELEASE}}
 fuelmenu
-fuel-docker-images
+#fuel-docker-images
 fuel-mirror
 fuel-openstack-metadata
 gdisk
