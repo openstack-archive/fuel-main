@@ -39,15 +39,15 @@ wait_for_line_in_puppet_bootstrap() {
         expect "*?assword:*"
         send "$password\r"
         expect "$prompt"
-        send "egrep --color=none -e '$goodline' -e '$badline' /var/log/puppet/bootstrap_admin_node.log\r"
+        send "egrep --color=none -e '${goodline}' -e '${badline}' /var/log/puppet/bootstrap_admin_node.log\r"
         expect "$prompt"
         send "logout\r"
         expect "$prompt"
 ENDOFEXPECT
     )
 
-    echo "$result" | egrep "$badline" >&2 && return 1
-    echo "$result" | egrep -q "$goodline" && return 0
+    echo "$result" | grep -v grep | egrep -q "$badline" >&2 && return 1
+    echo "$result" | grep -v grep | egrep -q "$goodline" >&2 && return 0
     return 1
 }
 
