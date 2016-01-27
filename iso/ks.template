@@ -357,6 +357,9 @@ if [[ ! -z $ifname ]]; then
     awk -F\= '$1 == "ID_NET_NAME_ONBOARD" {s=$2; exit}; $1 == "ID_NET_NAME_SLOT" {s=$2; exit}; $1 == "ID_NET_NAME_PATH" {s=$2; next}; END {print s}')" >> /root/anaconda.cmdline.vars
 fi
 
+# Add self entry to /etc/hosts
+getent hosts $HOSTNAME >> /etc/hosts
+
 %end
 
 
