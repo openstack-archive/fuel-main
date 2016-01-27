@@ -381,6 +381,38 @@ case "${repo}" in
     fi
   ;;
 esac
+
+
+# If not mounted, try to bind /run/install/repo since
+# anaconda shoud mount installation repo to that folder.
+if ! mountpoint -q "${SOURCE}"; then
+  if [ -d '/run/install/repo' ] && mountpoint -q '/run/install/repo'; then
+    mount -o bind '/run/install/repo' "${SOURCE}"
+  fi
+fi
+
+
+# If still not mounted, try to mount from LABEL / UUID.
+# It was moved from next phase here to keep all mounting stuff
+# in one place. All other scripts should use SOURCE variable
+# for access to dist files.
+
+iso_volume_id=will_be_substituted_with_ISO_VOLUME_ID
+iso_disk_uuid=will_be_substituted_with_actual_uuid
+FS="/mnt/sysimage/tmp/fs"
+
+if ! mountpoint -q "${SOURCE}"; then
+  if [ -e "/dev/disk/by-label/${iso_volume_id}" ]; then
+    mount "/dev/disk/by-label/${iso_volume_id}" "${SOURCE}"
+  elif [ -e "/dev/disk/by-uuid/${iso_disk_uuid}" ]; then
+    mkdir -p "${FS}"
+    mount "/dev/disk/by-uuid/${iso_disk_uuid}" "${FS}"
+    mount -o loop "${FS}/nailgun.iso" "${SOURCE}"
+  fi
+fi
+
+# Sleep to capture full log
+sleep 1
 %end
 
 
@@ -391,19 +423,7 @@ esac
 #!/bin/bash
 set -x
 
-# Mounting installation source
 SOURCE=/tmp/source
-FS=/tmp/fs
-
-mkdir -p ${SOURCE}
-mkdir -p ${FS}
-
-if test -e /dev/disk/by-label/will_be_substituted_with_ISO_VOLUME_ID; then
-    mount /dev/disk/by-label/will_be_substituted_with_ISO_VOLUME_ID ${SOURCE}
-elif test -e /dev/disk/by-uuid/will_be_substituted_with_actual_uuid; then
-    mount /dev/disk/by-uuid/will_be_substituted_with_actual_uuid ${FS}
-    mount -o loop ${FS}/nailgun.iso ${SOURCE}
-fi
 
 # this file is provided by fuel-openstack-metadata package
 OPENSTACK_VERSION=`cat /etc/fuel_openstack_version`
