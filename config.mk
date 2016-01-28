@@ -245,3 +245,7 @@ SANDBOX_COPY_CERTS?=0
 #  \apt/metadata.json
 #  \concat/metadata.json
 USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES?=
+
+# Proxy configuration string
+#
+PROXY_CONFIG?=
