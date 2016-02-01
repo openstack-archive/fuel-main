@@ -16,7 +16,7 @@ listing: $(BUILD_DIR)/iso/isoroot.done $(BUILD_DIR)/mirror/build.done
 			while read package_file; do \
 				echo; \
 				echo $$(basename $$package_file); \
-				rpm -q --changelog -p $$package_file | head -2; \
+				rpm -q --changelog -p $$package_file | head -12; \
 			done > $(BUILD_DIR)/listing-package-changelog.txt
 
 ###################
