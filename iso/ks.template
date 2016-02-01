@@ -221,9 +221,9 @@ if [ "$format_confirmed" != "yes" ] ; then
   chvt 1
 fi
 
-# verify tgtdrive is at least 41GB
+# verify tgtdrive is at least 45GB
 tgtdrivesize=$(( $(cat "/sys/class/block/${tgtdrive}/size") / 2 / 1024 ))
-if [ $tgtdrivesize -lt 41984 ]; then
+if [ $tgtdrivesize -lt 46080 ]; then
     exec < /dev/tty3 > /dev/tty3 2>&1
     chvt 3
     clear
@@ -231,7 +231,7 @@ if [ $tgtdrivesize -lt 41984 ]; then
     echo '********************************************************************'
     echo '*                            E R R O R                             *'
     echo '*                                                                  *'
-    echo '*  Your disk is under 41GB in size. Installation cannot continue.  *'
+    echo '*  Your disk is under 45GB in size. Installation cannot continue.  *'
     echo '*             Restart installation with a larger disk.             *'
     echo '*                                                                  *'
     echo '********************************************************************'
@@ -277,14 +277,14 @@ fi
 cat << EOF > /tmp/partition.ks
 part /boot --onpart=/dev/${bootdev}3
 part /boot/efi --onpart=/dev/${bootdev}2
-part pv.001 --ondisk=${tgtdrive} --size=1 --grow
+part pv.001 --ondisk=${tgtdrive} --size=25000 --grow
 part pv.002 --ondisk=${tgtdrive} --size=20000
 volgroup os pv.001
 volgroup docker pv.002
 logvol swap --vgname=os --recommended --name=swap
 logvol / --vgname=os --size=10000 --name=root --fstype=ext4
-logvol /var --vgname=os --size=10000 --name=var --fstype=ext4
-logvol /var/log --vgname=os --size=4000 --grow --name=varlog --fstype=ext4
+logvol /var --vgname=os --grow --percent 40 --name=var --fstype=ext4
+logvol /var/log --vgname=os --grow --percent 60 --name=varlog --fstype=ext4
 EOF
 
 
