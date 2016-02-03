@@ -28,7 +28,7 @@ done
 yum clean expire-cache
 yum update -y
 
-packages="sudo mcollective shotgun fuel-agent fuel-provisioning-scripts psmisc daemonize"
+packages="sudo mcollective shotgun fuel-agent fuel-provisioning-scripts psmisc daemonize network-checker"
 echo $packages | xargs -n1 yum install -y
 
 # /var/lib/fuel/ibp is a mount point for IBP host volume
