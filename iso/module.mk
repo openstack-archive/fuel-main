@@ -114,7 +114,7 @@ $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(ISORO
 	python $(SOURCE_DIR)/iso/ks.py \
 		-t $(SOURCE_DIR)/iso/ks.template \
 		-c $(ISOROOT)/ks.yaml \
-		-u '{"CENTOS_RELEASE": "$(CENTOS_RELEASE)", "PRODUCT_VERSION": "$(PRODUCT_VERSION)"}' \
+		-u '{"CENTOS_RELEASE": "$(CENTOS_RELEASE)", "PRODUCT_VERSION": "$(PRODUCT_VERSION)", "MIRROR_FUEL": "$(MIRROR_FUEL)"}' \
 		-o $@.tmp
 	mv $@.tmp $@
 
