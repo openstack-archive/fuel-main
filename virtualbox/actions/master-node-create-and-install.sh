@@ -50,20 +50,21 @@ if [ ${headless} -eq 1 ]; then
 fi
 
 if [ "${skipfuelmenu}" = "yes" ]; then
-  cmdline="$(grep 'append initrd' ../iso/isolinux/isolinux.cfg -m1 2>/dev/null | sed -e 's/^[ ]*append[ ]*//')"
-  cmdline="${cmdline:-initrd=initrd.img net.ifnames=0 biosdevname=0 ks=hd:sr0:/ks.cfg ip=10.20.0.2::10.20.0.1:255.255.255.0:fuel.domain.tld:eth0:off::: dns1=10.20.0.1 selinux=0}"
-  boot_line="$(translate " vmlinuz $cmdline showmenu=no"$'\n')"
+    boot_line="$(translate " vmlinuz $cmdline wait_for_external_config=yes showmenu=no"$'\n')"
+else
+    boot_line="$(translate " vmlinuz $cmdline wait_for_external_config=yes"$'\n')"
 fi
 
 # Start virtual machine with the master node
 echo
 start_vm $name
+echo
 
 # Wait until product VM needs outbound network/internet access
 wait_for_product_vm_to_download $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
 
 # Enable outbound network/internet access for the machine
-enable_outbound_network_for_product_vm $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" 3 $vm_master_nat_gateway
+enable_outbound_network_for_product_vm $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
 
 # Wait until the machine gets installed and Puppet completes its run
 wait_for_product_vm_to_install $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
