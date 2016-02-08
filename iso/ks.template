@@ -500,6 +500,16 @@ name=MOS Local Repo
 baseurl=file:/var/www/nailgun/${OPENSTACK_VERSION}/mos-centos/x86_64
 gpgcheck=0
 EOF
+# Add updates and security repositories
+for repo_component in updates security; do
+    cat > /etc/yum.repos.d/mos${{PRODUCT_VERSION}}-${repo_component}.repo << EOF
+[mos${{PRODUCT_VERSION}}-${repo_component}]
+name=mos{{PRODUCT_VERSION}}-${repo_component}
+baseurl={{MIRROR_FUEL}}/${repo_component}/x86_64/
+gpgcheck=0
+skip_if_unavailable=1
+EOF
+done
 %end
 
 
