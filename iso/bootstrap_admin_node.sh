@@ -372,25 +372,7 @@ else
   bs_status=3
 fi
 
-# Enable updates repository
-cat > /etc/yum.repos.d/mos${FUEL_RELEASE}-updates.repo << EOF
-[mos${FUEL_RELEASE}-updates]
-name=mos${FUEL_RELEASE}-updates
-baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos${FUEL_RELEASE}-centos\$releasever-fuel/updates/x86_64/
-gpgcheck=0
-skip_if_unavailable=1
-EOF
-
-# Enable security repository
-cat > /etc/yum.repos.d/mos${FUEL_RELEASE}-security.repo << EOF
-[mos${FUEL_RELEASE}-security]
-name=mos${FUEL_RELEASE}-security
-baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos${FUEL_RELEASE}-centos\$releasever-fuel/security/x86_64/
-gpgcheck=0
-skip_if_unavailable=1
-EOF
-
-#Check if repo is accessible
+#Check if the updates repo is accessible
 echo "Checking for access to updates repository..."
 repourl=$(yum repolist all -v | awk '{if ($1 ~ "baseurl" && $3 ~ "updates") print $3}' | head -1)
 if urlaccesscheck check "$repourl" ; then
