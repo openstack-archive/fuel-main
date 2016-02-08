@@ -30,5 +30,5 @@ source ./functions/product.sh
 name="${vm_name_prefix}master"
 
 # Enable outbound network/internet access for the machine
-enable_outbound_network_for_product_vm $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt" 3 $vm_master_nat_gateway
+enable_outbound_network_for_product_vm $vm_master_ip $vm_master_username $vm_master_password "$vm_master_prompt"
 
