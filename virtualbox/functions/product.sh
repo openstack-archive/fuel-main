@@ -65,7 +65,7 @@ wait_for_product_vm_to_download() {
 
     # Loop until master node gets successfully installed
     maxdelay=3000
-    while ! wait_for_line_in_puppet_bootstrap $ip $username $password "$prompt" "build docker containers finished.|^Fuel.*complete" "^Fuel.*FAILED"; do
+    while ! wait_for_line_in_puppet_bootstrap $ip $username $password "$prompt" "build docker containers finished.|cobbler is ready.|Deployment task has succeeded: cobbler|^Fuel.*complete" "^Fuel.*FAILED"; do
         sleep 5
         ((waited += 5))
         if (( waited >= maxdelay )); then
@@ -114,8 +114,6 @@ enable_outbound_network_for_product_vm() {
     username=$2
     password=$3
     prompt=$4
-    interface_id=$(($5-1))   # Subtract one to get ethX index (0-based) from the VirtualBox index (from 1 to 4)
-    gateway_ip=$6
 
     # Check for internet access on the host system
     echo -n "Checking for internet connectivity on the host system... "
@@ -180,6 +178,9 @@ enable_outbound_network_for_product_vm() {
     master_ip_pub_net="${master_ip_pub_net%.*}"".1"
     local master_pub_net="${master_ip_pub_net%.*}"".0"
 
+    # Convert nameservers list into the one line separated by the comma
+    dns_upstream="$(echo -e $nameserver | cut -d ' ' -f2 | sed -e':a;N;$!ba;s/\n/,/g')"
+
     # Log in into the VM, configure and bring up the NAT interface, set default gateway, check internet connectivity
     # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
     result=$(
@@ -189,30 +190,28 @@ enable_outbound_network_for_product_vm() {
         expect "*?assword:*"
         send "$password\r"
         expect "$prompt"
-        send "file=/etc/sysconfig/network-scripts/ifcfg-eth$interface_id\r"
+        # make backups, remove network manager options, disable defaults, enable boot and disable network manager
+        send "sed -i.orig '/^UUID=\\\|^NM_CONTROLLED=/d;s/^\\\(.*\\\)=yes/\\\1=no/g;s/^ONBOOT=.*/ONBOOT=yes/;/^ONBOOT=/iNM_CONTROLLED=no' /etc/sysconfig/network-scripts/ifcfg-eth{1,2}\r"
         expect "$prompt"
-        send "hwaddr=\\\$(grep HWADDR \\\$file)\r"
+        # eth1 should be static with private ip address and provided netmask
+        send "sed -i 's/^BOOTPROTO=.*/BOOTPROTO=static/;/^BOOTPROTO/aIPADDR=${master_ip_pub_net}\\\nNETMASK=${mask}' /etc/sysconfig/network-scripts/ifcfg-eth1\r"
         expect "$prompt"
-        send "uuid=\\\$(grep UUID \\\$file)\r"
+        # eth2 should get ip address via dhcp and used default route
+        send "sed -i 's/^BOOTPROTO=.*/BOOTPROTO=dhcp/;s/^DEFROUTE=.*/DEFROUTE=yes/' /etc/sysconfig/network-scripts/ifcfg-eth2\r"
         expect "$prompt"
-        send "echo -e \"\\\$hwaddr\\n\\\$uuid\\nDEVICE=eth$interface_id\\nTYPE=Ethernet\\nONBOOT=yes\\nNM_CONTROLLED=no\\nBOOTPROTO=dhcp\\nPEERDNS=no\" > \\\$file\r"
+        # make backups, remove default route from eth0 and system wide settings
+        send "sed -i.orig '/^GATEWAY=/d' /etc/sysconfig/network /etc/sysconfig/network-scripts/ifcfg-eth0\r"
         expect "$prompt"
-        send "sed \"s/GATEWAY=.*/GATEWAY=\"$gateway_ip\"/g\" -i /etc/sysconfig/network\r"
+        # remove old settings from the dnsmasq.upstream if exists
+        send "sed -i.orig '/^nameserver/d' /etc/dnsmasq.upstream &>/dev/null\r"
         expect "$prompt"
-        send "echo -e \"$nameserver\" > /etc/dnsmasq.upstream\r"
+        # update the dnsmasq.upstream with the new settings
+        send "echo -e '$nameserver' >>/etc/dnsmasq.upstream\r"
         expect "$prompt"
-        send "sed \"s/DNS_UPSTREAM:.*/DNS_UPSTREAM: \\\$(grep \'^nameserver\' /etc/dnsmasq.upstream | cut -d \' \' -f2)/g\" -i /etc/fuel/astute.yaml\r"
+        # update the astute.yaml with the new settings
+        send "sed -i.orig '/DNS_UPSTREAM/c\\"DNS_UPSTREAM\\": \\"${dns_upstream}\\"' /etc/fuel/astute.yaml\r"
         expect "$prompt"
-        send "sed -i 's/ONBOOT=no/ONBOOT=yes/g' /etc/sysconfig/network-scripts/ifcfg-eth1\r"
-        expect "$prompt"
-        send "sed -i 's/NM_CONTROLLED=yes/NM_CONTROLLED=no/g' /etc/sysconfig/network-scripts/ifcfg-eth1\r"
-        expect "$prompt"
-        send "sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/g' /etc/sysconfig/network-scripts/ifcfg-eth1\r"
-        expect "$prompt"
-        send " echo \"IPADDR=$master_ip_pub_net\" >> /etc/sysconfig/network-scripts/ifcfg-eth1\r"
-        expect "$prompt"
-        send " echo \"NETMASK=$mask\" >> /etc/sysconfig/network-scripts/ifcfg-eth1\r"
-        expect "$prompt"
+        # enable NAT (MASQUERADE) and forwarding for the public network
         send "/sbin/iptables -t nat -A POSTROUTING -s $master_pub_net/24 \! -d $master_pub_net/24 -j MASQUERADE\r"
         expect "$prompt"
         send "/sbin/iptables -I FORWARD 1 --dst $master_pub_net/24 -j ACCEPT\r"
@@ -221,17 +220,16 @@ enable_outbound_network_for_product_vm() {
         expect "$prompt"
         send "service iptables save &>/dev/null\r"
         expect "$prompt"
-        send "dockerctl restart cobbler &>/dev/null\r"
+        # restart cobbler container in the docker mode, or dnsmasq service in the dockerless mode
+        send "dockerctl restart cobbler &>/dev/null ; service dnsmasq restart &>/dev/null\r"
         set timeout 300
         expect "$prompt"
+        # apply the network changes
         send "service network restart &>/dev/null\r"
-        expect "*OK*"
         expect "$prompt"
-        send "dockerctl restart cobbler &>/dev/null\r"
+        # restart again with new network settings
+        send "dockerctl restart cobbler &>/dev/null ; service dnsmasq restart &>/dev/null\r"
         set timeout 300
-        expect "$prompt"
-        send "dockerctl check cobbler &>/dev/null\r"
-        expect "*ready*"
         expect "$prompt"
         send "logout\r"
         expect "$prompt"
@@ -242,20 +240,20 @@ ENDOFEXPECT
     # 5 seconds is optimal time for different operating systems.
     echo -e "\nWaiting until the network services are restarted..."
     sleep 5s
-       result_inet=$(
-            execute expect << ENDOFEXPECT
-            spawn ssh $ssh_options $username@$ip
-            expect "connect to host" exit
-            expect "*?assword:*"
-            send "$password\r"
-            expect "$prompt"
-            send "for i in {1..5}; do ping -c 2 google.com || ping -c 2 wikipedia.com || sleep 2; done\r"
-            expect "*icmp*"
-            expect "$prompt"
-            send "logout\r"
-            expect "$prompt"
+    result_inet=$(
+        execute expect << ENDOFEXPECT
+        spawn ssh $ssh_options $username@$ip
+        expect "connect to host" exit
+        expect "*?assword:*"
+        send "$password\r"
+        expect "$prompt"
+        send "for i in {1..5}; do ping -c 2 google.com || ping -c 2 wikipedia.com || sleep 2; done\r"
+        expect "*icmp*"
+        expect "$prompt"
+        send "logout\r"
+        expect "$prompt"
 ENDOFEXPECT
-        )
+    )
 
     # When you are launching command in a sub-shell, there are issues with IFS (internal field separator)
     # and parsing output as a set of strings. So, we are saving original IFS, replacing it, iterating over lines,
@@ -286,4 +284,3 @@ print_no_internet_connectivity_banner() {
     echo "#          because there is no Internet connectivity       #"
     echo "############################################################"
 }
-
