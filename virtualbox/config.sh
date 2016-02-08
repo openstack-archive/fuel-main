@@ -84,7 +84,6 @@ vm_master_disk_mb=65535
 
 # Master node access to the internet through the host system, using VirtualBox NAT adapter
 vm_master_nat_network=192.168.200.0/24
-vm_master_nat_gateway=192.168.200.2
 
 # These settings will be used to check if master node has installed or not.
 # If you modify networking params for master node during the boot time
@@ -185,4 +184,12 @@ vm_slave_third_disk_mb=65535
 # Set to 1 to run VirtualBox in headless mode
 headless=0
 RDPport=5000
+
+# set to "yes" if you want to boot the Fuel master node without the Fuel Menu. (enabling this will add an option "showmenu=no" to the kernel comdline so don't need to provide it below)
 skipfuelmenu="no"
+
+# use defaults from the isolinux.cfg if script started from the GitHub cloned repository files. otherwise use same defaults defined here.
+cmdline="$(grep 'append initrd' ../iso/isolinux/isolinux.cfg -m1 2>/dev/null | sed -e 's/^[ ]*append[ ]*//')"
+cmdline="${cmdline:-initrd=initrd.img net.ifnames=0 biosdevname=0 ks=hd:sr0:/ks.cfg ip=10.20.0.2::10.20.0.1:255.255.255.0:fuel.domain.tld:eth0:off::: dns1=10.20.0.1 selinux=0}"
+# if you want to override the defaults feel free to uncomment and edit the line below
+# cmdline="initrd=initrd.img net.ifnames=0 biosdevname=0 ks=hd:sr0:/ks.cfg ip=10.20.0.2::10.20.0.1:255.255.255.0:fuel.domain.tld:eth0:off::: dns1=10.20.0.1 selinux=0"

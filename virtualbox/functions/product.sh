@@ -22,15 +22,14 @@ source ./functions/shell.sh
 
 ssh_options='-oConnectTimeout=5 -oStrictHostKeyChecking=no -oCheckHostIP=no -oUserKnownHostsFile=/dev/null -oRSAAuthentication=no -oPubkeyAuthentication=no'
 
-wait_for_line_in_puppet_bootstrap() {
+wait_for_exec_in_bootstrap() {
     ip=$1
     username=$2
     password=$3
     prompt=$4
-    goodline=$5
-    badline=$6
+    cmd=$5
 
-    # Log in into the VM, see if Puppet has completed its run
+    # Log in into the VM, exec cmd and print exitcode
     # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
     result=$(
         execute expect << ENDOFEXPECT
@@ -39,20 +38,16 @@ wait_for_line_in_puppet_bootstrap() {
         expect "*?assword:*"
         send "$password\r"
         expect "$prompt"
-        send "egrep --color=none -e '${goodline}' -e '${badline}' /var/log/puppet/bootstrap_admin_node.log\r"
+        send "$cmd\r"
+        expect "$prompt"
+        send "echo \"rc=\$?\"\r"
         expect "$prompt"
         send "logout\r"
         expect "$prompt"
 ENDOFEXPECT
     )
-
-    echo "$result" | grep -v grep | egrep -q "$badline" >&2 && return 1
-    echo "$result" | grep -v grep | egrep -q "$goodline" >&2 && return 0
+    echo "$result" | grep -q "[r]c=0" >&2 && return 0
     return 1
-}
-
-is_product_vm_operational() {
-    wait_for_line_in_puppet_bootstrap "$@" "^Fuel.*complete" "^Fuel.*FAILED"
 }
 
 wait_for_product_vm_to_download() {
@@ -61,18 +56,20 @@ wait_for_product_vm_to_download() {
     password=$3
     prompt=$4
 
-    echo "Waiting for product VM to download files. Please do NOT abort the script..."
+    echo -n "Waiting for product VM to download files. Please do NOT abort the script... "
 
-    # Loop until master node gets successfully installed
+    # Loop until master node has booted and wait_for_external_config started
     maxdelay=3000
-    while ! wait_for_line_in_puppet_bootstrap $ip $username $password "$prompt" "build docker containers finished.|^Fuel.*complete" "^Fuel.*FAILED"; do
+    while ! wait_for_exec_in_bootstrap $ip $username $password "$prompt" "ps xa | grep '\[w\]ait_for_external_config'"; do
         sleep 5
         ((waited += 5))
         if (( waited >= maxdelay )); then
-          echo "Installation timed out! ($maxdelay seconds)" 1>&2
-          exit 1
+            echo "Installation timed out! ($maxdelay seconds)" 1>&2
+            exit 1
         fi
     done
+
+    echo "OK"
 }
 
 wait_for_product_vm_to_install() {
@@ -81,18 +78,20 @@ wait_for_product_vm_to_install() {
     password=$3
     prompt=$4
 
-    echo "Waiting for product VM to install. Please do NOT abort the script..."
+    echo -n "Waiting for product VM to install. Please do NOT abort the script... "
 
     # Loop until master node gets successfully installed
     maxdelay=3000
-    while ! is_product_vm_operational $ip $username $password "$prompt"; do
+    while wait_for_exec_in_bootstrap $ip $username $password "$prompt" "ps xa | grep '\[b\]ootstrap_admin_node.sh'"; do
         sleep 5
         ((waited += 5))
         if (( waited >= maxdelay )); then
-          echo "Installation timed out! ($maxdelay seconds)" 1>&2
-          exit 1
+            echo "Installation timed out! ($maxdelay seconds)" 1>&2
+            exit 1
         fi
     done
+
+    echo "OK"
 }
 
 check_internet_connection() {
@@ -114,8 +113,6 @@ enable_outbound_network_for_product_vm() {
     username=$2
     password=$3
     prompt=$4
-    interface_id=$(($5-1))   # Subtract one to get ethX index (0-based) from the VirtualBox index (from 1 to 4)
-    gateway_ip=$6
 
     # Check for internet access on the host system
     echo -n "Checking for internet connectivity on the host system... "
@@ -180,6 +177,9 @@ enable_outbound_network_for_product_vm() {
     master_ip_pub_net="${master_ip_pub_net%.*}"".1"
     local master_pub_net="${master_ip_pub_net%.*}"".0"
 
+    # Convert nameservers list into the one line separated by the comma
+    dns_upstream="$(echo -e $nameserver | cut -d ' ' -f2 | sed -e':a;N;$!ba;s/\n/,/g')"
+
     # Log in into the VM, configure and bring up the NAT interface, set default gateway, check internet connectivity
     # Looks a bit ugly, but 'end of expect' has to be in the very beginning of the line
     result=$(
@@ -189,30 +189,34 @@ enable_outbound_network_for_product_vm() {
         expect "*?assword:*"
         send "$password\r"
         expect "$prompt"
-        send "file=/etc/sysconfig/network-scripts/ifcfg-eth$interface_id\r"
+        # make backups, remove network manager options, disable defaults, enable boot and disable network manager
+        send "sed -i.orig '/^UUID=\\\|^NM_CONTROLLED=/d;s/^\\\(.*\\\)=yes/\\\1=no/g;s/^ONBOOT=.*/ONBOOT=yes/;/^ONBOOT=/iNM_CONTROLLED=no' /etc/sysconfig/network-scripts/ifcfg-eth{0,1,2}\r"
         expect "$prompt"
-        send "hwaddr=\\\$(grep HWADDR \\\$file)\r"
+        # eth1 should be static with private ip address and provided netmask
+        send "sed -i 's/^BOOTPROTO=.*/BOOTPROTO=static/;/^BOOTPROTO/aIPADDR=${master_ip_pub_net}\\\nNETMASK=${mask}' /etc/sysconfig/network-scripts/ifcfg-eth1\r"
         expect "$prompt"
-        send "uuid=\\\$(grep UUID \\\$file)\r"
+        # eth2 should get ip address via dhcp and used default route
+        send "sed -i 's/^BOOTPROTO=.*/BOOTPROTO=dhcp/;s/^DEFROUTE=.*/DEFROUTE=yes/;/^BOOTPROTO/aPERSISTENT_DHCLIENT=yes' /etc/sysconfig/network-scripts/ifcfg-eth2\r"
         expect "$prompt"
-        send "echo -e \"\\\$hwaddr\\n\\\$uuid\\nDEVICE=eth$interface_id\\nTYPE=Ethernet\\nONBOOT=yes\\nNM_CONTROLLED=no\\nBOOTPROTO=dhcp\\nPEERDNS=no\" > \\\$file\r"
+        # make backup and disable zeroconf at all because we should use only DHCP on eth2
+        send "sed -i.orig '/NOZEROCONF/d;aNOZEROCONF=yes' /etc/sysconfig/network\r"
         expect "$prompt"
-        send "sed \"s/GATEWAY=.*/GATEWAY=\"$gateway_ip\"/g\" -i /etc/sysconfig/network\r"
+        # remove default route from eth0 and system wide settings if exists
+        send "sed -i '/^GATEWAY=/d' /etc/sysconfig/network /etc/sysconfig/network-scripts/ifcfg-eth0\r"
         expect "$prompt"
-        send "echo -e \"$nameserver\" > /etc/dnsmasq.upstream\r"
+        # fix bug https://bugs.centos.org/view.php?id=7351
+        send "sed -i.orig '/^DEVICE=lo/aTYPE=Loopback' /etc/sysconfig/network-scripts/ifcfg-lo\r"
         expect "$prompt"
-        send "sed \"s/DNS_UPSTREAM:.*/DNS_UPSTREAM: \\\$(grep \'^nameserver\' /etc/dnsmasq.upstream | cut -d \' \' -f2)/g\" -i /etc/fuel/astute.yaml\r"
+        # remove old settings from the resolv.conf and dnsmasq.upstream if exists
+        send "sed -i.orig '/^nameserver/d' /etc/resolv.conf /etc/dnsmasq.upstream &>/dev/null\r"
         expect "$prompt"
-        send "sed -i 's/ONBOOT=no/ONBOOT=yes/g' /etc/sysconfig/network-scripts/ifcfg-eth1\r"
+        # update the resolv.conf and dnsmasq.upstream with the new settings
+        send "echo -e '$nameserver' | tee -a /etc/dnsmasq.upstream >>/etc/resolv.conf\r"
         expect "$prompt"
-        send "sed -i 's/NM_CONTROLLED=yes/NM_CONTROLLED=no/g' /etc/sysconfig/network-scripts/ifcfg-eth1\r"
+        # update the astute.yaml with the new settings
+        send "sed -i.orig '/DNS_UPSTREAM/c\\"DNS_UPSTREAM\\": \\"${dns_upstream}\\"' /etc/fuel/astute.yaml\r"
         expect "$prompt"
-        send "sed -i 's/BOOTPROTO=dhcp/BOOTPROTO=static/g' /etc/sysconfig/network-scripts/ifcfg-eth1\r"
-        expect "$prompt"
-        send " echo \"IPADDR=$master_ip_pub_net\" >> /etc/sysconfig/network-scripts/ifcfg-eth1\r"
-        expect "$prompt"
-        send " echo \"NETMASK=$mask\" >> /etc/sysconfig/network-scripts/ifcfg-eth1\r"
-        expect "$prompt"
+        # enable NAT (MASQUERADE) and forwarding for the public network
         send "/sbin/iptables -t nat -A POSTROUTING -s $master_pub_net/24 \! -d $master_pub_net/24 -j MASQUERADE\r"
         expect "$prompt"
         send "/sbin/iptables -I FORWARD 1 --dst $master_pub_net/24 -j ACCEPT\r"
@@ -221,41 +225,33 @@ enable_outbound_network_for_product_vm() {
         expect "$prompt"
         send "service iptables save &>/dev/null\r"
         expect "$prompt"
-        send "dockerctl restart cobbler &>/dev/null\r"
-        set timeout 300
-        expect "$prompt"
-        send "service network restart &>/dev/null\r"
-        expect "*OK*"
-        expect "$prompt"
-        send "dockerctl restart cobbler &>/dev/null\r"
-        set timeout 300
-        expect "$prompt"
-        send "dockerctl check cobbler &>/dev/null\r"
-        expect "*ready*"
+        # disable NetworkManager and apply the network changes
+        send "nmcli networking off &>/dev/null ; service network restart &>/dev/null\r"
         expect "$prompt"
         send "logout\r"
         expect "$prompt"
 ENDOFEXPECT
     )
+    echo "OK"
 
     # Waiting until the network services are restarted.
     # 5 seconds is optimal time for different operating systems.
-    echo -e "\nWaiting until the network services are restarted..."
+    echo -n "Waiting until the network services are restarted... "
     sleep 5s
-       result_inet=$(
-            execute expect << ENDOFEXPECT
-            spawn ssh $ssh_options $username@$ip
-            expect "connect to host" exit
-            expect "*?assword:*"
-            send "$password\r"
-            expect "$prompt"
-            send "for i in {1..5}; do ping -c 2 google.com || ping -c 2 wikipedia.com || sleep 2; done\r"
-            expect "*icmp*"
-            expect "$prompt"
-            send "logout\r"
-            expect "$prompt"
+    result_inet=$(
+        execute expect << ENDOFEXPECT
+        spawn ssh $ssh_options $username@$ip
+        expect "connect to host" exit
+        expect "*?assword:*"
+        send "$password\r"
+        expect "$prompt"
+        send "for i in {1..5}; do ping -c 2 google.com || ping -c 2 wikipedia.com || sleep 2; done\r"
+        expect "*icmp*"
+        expect "$prompt"
+        send "logout\r"
+        expect "$prompt"
 ENDOFEXPECT
-        )
+    )
 
     # When you are launching command in a sub-shell, there are issues with IFS (internal field separator)
     # and parsing output as a set of strings. So, we are saving original IFS, replacing it, iterating over lines,
@@ -271,7 +267,8 @@ ENDOFEXPECT
         if [[ $line == *icmp_seq* ]]; then
         IFS="${NIFS}"
             echo "OK"
-        return 0;
+            wait_for_exec_in_bootstrap $ip $username $password "$prompt" "pkill -f ^wait_for_external_config"
+            return 0;
         fi
         IFS="${NIFS}"
     done
@@ -286,4 +283,3 @@ print_no_internet_connectivity_banner() {
     echo "#          because there is no Internet connectivity       #"
     echo "############################################################"
 }
-
