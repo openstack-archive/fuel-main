@@ -29,6 +29,7 @@ name=Upstream mirror
 baseurl=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/updates/$(CENTOS_ARCH)/
 gpgcheck=0
 priority=1
+sslverify=False
 endef
 
 define yum_epel_repo
@@ -53,6 +54,7 @@ plugins=1
 pluginpath=/etc/yum-plugins
 pluginconfpath=/etc/yum/pluginconf.d
 reposdir=/etc/yum.repos.d
+sslverify=False
 endef
 
 define external_sandbox_yum_conf
@@ -69,6 +71,7 @@ plugins=1
 pluginpath=$(SANDBOX)/etc/yum-plugins
 pluginconfpath=$(SANDBOX)/etc/yum/pluginconf.d
 reposdir=$(SANDBOX)/etc/yum.repos.d
+sslverify=False
 endef
 
 SANDBOX_PACKAGES:=bash yum
