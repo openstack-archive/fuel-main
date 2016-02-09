@@ -101,6 +101,7 @@ plugins=1
 pluginpath=$(BUILD_DIR)/bootstrap/etc/yum-plugins
 pluginconfpath=$(BUILD_DIR)/bootstrap/etc/yum/pluginconf.d
 reposdir=$(BUILD_DIR)/bootstrap/etc/yum.repos.d
+sslverify=False
 endef
 
 #FIXME Partial-Bug: #1403088
