@@ -84,24 +84,9 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
 $(ISOROOT)/.treeinfo: $(SOURCE_DIR)/iso/.treeinfo ; $(ACTION.COPY)
 
-# It's a callable object.
-# Usage: $(call create_ks_repo_entry,repo)
-# where:
-# repo=repo_name,http://path_to_the_repo,repo_priority
-# repo_priority is a number from 1 to 99
-define create_ks_repo_entry
-repo --name="$(call get_repo_name,$1)" --baseurl=file:///run/install/repo/extra-repos/$(call get_repo_name,$1) --cost=$(call get_repo_priority,$1)
-endef
-
-$(ISOROOT)/ks.yaml: \
-	export ks_contents:=$(foreach repo,$(EXTRA_RPM_REPOS),\n$(space)$(call create_ks_repo_entry,$(repo))\n)
 $(ISOROOT)/ks.yaml:
 	@mkdir -p $(@D)
 	cp $(KSYAML) $@
-ifneq ($(strip $(EXTRA_RPM_REPOS)),)
-	/bin/echo "extra_repos:" >> $@
-	/bin/echo -e "$${ks_contents}" >> $@
-endif
 
 $(ISOROOT)/isolinux/isolinux.cfg: $(SOURCE_DIR)/iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
 $(ISOROOT)/isolinux/splash.jpg: $(call depv,FEATURE_GROUPS)
