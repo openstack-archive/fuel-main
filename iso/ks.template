@@ -31,6 +31,7 @@ authconfig
 bind-utils
 bridge-utils
 crontabs
+daemonize
 dhcp
 docker
 fuel-bootstrap-cli
