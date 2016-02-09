@@ -1,10 +1,56 @@
 #!/bin/bash
-LOGFILE=${LOGFILE:-/var/log/puppet/bootstrap_admin_node.log}
+
+# LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
+export LANG=en_US.UTF8
+
 mkdir -p /var/log/puppet
+mkdir -p /var/www/nailgun/targetimages
+
+LOGFILE=${LOGFILE:-/var/log/puppet/bootstrap_admin_node.log}
+
 exec > >(tee -i "${LOGFILE}")
 exec 2>&1
 
-FUEL_RELEASE=$(cat /etc/fuel_release)
+VBOX_BLACKLIST_MODULES="i2c_piix4 intel_rapl"
+
+FUEL_PACKAGES=" \
+authconfig \
+bind-utils \
+bridge-utils \
+daemonize \
+dhcp \
+docker \
+fuel \
+fuel-bootstrap-cli \
+fuel-bootstrap-image \
+fuel-library \
+fuelmenu \
+fuel-mirror \
+fuel-openstack-metadata \
+fuel-utils \
+gdisk \
+lrzip \
+lsof \
+mlocate \
+nmap-ncat \
+ntp \
+ntpdate \
+puppet \
+python-pypcap \
+rsync \
+rubygem-netaddr \
+rubygem-openstack \
+strace \
+sysstat \
+system-config-firewall-base \
+tcpdump \
+telnet \
+vim \
+virt-what \
+wget \
+yum-plugin-priorities \
+"
+
 ASTUTE_YAML='/etc/fuel/astute.yaml'
 BOOTSTRAP_NODE_CONFIG="/etc/fuel/bootstrap_admin_node.conf"
 bs_build_log='/var/log/fuel-bootstrap-image-build.log'
@@ -158,11 +204,14 @@ function ifname_valid {
     return 1
 }
 
-yum install -y fuel-utils
+yum makecache
+yum install -y yum-plugin-priorities
+yum install -y $FUEL_PACKAGES
 
+touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
-# LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
-export LANG=en_US.UTF8
+FUEL_RELEASE=$(cat /etc/fuel_release)
+
 # Be sure, that network devices have been initialized
 udevadm trigger --subsystem-match=net
 udevadm settle
@@ -203,6 +252,83 @@ systemctl restart network
 
 echo "Applying default Fuel settings..."
 set -x
+
+# Set correct docker volume group
+echo "VG=docker" >> /etc/sysconfig/docker-storage-setup
+
+# Disable create iptables rules by docker
+echo "DOCKER_NETWORK_OPTIONS=--iptables=false" > /etc/sysconfig/docker-network
+
+# Disable subscription-manager plugins
+sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/product-id.conf || :
+sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/subscription-manager.conf || :
+
+# Disable GSSAPI in ssh server config
+sed -i -e "/^\s*GSSAPICleanupCredentials yes/d" -e "/^\s*GSSAPIAuthentication yes/d" /etc/ssh/sshd_config
+
+# Enable MOTD banner in sshd
+sed -i -e "s/^\s*PrintMotd no/PrintMotd yes/g" /etc/ssh/sshd_config
+
+# Add note regarding local repos creation to MOTD
+cat >> /etc/motd << EOF
+
+All environments use online repositories by default.
+Use the following commands to create local repositories
+on master node and change default repository settings:
+
+* CentOS: fuel-mirror (see --help for options)
+* Ubuntu: fuel-mirror (see --help for options)
+
+Please refer to the following guide for more information:
+https://docs.mirantis.com/openstack/fuel/fuel-7.0/reference-architecture.html#fuel-rep-mirror
+
+EOF
+
+# Generete Fuel UUID
+[ ! -f "/etc/fuel/fuel-uuid" ] && uuidgen > /etc/fuel/fuel-uuid || :
+
+# Prepare custom /etc/issue logon banner and script for changing IP in it
+# We can have several interface naming schemes applied and several interface
+# UI will listen on
+ipstr=""
+NL=$'\n'
+for ip in `ip -o -4 a | grep -e "e[nt][hopsx].*" | awk '{print \$4 }' | cut -d/ -f1`; do
+  ipstr="${ipstr}https://${ip}:8443${NL}"
+done
+cat > /etc/issue <<EOF
+#########################################
+#       Welcome to the Fuel server      #
+#########################################
+Server is running on \m platform
+
+Fuel UI is available on:
+$ipstr
+Default administrator login:    root
+Default administrator password: r00tme
+
+Default Fuel UI login: admin
+Default Fuel UI password: admin
+
+Please change root password on first login.
+
+EOF
+
+echo "tos orphan 7" >> /etc/ntp.conf && systemctl restart ntpd
+
+# Disabling splash
+sed -i --follow-symlinks -e '/^\slinux16/ s/rhgb/debug/' /boot/grub2/grub.cfg
+
+# Copying default bash settings to the root directory
+cp -f /etc/skel/.bash* /root/
+
+# Blacklist and try to unload kernel modules that create errors on VirtualBox
+if (virt-what | fgrep -q "virtualbox") ; then
+  for module in $VBOX_BLACKLIST_MODULES; do
+    echo "blacklist ${module}" > /etc/modprobe.d/blacklist-${module}.conf
+    rmmod ${module} || :
+  done
+fi
+
 fuelmenu --save-only --iface=$ADMIN_INTERFACE
 set +x
 echo "Done!"
