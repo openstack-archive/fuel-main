@@ -1,12 +1,55 @@
 #!/bin/bash
-LOGFILE=${LOGFILE:-/var/log/puppet/bootstrap_admin_node.log}
-# DEPLOYMENT_MODE could be either 'host' or 'docker'
-DEPLOYMENT_MODE=${DEPLOYMENT_MODE:-host}
+
+# LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
+export LANG=en_US.UTF8
+
 mkdir -p /var/log/puppet
+mkdir -p /var/www/nailgun/targetimages
+
+LOGFILE=${LOGFILE:-/var/log/puppet/bootstrap_admin_node.log}
+
 exec > >(tee -i "${LOGFILE}")
 exec 2>&1
 
-FUEL_RELEASE=$(cat /etc/fuel_release)
+# DEPLOYMENT_MODE could be either 'host' or 'docker'
+DEPLOYMENT_MODE=${DEPLOYMENT_MODE:-host}
+
+FUEL_PACKAGES=" \
+authconfig \
+bind-utils \
+bridge-utils \
+dhcp \
+docker \
+fuel \
+fuel-bootstrap-cli \
+fuel-bootstrap-image \
+fuel-library \
+fuelmenu \
+fuel-mirror \
+fuel-openstack-metadata \
+gdisk \
+lrzip \
+lsof \
+mlocate \
+nmap-ncat \
+ntp \
+ntpdate \
+puppet \
+python-pypcap \
+rsync \
+rubygem-netaddr \
+rubygem-openstack \
+strace \
+sysstat \
+system-config-firewall-base \
+tcpdump \
+telnet \
+vim \
+virt-what \
+wget \
+yum-plugin-priorities \
+"
+
 ASTUTE_YAML='/etc/fuel/astute.yaml'
 BOOTSTRAP_NODE_CONFIG="/etc/fuel/bootstrap_admin_node.conf"
 bs_build_log='/var/log/fuel-bootstrap-image-build.log'
@@ -160,15 +203,20 @@ function ifname_valid {
     return 1
 }
 
+yum makecache
+yum install -y $FUEL_PACKAGES
+
+touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
+
 if [[ $DEPLOYMENT_MODE = 'docker' ]]; then
   yum install -y fuel-dockerctl fuel-docker-images
 else
   yum install -y fuel-utils
 fi
 
+FUEL_RELEASE=$(cat /etc/fuel_release)
 
-# LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
-export LANG=en_US.UTF8
+
 # Be sure, that network devices have been initialized
 udevadm trigger --subsystem-match=net
 udevadm settle
@@ -209,6 +257,85 @@ systemctl restart network
 
 echo "Applying default Fuel settings..."
 set -x
+
+# Set correct docker volume group
+echo "VG=docker" >> /etc/sysconfig/docker-storage-setup
+
+# Disable create iptables rules by docker
+echo "DOCKER_NETWORK_OPTIONS=--iptables=false" > /etc/sysconfig/docker-network
+
+# Disable subscription-manager plugins
+sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/product-id.conf || :
+sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/subscription-manager.conf || :
+
+# Disable GSSAPI in ssh server config
+sed -i -e "/^\s*GSSAPICleanupCredentials yes/d" -e "/^\s*GSSAPIAuthentication yes/d" /etc/ssh/sshd_config
+
+# Enable MOTD banner in sshd
+sed -i -e "s/^\s*PrintMotd no/PrintMotd yes/g" /etc/ssh/sshd_config
+
+# Add note regarding local repos creation to MOTD
+cat >> /etc/motd << EOF
+
+All environments use online repositories by default.
+Use the following commands to create local repositories
+on master node and change default repository settings:
+
+* CentOS: fuel-mirror (see --help for options)
+* Ubuntu: fuel-mirror (see --help for options)
+
+Please refer to the following guide for more information:
+https://docs.mirantis.com/openstack/fuel/fuel-7.0/reference-architecture.html#fuel-rep-mirror
+
+EOF
+
+# Generete Fuel UUID
+uuidgen > /etc/fuel/fuel-uuid
+
+# Prepare custom /etc/issue logon banner and script for changing IP in it
+# We can have several interface naming schemes applied and several interface
+# UI will listen on
+ipstr=""
+NL=$'\n'
+for ip in `ip -o -4 a | grep -e "e[nt][hopsx].*" | awk '{print \$4 }' | cut -d/ -f1`; do
+  ipstr="${ipstr}https://${ip}:8443${NL}"
+done
+cat > /etc/issue <<EOF
+#########################################
+#       Welcome to the Fuel server      #
+#########################################
+Server is running on \m platform
+
+Fuel UI is available on:
+$ipstr
+Default administrator login:    root
+Default administrator password: r00tme
+
+Default Fuel UI login: admin
+Default Fuel UI password: admin
+
+Please change root password on first login.
+
+EOF
+
+echo "tos orphan 7" >> /etc/ntp.conf
+
+# Disabling splash
+sed -i --follow-symlinks -e '/^\slinux16/ s/rhgb/debug/' /boot/grub2/grub.cfg
+
+# Copying default bash settings to the root directory
+cp -f /etc/skel/.bash* /root/
+
+# Blacklist i2c_piix4 module for VirtualBox so it does not create kernel errors
+(virt-what | fgrep -q "virtualbox") && echo "blacklist i2c_piix4" > /etc/modprobe.d/blacklist-i2c-piix4.conf
+
+# Blacklist intel_rapl module for VirtualBox so it does not create kernel errors
+(virt-what | fgrep -q "virtualbox") && echo "blacklist intel_rapl" > /etc/modprobe.d/blacklist-intel-rapl.conf
+
+# Disable sshd until after Fuel Setup if not running on VirtualBox
+# TODO(mattymo): Remove VBox exception after LP#1487047 is fixed
+(virt-what | fgrep -q "virtualbox") || systemctl disable sshd
+
 fuelmenu --save-only --iface=$ADMIN_INTERFACE
 set +x
 echo "Done!"
