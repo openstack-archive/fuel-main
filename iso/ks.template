@@ -12,61 +12,19 @@ selinux --permissive
 unsupported_hardware
 # SKIP CONFIGURING X
 skipx
-repo --name="mos-centos" --baseurl=file:///run/install/repo/mos-centos/ --cost=100
-{{extra_repos}}
 # NEVER ever place zerombr here, it breaks automated installation
 %include /tmp/bootloader.ks
 %include /tmp/partition.ks
 %include /tmp/post_partition.ks
-
-
-
-
+# disable sshd during deployment
+services --disabled=sshd
 
 %packages --nobase
 @Core
-fuel
-fuel-library
-authconfig
-bind-utils
-bridge-utils
-crontabs
-daemonize
-dhcp
-docker
-fuel-bootstrap-cli
-fuel-bootstrap-image
-# NOTE(kozhukalov): We don't need target centos images in 8.0
-# fuel-target-centos-images{{CENTOS_RELEASE}}
-fuelmenu
-fuel-mirror
-fuel-openstack-metadata
-gdisk
-lrzip
-lsof
-man
-mlocate
-nmap-ncat
-ntp
-ntpdate
-python-pypcap
-rsync
-puppet
-rubygem-netaddr
-rubygem-openstack
-strace
-sysstat
-system-config-firewall-base
-tcpdump
-telnet
-vim
-virt-what
-wget
-yum-plugin-priorities
+-firewalld
+-postfix
+-tuned
 %end
-
-
-
 
 
 # PREINSTALL SECTION
@@ -436,7 +394,8 @@ set -x
 SOURCE=/tmp/source
 
 # this file is provided by fuel-openstack-metadata package
-OPENSTACK_VERSION=`cat /etc/fuel_openstack_version`
+OPENSTACK_VERSION=`rpm2cpio ${SOURCE}/mos-centos/Packages/fuel-openstack-metadata*.rpm | \
+                   cpio -i --to-stdout ./etc/fuel_openstack_version 2>/dev/null`
 
 # build identifiers
 test -e ${SOURCE}/fuel_build_number && cp ${SOURCE}/fuel_build_number /etc/fuel_build_number
@@ -480,11 +439,7 @@ ln -s ${repodir}/ubuntu ${wwwdir}/ubuntu
 ln -s ${repodir}/mos-centos ${wwwdir}/mos-centos
 ln -s ${repodir}/extra-repos ${wwwdir}/extra-repos
 
-mkdir -p ${wwwdir}/targetimages
-
 cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
-mkdir -p /var/lib/hiera
-touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
 # Prepare local repository specification
 rm /etc/yum.repos.d/CentOS*.repo
@@ -512,45 +467,12 @@ set -x
 source "/root/anaconda.cmdline.vars"
 SOURCE=/tmp/source
 
-# Set correct docker volume group
-echo "VG=docker" >> /etc/sysconfig/docker-storage-setup
-
-# Disable create iptables rules by docker
-echo "DOCKER_NETWORK_OPTIONS=--iptables=false" > /etc/sysconfig/docker-network
-
-# Disable subscription-manager plugins
-sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/product-id.conf || :
-sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/subscription-manager.conf || :
-
-# Disable GSSAPI in ssh server config
-sed -i -e "/^\s*GSSAPICleanupCredentials yes/d" -e "/^\s*GSSAPIAuthentication yes/d" /etc/ssh/sshd_config
-
-# Enable MOTD banner in sshd
-sed -i -e "s/^\s*PrintMotd no/PrintMotd yes/g" /etc/ssh/sshd_config
-
-# Add note regarding local repos creation to MOTD
-cat >> /etc/motd << EOF
-
-All environments use online repositories by default.
-Use the following commands to create local repositories
-on master node and change default repository settings:
-
-* CentOS: fuel-mirror (see --help for options)
-* Ubuntu: fuel-mirror (see --help for options)
-
-Please refer to the following guide for more information:
-https://docs.mirantis.com/openstack/fuel/fuel-7.0/reference-architecture.html#fuel-rep-mirror
-
-EOF
-
 # Install bootstrap_admin_node.sh and enabling it
 install -m 0777 -D ${SOURCE}/bootstrap_admin_node.sh /usr/local/sbin/bootstrap_admin_node.sh
 echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
 
-# Generete Fuel UUID
-uuidgen > /etc/fuel/fuel-uuid
-
 # Prepare bootstrap_admin_node config
+mkdir -p /etc/fuel
 cat > /etc/fuel/bootstrap_admin_node.conf << EOF
 #Set to yes to run Fuel Setup
 #Set to no to accept default settings
@@ -559,56 +481,12 @@ showmenu=${showmenu:-no}
 wait_for_external_config=${wait_for_external_config:-no}
 EOF
 
-# Prepare custom /etc/issue logon banner and script for changing IP in it
-# We can have several interface naming schemes applied and several interface
-# UI will listen on
-ipstr=""
-NL=$'\n'
-for ip in `ip -o -4 a | grep -e "e[nt][hopsx].*" | awk '{print \$4 }' | cut -d/ -f1`; do
-  ipstr="${ipstr}https://${ip}:8443${NL}"
-done
-cat > /etc/issue <<EOF
-#########################################
-#       Welcome to the Fuel server      #
-#########################################
-Server is running on \m platform
-
-Fuel UI is available on:
-$ipstr
-Default administrator login:    root
-Default administrator password: r00tme
-
-Default Fuel UI login: admin
-Default Fuel UI password: admin
-
-Please change root password on first login.
-
-EOF
-
 # Unmounting source
 umount -f ${SOURCE}
 rm -rf ${SOURCE}
 
 umount -f ${FS} || true
 rm -rf ${FS}
-
-echo "tos orphan 7" >> /etc/ntp.conf
-
-# Disabling splash
-sed -i --follow-symlinks -e '/^\slinux16/ s/rhgb/debug/' /boot/grub2/grub.cfg
-
-# Copying default bash settings to the root directory
-cp -f /etc/skel/.bash* /root/
-
-# Blacklist i2c_piix4 module for VirtualBox so it does not create kernel errors
-(virt-what | fgrep -q "virtualbox") && echo "blacklist i2c_piix4" > /etc/modprobe.d/blacklist-i2c-piix4.conf
-
-# Blacklist intel_rapl module for VirtualBox so it does not create kernel errors
-(virt-what | fgrep -q "virtualbox") && echo "blacklist intel_rapl" > /etc/modprobe.d/blacklist-intel-rapl.conf
-
-# Disable sshd until after Fuel Setup if not running on VirtualBox
-# TODO(mattymo): Remove VBox exception after LP#1487047 is fixed
-(virt-what | fgrep -q "virtualbox") || systemctl disable sshd
 
 %end
 
