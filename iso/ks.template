@@ -350,10 +350,25 @@ done
 
 source /root/anaconda.cmdline.vars
 
-if [[ ! -z $ifname ]]; then
-  echo "adminif=$(udevadm info --query=property -p /sys/class/net/${ifname%%:*} | \
-    awk -F\= '$1 == "ID_NET_NAME_ONBOARD" {s=$2; exit}; $1 == "ID_NET_NAME_SLOT" {s=$2; exit}; $1 == "ID_NET_NAME_PATH" {s=$2; next}; END {print s}')" >> /root/anaconda.cmdline.vars
+# Get renamed interface name unless we have net.ifname=0 in the cmdline.
+translate_udev_ifname() {
+  if [ "${net__ifnames}" = "0" ]; then
+    echo "${1}"
+  else
+    echo "$(udevadm info --query=property -p /sys/class/net/${1%%:*} | \
+      awk -F\= '$1 == "ID_NET_NAME_ONBOARD" {s=$2; exit}; $1 == "ID_NET_NAME_SLOT" {s=$2; exit}; $1 == "ID_NET_NAME_PATH" {s=$2; next}; END {print s}')"
+  fi
+}
+
+if [ -n "${ip}" ]; then
+  # Take the network interface name from kernel-level IP autoconfiguration parameter.
+  # See linux/Documentation/filesystems/nfs/nfsroot.txt
+  ifname=$(echo "${ip}" | cut -d: -f6)
+elif [ -n "${admin_interface}" ]; then
+  ifname="${admin_interface}"
 fi
+
+echo "adminif=$(translate_udev_ifname ${ifname:-eth0})" >> /root/anaconda.cmdline.vars
 
 # Add self entry to /etc/hosts
 ipaddr=$(echo $ip | cut -d: -f1)
@@ -646,7 +661,7 @@ set -x
 
 source "/mnt/sysimage/root/anaconda.cmdline.vars"
 
-if [[ ! -z $adminif ]]; then
+if [ -n "${ifname}" ]; then
   rm -f /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-${ifname%%:*}
   sed "s/${ifname%%:*}/${adminif}/g" \
     /etc/sysconfig/network-scripts/ifcfg-${ifname%%:*} > \
