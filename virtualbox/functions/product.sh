@@ -65,7 +65,7 @@ wait_for_product_vm_to_download() {
 
     # Loop until master node gets successfully installed
     maxdelay=3000
-    while ! wait_for_line_in_puppet_bootstrap $ip $username $password "$prompt" "build docker containers finished.|^Fuel.*complete" "^Fuel.*FAILED"; do
+    while ! wait_for_line_in_puppet_bootstrap $ip $username $password "$prompt" "^Fuel.*complete" "^Fuel.*FAILED"; do
         sleep 5
         ((waited += 5))
         if (( waited >= maxdelay )); then
@@ -221,14 +221,14 @@ enable_outbound_network_for_product_vm() {
         expect "$prompt"
         send "service iptables save >/dev/null 2>&1\r"
         expect "$prompt"
-        send "dockerctl restart cobbler >/dev/null 2>&1\r"
+        send "systemctl restart cobblerd >/dev/null 2>&1\r"
         expect "$prompt"
         send "service network restart >/dev/null 2>&1\r"
         expect "*OK*"
         expect "$prompt"
-        send "dockerctl restart cobbler >/dev/null 2>&1\r"
+        send "systemctl restart cobblerd >/dev/null 2>&1\r"
         expect "$prompt"
-        send "dockerctl check cobbler >/dev/null 2>&1\r"
+        send "fuel-utils check_service cobbler >/dev/null 2>&1\r"
         expect "*ready*"
         expect "$prompt"
         send "logout\r"
@@ -284,4 +284,3 @@ print_no_internet_connectivity_banner() {
     echo "#          because there is no Internet connectivity       #"
     echo "############################################################"
 }
-

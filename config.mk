@@ -30,7 +30,6 @@ FUEL_LIBRARY_VERSION?=9.0
 # Artifacts names
 ISO_NAME?=fuel-$(PRODUCT_VERSION)
 VBOX_SCRIPTS_NAME?=vbox-scripts-$(PRODUCT_VERSION)
-DOCKER_ART_NAME?=fuel-images.tar.lrz
 
 # Where we put artifacts
 ISO_PATH:=$(ARTS_DIR)/$(ISO_NAME).iso
@@ -128,8 +127,6 @@ LOCAL_MIRROR_MOS_CENTOS:=$(LOCAL_MIRROR)/mos-centos
 LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_MOS_CENTOS)
 LOCAL_MIRROR_UBUNTU:=$(LOCAL_MIRROR)/ubuntu
 LOCAL_MIRROR_UBUNTU_OS_BASEURL:=$(LOCAL_MIRROR_UBUNTU)
-LOCAL_MIRROR_DOCKER:=$(LOCAL_MIRROR)/docker
-LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
 
 # Use download.mirantis.com mirror by default. Other possible values are
 # 'msk', 'srt', 'usa', 'hrk', 'cz'
@@ -144,42 +141,36 @@ MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=mirror.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://mirror.fuel-infra.org/docker/$(PRODUCT_VERSION)
 endif
 
 ifeq ($(USE_MIRROR),srt)
 MIRROR_FUEL?=http://osci-mirror-srt.srt.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
 MIRROR_UBUNTU?=osci-mirror-srt.srt.mirantis.net
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://osci-mirror-srt.srt.mirantis.net/docker/$(PRODUCT_VERSION)
 endif
 
 ifeq ($(USE_MIRROR),msk)
 MIRROR_FUEL?=http://osci-mirror-msk.msk.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
 MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://osci-mirror-msk.msk.mirantis.net/docker/$(PRODUCT_VERSION)
 endif
 
 ifeq ($(USE_MIRROR),hrk)
 MIRROR_FUEL?=http://osci-mirror-kha.kha.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
 MIRROR_UBUNTU?=osci-mirror-kha.kha.mirantis.net
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://osci-mirror-kha.kha.mirantis.net/docker/$(PRODUCT_VERSION)
 endif
 
 ifeq ($(USE_MIRROR),usa)
 MIRROR_FUEL?=http://mirror.seed-us1.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
 MIRROR_UBUNTU?=mirror.seed-us1.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://mirror.seed-us1.fuel-infra.org/docker/$(PRODUCT_VERSION)
 endif
 
 ifeq ($(USE_MIRROR),cz)
 MIRROR_FUEL?=http://mirror.seed-cz1.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
 MIRROR_UBUNTU?=mirror.seed-cz1.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-MIRROR_DOCKER?=http://mirror.seed-cz1.fuel-infra.org/docker/$(PRODUCT_VERSION)
 endif
 
 # Which repositories to use for making local centos mirror.
@@ -202,10 +193,6 @@ MIRROR_MOS_UBUNTU?=perestroika-repo-tst.infra.mirantis.net
 MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/$(PRODUCT_VERSION)
 MIRROR_MOS_UBUNTU_SUITE?=$(PRODUCT_NAME)$(PRODUCT_VERSION)
 MIRROR_MOS_UBUNTU_SECTION?=main restricted
-# NOTE(kozhukalov): We are getting rid of staging mirrors (FWM) which are built using 'make mirror' command.
-# But we still need a place where we can download docker base images. They are quite stable
-# and we just put them manually under this URL.
-MIRROR_DOCKER?=http://mirror.fuel-infra.org/docker/$(PRODUCT_VERSION)
 
 # MIRROR_FUEL affects build process only if YUM_REPOS variable contains 'fuel'.
 # Otherwise it is ignored entirely.
@@ -221,9 +208,6 @@ comma:=,
 
 # Path to yaml configuration file to build ISO ks.cfg
 KSYAML?=$(SOURCE_DIR)/iso/ks.yaml
-
-# Production variable (prod, dev, docker)
-PRODUCTION?=docker
 
 # Copy local /etc/ssl certs inside SANDBOX, which used for build deb mirror and packages.
 # This option should be enabled, in case you have to pass https repos for Ubuntu.

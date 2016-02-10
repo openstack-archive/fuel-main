@@ -8,10 +8,6 @@ Directory structure:
   Scripts for building CentOS based bootstrap ramdisk. The Fuel discovery
   agent (nailgun-agent) and Fuel operating system provisioning agent (fuel-agent)
   are installed into this ramdisk.
-- ```docker```
-  Scripts for building Docker containers are located. The Fuel
-  master node is deployed using Docker. Every Fuel major component like Nailgun, Astute,
-  Cobbler, Mcollective, etc. is installed as a separate Docker container.
 - ```fuel-bootstrap-image```
   Scripts which allow us to build Ubuntu based bootstrap ramdisk on the
   Fuel master node in runtime. The status of this ramdisk is experimental.

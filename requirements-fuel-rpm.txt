@@ -3,8 +3,6 @@ fuel
 fuel-agent
 fuel-bootstrap-cli
 fuel-bootstrap-image
-fuel-dockerctl
-fuel-docker-images
 fuel-ha-utils
 fuel-library
 fuelmenu

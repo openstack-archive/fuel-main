@@ -65,15 +65,6 @@ $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 	$(ACTION.TOUCH)
 
 ########################
-# DOCKER
-########################
-# DOCKER_ART_NAME is defined in /docker/module.mk
-$(ISOROOT)/docker.done: \
-		$(BUILD_DIR)/docker/build.done \
-		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done
-	$(ACTION.TOUCH)
-
-########################
 # Extra files
 ########################
 
@@ -131,8 +122,6 @@ $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(ISORO
 $(ISOROOT)/bootstrap_admin_node.sh: $(SOURCE_DIR)/iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
 $(ISOROOT)/send2syslog.py: $(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py ; $(ACTION.COPY)
 $(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/fuel-nailgun.done
-
-$(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/docker.done
 
 ########################
 # Iso image root file system.

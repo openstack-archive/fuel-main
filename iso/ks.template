@@ -288,7 +288,7 @@ cat << EOF > /tmp/partition.ks
 part /boot --onpart=/dev/${bootdev}3
 part /boot/efi --onpart=/dev/${bootdev}2
 part pv.001 --ondisk=${tgtdrive} --size=25000 --grow
-part pv.002 --ondisk=${tgtdrive} --size=20000
+part pv.002 --ondisk=${tgtdrive} --size=10000
 volgroup os pv.001
 volgroup docker pv.002
 logvol swap --vgname=os --recommended --name=swap
@@ -634,7 +634,7 @@ if [[ "$(tty)" == "/dev/tty1" && -f /etc/systemd/system/getty@tty1.service.d/aut
 	rm -Rf "/etc/systemd/system/getty@tty1.service.d"
 	/bin/systemctl daemon-reload
 	if [ -x /usr/local/sbin/bootstrap_admin_node.sh ]; then
-		DEPLOYMENT_MODE=host exec /usr/local/sbin/bootstrap_admin_node.sh
+		exec /usr/local/sbin/bootstrap_admin_node.sh
 	fi
 fi
 EOF
