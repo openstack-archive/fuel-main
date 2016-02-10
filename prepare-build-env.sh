@@ -25,7 +25,6 @@ fi
 
 # Install software
 sudo apt-get update
-# we need linux-image-generic-lts-vivid kernel because of bug: https://bugs.launchpad.net/mos/+bug/1484485
 sudo apt-get -y install \
   build-essential \
   createrepo \
@@ -37,7 +36,6 @@ sudo apt-get -y install \
   git \
   isomd5sum \
   libparse-debcontrol-perl \
-  linux-image-generic-lts-vivid \
   lrzip \
   python-jinja2 \
   python-yaml \
