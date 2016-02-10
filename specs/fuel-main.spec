@@ -11,11 +11,11 @@ Summary: Fuel for OpenStack
 URL:     http://mirantis.com
 Version: %{version}
 Release: %{release}
+Source0: %{name}-%{version}.tar.gz
 License: Apache
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
-Requires: fuel-bootstrap-image >= %{version}
 Requires: fuel-library9.0
 Requires: fuelmenu >= %{version}
 Requires: fuel-provisioning-scripts >= %{version}
@@ -30,12 +30,24 @@ Requires: yum
 Fuel for OpenStack is a lifecycle management utility for
 managing OpenStack.
 
+%prep
+%setup -cq -n %{name}-%{version}
+
+%build
+
 %install
+rm -rf %{buildroot}
 mkdir -p %{buildroot}/etc
 echo %{fuel_release} > %{buildroot}%{_sysconfdir}/fuel_release
+install -D -m 700 -d %{buildroot}/root/.ssh
+install -p -m 600 %{_builddir}/%{name}-%{version}/bootstrap/ssh/id_rsa %{buildroot}/root/.ssh/bootstrap.rsa
+
+%clean
+rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root)
+/root/.ssh/bootstrap.rsa
 
 %package -n fuel-release
 
