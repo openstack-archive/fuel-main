@@ -1,19 +1,3 @@
-# Usage:
-# (eval (call prepare_file_source,package_name,file_name,source_path,optional_prerequisite))
-# Note: dependencies for deb targets are also specified here to make
-# sure the source is ready before the build is started.
-define prepare_file_source
-ifeq ($4,)
-$(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
-else
-$(BUILD_DIR)/packages/sources/$1/$2: $4
-endif
-$(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
-$(BUILD_DIR)/packages/sources/$1/$2: $(call find-files,$3)
-	mkdir -p $(BUILD_DIR)/packages/sources/$1
-	cp $3 $(BUILD_DIR)/packages/sources/$1/$2
-endef
-
 # Prepare sources + rpm_changelog + version file in format:
 #
 # VERSION=$(PRODUCT_VERSION)
