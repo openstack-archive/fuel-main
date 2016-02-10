@@ -17,22 +17,11 @@
 #    This script will install all the required packages necessary for
 #    building a Fuel ISO.
 
-# Install docker repository
 # Check that HTTPS transport is available to APT
 if [ ! -e /usr/lib/apt/methods/https ]; then
     sudo apt-get update
     sudo apt-get install -y apt-transport-https
 fi
-# Add the repository to APT sources
-echo deb http://mirror.yandex.ru/mirrors/docker/ docker main | sudo tee /etc/apt/sources.list.d/docker.list
-# Import the repository key
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
-# Install docker
-sudo apt-get update
-sudo apt-get -y install lxc-docker-1.6.2
-# add user to docker group
-sudo usermod -a -G docker "$(whoami)"
-
 
 # Install software
 sudo apt-get update
