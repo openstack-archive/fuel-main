@@ -42,7 +42,6 @@ $(BUILD_DIR)/iso/isoroot-centos.done: \
 		$(BUILD_DIR)/mirror/build.done \
 		$(BUILD_DIR)/mirror/make-changelog.done \
 		$(BUILD_DIR)/packages/build.done \
-		$(BUILD_DIR)/packages/build-late.done \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done
 	mkdir -p $(ISOROOT)
 	rsync -rp $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/ $(ISOROOT)
@@ -62,15 +61,6 @@ $(BUILD_DIR)/iso/isoroot-ubuntu.done: \
 	mkdir -p $(ISOROOT)/ubuntu
 	rsync -rp $(LOCAL_MIRROR_UBUNTU_OS_BASEURL)/ $(ISOROOT)/ubuntu/
 	rsync -rp $(LOCAL_MIRROR)/ubuntu-packages.changelog $(ISOROOT)
-	$(ACTION.TOUCH)
-
-########################
-# DOCKER
-########################
-# DOCKER_ART_NAME is defined in /docker/module.mk
-$(ISOROOT)/docker.done: \
-		$(BUILD_DIR)/docker/build.done \
-		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done
 	$(ACTION.TOUCH)
 
 ########################
@@ -131,8 +121,6 @@ $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(ISORO
 $(ISOROOT)/bootstrap_admin_node.sh: $(SOURCE_DIR)/iso/bootstrap_admin_node.sh ; $(ACTION.COPY)
 $(ISOROOT)/send2syslog.py: $(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py ; $(ACTION.COPY)
 $(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/fuel-nailgun.done
-
-$(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/docker.done
 
 ########################
 # Iso image root file system.

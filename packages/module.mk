@@ -100,19 +100,6 @@ packages: $(BUILD_DIR)/packages/build.done
 packages-rpm: $(BUILD_DIR)/packages/rpm/build.done
 packages-deb: $(BUILD_DIR)/packages/deb/build.done
 
-
-###################################
-#### LATE PACKAGES ################
-###################################
-
-.PHONY: packages-late
-
-$(BUILD_DIR)/packages/build-late.done: \
-		$(BUILD_DIR)/packages/rpm/fuel-docker-images.done
-	$(ACTION.TOUCH)
-
-packages-late: $(BUILD_DIR)/packages/build-late.done
-
 .PHONY: sources
 
 sources: $(packages_list:%=$(BUILD_DIR)/packages/source_%.done)

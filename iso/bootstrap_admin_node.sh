@@ -1,7 +1,5 @@
 #!/bin/bash
 LOGFILE=${LOGFILE:-/var/log/puppet/bootstrap_admin_node.log}
-# DEPLOYMENT_MODE could be either 'host' or 'docker'
-DEPLOYMENT_MODE=${DEPLOYMENT_MODE:-host}
 mkdir -p /var/log/puppet
 exec > >(tee -i "${LOGFILE}")
 exec 2>&1
@@ -160,11 +158,7 @@ function ifname_valid {
     return 1
 }
 
-if [[ $DEPLOYMENT_MODE = 'docker' ]]; then
-  yum install -y fuel-dockerctl fuel-docker-images
-else
-  yum install -y fuel-utils
-fi
+yum install -y fuel-utils
 
 
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
@@ -348,62 +342,15 @@ if [ ${old_sysctl_vm_value} -lt 65535 ]; then
   sysctl -w vm.min_free_kbytes=65535
 fi
 
-if [[ $DEPLOYMENT_MODE = 'docker' ]]; then
-  if [ -f /root/.build_images ]; then
-    #Fail on all errors
-    set -e
-    trap fail EXIT
-
-    echo "Loading Fuel base image for Docker..."
-    docker load -i /var/www/nailgun/docker/images/fuel-images.tar
-
-    echo "Building Fuel Docker images..."
-    WORKDIR=$(mktemp -d /tmp/docker-buildXXX)
-    SOURCE=/var/www/nailgun/docker
-    REPO_CONT_ID=$(docker -D run -d -p 80 -v /var/www/nailgun:/var/www/nailgun fuel/centos sh -c 'mkdir -p /var/www/html/repo/os;ln -sf /var/www/nailgun/centos/x86_64 /var/www/html/repo/os/x86_64;ln -s /var/www/nailgun/mos-centos/x86_64 /var/www/html/mos-repo;/usr/sbin/apachectl -DFOREGROUND')
-    RANDOM_PORT=$(docker port $REPO_CONT_ID 80 | cut -d':' -f2)
-
-    for imagesource in /var/www/nailgun/docker/sources/*; do
-      if ! [ -f "$imagesource/Dockerfile" ]; then
-        echo "Skipping ${imagesource}..."
-        continue
-      fi
-      image=$(basename "$imagesource")
-      cp -R "$imagesource" $WORKDIR/$image
-      mkdir -p $WORKDIR/$image/etc
-      cp -R /etc/puppet /etc/fuel $WORKDIR/$image/etc
-      sed -e "s/_PORT_/${RANDOM_PORT}/" -i $WORKDIR/$image/Dockerfile
-      sed -r -e 's/^"?PRODUCTION"?:.*/PRODUCTION: "docker-build"/' -i $WORKDIR/$image/etc/fuel/astute.yaml
-      docker build -t fuel/${image}_${FUEL_RELEASE} $WORKDIR/$image
-    done
-    docker rm -f $REPO_CONT_ID
-    rm -rf "$WORKDIR"
-
-    #Remove trap for normal deployment
-    trap - EXIT
-    set +e
-  else
-    echo "Loading docker images. (This may take a while)"
-    docker load -i /var/www/nailgun/docker/images/fuel-images.tar
-  fi
-fi
-
 if [ ${old_sysctl_vm_value} -lt 65535 ]; then
   echo "Restore sysctl vm.min_free_kbytes value..."
   sysctl -w vm.min_free_kbytes=${old_sysctl_vm_value}
 fi
 
 # apply puppet
-if [[ $DEPLOYMENT_MODE = 'docker' ]]; then
-  puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/host-only.pp
-  if [ $? -ge 4 ];then
+/etc/puppet/modules/fuel/examples/deploy.sh
+if [[ $? -ne 0 ]]; then
     fail
-  fi
-else
-  LOGFILE="${LOGFILE}" /etc/puppet/modules/fuel/examples/deploy.sh
-  if [[ $? -ne 0 ]]; then
-    fail
-  fi
 fi
 
 # Sync time
