@@ -216,6 +216,14 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 	cp -f $(BUILD_DIR)/iso/efi_tmp/efiboot.img $(BUILD_DIR)/iso/isoroot-mkisofs/images/
 	sudo rm -rf $(BUILD_DIR)/iso/efi_tmp/
 
+	mkdir -p $(BUILD_DIR)/iso/isoroot-mkisofs/etc/udev/rules.d
+	echo 'IMPORT{cmdline}="net.ifnames"' > $(BUILD_DIR)/iso/isoroot-mkisofs/etc/udev/rules.d/01-predictable-virtio-ifindex.rules
+	echo 'ENV{net.ifnames}=="0", GOTO="virtio_net_name_end"' \
+		>> $(BUILD_DIR)/iso/isoroot-mkisofs/etc/udev/rules.d/01-predictable-virtio-ifindex.rules
+	echo 'ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="virtio", DRIVERS=="virtio_net", NAME="virtio$$env{IFINDEX}"' \
+		>> $(BUILD_DIR)/iso/isoroot-mkisofs/etc/udev/rules.d/01-predictable-virtio-ifindex.rules
+	echo 'LABEL="virtio_net_name_end"' >> $(BUILD_DIR)/iso/isoroot-mkisofs/etc/udev/rules.d/01-predictable-virtio-ifindex.rules
+
 	xorriso -as mkisofs \
 		-V $(ISO_VOLUME_ID) -p $(ISO_VOLUME_PREP) \
 		-J -R \
