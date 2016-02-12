@@ -136,7 +136,7 @@ USE_MIRROR?=ext
 
 ifeq ($(USE_MIRROR),ext)
 MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)-fuel/os/x86_64/
-MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_MAJOR)
+MIRROR_CENTOS?=http://vault.centos.org/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=mirror.fuel-infra.org
@@ -179,7 +179,7 @@ endif
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
 YUM_REPOS?=official extras fuel
-MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_MAJOR)
+MIRROR_CENTOS?=http://vault.centos.org/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel
