@@ -22,10 +22,6 @@ dhcp \
 docker \
 fuel \
 fuel-bootstrap-cli \
-fuel-bootstrap-image \
-fuel-library \
-fuelmenu \
-fuel-mirror \
 fuel-openstack-metadata \
 fuel-utils \
 gdisk \
@@ -48,7 +44,6 @@ telnet \
 vim \
 virt-what \
 wget \
-yum-plugin-priorities \
 "
 
 ASTUTE_YAML='/etc/fuel/astute.yaml'
@@ -205,12 +200,15 @@ function ifname_valid {
 }
 
 yum makecache
-yum install -y yum-plugin-priorities
+yum install -y fuel-release yum-plugin-priorities yum-utils
+FUEL_RELEASE=$(cat /etc/fuel_release)
+
+# Disable online base MOS repo if we run an ISO installation
+[ -f /etc/fuel_build_id ] && yum-config-manager --disable mos${FUEL_RELEASE}-base --save
+
 yum install -y $FUEL_PACKAGES
 
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
-
-FUEL_RELEASE=$(cat /etc/fuel_release)
 
 # Be sure, that network devices have been initialized
 udevadm trigger --subsystem-match=net
@@ -497,24 +495,6 @@ else
   fuel notify --topic "warning" --send "${bs_centos_message}"
   bs_status=3
 fi
-
-# Enable updates repository
-cat > /etc/yum.repos.d/mos${FUEL_RELEASE}-updates.repo << EOF
-[mos${FUEL_RELEASE}-updates]
-name=mos${FUEL_RELEASE}-updates
-baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos${FUEL_RELEASE}-centos\$releasever-fuel/updates/x86_64/
-gpgcheck=0
-skip_if_unavailable=1
-EOF
-
-# Enable security repository
-cat > /etc/yum.repos.d/mos${FUEL_RELEASE}-security.repo << EOF
-[mos${FUEL_RELEASE}-security]
-name=mos${FUEL_RELEASE}-security
-baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos${FUEL_RELEASE}-centos\$releasever-fuel/security/x86_64/
-gpgcheck=0
-skip_if_unavailable=1
-EOF
 
 #Check if repo is accessible
 echo "Checking for access to updates repository..."
