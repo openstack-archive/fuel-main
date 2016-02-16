@@ -38,9 +38,18 @@ managing OpenStack.
 %install
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/etc
+mkdir -p %{buildroot}/etc/yum/vars/
+mkdir -p %{buildroot}/etc/yum.repos.d
 echo %{fuel_release} > %{buildroot}%{_sysconfdir}/fuel_release
+echo %{fuel_release} > %{buildroot}%{_sysconfdir}/yum/vars/fuelver
 install -D -m 700 -d %{buildroot}/root/.ssh
 install -p -m 600 %{_builddir}/%{name}-%{version}/bootstrap/ssh/id_rsa %{buildroot}/root/.ssh/bootstrap.rsa
+# copy GPG key
+install -D -m 644 %{_builddir}/%{name}-%{version}/fuel-release/RPM-GPG-KEY-mos %{buildroot}/etc/pki/fuel-gpg/RPM-GPG-KEY-mos
+# copy yum repos and mirror lists to /etc/yum.repos.d
+for file in %{_builddir}/%{name}-%{version}/fuel-release/*.repo ; do
+    install -D -m 644 "$file" %{buildroot}/etc/yum.repos.d
+done
 
 %clean
 rm -rf %{buildroot}
@@ -59,8 +68,15 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 URL:       http://github.com/Mirantis
 
 %description -n fuel-release
-This packages provides /etc/fuel_release file.
+This packages provides /etc/fuel_release file
+and Yum configuration for Fuel online repositories.
 
 %files -n fuel-release
 %defattr(-,root,root)
 %{_sysconfdir}/fuel_release
+%config(noreplace) %attr(0644,root,root) /etc/yum/vars/fuelver
+%config(noreplace) %attr(0644,root,root) /etc/yum.repos.d/*
+%dir /etc/pki/fuel-gpg
+/etc/pki/fuel-gpg/*
+
+
