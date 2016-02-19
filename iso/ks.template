@@ -469,10 +469,6 @@ set -x
 source "/root/anaconda.cmdline.vars"
 SOURCE=/tmp/source
 
-# Install bootstrap_admin_node.sh and enabling it
-install -m 0777 -D ${SOURCE}/bootstrap_admin_node.sh /usr/local/sbin/bootstrap_admin_node.sh
-echo "ENABLED=1" > /etc/sysconfig/bootstrap_admin_node
-
 # Prepare bootstrap_admin_node config
 mkdir -p /etc/fuel
 cat > /etc/fuel/bootstrap_admin_node.conf << EOF
@@ -513,8 +509,10 @@ cat >> /root/.bashrc << 'EOF'
 if [[ "$(tty)" == "/dev/tty1" && -f /etc/systemd/system/getty@tty1.service.d/autologin.conf ]]; then
 	rm -Rf "/etc/systemd/system/getty@tty1.service.d"
 	/bin/systemctl daemon-reload
-	if [ -x /usr/local/sbin/bootstrap_admin_node.sh ]; then
-		exec /usr/local/sbin/bootstrap_admin_node.sh
+	yum makecache
+	yum install -y fuel-setup
+	if [ -x /usr/sbin/bootstrap_admin_node.sh ]; then
+		exec /usr/sbin/bootstrap_admin_node.sh
 	fi
 fi
 EOF

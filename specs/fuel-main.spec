@@ -50,6 +50,9 @@ install -D -m 644 %{_builddir}/%{name}-%{version}/fuel-release/RPM-GPG-KEY-mos %
 for file in %{_builddir}/%{name}-%{version}/fuel-release/*.repo ; do
     install -D -m 644 "$file" %{buildroot}/etc/yum.repos.d
 done
+install -D -p -m 755 %{_builddir}/%{name}-%{version}/iso/bootstrap_admin_node.sh %{buildroot}%{_sbindir}/bootstrap_admin_node.sh
+mkdir -p %{buildroot}%{_sysconfdir}/sysconfig/
+echo "ENABLED=1" > %{buildroot}%{_sysconfdir}/sysconfig/bootstrap_admin_node
 
 %clean
 rm -rf %{buildroot}
@@ -79,4 +82,20 @@ and Yum configuration for Fuel online repositories.
 %dir /etc/pki/fuel-gpg
 /etc/pki/fuel-gpg/*
 
+%package -n fuel-setup
+
+Summary:   Fuel deployment script package
+Version:   %{version}
+Release:   %{release}
+License:   GPLv2
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+URL:       http://github.com/Mirantis
+
+%description -n fuel-setup
+This packages provides script to deploy Fuel components.
+
+%files -n fuel-setup
+%defattr(-,root,root)
+%{_sysconfdir}/sysconfig/bootstrap_admin_node
+%{_sbindir}/bootstrap_admin_node.sh
 
