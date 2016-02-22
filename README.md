@@ -18,10 +18,6 @@ Directory structure:
   RPM spec for fuel and fuel-release packages.
 - ```utils```
   Auxiliary scripts. (being deprecated)
-- ```virtualbox```
-  Scripts that allow a user to try Fuel easily. Being run they start several virtual box
-  VMs. One of them is used for the Fuel master node and others are used as slave nodes
-  where Fuel installs an operating system and deploys OpenStack.
 - ```Makefile```
   It is the main GNU Make file which includes all other necessary GNU Make files.
 - ```config.mk```
@@ -36,5 +32,3 @@ Directory structure:
   are listed here.
 - ```sandbox.mk```
   The script that is used for building chroot environments.
-- ```virtualbox.mk```
-  The script that is used for preparing tarball archive with virtualbox scripts.

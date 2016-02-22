@@ -29,7 +29,6 @@ FUEL_LIBRARY_VERSION?=9.0
 
 # Artifacts names
 ISO_NAME?=fuel-$(PRODUCT_VERSION)
-VBOX_SCRIPTS_NAME?=vbox-scripts-$(PRODUCT_VERSION)
 
 # Where we put artifacts
 ISO_PATH:=$(ARTS_DIR)/$(ISO_NAME).iso

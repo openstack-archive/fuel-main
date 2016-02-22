@@ -51,6 +51,9 @@ clean:
 deep_clean: clean
 	sudo rm -rf $(LOCAL_MIRROR)
 
+vbox-scripts:
+	echo "Target is deprecated. Virtualbox scripts have been moved to http://git.openstack.org/openstack/fuel-virtualbox.git"
+
 # Common configuration file.
 include $(SOURCE_DIR)/config.mk
 
@@ -70,4 +73,3 @@ include $(SOURCE_DIR)/repos.mk
 include $(SOURCE_DIR)/mirror/module.mk
 include $(SOURCE_DIR)/packages/module.mk
 include $(SOURCE_DIR)/iso/module.mk
-include $(SOURCE_DIR)/virtualbox.mk
