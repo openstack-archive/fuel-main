@@ -47,7 +47,7 @@ install -D -m 644 %{_builddir}/%{name}-%{version}/fuel-release/RPM-GPG-KEY-mos %
 for file in %{_builddir}/%{name}-%{version}/fuel-release/*.repo ; do
     install -D -m 644 "$file" %{buildroot}/etc/yum.repos.d
 done
-install -D -p -m 755 %{_builddir}/%{name}-%{version}/iso/bootstrap_admin_node.sh %{buildroot}%{_sbindir}/bootstrap_admin_node.sh
+install -D -p -m 755 %{_builddir}/%{name}-%{version}/fuel-setup/bootstrap_admin_node.sh %{buildroot}%{_sbindir}/bootstrap_admin_node.sh
 
 %clean
 rm -rf %{buildroot}
@@ -92,4 +92,3 @@ This packages provides script to deploy Fuel components.
 %files -n fuel-setup
 %defattr(-,root,root)
 %{_sbindir}/bootstrap_admin_node.sh
-
