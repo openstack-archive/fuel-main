@@ -210,6 +210,10 @@ function ifname_valid {
     return 1
 }
 
+# switch selinux to permissive mode
+setenforce 0
+sed -i s/SELINUX=enforcing/SELINUX=permissive/g /etc/selinux/config || :
+
 yum makecache
 echo $BOOTSTRAP_PACKAGES | xargs -n1 yum install -y
 FUEL_RELEASE=$(cat /etc/fuel_release)
@@ -236,7 +240,7 @@ fi
 # check and will be replaced.
 OLD_ADMIN_INTERFACE=${ADMIN_INTERFACE}
 ADMIN_INTERFACE=${ADMIN_INTERFACE:-'eth0'}
-showmenu=${showmenu:-'no'}
+showmenu=${showmenu:-'yes'}
 
 # Now check that ADMIN_INTERFACE points to a valid interface
 # If it doesn't fallback to getting the first interface name
