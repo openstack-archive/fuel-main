@@ -1,75 +1,68 @@
-.PHONY: all clean help deep_clean
+.PHONY: clean help
+
+# Path to the sources.
+# Default value: directory with Makefile
+SOURCE_DIR?=$(dir $(lastword $(MAKEFILE_LIST)))
+SOURCE_DIR:=$(abspath $(SOURCE_DIR))
+# Base path for build and mirror directories.
+# Default value: current directory
+TOP_DIR?=$(PWD)
+TOP_DIR:=$(abspath $(TOP_DIR))
+# Working build directory
+BUILD_DIR?=$(TOP_DIR)/build
+BUILD_DIR:=$(abspath $(BUILD_DIR))
+# Path for build artifacts
+ARTS_DIR?=$(BUILD_DIR)/artifacts
+ARTS_DIR:=$(abspath $(ARTS_DIR))
+
+MIRROR_YAML?=$(BUILD_DIR)/mirror.yaml
+CONFIG_YAML?=$(BUILD_DIR)/config.yaml
+
+ISOROOT:=$(BUILD_DIR)/iso/isoroot
+
+include $(SOURCE_DIR)/rules.mk
 
 help:
 	@echo 'Build directives (can be overrided by environment variables'
 	@echo 'or by command line parameters):'
 	@echo '  SOURCE_DIR:       $(SOURCE_DIR)'
 	@echo '  BUILD_DIR:        $(BUILD_DIR)'
-	@echo '  LOCAL_MIRROR:     $(LOCAL_MIRROR)'
-	@echo '  YUM_REPOS:        $(YUM_REPOS)'
-	@echo '  MIRROR_CENTOS:    $(MIRROR_CENTOS)'
-	@echo '  EXTRA_RPM_REPOS:  $(EXTRA_RPM_REPOS)'
-	@echo '  EXTRA_DEB_REPOS:  $(EXTRA_DEB_REPOS)'
-	@echo '  ISO_DIR/ISO_NAME: $(ISO_PATH)'
-	@echo '  ENV_NAME:         $(ENV_NAME)'
-	@echo '  KSYAML:           $(KSYAML)'
 	@echo
 	@echo 'Available targets:'
 	@echo '  all  - build product'
 	@echo '  iso  - build iso image'
 	@echo '  clean - remove build directory and resetting .done flags'
-	@echo '  deep_clean - clean + removing $(LOCAL_MIRROR) directory'
 	@echo
-	@echo 'To build system using one of the proprietary mirrors use '
-	@echo 'the following commands:'
-	@echo
-	@echo 'Saratov office (default):'
-	@echo 'make iso'
-	@echo
-	@echo 'Moscow office:'
-	@echo 'make iso USE_MIRROR=msk'
-	@echo
-	@echo 'Custom location:'
-	@echo 'make iso YUM_REPOS=proprietary MIRROR_CENTOS=http://<your_mirror>/centos'
-	@echo
-	@echo 'Extra RPM repos:'
-	@echo 'make iso EXTRA_RPM_REPOS="<repo1_name>,http://<repo1> <repo2_name>,ftp://<repo2>"'
-	@echo
-	@echo 'Extra DEB repos:'
-	@echo 'make iso EXTRA_DEB_REPOS="http://<repo1>/ubuntu /|ftp://<repo2> precise main"'
-	@echo
-
-# Path to the sources.
-# Default value: directory with Makefile
-SOURCE_DIR?=$(dir $(lastword $(MAKEFILE_LIST)))
-SOURCE_DIR:=$(abspath $(SOURCE_DIR))
-
-all: iso
+	@echo 'Example:'
+	@echo '  make iso'
 
 clean:
 	sudo rm -rf $(BUILD_DIR)
-deep_clean: clean
-	sudo rm -rf $(LOCAL_MIRROR)
 
-vbox-scripts:
-	echo "Target is deprecated. Virtualbox scripts have been moved to http://git.openstack.org/openstack/fuel-virtualbox.git"
+$(BUILD_DIR)/config.yaml.mk: $(CONFIG_YAML)
+	mkdir -p $(@D)
+	python $(SOURCE_DIR)/evaluator.py \
+		-m -c $(CONFIG_YAML) -o $@
 
-# Common configuration file.
-include $(SOURCE_DIR)/config.mk
+# NOTE(kozhukalov): this file is needed until images
+# downloading is implemented in python
+$(BUILD_DIR)/mirror.yaml.mk: $(MIRROR_YAML)
+	mkdir -p $(@D)
+	python $(SOURCE_DIR)/evaluator.py \
+		-m -c $(MIRROR_YAML) \
+		-p $(notdir $(MIRROR_YAML))_ -o $@
 
-.PHONY: current-version
-current-version: $(BUILD_DIR)/current_version
-$(BUILD_DIR)/current_version: $(call depv,CURRENT_VERSION)
-	echo $(CURRENT_VERSION) > $@
+$(CONFIG_YAML): $(SOURCE_DIR)/yaml/config.yaml; $(ACTION.COPY)
 
-# Macroses for make
-include $(SOURCE_DIR)/rules.mk
+$(MIRROR_YAML): $(SOURCE_DIR)/yaml/mirror.yaml $(CONFIG_YAML)
+	mkdir -p $(@D)
+	python $(SOURCE_DIR)/evaluator.py \
+		-t $(SOURCE_DIR)/yaml/mirror.yaml \
+		-u '{"ISOROOT": "$(ISOROOT)"}' \
+		-c $(CONFIG_YAML) \
+		-o $@.tmp
+	mv $@.tmp $@
 
-# Sandbox macroses.
-include $(SOURCE_DIR)/sandbox.mk
-
-# Modules
-include $(SOURCE_DIR)/repos.mk
-include $(SOURCE_DIR)/mirror/module.mk
-include $(SOURCE_DIR)/packages/module.mk
+include $(BUILD_DIR)/config.yaml.mk
+include $(BUILD_DIR)/mirror.yaml.mk
 include $(SOURCE_DIR)/iso/module.mk
