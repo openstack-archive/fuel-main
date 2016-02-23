@@ -1,0 +1,4 @@
+git+git://github.com/openstack/packetary.git
+python-debian>=0.1.23
+PyYAML>=3.1.0 # MIT
+Jinja2>=2.8 # BSD License (3 clause)
