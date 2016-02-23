@@ -3,8 +3,10 @@
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 export LANG=en_US.UTF8
 
+wwwdir="/var/www/nailgun"
+
 mkdir -p /var/log/puppet
-mkdir -p /var/www/nailgun/targetimages
+mkdir -p ${wwwdir}/targetimages
 
 LOGFILE=${LOGFILE:-/var/log/puppet/bootstrap_admin_node.log}
 
@@ -210,9 +212,24 @@ function ifname_valid {
     return 1
 }
 
+# switch selinux to permissive mode
+setenforce 0
+sed -i s/SELINUX=enforcing/SELINUX=permissive/g /etc/selinux/config || :
+
 yum makecache
 echo $BOOTSTRAP_PACKAGES | xargs -n1 yum install -y
+# /etc/fuel_release is provided by 'fuel-release' package
 FUEL_RELEASE=$(cat /etc/fuel_release)
+# /etc/fuel_openstack_version is provided by 'fuel-openstack-metadata' package
+OPENSTACK_VERSION=$(cat /etc/fuel_openstack_version)
+
+# We do not ship debian-installer kernel and initrd on ISO.
+# But we still need to be able to create ubuntu cobbler distro
+# which requires kernel and initrd to be available. So, we
+# just touch these files to work around cobbler's limitation.
+mkdir -p ${wwwdir}/${OPENSTACK_VERSION}/ubuntu/x86_64/images/
+touch ${wwwdir}/${OPENSTACK_VERSION}/ubuntu/x86_64/images/linux
+touch ${wwwdir}/${OPENSTACK_VERSION}/ubuntu/x86_64/images/initrd.gz
 
 # Disable online base MOS repo if we run an ISO installation
 [ -f /etc/fuel_build_id ] && yum-config-manager --disable mos${FUEL_RELEASE}-base --save
@@ -236,7 +253,7 @@ fi
 # check and will be replaced.
 OLD_ADMIN_INTERFACE=${ADMIN_INTERFACE}
 ADMIN_INTERFACE=${ADMIN_INTERFACE:-'eth0'}
-showmenu=${showmenu:-'no'}
+showmenu=${showmenu:-'yes'}
 
 # Now check that ADMIN_INTERFACE points to a valid interface
 # If it doesn't fallback to getting the first interface name
@@ -409,8 +426,8 @@ hostname "$HOSTNAME"
 # and egg problem. Fortunately cobbler is pretty happy with empty files
 # so it's easy to break the loop.
 make_ubuntu_bootstrap_stub () {
-        local bootstrap_dir='/var/www/nailgun/bootstraps/active_bootstrap'
-        local bootstrap_stub_dir='/var/www/nailgun/bootstraps/bootstrap_stub'
+        local bootstrap_dir='${wwwdir}/bootstraps/active_bootstrap'
+        local bootstrap_stub_dir='${wwwdir}/bootstraps/bootstrap_stub'
         mkdir -p ${bootstrap_stub_dir}
         for item in vmlinuz initrd.img; do
                 touch "${bootstrap_stub_dir}/$item"
