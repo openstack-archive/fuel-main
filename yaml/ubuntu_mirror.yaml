@@ -1,0 +1,7 @@
+- name: "ubuntu"
+  uri: "{{MOS_UBUNTU_URL}}"
+  suite: "{{MOS_UBUNTU_SUITE}}"
+  section: ["main", "restricted"]
+  priority: 1000
+  path: "{{ISOROOT}}/ubuntu"
+  group: "debug"
