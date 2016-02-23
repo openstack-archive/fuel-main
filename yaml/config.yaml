@@ -1,0 +1,18 @@
+ISOLINUX_TITLE: "Welcome to Fuel Installer (version: 9.0)"
+ISO_NAME: fuel-9.0
+# ISO_VOLUME_ID can't have whitespaces or other
+# non-alphanumeric characters 'as is'.
+# They must be represented as \xNN, where NN
+# is the hexadecimal representation of the character.
+# For example, \x20 is a white space (" ").
+# This is the limitation of kickstart boot options.
+ISO_VOLUME_ID: "OpenStack_Fuel"
+ISO_VOLUME_PREP: "Fuel team"
+MASTER_IP: 10.20.0.2
+MASTER_DNS: 10.20.0.1
+MASTER_NETMASK: 255.255.255.0
+MASTER_GW: 10.20.0.1
+CENTOS_URL: http://vault.centos.org/7.1.1503
+MOS_CENTOS_URL: http://mirror.fuel-infra.org/mos-repos/centos/mos9.0-centos7-fuel
+MOS_UBUNTU_URL: http://mirror.fuel-infra.org/mos-repos/ubuntu
+MOS_UBUNTU_SUITE: mos-master
