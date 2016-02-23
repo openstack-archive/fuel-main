@@ -1,0 +1,36 @@
+- name: "mos-repos"
+  uri: "{{MOS_CENTOS_URL}}/x86_64"
+  priority: 10
+  path: "{{ISOROOT}}/mos-centos"
+  filters:
+    - name: "/^.*debuginfo.*/"
+
+- name: "upstream-os"
+  uri: "{{CENTOS_URL}}/os/x86_64"
+  priority: 90
+  path: "{{ISOROOT}}"
+- name: "upstream-updates"
+  uri: "{{CENTOS_URL}}/updates/x86_64"
+  priority: 10
+  path: "{{ISOROOT}}"
+- name: "upstream-extras"
+  uri: "{{CENTOS_URL}}/extras/x86_64"
+  priority: 90
+  path: "{{ISOROOT}}"
+- name: "mos-repos"
+  uri: "{{MOS_CENTOS_URL}}/x86_64"
+  priority: 1
+  path: "{{ISOROOT}}/mos-centos"
+
+# - name: "deb-mos"
+#   type: "deb"
+#   action: "clone"
+#   repos:
+#     - name: "ubuntu"
+#       uri: "{{MOS_UBUNTU_URL}}"
+#       suite: "{{MOS_UBUNTU_SUITE}}"
+#       section: ["main", "restricted"]
+#       priority: 1000
+#       path: "{{ISOROOT}}/ubuntu"
+#   filters:
+#     - group: "debug"
