@@ -1,0 +1,8 @@
+- name: "mos"
+  path: "mos-centos"
+  uri: "http://mirror.fuel-infra.org/mos-repos/centos/mos9.0-centos7-fuel/snapshots/os-2016-02-20-134501/x86_64"
+  priority: 10
+- name: "mos-send2syslog"
+  path: "mos-centos"
+  uri: "http://perestroika-repo-tst.infra.mirantis.net/review/FUEL-283669/mos-repos/centos/mos9.0-centos7-fuel/os/x86_64"
+  priority: 1

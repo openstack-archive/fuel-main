@@ -1,0 +1,6 @@
+- name: "ubuntu"
+  path: "ubuntu"
+  uri: http://mirror.fuel-infra.org/mos-repos/ubuntu/snapshots/9.0-2016-02-20-153001
+  suite: "mos9.0"
+  section: ["main", "restricted"]
+  priority: 1000

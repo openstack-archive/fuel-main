@@ -6,13 +6,7 @@ help:
 	@echo '  SOURCE_DIR:       $(SOURCE_DIR)'
 	@echo '  BUILD_DIR:        $(BUILD_DIR)'
 	@echo '  LOCAL_MIRROR:     $(LOCAL_MIRROR)'
-	@echo '  YUM_REPOS:        $(YUM_REPOS)'
-	@echo '  MIRROR_CENTOS:    $(MIRROR_CENTOS)'
-	@echo '  EXTRA_RPM_REPOS:  $(EXTRA_RPM_REPOS)'
-	@echo '  EXTRA_DEB_REPOS:  $(EXTRA_DEB_REPOS)'
 	@echo '  ISO_DIR/ISO_NAME: $(ISO_PATH)'
-	@echo '  ENV_NAME:         $(ENV_NAME)'
-	@echo '  KSYAML:           $(KSYAML)'
 	@echo
 	@echo 'Available targets:'
 	@echo '  all  - build product'
@@ -20,29 +14,29 @@ help:
 	@echo '  clean - remove build directory and resetting .done flags'
 	@echo '  deep_clean - clean + removing $(LOCAL_MIRROR) directory'
 	@echo
-	@echo 'To build system using one of the proprietary mirrors use '
-	@echo 'the following commands:'
-	@echo
-	@echo 'Saratov office (default):'
 	@echo 'make iso'
-	@echo
-	@echo 'Moscow office:'
-	@echo 'make iso USE_MIRROR=msk'
-	@echo
-	@echo 'Custom location:'
-	@echo 'make iso YUM_REPOS=proprietary MIRROR_CENTOS=http://<your_mirror>/centos'
-	@echo
-	@echo 'Extra RPM repos:'
-	@echo 'make iso EXTRA_RPM_REPOS="<repo1_name>,http://<repo1> <repo2_name>,ftp://<repo2>"'
-	@echo
-	@echo 'Extra DEB repos:'
-	@echo 'make iso EXTRA_DEB_REPOS="http://<repo1>/ubuntu /|ftp://<repo2> precise main"'
 	@echo
 
 # Path to the sources.
 # Default value: directory with Makefile
 SOURCE_DIR?=$(dir $(lastword $(MAKEFILE_LIST)))
 SOURCE_DIR:=$(abspath $(SOURCE_DIR))
+# Path to the input data directory
+DATA_DIR?=$(SOURCE_DIR)/data
+DATA_DIR:=$(abspath $(DATA_DIR))
+# Base path for build and mirror directories.
+# Default value: current directory
+TOP_DIR?=$(PWD)
+TOP_DIR:=$(abspath $(TOP_DIR))
+# Working build directory
+BUILD_DIR?=$(TOP_DIR)/build
+BUILD_DIR:=$(abspath $(BUILD_DIR))
+# Path for build artifacts
+ARTS_DIR?=$(BUILD_DIR)/artifacts
+ARTS_DIR:=$(abspath $(ARTS_DIR))
+# Path for cache of downloaded packages
+LOCAL_MIRROR?=$(TOP_DIR)/local_mirror
+LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 
 all: iso
 
@@ -54,22 +48,27 @@ deep_clean: clean
 vbox-scripts:
 	echo "Target is deprecated. Virtualbox scripts have been moved to http://git.openstack.org/openstack/fuel-virtualbox.git"
 
-# Common configuration file.
-include $(SOURCE_DIR)/config.mk
+RPM_REPOS_YAML?=$(DATA_DIR)/rpm_repos.yaml
+RPM_PACKAGES_YAML?=$(DATA_DIR)/rpm_packages.yaml
+RPM_MOS_REPOS_YAML?=$(DATA_DIR)/rpm_mos_repos.yaml
+RPM_MOS_FILTERS_YAML?=$(DATA_DIR)/rpm_mos_filters.yaml
+DEB_MOS_REPOS_YAML?=$(DATA_DIR)/deb_mos_repos.yaml
+DEB_MOS_FILTERS_YAML?=$(DATA_DIR)/deb_mos_filters.yaml
+CONFIG_YAML?=$(DATA_DIR)/config.yaml
 
-.PHONY: current-version
-current-version: $(BUILD_DIR)/current_version
-$(BUILD_DIR)/current_version: $(call depv,CURRENT_VERSION)
-	echo $(CURRENT_VERSION) > $@
+define yaml2make
+$(BUILD_DIR)/$(notdir $1).mk:
+	mkdir -p $$(@D)
+	python $(SOURCE_DIR)/evaluator.py -m -c $1 -p $(notfile $1)_ -d 2 -o $$@
 
-# Macroses for make
+include $(BUILD_DIR)/$(notdir $1).mk
+endef
+
+$(foreach yaml_file,$(CONFIG_YAML) $(RPM_REPOS_YAML),$(eval $(call yaml2make,$(yaml_file))))
+
+# Macros for make
 include $(SOURCE_DIR)/rules.mk
 
-# Sandbox macroses.
-include $(SOURCE_DIR)/sandbox.mk
-
 # Modules
-include $(SOURCE_DIR)/repos.mk
-include $(SOURCE_DIR)/mirror/module.mk
-include $(SOURCE_DIR)/packages/module.mk
+include $(SOURCE_DIR)/mirror.mk
 include $(SOURCE_DIR)/iso/module.mk

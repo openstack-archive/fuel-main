@@ -24,6 +24,7 @@ daemonize \
 dhcp \
 docker \
 fuel \
+fuel-send2syslog-script \
 fuel-bootstrap-cli \
 fuel-openstack-metadata \
 fuel-utils \

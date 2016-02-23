@@ -1,0 +1,4 @@
+git+git://github.com/openstack/packetary.git
+python-debian>=0.1.23
+PyYAML>=3.11
+Jinja2>=2.8
