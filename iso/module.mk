@@ -76,8 +76,7 @@ $(BUILD_DIR)/iso/isoroot-files.done: \
 		$(BUILD_DIR)/iso/isoroot-dotfiles.done \
 		$(ISOROOT)/isolinux/isolinux.cfg \
 		$(ISOROOT)/isolinux/splash.jpg \
-		$(ISOROOT)/ks.cfg \
-		$(ISOROOT)/send2syslog.py
+		$(ISOROOT)/ks.cfg
 	$(ACTION.TOUCH)
 
 $(ISOROOT)/.discinfo: $(SOURCE_DIR)/iso/.discinfo ; $(ACTION.COPY)
@@ -101,9 +100,6 @@ $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(ISORO
 		-u '{"CENTOS_RELEASE": "$(CENTOS_RELEASE)", "PRODUCT_VERSION": "$(PRODUCT_VERSION)"}' \
 		-o $@.tmp
 	mv $@.tmp $@
-
-$(ISOROOT)/send2syslog.py: $(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py ; $(ACTION.COPY)
-$(BUILD_DIR)/repos/fuel-nailgun/bin/send2syslog.py: $(BUILD_DIR)/repos/fuel-nailgun.done
 
 ########################
 # Iso image root file system.
