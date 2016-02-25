@@ -434,8 +434,6 @@ ln -s ${repodir}/ubuntu ${wwwdir}/ubuntu
 ln -s ${repodir}/mos-centos ${wwwdir}/mos-centos
 ln -s ${repodir}/extra-repos ${wwwdir}/extra-repos
 
-cp ${SOURCE}/send2syslog.py /bin/send2syslog.py
-
 # Prepare local repository specification
 rm /etc/yum.repos.d/CentOS*.repo
 cp ${SOURCE}/extra-repos/extra.repo /etc/yum.repos.d/

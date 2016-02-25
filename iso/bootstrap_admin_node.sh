@@ -41,6 +41,7 @@ python-pypcap \
 rsync \
 rubygem-netaddr \
 rubygem-openstack \
+send2syslog \
 strace \
 sysstat \
 system-config-firewall-base \

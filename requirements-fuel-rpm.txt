@@ -23,4 +23,5 @@ network-checker
 python-fuelclient
 python-packetary
 rubygem-astute
+send2syslog
 shotgun
