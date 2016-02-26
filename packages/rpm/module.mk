@@ -90,6 +90,7 @@ fuel-mirror \
 fuel-nailgun \
 fuel-nailgun-agent \
 fuel-ostf \
+fuel-ui \
 network-checker \
 python-fuelclient \
 shotgun
