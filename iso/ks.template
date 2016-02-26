@@ -523,3 +523,9 @@ if [[ ! -z $adminif ]]; then
     /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-${adminif}
 fi
 %end
+
+%post --nochroot
+#!/bin/bash
+echo 'options e1000 TxDescriptorStep=4' >> /mnt/sysimage/etc/modprobe.d/e1000.conf
+
+%end
