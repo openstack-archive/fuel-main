@@ -78,6 +78,7 @@ FUELMENU_COMMIT?=master
 SHOTGUN_COMMIT?=master
 NETWORKCHECKER_COMMIT?=master
 FUELUPGRADE_COMMIT?=master
+FUEL_UI?=master
 
 FUELLIB_REPO?=https://github.com/openstack/fuel-library.git
 NAILGUN_REPO?=https://github.com/openstack/fuel-web.git
@@ -91,6 +92,7 @@ FUELMENU_REPO?=https://github.com/openstack/fuel-menu.git
 SHOTGUN_REPO?=https://github.com/openstack/shotgun.git
 NETWORKCHECKER_REPO?=https://github.com/openstack/network-checker.git
 FUELUPGRADE_REPO?=https://github.com/openstack/fuel-upgrade.git
+FUEL_UI_REPO?=https://github.com/openstack/fuel-ui.git
 
 # Gerrit URLs and commits
 FUELLIB_GERRIT_URL?=https://review.openstack.org/openstack/fuel-library
@@ -105,6 +107,7 @@ FUELMENU_GERRIT_URL?=https://review.openstack.org/openstack/fuel-menu
 SHOTGUN_GERRIT_URL?=https://review.openstack.org/openstack/shotgun
 NETWORKCHECKER_GERRIT_URL?=https://review.openstack.org/openstack/network-checker
 FUELUPGRADE_GERRIT_URL?=https://review.openstack.org/openstack/fuel-upgrade
+FUEL_UI_GERRIT_URL?=https://review.openstack.org/openstack/fuel-ui
 
 FUELLIB_GERRIT_COMMIT?=none
 NAILGUN_GERRIT_COMMIT?=none
@@ -119,6 +122,7 @@ FUELMENU_GERRIT_COMMIT?=none
 SHOTGUN_GERRIT_COMMIT?=none
 NETWORKCHECKER_GERRIT_COMMIT?=none
 FUELUPGRADE_GERRIT_COMMIT?=none
+FUEL_UI_GERRIT_COMMIT?=none
 
 LOCAL_MIRROR_CENTOS:=$(LOCAL_MIRROR)/centos
 LOCAL_MIRROR_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_CENTOS)/os/$(CENTOS_ARCH)

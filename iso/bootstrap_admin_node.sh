@@ -29,6 +29,7 @@ fuel \
 fuel-bootstrap-cli \
 fuel-openstack-metadata \
 fuel-utils \
+fuel-ui \
 gdisk \
 lrzip \
 lsof \
