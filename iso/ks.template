@@ -503,7 +503,7 @@ if [[ "$(tty)" == "/dev/tty1" && -f /etc/systemd/system/getty@tty1.service.d/aut
 	yum makecache
 	yum install -y fuel-setup
 	if [ -x /usr/sbin/bootstrap_admin_node.sh ]; then
-		exec /usr/sbin/bootstrap_admin_node.sh
+		/usr/sbin/bootstrap_admin_node.sh
 	fi
 fi
 EOF
