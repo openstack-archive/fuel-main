@@ -112,6 +112,7 @@ function countdown() {
 
 function fail() {
   echo "ERROR: Fuel node deployment FAILED! Check "${LOGFILE}" for details" 1>&2
+  sleep 3
   exit 1
 }
 
@@ -501,10 +502,7 @@ if [ ${old_sysctl_vm_value} -lt 65535 ]; then
 fi
 
 # apply puppet
-/etc/puppet/modules/fuel/examples/deploy.sh
-if [[ $? -ne 0 ]]; then
-    fail
-fi
+/etc/puppet/modules/fuel/examples/deploy.sh || fail
 
 # Sync time
 systemctl stop ntpd
