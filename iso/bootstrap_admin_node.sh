@@ -222,6 +222,7 @@ yum makecache
 echo $BOOTSTRAP_PACKAGES | xargs -n1 yum install -y
 # /etc/fuel_release is provided by 'fuel-release' package
 FUEL_RELEASE=$(cat /etc/fuel_release)
+echo $FUEL_PACKAGES | xargs -n1 yum install -y
 # /etc/fuel_openstack_version is provided by 'fuel-openstack-metadata' package
 OPENSTACK_VERSION=$(cat /etc/fuel_openstack_version)
 
@@ -235,8 +236,6 @@ touch ${wwwdir}/${OPENSTACK_VERSION}/ubuntu/x86_64/images/initrd.gz
 
 # Disable online base MOS repo if we run an ISO installation
 [ -f /etc/fuel_build_id ] && yum-config-manager --disable mos${FUEL_RELEASE}-base --save
-
-echo $FUEL_PACKAGES | xargs -n1 yum install -y
 
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
