@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -ex
 
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 export LANG=en_US.UTF8
