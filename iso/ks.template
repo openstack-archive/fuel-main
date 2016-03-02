@@ -197,7 +197,6 @@ tgtdrive=$(echo $tgtdrive | sed -e 's/!/\//')
 
 # source
 iso_volume_id=will_be_substituted_with_ISO_VOLUME_ID
-iso_disk_uuid=will_be_substituted_with_actual_uuid
 
 cdrom_device=
 if [ -e /proc/sys/dev/cdrom/info ]; then
@@ -210,13 +209,6 @@ if [ -e /dev/disk/by-label/${iso_volume_id} ]; then
         echo "cdrom" > /tmp/source.ks
     else
         echo "harddrive --partition=LABEL=${iso_volume_id} --dir=/" > /tmp/source.ks
-    fi
-elif [ -e /dev/disk/by-uuid/${iso_disk_uuid} ]; then
-    real_device=$(readlink -e /dev/disk/by-uuid/${iso_disk_uuid})
-    if [ "${real_device}" == "/dev/${cdrom_device}" ]; then
-        echo "cdrom" > /tmp/source.ks
-    else
-        echo "harddrive --partition=UUID=${iso_disk_uuid} --dir=/" > /tmp/source.ks
     fi
 else
     echo "cdrom" > /tmp/source.ks
@@ -368,16 +360,11 @@ fi
 # for access to dist files.
 
 iso_volume_id=will_be_substituted_with_ISO_VOLUME_ID
-iso_disk_uuid=will_be_substituted_with_actual_uuid
 FS="/mnt/sysimage/tmp/fs"
 
 if ! mountpoint -q "${SOURCE}"; then
   if [ -e "/dev/disk/by-label/${iso_volume_id}" ]; then
     mount "/dev/disk/by-label/${iso_volume_id}" "${SOURCE}"
-  elif [ -e "/dev/disk/by-uuid/${iso_disk_uuid}" ]; then
-    mkdir -p "${FS}"
-    mount "/dev/disk/by-uuid/${iso_disk_uuid}" "${FS}"
-    mount -o loop "${FS}/nailgun.iso" "${SOURCE}"
   fi
 fi
 
