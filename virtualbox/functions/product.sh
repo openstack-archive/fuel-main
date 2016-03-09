@@ -154,7 +154,7 @@ enable_outbound_network_for_product_vm() {
     # Check host nameserver configuration
     echo -n "Checking local DNS configuration... "
     if execute test -f /etc/resolv.conf ; then
-      nameserver="$(execute grep '^nameserver' /etc/resolv.conf | grep -v 'nameserver\s\s*127.' | head -3)"
+      nameserver="$(execute grep '^nameserver' /etc/resolv.conf | egrep -v 'nameserver\s*(127\.|.*:)' | head -3)"
     fi
     if [ -z "$nameserver" ] && execute test -x /usr/bin/nmcli; then
       # Get DNS from network manager
