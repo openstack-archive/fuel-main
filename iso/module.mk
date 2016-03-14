@@ -12,7 +12,7 @@ listing: $(BUILD_DIR)/iso/isoroot.done $(BUILD_DIR)/mirror/build.done
 	-find $(LOCAL_MIRROR) > $(BUILD_DIR)/listing-local-mirror.txt
 	-find $(BUILD_DIR)/iso/isoroot \
 		-regextype posix-egrep \
-		-regex '.*(fuel|astute|network-checker|shotgun).*\.rpm' | \
+		-regex '.*(fuel|astute|network-checker|nailgun|shotgun).*\.rpm' | \
 			while read package_file; do \
 				echo; \
 				echo $$(basename $$package_file); \
