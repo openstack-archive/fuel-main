@@ -8,7 +8,6 @@ ISOROOT:=$(BUILD_DIR)/iso/isoroot
 iso: $(ISO_PATH)
 
 listing: $(BUILD_DIR)/iso/isoroot.done $(BUILD_DIR)/mirror/build.done
-	-find $(BUILD_DIR) > $(BUILD_DIR)/listing-build.txt
 	-find $(LOCAL_MIRROR) > $(BUILD_DIR)/listing-local-mirror.txt
 	-find $(BUILD_DIR)/iso/isoroot \
 		-regextype posix-egrep \
