@@ -453,7 +453,7 @@ cat > /etc/fuel/bootstrap_admin_node.conf << EOF
 #Set to yes to run Fuel Setup
 #Set to no to accept default settings
 ADMIN_INTERFACE=${adminif}
-showmenu=${showmenu:-no}
+showmenu=${showmenu:-yes}
 wait_for_external_config=${wait_for_external_config:-no}
 EOF
 
