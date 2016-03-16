@@ -85,12 +85,12 @@ astute \
 fuel-agent \
 fuel-library$(FUEL_LIBRARY_VERSION) \
 fuel-main \
-fuelmenu \
 fuel-mirror \
 fuel-nailgun \
-fuel-nailgun-agent \
 fuel-ostf \
 fuel-ui \
+fuelmenu \
+nailgun-agent \
 network-checker \
 python-fuelclient \
 shotgun
