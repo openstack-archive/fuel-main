@@ -70,7 +70,7 @@ $(eval $(call prepare_git_source,python-fuelclient,python-fuelclient-$(PACKAGE_V
 #FUEL_AGENT_PKGS
 $(eval $(call prepare_git_source,fuel-agent,fuel-agent-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-agent,HEAD,$(FUEL_AGENT_GERRIT_COMMIT)))
 #FUEL_NAILGUN_AGENT_PKGS
-$(eval $(call prepare_git_source,fuel-nailgun-agent,fuel-nailgun-agent-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-nailgun-agent,HEAD,$(FUEL_NAILGUN_AGENT_GERRIT_COMMIT)))
+$(eval $(call prepare_git_source,nailgun-agent,fuel-nailgun-agent-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-nailgun-agent,HEAD,$(FUEL_NAILGUN_AGENT_GERRIT_COMMIT)))
 #FUEL-IMAGE PKGS
 $(eval $(call prepare_git_source,fuel-main,fuel-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD,$(FUELMAIN_GERRIT_COMMIT)))
 #FUEL-MIRROR PKGS
