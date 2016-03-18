@@ -1,0 +1,10 @@
+Code-Review+1: Vitaly Parakhin <vparakhin@mirantis.com>
+Code-Review+1: Biswajeeban Mishra <mishra@inf.u-szeged.hu>
+Code-Review+2: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Workflow+1: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 18 Mar 2016 12:24:39 +0000
+Reviewed-on: https://review.openstack.org/293380
+Project: openstack/fuel-main
+Branch: refs/heads/master
