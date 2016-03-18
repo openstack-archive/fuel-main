@@ -23,6 +23,24 @@ $(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done \
 	sudo tar czf $@.tmp -C $(SANDBOX) .
 	mv $@.tmp $@
 
+# Usage:
+# (eval (inc_rpm_package_release,package_name))
+# If we are running patching then increment package release number by 1
+# else - just assign release number 1
+define inc_rpm_package_release
+$(BUILD_DIR)/packages/sources/$1/version: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/buildd
+$(BUILD_DIR)/packages/sources/$1/version: $(BUILD_DIR)/packages/rpm/buildd.tar.gz
+$(BUILD_DIR)/packages/sources/$1/version:
+	mkdir -p $$(@D)
+	echo -e "RELEASE=\c" > $$@.tmp
+ifeq ($(PATCHING_CI),1)
+	bash -c "set -o pipefail && \
+		yum -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) info $1 | grep Release | tr -d ' ' | cut -d':' -f2 | xargs -I{} expr {} + 1 >> $$@.tmp"
+else
+	echo "1" >> $$@.tmp
+endif
+	mv $$@.tmp $$@
+endef
 
 # Usage:
 # (eval (call build_rpm,package_name))
@@ -46,6 +64,7 @@ $(BUILD_DIR)/repos/$1/specs/$1.spec: $(BUILD_DIR)/repos/$1.done
 $(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/repos/$1/specs/$1.spec
 else
 $(BUILD_DIR)/packages/rpm/$1.done: SPECFILE:=$(SOURCE_DIR)/packages/rpm/specs/$1.spec
+$(BUILD_DIR)/packages/rpm/$1.done: $(BUILD_DIR)/packages/sources/$1/version
 endif
 
 $(BUILD_DIR)/packages/rpm/$1.done:
@@ -110,6 +129,7 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 		$(BUILD_DIR)/repos/repos.done \
 		$(BUILD_DIR)/packages/rpm/buildd.tar.gz \
 		$(BUILD_DIR)/packages/rpm/repo-late.done \
+		$(BUILD_DIR)/packages/sources/fuel-docker-images/version \
 		$(BUILD_DIR)/docker/build.done
 	python $(SOURCE_DIR)/packages/rpm/genpkgnames.py $(SPECFILE) | xargs -I{} sudo find $(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages -regex '.*/{}-[^-]+-[^-]+' -delete
 	mkdir -p $(BUILD_DIR)/packages/rpm/RPMS/x86_64
@@ -118,8 +138,10 @@ $(BUILD_DIR)/packages/rpm/fuel-docker-images.done: \
 	mkdir -p $(SANDBOX)/tmp/SOURCES && \
 	sudo cp -r $(BUILD_DIR)/docker/$(DOCKER_ART_NAME) $(SANDBOX)/tmp/SOURCES && \
 	(cd $(BUILD_DIR)/docker && sudo tar czf $(SANDBOX)/tmp/SOURCES/fuel-images-sources.tar.gz sources utils) && \
-	sudo cp $(SPECFILE) $(SANDBOX)/tmp && \
-	sudo chroot $(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/fuel-docker-images.spec
+	sudo cp $(SPECFILE) $(SANDBOX)/tmp
+	sudo chroot $(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" \
+		--define "release `awk -F'=' '/RELEASE/ {print $$2}' $(BUILD_DIR)/packages/sources/fuel-docker-images/version`" \
+		-ba /tmp/fuel-docker-images.spec
 	cp $(SANDBOX)/tmp/RPMS/*/fuel-docker-images-*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' | xargs cp -u --target-directory=$(LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL)/Packages
 	createrepo -g $(LOCAL_MIRROR_MOS_CENTOS)/comps.xml \
@@ -147,6 +169,10 @@ fuel_rpm_packages_late:=\
 fuel-bootstrap-image
 
 $(eval $(foreach pkg,$(fuel_rpm_packages_late),$(call build_rpm,$(pkg),-late)$(NEWLINE)))
+
+$(eval $(call inc_rpm_package_release,fuel-bootstrap-image))
+$(eval $(call inc_rpm_package_release,fuel-target-centos-images$(CENTOS_RELEASE)))
+$(eval $(call inc_rpm_package_release,fuel-docker-images))
 
 # BUILD_PACKAGES=0 - for late packages we need to be sure that centos mirror is ready
 # BUILD_PACKAGES=1 - for late packages we need to be sure that fuel-* packages was build beforehand
