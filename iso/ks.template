@@ -19,7 +19,7 @@ skipx
 # This eliminates a security risk where an attacker
 # could SSH into Fuel Admin node before a user has an
 # opportunity to change the root password.
-services --disabled=sshd
+services --disabled=NetworkManager,--disabled=sshd
 
 %packages --nobase
 @Core
