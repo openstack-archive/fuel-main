@@ -434,6 +434,10 @@ name=MOS Local Repo
 baseurl=file:/var/www/nailgun/${OPENSTACK_VERSION}/mos-centos/x86_64
 gpgcheck=0
 EOF
+
+# Remove NetworkManager completely
+yum -y remove NetworkManager
+
 %end
 
 
