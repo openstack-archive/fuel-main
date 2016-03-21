@@ -500,6 +500,16 @@ if [ ${old_sysctl_vm_value} -lt 65535 ]; then
   sysctl -w vm.min_free_kbytes=${old_sysctl_vm_value}
 fi
 
+# Ensure fuelclient can authenticate
+output=$(fuel token 2>&1)
+if echo "$output" | grep -q "Unauthorized"; then
+  message="Fuel CLI credentials are invalid. Update /etc/fuel/astute.yaml \
+FUEL_ACCESS/password and ~/.config/fuel/fuel_client.yaml in order to \
+proceed with deployment."
+  echo $message
+  fail
+fi
+
 # apply puppet
 /etc/puppet/modules/fuel/examples/deploy.sh
 if [[ $? -ne 0 ]]; then
