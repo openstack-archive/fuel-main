@@ -2,8 +2,8 @@
 %define repo_name fuel-main
 
 %define name fuel
-%{!?version: %define version 9.0.0}
-%{!?fuel_release: %define fuel_release 9.0}
+%{!?version: %define version 10.0.0}
+%{!?fuel_release: %define fuel_release 10.0}
 %{!?release: %define release 1}
 
 Name: %{name}
@@ -16,7 +16,7 @@ License: Apache
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Prefix: %{_prefix}
 BuildArch: noarch
-Requires: fuel-library9.0
+Requires: fuel-library10.0
 Requires: fuelmenu >= %{version}
 Requires: fuel-provisioning-scripts >= %{version}
 Requires: fuel-release >= %{version}
