@@ -100,7 +100,9 @@ https://docs.mirantis.com/openstack/fuel/fuel-${FUEL_RELEASE}/\
 release-notes.html#maintenance-updates"
 fuelmenu_fail_message="Fuelmenu was not able to generate '/etc/fuel/astute.yaml' file! \
 Please, restart it manualy using 'fuelmenu' command."
-
+fuelclient_fail_message="Fuel CLI credentials are invalid. Update \
+/etc/fuel/astute.yaml FUEL_ACCESS/password and ~/.config/fuel/fuel_client.yaml\
+ in order to proceed with deployment."
 function countdown() {
   local i
   sleep 1
@@ -498,6 +500,16 @@ fi
 if [ ${old_sysctl_vm_value} -lt 65535 ]; then
   echo "Restore sysctl vm.min_free_kbytes value..."
   sysctl -w vm.min_free_kbytes=${old_sysctl_vm_value}
+fi
+
+# Ensure fuelclient can authenticate
+output=$(fuel token 2>&1)
+if echo "$output" | grep -q "Unauthorized"; then
+  message="Fuel CLI credentials are invalid. Update /etc/fuel/astute.yaml \
+FUEL_ACCESS/password and ~/.config/fuel/fuel_client.yaml in order to \
+proceed with deployment."
+  echo $fuelclient_fail_message
+  fail
 fi
 
 # apply puppet
