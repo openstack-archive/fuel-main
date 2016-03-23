@@ -85,12 +85,8 @@ $(ISOROOT)/ks.yaml:
 	cp $(KSYAML) $@
 
 $(ISOROOT)/isolinux/isolinux.cfg: $(SOURCE_DIR)/iso/isolinux/isolinux.cfg ; $(ACTION.COPY)
-$(ISOROOT)/isolinux/splash.jpg: $(call depv,FEATURE_GROUPS)
-ifeq ($(filter mirantis,$(FEATURE_GROUPS)),mirantis)
+$(ISOROOT)/isolinux/splash.jpg:
 $(ISOROOT)/isolinux/splash.jpg: $(SOURCE_DIR)/iso/isolinux/splash.jpg ; $(ACTION.COPY)
-else
-$(ISOROOT)/isolinux/splash.jpg: $(SOURCE_DIR)/iso/isolinux/splash_community.jpg ; $(ACTION.COPY)
-endif
 $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(ISOROOT)/ks.yaml
 	python $(SOURCE_DIR)/iso/ks.py \
 		-t $(SOURCE_DIR)/iso/ks.template \
@@ -119,13 +115,8 @@ $(BUILD_DIR)/iso/isoroot.done: \
 # For example, \x20 is a white space (" ").
 # This is the limitation of kickstart boot options.
 
-ifeq ($(filter mirantis,$(FEATURE_GROUPS)),mirantis)
-ISO_VOLUME_ID:=Mirantis_Fuel
-ISO_VOLUME_PREP:="Mirantis Inc."
-else
 ISO_VOLUME_ID:=OpenStack_Fuel
 ISO_VOLUME_PREP:="Fuel team"
-endif
 
 # keep in mind that mkisofs touches some files inside directory
 # from which it builds iso image
