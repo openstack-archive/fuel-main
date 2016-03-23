@@ -13,6 +13,10 @@ LOGFILE=${LOGFILE:-/var/log/puppet/bootstrap_admin_node.log}
 exec > >(tee -i "${LOGFILE}")
 exec 2>&1
 
+# LP#1535419: Hide too verbose kernel messages to prevent tty being
+# filled with spam.
+sysctl -w kernel.printk='4 1 1 7'
+
 VBOX_BLACKLIST_MODULES="i2c_piix4 intel_rapl"
 
 # The following packages need to be installed prior to installing any other ones
