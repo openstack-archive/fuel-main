@@ -75,8 +75,8 @@ For more information please visit \
 https://docs.mirantis.com/openstack/fuel/fuel-master/"
 bs_progress_message="There is no active bootstrap. Bootstrap image building \
 is in progress. Usually it takes 15-20 minutes. It depends on your internet \
-connection and hardware performance. Please reboot failed to discover nodes \
-after bootstrap image become available."
+connection and hardware performance. After bootstrap image becomes available, \
+please reboot any nodes that failed to be discovered."
 bs_done_message="Default bootstrap image building done. Now you can boot new \
 nodes over PXE, they will be discovered and become available for installing \
 OpenStack on them"
