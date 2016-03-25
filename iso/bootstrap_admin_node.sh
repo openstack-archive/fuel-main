@@ -306,9 +306,6 @@ on master node and change default repository settings:
 * CentOS: fuel-mirror (see --help for options)
 * Ubuntu: fuel-mirror (see --help for options)
 
-Please refer to the following guide for more information:
-https://docs.mirantis.com/openstack/fuel/fuel-7.0/reference-architecture.html#fuel-rep-mirror
-
 EOF
 
 # Generete Fuel UUID
