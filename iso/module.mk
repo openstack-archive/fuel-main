@@ -143,7 +143,7 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 	sudo umount -l $(BUILD_DIR)/iso/efi_tmp/efi_image || true
 	sudo mount $(BUILD_DIR)/iso/efi_tmp/efiboot.img $(BUILD_DIR)/iso/efi_tmp/efi_image
 
-	# This needs to be edited in place due to some strange implemntations of UEFI
+	# This needs to be edited in place due to some strange implementations of UEFI
 	# For example, Tianocore OVMF will not use efiboot.img. Instead, it looks for
 	# bootloader and it conffiles in /EFI/BOOT/* on main ISO partition (with ISO9660 fs)
 	echo > $(BUILD_DIR)/iso/isoroot-mkisofs/EFI/BOOT/BOOTX64.conf

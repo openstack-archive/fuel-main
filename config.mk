@@ -220,7 +220,7 @@ SANDBOX_COPY_CERTS?=0
 # Please don’t change them if you don’t know what they do ##
 
 # Work-around for: LP1482667
-# If not empty, will try to download prepeared upstream puppet modules source,
+# If not empty, will try to download prepared upstream puppet modules source,
 # which used like requirements for build fuel-library package.
 # List of modules, which SHOULD be passed via this file can be found:
 # https://github.com/openstack/fuel-library/blob/master/deployment/Puppetfile
