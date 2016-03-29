@@ -314,7 +314,7 @@ https://docs.mirantis.com/openstack/fuel/fuel-7.0/reference-architecture.html#fu
 
 EOF
 
-# Generete Fuel UUID
+# Generate Fuel UUID
 [ ! -f "/etc/fuel/fuel-uuid" ] && uuidgen > /etc/fuel/fuel-uuid || :
 
 # Prepare custom /etc/issue logon banner and script for changing IP in it
