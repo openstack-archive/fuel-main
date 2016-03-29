@@ -34,6 +34,7 @@ plugins=1
 pluginpath=$(BUILD_DIR)/mirror/centos/etc/yum-plugins
 pluginconfpath=$(BUILD_DIR)/mirror/centos/etc/yum/pluginconf.d
 reposdir=$(BUILD_DIR)/mirror/centos/etc/yum.repos.d
+sslverify=False
 endef
 
 define yum_repo_official
