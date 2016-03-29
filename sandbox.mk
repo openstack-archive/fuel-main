@@ -122,7 +122,7 @@ $(yum_epel_repo)
 $(yum_local_repo)
 $(yum_local_mos_repo)
 EOF
-echo $(SANDBOX_PACKAGES) | xargs -n1 sudo chroot $(SANDBOX) yum -y --nogpgcheck install
+echo $(SANDBOX_PACKAGES) | xargs -n1 | xargs -I_package sudo sh -c 'rm -vf $(SANDBOX)/etc/yum.repos.d/Cent*; chroot $(SANDBOX) yum -y --nogpgcheck install _package'
 # clean all repos except the MOS + upsream + our epel
 sudo rm -vf $(SANDBOX)/etc/yum.repos.d/epel*
 sudo rm -vf $(SANDBOX)/etc/yum.repos.d/Cent*
