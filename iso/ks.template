@@ -173,9 +173,9 @@ if [ "$format_confirmed" != "yes" ] ; then
   chvt 1
 fi
 
-# verify tgtdrive is at least 45GB
+# verify tgtdrive is at least 50GB
 tgtdrivesize=$(( $(cat "/sys/class/block/${tgtdrive}/size") / 2 / 1024 ))
-if [ $tgtdrivesize -lt 46080 ]; then
+if [ $tgtdrivesize -lt 51200 ]; then
     exec < /dev/tty3 > /dev/tty3 2>&1
     chvt 3
     clear
@@ -183,7 +183,7 @@ if [ $tgtdrivesize -lt 46080 ]; then
     echo '********************************************************************'
     echo '*                            E R R O R                             *'
     echo '*                                                                  *'
-    echo '*  Your disk is under 45GB in size. Installation cannot continue.  *'
+    echo '*  Your disk is under 50GB in size. Installation cannot continue.  *'
     echo '*             Restart installation with a larger disk.             *'
     echo '*                                                                  *'
     echo '********************************************************************'
