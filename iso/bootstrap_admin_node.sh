@@ -321,32 +321,6 @@ EOF
 # Generate Fuel UUID
 [ ! -f "/etc/fuel/fuel-uuid" ] && uuidgen > /etc/fuel/fuel-uuid || :
 
-# Prepare custom /etc/issue logon banner and script for changing IP in it
-# We can have several interface naming schemes applied and several interface
-# UI will listen on
-ipstr=""
-NL=$'\n'
-for ip in `ip -o -4 a | grep -e "e[nt][hopsx].*" | awk '{print \$4 }' | cut -d/ -f1`; do
-  ipstr="${ipstr}https://${ip}:8443${NL}"
-done
-cat > /etc/issue <<EOF
-#########################################
-#       Welcome to the Fuel server      #
-#########################################
-Server is running on \m platform
-
-Fuel UI is available on:
-$ipstr
-Default administrator login:    root
-Default administrator password: r00tme
-
-Default Fuel UI login: admin
-Default Fuel UI password: admin
-
-Please change root password on first login.
-
-EOF
-
 echo "tos orphan 7" >> /etc/ntp.conf && systemctl restart ntpd
 
 # Disabling splash
@@ -401,7 +375,6 @@ systemctl start sshd
 systemctl enable iptables.service
 systemctl start iptables.service
 
-
 if [ "$wait_for_external_config" == "yes" ]; then
   wait_timeout=3000
   pidfile=/var/lock/wait_for_external_config
@@ -423,6 +396,31 @@ $wait_timeout"
   rm -f $pidfile
 fi
 
+# Prepare custom /etc/issue logon banner and script for changing IP in it
+# We can have several interface naming schemes applied and several interface
+# UI will listen on
+ipstr=""
+NL=$'\n'
+for ip in `ip -o -4 addr show | awk '/e[nt][hopsx]/ { split($4, arr, /\//); print arr[1] }'`; do
+  ipstr="${ipstr}https://${ip}:8443${NL}"
+done
+cat > /etc/issue <<EOF
+#########################################
+#       Welcome to the Fuel server      #
+#########################################
+Server is running on \m platform
+
+Fuel UI is available on:
+$ipstr
+Default administrator login:    root
+Default administrator password: r00tme
+
+Default Fuel UI login: admin
+Default Fuel UI password: admin
+
+Please change root password on first login.
+
+EOF
 
 #Reread /etc/sysconfig/network to inform puppet of changes
 . /etc/sysconfig/network
