@@ -228,10 +228,12 @@ setenforce 0
 sed -i s/SELINUX=enforcing/SELINUX=permissive/g /etc/selinux/config || :
 
 yum makecache
-echo $BOOTSTRAP_PACKAGES | xargs -n1 yum install -y
+echo $BOOTSTRAP_PACKAGES | xargs -n1 yum info
+yum -y install $BOOTSTRAP_PACKAGES
 # /etc/fuel_release is provided by 'fuel-release' package
 FUEL_RELEASE=$(cat /etc/fuel_release)
-echo $FUEL_PACKAGES | xargs -n1 yum install -y
+echo $FUEL_PACKAGES | xargs -n1 yum info
+yum -y install $FUEL_PACKAGES
 # /etc/fuel_openstack_version is provided by 'fuel-openstack-metadata' package
 OPENSTACK_VERSION=$(cat /etc/fuel_openstack_version)
 
