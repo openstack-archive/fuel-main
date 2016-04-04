@@ -20,7 +20,9 @@ sysctl -w kernel.printk='4 1 1 7'
 VBOX_BLACKLIST_MODULES="i2c_piix4 intel_rapl"
 
 # The following packages need to be installed prior to installing any other ones
-BOOTSTRAP_PACKAGES="fuel-release yum-plugin-priorities yum-utils"
+# fuel-release package should be installed at the end of all bootstrap packages
+# since it introduces online mirrors which might be unavailable in isolated envs
+BOOTSTRAP_PACKAGES="yum-plugin-priorities yum-utils fuel-release"
 
 FUEL_PACKAGES=" \
 authconfig \
@@ -231,6 +233,10 @@ yum makecache
 echo $BOOTSTRAP_PACKAGES | xargs -n1 yum install -y
 # /etc/fuel_release is provided by 'fuel-release' package
 FUEL_RELEASE=$(cat /etc/fuel_release)
+
+# Disable online base MOS repo if we run an ISO installation
+[ -f /etc/fuel_build_id ] && yum-config-manager --disable mos${FUEL_RELEASE}* --save
+
 echo $FUEL_PACKAGES | xargs -n1 yum install -y
 # /etc/fuel_openstack_version is provided by 'fuel-openstack-metadata' package
 OPENSTACK_VERSION=$(cat /etc/fuel_openstack_version)
@@ -242,9 +248,6 @@ OPENSTACK_VERSION=$(cat /etc/fuel_openstack_version)
 mkdir -p ${wwwdir}/${OPENSTACK_VERSION}/ubuntu/x86_64/images/
 touch ${wwwdir}/${OPENSTACK_VERSION}/ubuntu/x86_64/images/linux
 touch ${wwwdir}/${OPENSTACK_VERSION}/ubuntu/x86_64/images/initrd.gz
-
-# Disable online base MOS repo if we run an ISO installation
-[ -f /etc/fuel_build_id ] && yum-config-manager --disable mos${FUEL_RELEASE}-base --save
 
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 
@@ -389,6 +392,9 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
     esac
   fi
 fi
+
+# Enable online base MOS repos (security, updates) if we run an ISO installation
+[ -f /etc/fuel_build_id ] && yum-config-manager --enable mos${FUEL_RELEASE}-security mos${FUEL_RELEASE}-updates --save
 
 if [ ! -f "${ASTUTE_YAML}" ]; then
   echo ${fuelmenu_fail_message}
