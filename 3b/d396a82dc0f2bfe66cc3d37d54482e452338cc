@@ -1,0 +1,11 @@
+Code-Review+1: Bartosz Kupidura <bkupidura@mirantis.com>
+Code-Review+1: Peter Zhurba <pzhurba@mirantis.com>
+Code-Review+1: Svetlana Karslioglu <skarslioglu@mirantis.com>
+Code-Review+2: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Workflow+1: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 04 Apr 2016 09:00:12 +0000
+Reviewed-on: https://review.openstack.org/297626
+Project: openstack/fuel-main
+Branch: refs/heads/master
