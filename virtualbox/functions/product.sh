@@ -154,12 +154,14 @@ enable_outbound_network_for_product_vm() {
     # Check host nameserver configuration
     echo -n "Checking local DNS configuration... "
     if execute test -f /etc/resolv.conf ; then
-      nameserver="$(execute grep '^nameserver' /etc/resolv.conf | grep -v 'nameserver\s\s*127.' | head -3)"
+      # we should exclude loopback and IPv6 addresses from the nameservers list
+      nameserver="$(execute grep '^nameserver' /etc/resolv.conf | egrep -v 'nameserver\s*(127\.|.*:)' | head -3)"
     fi
     if [ -z "$nameserver" ] && execute test -x /usr/bin/nmcli; then
       # Get DNS from network manager
       if [ -n "`execute LANG=C nmcli nm | grep \"running\s\+connected\"`" ]; then
-        nameserver="$(execute nmcli dev list | grep 'IP[46].DNS' | sed -e 's/IP[46]\.DNS\[[0-9]\+\]:\s\+/nameserver /'| grep -v 'nameserver\s\s*127.' | head -3)"
+        # we should exclude loopback and IPv6 addresses from the nameservers list
+        nameserver="$(execute nmcli dev list | grep 'IP[46].DNS' | sed -e 's/IP[46]\.DNS\[[0-9]\+\]:\s\+/nameserver /'| egrep -v 'nameserver\s*(127\.|.*:)' | head -3)"
       fi
     fi
     if [ -z "$nameserver" ]; then
