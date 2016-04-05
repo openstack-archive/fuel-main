@@ -211,12 +211,12 @@ endif
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
 YUM_REPOS?=official fuel subscr_manager
-MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+MIRROR_CENTOS?=http://vault.centos.org/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
 MIRROR_UBUNTU_METHOD?=http
-MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
+MIRROR_UBUNTU?=mirror.seed-cz1.fuel-infra.org
 MIRROR_UBUNTU_ROOT?=/pkgs/ubuntu/
 MIRROR_UBUNTU_SUITE?=$(UBUNTU_RELEASE)
 MIRROR_UBUNTU_SECTION?=main universe multiverse restricted
