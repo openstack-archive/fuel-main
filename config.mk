@@ -214,11 +214,11 @@ endif
 
 YUM_DOWNLOAD_SRC?=
 
-MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+MIRROR_CENTOS?=http://vault.centos.org/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=http://vault.centos.org/6.6/
 MIRROR_CENTOS_OS_BASEURL:=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 MIRROR_CENTOS_KERNEL_BASEURL?=$(MIRROR_CENTOS_KERNEL)/os/$(CENTOS_ARCH)
-MIRROR_UBUNTU?=http://mirrors-local-msk.msk.mirantis.net/ubuntu-$(PRODUCT_VERSION)/
+MIRROR_UBUNTU?=http://archive.ubuntu.com/ubuntu/
 MIRROR_UBUNTU_OS_BASEURL:=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 MIRROR_DOCKER_BASEURL:=$(MIRROR_DOCKER)
