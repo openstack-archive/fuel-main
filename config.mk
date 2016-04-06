@@ -64,19 +64,19 @@ DENY_RPM_DOWNGRADE?=1
 NO_UI_OPTIMIZE:=0
 
 # Repos and versions
-FUELLIB_COMMIT?=master
-NAILGUN_COMMIT?=master
-PYTHON_FUELCLIENT_COMMIT?=master
-FUEL_AGENT_COMMIT?=master
-FUEL_NAILGUN_AGENT_COMMIT?=master
-ASTUTE_COMMIT?=master
-OSTF_COMMIT?=master
-FUEL_MIRROR_COMMIT?=master
-FUELMENU_COMMIT?=master
-SHOTGUN_COMMIT?=master
-NETWORKCHECKER_COMMIT?=master
-FUELUPGRADE_COMMIT?=master
-FUEL_UI?=master
+FUELLIB_COMMIT?=stable/mitaka
+NAILGUN_COMMIT?=stable/mitaka
+PYTHON_FUELCLIENT_COMMIT?=stable/mitaka
+FUEL_AGENT_COMMIT?=stable/mitaka
+FUEL_NAILGUN_AGENT_COMMIT?=stable/mitaka
+ASTUTE_COMMIT?=stable/mitaka
+OSTF_COMMIT?=stable/mitaka
+FUEL_MIRROR_COMMIT?=stable/mitaka
+FUELMENU_COMMIT?=stable/mitaka
+SHOTGUN_COMMIT?=stable/mitaka
+NETWORKCHECKER_COMMIT?=stable/mitaka
+FUELUPGRADE_COMMIT?=stable/mitaka
+FUEL_UI?=stable/mitaka
 
 FUELLIB_REPO?=https://github.com/openstack/fuel-library.git
 NAILGUN_REPO?=https://github.com/openstack/fuel-web.git
