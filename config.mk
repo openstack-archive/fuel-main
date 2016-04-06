@@ -76,7 +76,7 @@ FUELMENU_COMMIT?=stable/mitaka
 SHOTGUN_COMMIT?=stable/mitaka
 NETWORKCHECKER_COMMIT?=stable/mitaka
 FUELUPGRADE_COMMIT?=stable/mitaka
-FUEL_UI?=stable/mitaka
+FUEL_UI_COMMIT?=stable/mitaka
 
 FUELLIB_REPO?=https://github.com/openstack/fuel-library.git
 NAILGUN_REPO?=https://github.com/openstack/fuel-web.git
