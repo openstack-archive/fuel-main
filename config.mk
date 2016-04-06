@@ -76,7 +76,7 @@ FUELMENU_COMMIT?=master
 SHOTGUN_COMMIT?=master
 NETWORKCHECKER_COMMIT?=master
 FUELUPGRADE_COMMIT?=master
-FUEL_UI?=master
+FUEL_UI_COMMIT?=master
 
 FUELLIB_REPO?=https://github.com/openstack/fuel-library.git
 NAILGUN_REPO?=https://github.com/openstack/fuel-web.git
