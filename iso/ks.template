@@ -510,3 +510,24 @@ if [[ ! -z $adminif ]]; then
     /mnt/sysimage/etc/sysconfig/network-scripts/ifcfg-${adminif}
 fi
 %end
+
+
+%post --log=/root/anaconda-post-configure-wget.log
+#!/bin/bash
+set -x
+
+# Make robust configuration for wget
+cat >> /root/.wgetrc << 'EOF'
+# Default is 900 which is too long
+timeout = 60
+# Default is 10 - we don't need to wait so long
+waitretry = 2
+# Instead of defatult 20
+tries = 5
+# 64k per dot, instead of 1k. Mega means smaller logs and less dot spam
+dot_style = mega
+# without this, no retries are attempted if refused HTTP request
+retry_connrefused = on
+EOF
+%end
+
