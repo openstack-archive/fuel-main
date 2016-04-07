@@ -331,6 +331,20 @@ sed -i --follow-symlinks -e '/^\slinux16/ s/rhgb/debug/' /boot/grub2/grub.cfg
 # Copying default bash settings to the root directory
 cp -f /etc/skel/.bash* /root/
 
+# Make robust configuration for wget
+cat >> /root/.wgetrc << EOF
+# Default is 900 which is too long
+timeout = 60
+# Default is 10 - we don't need to wait so long
+waitretry = 2
+# Instead of defatult 20
+tries = 5
+# 64k per dot, instead of 1k. Mega means smaller logs and less dot spam
+dot_style = mega
+# without this, no retries are attempted if refused HTTP request
+retry_connrefused = on
+EOF
+
 # Blacklist and try to unload kernel modules that create errors on VirtualBox
 if (virt-what | fgrep -q "virtualbox") ; then
   for module in $VBOX_BLACKLIST_MODULES; do
