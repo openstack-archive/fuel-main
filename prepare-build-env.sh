@@ -54,4 +54,4 @@ Defaults	env_keep += "http_proxy https_proxy no_proxy"
 ${USER} ALL=(ALL) NOPASSWD:ALL
 EOF
 
-echo "Dependency check completed, please reboot system and proceed with 'make iso' command"
+echo "Dependency check completed and proceed with 'make iso' command"
