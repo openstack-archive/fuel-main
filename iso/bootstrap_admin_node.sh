@@ -341,36 +341,11 @@ fi
 
 fuelmenu --save-only --iface=$ADMIN_INTERFACE
 set +x
-echo "Done!"
-
-if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
-  fuelmenu
-  else
-  #Give user 15 seconds to enter fuelmenu or else continue
-  echo
-  echo -n "Press a key to enter Fuel Setup (or press ESC to skip)...   15"
-  countdown 15 & pid=$!
-  if ! read -s -n 1 -t 15 key; then
-    echo -e "\nSkipping Fuel Setup..."
-  else
-    { kill "$pid"; wait $!; } 2>/dev/null
-    case "$key" in
-      $'\e')  echo "Skipping Fuel Setup.."
-              ;;
-      *)      echo -e "\nEntering Fuel Setup..."
-              fuelmenu
-              ;;
-    esac
-  fi
-fi
-
-# Enable online base MOS repos (security, updates) if we run an ISO installation
-[ -f /etc/fuel_build_id ] && \
-  yum-config-manager --enable mos${FUEL_RELEASE}-security mos${FUEL_RELEASE}-updates --save
-
 if [ ! -f "${ASTUTE_YAML}" ]; then
   echo ${fuelmenu_fail_message}
   fail
+else
+  echo "Done!"
 fi
 
 # Enable sshd
@@ -401,6 +376,31 @@ $wait_timeout"
   { kill $countdown_pid $wait_pid & wait $!; }
   rm -f $pidfile
 fi
+
+if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
+  fuelmenu || fail
+  else
+  #Give user 15 seconds to enter fuelmenu or else continue
+  echo
+  echo -n "Press a key to enter Fuel Setup (or press ESC to skip)...   15"
+  countdown 15 & pid=$!
+  if ! read -s -n 1 -t 15 key; then
+    echo -e "\nSkipping Fuel Setup..."
+  else
+    { kill "$pid"; wait $!; } 2>/dev/null
+    case "$key" in
+      $'\e')  echo "Skipping Fuel Setup.."
+              ;;
+      *)      echo -e "\nEntering Fuel Setup..."
+              fuelmenu || fail
+              ;;
+    esac
+  fi
+fi
+
+# Enable online base MOS repos (security, updates) if we run an ISO installation
+[ -f /etc/fuel_build_id ] && \
+  yum-config-manager --enable mos${FUEL_RELEASE}-security mos${FUEL_RELEASE}-updates --save
 
 # Prepare custom /etc/issue logon banner and script for changing IP in it
 # We can have several interface naming schemes applied and several interface
