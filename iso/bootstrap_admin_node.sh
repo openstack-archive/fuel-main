@@ -344,9 +344,9 @@ set +x
 echo "Done!"
 
 if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
-  fuelmenu
-  else
-  #Give user 15 seconds to enter fuelmenu or else continue
+  fuelmenu || fail
+else
+  # Give user 15 seconds to enter fuelmenu or else continue
   echo
   echo -n "Press a key to enter Fuel Setup (or press ESC to skip)...   15"
   countdown 15 & pid=$!
@@ -358,7 +358,7 @@ if [[ "$showmenu" == "yes" || "$showmenu" == "YES" ]]; then
       $'\e')  echo "Skipping Fuel Setup.."
               ;;
       *)      echo -e "\nEntering Fuel Setup..."
-              fuelmenu
+              fuelmenu || fail
               ;;
     esac
   fi
