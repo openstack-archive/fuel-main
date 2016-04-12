@@ -42,6 +42,16 @@ gpgcheck=0
 priority=3
 endef
 
+ifdef EXTRA_RPM_BUILDDEP_REPO
+define yum_extra_build_repo
+[extra_build]
+name=Extra Build
+baseurl=$(EXTRA_RPM_BUILDDEP_REPO)
+gpgcheck=0
+priority=2
+endef
+endif
+
 define sandbox_yum_conf
 [main]
 cachedir=/tmp/cache
@@ -121,6 +131,7 @@ $(yum_upstream_repo)
 $(yum_epel_repo)
 $(yum_local_repo)
 $(yum_local_mos_repo)
+$(yum_extra_build_repo)
 EOF
 echo $(SANDBOX_PACKAGES) | xargs -n1 | xargs -I_package sudo sh -c 'rm -vf $(SANDBOX)/etc/yum.repos.d/Cent*; chroot $(SANDBOX) yum -y --nogpgcheck install _package'
 # clean all repos except the MOS + upsream + our epel
@@ -247,9 +258,11 @@ show-centos-sandbox-repos: export yum_upstream_repo_content:=$(yum_upstream_repo
 show-centos-sandbox-repos: export yum_epel_repo_content:=$(yum_epel_repo)
 show-centos-sandbox-repos: export yum_local_repo_content:=$(yum_local_repo)
 show-centos-sandbox-repos: export yum_local_mos_repo_content:=$(yum_local_mos_repo)
+show-centos-sandbox-repos: export yum_extra_build_repo_content:=$(yum_extra_build_repo)
 show-centos-sandbox-repos:
 	/bin/echo -e "$${sandbox_yum_conf_content}\n"
 	/bin/echo -e "$${yum_upstream_repo_content}\n"
 	/bin/echo -e "$${yum_epel_repo_content}\n"
 	/bin/echo -e "$${yum_local_repo_content}\n"
 	/bin/echo -e "$${yum_local_mos_repo_content}\n"
+	/bin/echo -e "$${yum_extra_build_repo_content}\n"
