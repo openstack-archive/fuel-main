@@ -75,14 +75,16 @@ Please build and activate bootstrap manually with CLI command \
 While you don't activate any bootstrap - new nodes cannot be discovered \
 and added to cluster. \
 For more information please visit \
-https://docs.mirantis.com/openstack/fuel/fuel-master/"
+http://docs.openstack.org/developer/fuel-docs/userdocs/fuel-install-guide/bootstrap/\
+bootstrap_troubleshoot.html"
 bs_error_message="WARNING: Failed to build the bootstrap image, see $bs_build_log \
 for details. Perhaps your Internet connection is broken. Please fix the \
 problem and run \`fuel-bootstrap build --activate\`. \
 While you don\'t activate any bootstrap - new nodes cannot be discovered \
 and added to cluster. \
 For more information please visit \
-https://docs.mirantis.com/openstack/fuel/fuel-master/"
+http://docs.openstack.org/developer/fuel-docs/userdocs/fuel-install-guide/bootstrap/\
+bootstrap_troubleshoot.html"
 bs_progress_message="There is no active bootstrap. Bootstrap image building \
 is in progress. Usually it takes 15-20 minutes. It depends on your internet \
 connection and hardware performance. After bootstrap image becomes available, \
@@ -94,16 +96,13 @@ bs_centos_message="WARNING: Deprecated Centos bootstrap has been chosen \
 and activated. Now you can boot new nodes over PXE, they will be discovered \
 and become available for installing OpenStack on them."
 # Update issues messages
-update_warn_message="There is an issue connecting to the Fuel update repository. \
+update_warn_message="There is an issue connecting to update repository of \
+your distributions of OpenStack. \
 Please fix your connection prior to applying any updates. \
 Once the connection is fixed, we recommend reviewing and applying \
-Maintenance Updates for this release of Mirantis OpenStack: \
-https://docs.mirantis.com/openstack/fuel/fuel-${FUEL_RELEASE}/\
-release-notes.html#maintenance-updates"
-update_done_message="We recommend reviewing and applying Maintenance Updates \
-for this release of Mirantis OpenStack: \
-https://docs.mirantis.com/openstack/fuel/fuel-${FUEL_RELEASE}/\
-release-notes.html#maintenance-updates"
+maintenance updates for your distribution of OpenStack."
+update_done_message="We recommend reviewing and applying maintenance updates \
+for your distribution of OpenStack."
 fuelmenu_fail_message="Fuelmenu was not able to generate '/etc/fuel/astute.yaml' file! \
 Please, restart it manualy using 'fuelmenu' command."
 fuelclient_fail_message="Fuel CLI credentials are invalid. Update \
