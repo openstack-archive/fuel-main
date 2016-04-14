@@ -39,7 +39,6 @@ $(BUILD_DIR)/packages/sources/$1/$2:
 	echo DEBFULLNAME=`git -C $3 log -1 --pretty=format:%an` >> $$(VERSIONFILE)
 	echo DEBEMAIL=`git -C $3 log -1 --pretty=format:%ae` >> $$(VERSIONFILE)
 	echo DEBMSG=`git -C $3 rev-parse --short HEAD` `git -C $3 log -1 --pretty=%s` >> $$(VERSIONFILE)
-	if [ "$1" = "fuel-library$(FUEL_LIBRARY_VERSION)" ]; then cd $(BUILD_DIR)/packages/sources/$1 && tar -rf $1.tar upstream_modules.tar.gz; fi
 	cd $(BUILD_DIR)/packages/sources/$1 && tar -rf $1.tar version
 	cd $(BUILD_DIR)/packages/sources/$1 && gzip -9 $1.tar && mv $1.tar.gz $2
 endef
