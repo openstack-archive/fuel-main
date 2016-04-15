@@ -92,9 +92,6 @@ reboot nodes that failed to be discovered."
 bs_done_message="Default bootstrap image building done. Now you can boot new \
 nodes over PXE, they will be discovered and become available for installing \
 OpenStack on them"
-bs_centos_message="WARNING: Deprecated Centos bootstrap has been chosen \
-and activated. Now you can boot new nodes over PXE, they will be discovered \
-and become available for installing OpenStack on them."
 # Update issues messages
 update_warn_message="There is an issue connecting to update repository of \
 your distributions of OpenStack. \
@@ -451,7 +448,7 @@ get_bootstrap_flavor () {
 	from yaml import safe_load
 	with open("$ASTUTE_YAML", 'r') as f:
 	    conf = safe_load(f).get('BOOTSTRAP', {})
-	print(conf.get('flavor', 'centos').lower())
+	print(conf.get('flavor', 'ubuntu').lower())
 	EOF
 }
 
@@ -527,16 +524,11 @@ systemctl start ntpd
 
 bash /etc/rc.local
 
-if [ "`get_bootstrap_flavor`" = "ubuntu" ]; then
-  if [ "`get_bootstrap_skip`" = "False" ]; then
-    build_ubuntu_bootstrap bs_status || true
-  else
-    fuel notify --topic "warning" --send "${bs_skip_message}"
-    bs_status=2
-  fi
+if [ "`get_bootstrap_skip`" = "False" ]; then
+  build_ubuntu_bootstrap bs_status || true
 else
-  fuel notify --topic "warning" --send "${bs_centos_message}"
-  bs_status=3
+  fuel notify --topic "warning" --send "${bs_skip_message}"
+  bs_status=2
 fi
 
 #Check if repo is accessible
@@ -569,10 +561,6 @@ case ${bs_status} in
   ;;
   2)
   echo -e "${bs_skip_message}"
-  echo "*************************************************"
-  ;;
-  3)
-  echo -e "${bs_centos_message}"
   echo "*************************************************"
   ;;
 esac
