@@ -1,0 +1,9 @@
+[fuel-base]
+name=Fuel Base
+baseurl=http://packages.fuel-infra.org/repositories/centos/master-centos$releasever/os/x86_64/
+enabled=1
+gpgcheck=0
+gpgkey=file:///etc/pki/fuel-gpg/RPM-GPG-KEY-mos
+skip_if_unavailable=1
+priority=20
+exclude=fuel-release
