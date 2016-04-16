@@ -1,8 +1,7 @@
-[mos$fuelver-base]
-name=mos$fuelver-base
-#baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos$fuelver-centos$releasever/os/x86_64/
-mirrorlist=http://mirror.fuel-infra.org/mos-repos/centos/mos$fuelver-centos$releasever/mos-mirrors-os.txt
+[mos-base]
+name=MOS Base
+baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos-master-centos$releasever/os/x86_64/
 enabled=1
-gpgcheck=1
+gpgcheck=0
 gpgkey=file:///etc/pki/fuel-gpg/RPM-GPG-KEY-mos
 skip_if_unavailable=1

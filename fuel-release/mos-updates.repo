@@ -1,8 +1,7 @@
-[mos$fuelver-updates]
-name=mos$fuelver-updates
-#baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos$fuelver-centos$releasever/updates/x86_64/
-mirrorlist=http://mirror.fuel-infra.org/mos-repos/centos/mos$fuelver-centos$releasever/mos-mirrors-updates.txt
-enabled=1
+[mos-updates]
+name=MOS Updates
+baseurl=http://mirror.fuel-infra.org/mos-repos/centos/mos-master-centos$releasever/updates/x86_64/
+enabled=0
 gpgcheck=1
 gpgkey=file:///etc/pki/fuel-gpg/RPM-GPG-KEY-mos
 skip_if_unavailable=1
