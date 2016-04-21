@@ -93,7 +93,8 @@ fuelmenu \
 nailgun-agent \
 network-checker \
 python-fuelclient \
-shotgun
+shotgun \
+tuning-box
 
 $(eval $(foreach pkg,$(packages_list),$(call build_rpm,$(pkg))$(NEWLINE)))
 

@@ -54,6 +54,7 @@ sysstat \
 system-config-firewall-base \
 tcpdump \
 telnet \
+tuning-box \
 vim \
 virt-what \
 wget \

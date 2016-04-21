@@ -42,6 +42,7 @@ $(eval $(call build_repo,shotgun,$(SHOTGUN_REPO),$(SHOTGUN_COMMIT),$(SHOTGUN_GER
 $(eval $(call build_repo,network-checker,$(NETWORKCHECKER_REPO),$(NETWORKCHECKER_COMMIT),$(NETWORKCHECKER_GERRIT_URL),$(NETWORKCHECKER_GERRIT_COMMIT)))
 $(eval $(call build_repo,fuel-upgrade,$(FUELUPGRADE_REPO),$(FUELUPGRADE_COMMIT),$(FUELUPGRADE_GERRIT_URL),$(FUELUPGRADE_GERRIT_COMMIT)))
 $(eval $(call build_repo,fuel-ui,$(FUEL_UI_REPO),$(FUEL_UI_COMMIT),$(FUEL_UI_GERRIT_URL),$(FUEL_UI_GERRIT_COMMIT)))
+$(eval $(call build_repo,tuning-box,$(TUNING_BOX_REPO),$(TUNING_BOX_COMMIT),$(TUNING_BOX_GERRIT_URL),$(TUNING_BOX_GERRIT_COMMIT)))
 
 $(BUILD_DIR)/repos/fuel-main.done:
 	ln -s $(SOURCE_DIR) $(BUILD_DIR)/repos/fuel-main

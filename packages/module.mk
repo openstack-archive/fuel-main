@@ -82,6 +82,8 @@ $(eval $(call prepare_git_source,fuel-mirror,fuel-mirror-$(PACKAGE_VERSION).tar.
 $(eval $(call prepare_git_source,fuelmenu,fuelmenu-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuelmenu,HEAD,$(FUELMENU_GERRIT_COMMIT)))
 #FUEL-UI PKGS
 $(eval $(call prepare_git_source,fuel-ui,fuel-ui-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-ui,HEAD,$(FUEL_UI_GERRIT_COMMIT)))
+#TUNING-BOX PKGS
+$(eval $(call prepare_git_source,tuning-box,tuning-box-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/tuning-box,HEAD,$(TUNING_BOX_GERRIT_COMMIT)))
 #SHOTGUN PKGS
 $(eval $(call prepare_git_source,shotgun,shotgun-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/shotgun,HEAD,$(SHOTGUN_GERRIT_COMMIT)))
 #NETWORK-CHECKER PKGS
