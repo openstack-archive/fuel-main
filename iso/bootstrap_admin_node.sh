@@ -237,13 +237,6 @@ echo $FUEL_PACKAGES | xargs -n1 yum install -y
 # /etc/fuel_openstack_version is provided by 'fuel-openstack-metadata' package
 OPENSTACK_VERSION=$(cat /etc/fuel_openstack_version)
 
-# We do not ship debian-installer kernel and initrd on ISO.
-# But we still need to be able to create ubuntu cobbler distro
-# which requires kernel and initrd to be available. So, we
-# just touch these files to work around cobbler's limitation.
-mkdir -p ${wwwdir}/${OPENSTACK_VERSION}/ubuntu/x86_64/images/
-touch ${wwwdir}/${OPENSTACK_VERSION}/ubuntu/x86_64/images/linux
-touch ${wwwdir}/${OPENSTACK_VERSION}/ubuntu/x86_64/images/initrd.gz
 
 touch /var/lib/hiera/common.yaml /etc/puppet/hiera.yaml
 

@@ -18,7 +18,6 @@ Prefix: %{_prefix}
 BuildArch: noarch
 Requires: fuel-library10.0
 Requires: fuelmenu >= %{version}
-Requires: fuel-provisioning-scripts >= %{version}
 Requires: fuel-release >= %{version}
 Requires: network-checker >= %{version}
 Requires: python-fuelclient >= %{version}
