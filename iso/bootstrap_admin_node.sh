@@ -363,9 +363,12 @@ if [ ! -f "${ASTUTE_YAML}" ]; then
 fi
 
 # Replace local repository for building bootstrap with online one
+# and create symlink for backward compatibility
 # if we run deployment on a pre-provisioned server
-[ ! -f /etc/fuel_build_id ] && \
+if [ ! -f /etc/fuel_build_id ]; then
   sed -i "s|127.0.0.1:8080/ubuntu/x86_64|mirror.fuel-infra.org/mos-repos/ubuntu/${FUEL_RELEASE}|g" "${ASTUTE_YAML}"
+  ln -s ${wwwdir}/${OPENSTACK_VERSION}/ubuntu ${wwwdir}/ubuntu
+fi
 
 # Enable sshd
 systemctl enable sshd
