@@ -231,11 +231,11 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 
 	# Installing kernel modules
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
-		( cd $(INITRAMROOT); sudo cpio -idm './lib/modules/*' './boot/vmlinuz*' )
+		( cd $(INITRAMROOT); sudo cpio --extract-over-symlinks -idm './lib/modules/*' './boot/vmlinuz*' )
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs rpm2cpio | \
-		( cd $(INITRAMROOT); sudo cpio -idm './lib/firmware/*' )
+		( cd $(INITRAMROOT); sudo cpio --extract-over-symlinks -idm './lib/firmware/*' )
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'libmlx4*' | xargs rpm2cpio | \
-		( cd $(INITRAMROOT); sudo cpio -idm './etc/*' './usr/lib64/*' )
+		( cd $(INITRAMROOT); sudo cpio --extract-over-symlinks -idm './etc/*' './usr/lib64/*' )
 	for version in `ls -1 $(INITRAMROOT)/lib/modules`; do \
 		sudo depmod -b $(INITRAMROOT) $$version; \
 	done
