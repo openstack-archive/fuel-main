@@ -222,6 +222,7 @@ sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p /tmp/user/0)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get update
 if ! mountpoint -q $(SANDBOX_UBUNTU)/proc; then sudo mount -t proc sandboxproc $(SANDBOX_UBUNTU)/proc; fi
 echo "Installing additional packages: $(SANDBOX_DEB_PKGS)"
+sudo chroot $(SANDBOX_UBUNTU) dpkg-reconfigure -fnoninteractive -plow debconf
 sudo chroot $(SANDBOX_UBUNTU) apt-get dist-upgrade --yes
 test -n "$(SANDBOX_DEB_PKGS)" && sudo chroot $(SANDBOX_UBUNTU) env LC_ALL=C DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get install --yes $(SANDBOX_DEB_PKGS)
 echo "SANDBOX_UBUNTU_UP: done"
