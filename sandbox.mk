@@ -219,7 +219,7 @@ sudo chroot $(SANDBOX_UBUNTU) update-ca-certificates
 fi
 echo "Updating apt package database"
 sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p /tmp/user/0)"
-sudo chroot $(SANDBOX_UBUNTU) apt-get update
+sudo chroot $(SANDBOX_UBUNTU) env LC_ALL=C DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get update
 if ! mountpoint -q $(SANDBOX_UBUNTU)/proc; then sudo mount -t proc sandboxproc $(SANDBOX_UBUNTU)/proc; fi
 echo "Installing additional packages: $(SANDBOX_DEB_PKGS)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get dist-upgrade --yes
