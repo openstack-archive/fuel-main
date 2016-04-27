@@ -41,8 +41,6 @@ mkdir -p %{buildroot}/etc/yum/vars/
 mkdir -p %{buildroot}/etc/yum.repos.d
 echo %{fuel_release} > %{buildroot}%{_sysconfdir}/fuel_release
 echo %{fuel_release} > %{buildroot}%{_sysconfdir}/yum/vars/fuelver
-install -D -m 700 -d %{buildroot}/root/.ssh
-install -p -m 600 %{_builddir}/%{name}-%{version}/bootstrap/ssh/id_rsa %{buildroot}/root/.ssh/bootstrap.rsa
 # copy GPG key
 install -D -m 644 %{_builddir}/%{name}-%{version}/fuel-release/RPM-GPG-KEY-mos %{buildroot}/etc/pki/fuel-gpg/RPM-GPG-KEY-mos
 # copy yum repos and mirror lists to /etc/yum.repos.d
