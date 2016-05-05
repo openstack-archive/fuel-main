@@ -12,7 +12,6 @@ fuel-nailgun
 fuel-notify
 fuel-openstack-metadata
 fuel-ostf
-fuel-provisioning-scripts
 fuel-rabbit-fence
 fuel-release
 fuel-umm
