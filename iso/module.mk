@@ -27,11 +27,9 @@ $(ISOROOT)/fuel_build_number:
 	echo "$(BUILD_NUMBER)" > $@
 endif
 
-ifdef BUILD_ID
 $(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/fuel_build_id
 $(ISOROOT)/fuel_build_id:
 	echo "$(BUILD_ID)" > $@
-endif
 
 ###############
 # CENTOS MIRROR
