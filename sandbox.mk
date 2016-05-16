@@ -6,19 +6,19 @@ name=Mirantis mirror
 baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 gpgcheck=0
 enabled=1
-priority=10
+priority=1
 endef
 define yum_upstream_repo
 [upstream]
 name=Upstream mirror
 baseurl=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/os/$(CENTOS_ARCH)/
 gpgcheck=0
-priority=1
+priority=2
 [upstream-updates]
 name=Upstream mirror
 baseurl=$(SANDBOX_MIRROR_CENTOS_UPSTREAM)/updates/$(CENTOS_ARCH)/
 gpgcheck=0
-priority=1
+priority=2
 endef
 define yum_epel_repo
 [epel]
