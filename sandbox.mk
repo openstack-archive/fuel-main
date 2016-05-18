@@ -11,7 +11,7 @@ endef
 
 define yum_local_mos_repo
 [mos-local-mirror]
-name=Mirantis mirror
+name=Local mirror
 baseurl=file:///mirrors/mos-centos
 gpgcheck=0
 enabled=1
