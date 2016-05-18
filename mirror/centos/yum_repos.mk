@@ -104,7 +104,7 @@ endef
 
 define yum_repo_fuel
 [fuel]
-name=Mirantis OpenStack Custom Packages
+name=Fuel Packages
 baseurl=$(MIRROR_FUEL)
 gpgcheck=0
 enabled=1

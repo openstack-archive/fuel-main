@@ -129,39 +129,8 @@ LOCAL_MIRROR_MOS_CENTOS_OS_BASEURL:=$(LOCAL_MIRROR_MOS_CENTOS)
 LOCAL_MIRROR_UBUNTU:=$(LOCAL_MIRROR)/ubuntu
 LOCAL_MIRROR_UBUNTU_OS_BASEURL:=$(LOCAL_MIRROR_UBUNTU)
 
-# Use download.mirantis.com mirror by default. Other possible values are
-# 'msk', 'srt', 'usa', 'hrk', 'cz'
-# Setting any other value or removing of this variable will cause
-# download of all the packages directly from internet
-USE_MIRROR?=ext
-
-ifeq ($(USE_MIRROR),ext)
-MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/os/x86_64/
-MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_MAJOR)
-MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
-MIRROR_UBUNTU?=mirror.fuel-infra.org
-MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-endif
-
-ifeq ($(USE_MIRROR),srt)
-MIRROR_FUEL?=http://osci-mirror-srt.srt.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/os/x86_64/
-MIRROR_UBUNTU?=osci-mirror-srt.srt.mirantis.net
-MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-endif
-
-ifeq ($(USE_MIRROR),msk)
-MIRROR_FUEL?=http://osci-mirror-msk.msk.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/os/x86_64/
-MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
-MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-endif
-
-ifeq ($(USE_MIRROR),hrk)
-MIRROR_FUEL?=http://osci-mirror-kha.kha.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/os/x86_64/
-MIRROR_UBUNTU?=osci-mirror-kha.kha.mirantis.net
-MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
-endif
-
+# Use mirror.fuel-infra.org mirror by default. Other possible values are
+# 'usa', 'cz'
 ifeq ($(USE_MIRROR),usa)
 MIRROR_FUEL?=http://mirror.seed-us1.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/os/x86_64/
 MIRROR_UBUNTU?=mirror.seed-us1.fuel-infra.org
@@ -185,19 +154,19 @@ MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel
 MIRROR_UBUNTU_METHOD?=http
-MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
+MIRROR_UBUNTU?=mirror.fuel-infra.org
 MIRROR_UBUNTU_ROOT?=/pkgs/ubuntu/
 MIRROR_UBUNTU_SUITE?=$(UBUNTU_RELEASE)
 MIRROR_UBUNTU_SECTION?=main universe multiverse restricted
 MIRROR_MOS_UBUNTU_METHOD?=http
-MIRROR_MOS_UBUNTU?=perestroika-repo-tst.infra.mirantis.net
+MIRROR_MOS_UBUNTU?=mirror.fuel-infra.org
 MIRROR_MOS_UBUNTU_ROOT?=/mos-repos/ubuntu/$(PRODUCT_VERSION)
 MIRROR_MOS_UBUNTU_SUITE?=$(PRODUCT_NAME)$(PRODUCT_VERSION)
 MIRROR_MOS_UBUNTU_SECTION?=main restricted
 
 # MIRROR_FUEL affects build process only if YUM_REPOS variable contains 'fuel'.
 # Otherwise it is ignored entirely.
-MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)
+MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/os/x86_64/
 
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.
