@@ -75,6 +75,7 @@ nodejs-nailgun
 openssh-clients
 openssl-devel
 openstack-keystone
+openstack-selinux
 os-client-config
 postgresql
 postgresql-devel
