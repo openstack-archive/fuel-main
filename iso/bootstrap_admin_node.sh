@@ -61,6 +61,7 @@ wget \
 
 ASTUTE_YAML='/etc/fuel/astute.yaml'
 BOOTSTRAP_NODE_CONFIG="/etc/fuel/bootstrap_admin_node.conf"
+CUSTOM_REPOS="/root/default_deb_repos.yaml"
 bs_build_log='/var/log/fuel-bootstrap-image-build.log'
 bs_status=0
 # Backup network configs to this folder. Folder will be created only if
@@ -328,6 +329,11 @@ if (virt-what | fgrep -q "virtualbox") ; then
   done
 fi
 
+# change default repo path in fuel-menu before starting any deployment steps
+if [ -f "${CUSTOM_REPOS}" ]; then
+  fix_default_repos.py fuelmenu --repositories-file "${CUSTOM_REPOS}" || fail
+fi
+
 fuelmenu --save-only --iface=$ADMIN_INTERFACE || fail
 set +x
 echo "Done!"
@@ -517,6 +523,12 @@ fi
 
 # apply puppet
 /etc/puppet/modules/fuel/examples/deploy.sh || fail
+# Update default repo path
+if [ -f "${CUSTOM_REPOS}" ]; then
+  fix_default_repos.py fuel \
+    --repositories-file "${CUSTOM_REPOS}" \
+    --release-version "${OPENSTACK_VERSION}" || fail
+fi
 
 # Sync time
 systemctl stop ntpd
