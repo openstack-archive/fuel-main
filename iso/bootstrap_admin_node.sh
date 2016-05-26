@@ -328,6 +328,7 @@ if (virt-what | fgrep -q "virtualbox") ; then
   done
 fi
 
+[ -f "/root/default_repos.yaml" ] && fix_default_repos.py fuelmenu --repositories-file "/root/default_repos.yaml"
 fuelmenu --save-only --iface=$ADMIN_INTERFACE || fail
 set +x
 echo "Done!"
@@ -517,6 +518,7 @@ fi
 
 # apply puppet
 /etc/puppet/modules/fuel/examples/deploy.sh || fail
+[ -f "/root/default_repos.yaml" ] && fix_default_repos.py fuel --repositories-file "/root/default_repos.yaml" --release-version "newton-10.0"
 
 # Sync time
 systemctl stop ntpd
