@@ -31,6 +31,24 @@ $(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/fuel_build_id
 $(ISOROOT)/fuel_build_id:
 	echo "$(BUILD_ID)" > $@
 
+##############
+# CUSTOM REPOS
+##############
+
+define default_repos
+- name: mos
+	suite: $(MIRROR_MOS_UBUNTU_SUITE)
+endef
+
+# if we are not building packages and sync repos only, we MUST use
+# the same suit as we use during debmirroring
+ifeq ($(BUILD_PACKAGES),0)
+$(BUILD_DIR)/iso/isoroot.done: $(ISOROOT)/default_repos.yaml
+endif
+$(ISOROOT)/default_repos.yaml: export default_repos_content:=$(default_repos)
+$(ISOROOT)/default_repos.yaml:
+	/bin/echo -e "$${default_repos_content}\n" > $@
+
 ###############
 # CENTOS MIRROR
 ###############
@@ -88,7 +106,6 @@ $(ISOROOT)/ks.cfg: $(SOURCE_DIR)/iso/ks.template $(SOURCE_DIR)/iso/ks.py $(ISORO
 	python $(SOURCE_DIR)/iso/ks.py \
 		-t $(SOURCE_DIR)/iso/ks.template \
 		-c $(ISOROOT)/ks.yaml \
-		-u '{"CENTOS_RELEASE": "$(CENTOS_RELEASE)", "PRODUCT_VERSION": "$(PRODUCT_VERSION)"}' \
 		-o $@.tmp
 	mv $@.tmp $@
 
