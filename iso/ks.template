@@ -390,6 +390,9 @@ OPENSTACK_VERSION=`rpm2cpio ${SOURCE}/mos-centos/Packages/fuel-openstack-metadat
 test -e ${SOURCE}/fuel_build_number && cp ${SOURCE}/fuel_build_number /etc/fuel_build_number
 test -e ${SOURCE}/fuel_build_id && cp ${SOURCE}/fuel_build_id /etc/fuel_build_id
 
+# Copy repos config
+test -e ${SOURCE}/default_repos.yaml && cp ${SOURCE}/default_repos.yaml /root/default_repos.yaml
+
 # ----------------------
 # UNPACKING REPOSITORIES
 # ----------------------
