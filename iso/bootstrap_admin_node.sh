@@ -392,6 +392,12 @@ if [ $? -ge 4 ];then
   fail
 fi
 
+# install tuningbox
+puppet apply --detailed-exitcodes -d -v /etc/puppet/modules/nailgun/examples/tuningbox-only.pp
+if [ $? -ge 4 ];then
+  fail
+fi
+
 # Sync time
 systemctl stop ntpd
 systemctl start ntpdate || echo "Failed to synchronize time with 'ntpdate'"
