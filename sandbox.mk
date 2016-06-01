@@ -188,7 +188,7 @@ touch $(SANDBOX_UBUNTU)/etc/init.d/.legacy-bootordering
 mkdir -p $(SANDBOX_UBUNTU)/usr/sbin
 cp -a $(BUILD_DIR)/policy-rc.d $(SANDBOX_UBUNTU)/usr/sbin
 echo "Running debootstrap"
-sudo debootstrap --no-check-gpg --include=ca-certificates --arch=$(UBUNTU_ARCH) $(MIRROR_UBUNTU_SUITE) $(SANDBOX_UBUNTU) $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT)
+sudo DEBIAN_FRONTEND=noninteractive sh -c 'debootstrap --no-check-gpg --include=ca-certificates --arch=$(UBUNTU_ARCH) $(MIRROR_UBUNTU_SUITE) $(SANDBOX_UBUNTU) $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT)'
 if [ -e $(SANDBOX_UBUNTU)/etc/resolv.conf ]; then sudo cp -a $(SANDBOX_UBUNTU)/etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf.orig; fi
 sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
 if [ -e $(SANDBOX_UBUNTU)/etc/hosts ]; then sudo cp -a $(SANDBOX_UBUNTU)/etc/hosts $(SANDBOX_UBUNTU)/etc/hosts.orig; fi
