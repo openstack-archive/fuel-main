@@ -147,7 +147,7 @@ deb $(MIRROR_MOS_UBUNTU_METHOD)://$(MIRROR_MOS_UBUNTU)$(MIRROR_MOS_UBUNTU_ROOT) 
 deb $(MIRROR_MOS_UBUNTU_METHOD)://$(MIRROR_MOS_UBUNTU)$(MIRROR_MOS_UBUNTU_ROOT) $(MIRROR_MOS_UBUNTU_SUITE)-holdback $(MIRROR_MOS_UBUNTU_SECTION)
 
 #Extra repositories
-$(if $(EXTRA_DEB_REPOS),$(subst |,$(newline)deb ,deb $(EXTRA_DEB_REPOS)))
+$(if $(EXTRA_DEB_REPOS),$(subst |,$(NEWLINE)deb ,deb $(EXTRA_DEB_REPOS)))
 endef
 
 define apt_preferences
