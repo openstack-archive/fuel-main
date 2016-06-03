@@ -31,6 +31,7 @@ bridge-utils \
 daemonize \
 dhcp \
 docker \
+e1000 \
 fuel \
 fuel-bootstrap-cli \
 fuel-openstack-metadata \

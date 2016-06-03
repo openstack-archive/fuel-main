@@ -25,6 +25,7 @@ docker
 dpkg
 dpkg-dev
 dpkg-devel
+e1000
 erlang
 ethtool
 euca2ools
