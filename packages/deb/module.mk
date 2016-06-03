@@ -10,7 +10,7 @@ clean-deb:
 	done
 	sudo rm -rf $(BUILD_DIR)/packages/deb
 
-$(BUILD_DIR)/packages/deb/buildd.tar.gz: SANDBOX_DEB_PKGS:=wget bzip2 apt-utils build-essential python-setuptools python-pbr devscripts debhelper fakeroot
+$(BUILD_DIR)/packages/deb/buildd.tar.gz: SANDBOX_DEB_PKGS:=wget bzip2 apt-utils build-essential fakeroot devscripts equivs debhelper python-setuptools python-pbr
 $(BUILD_DIR)/packages/deb/buildd.tar.gz: SANDBOX_UBUNTU:=$(BUILD_DIR)/packages/deb/chroot
 $(BUILD_DIR)/packages/deb/buildd.tar.gz: export SANDBOX_UBUNTU_UP:=$(SANDBOX_UBUNTU_UP)
 $(BUILD_DIR)/packages/deb/buildd.tar.gz: export SANDBOX_UBUNTU_DOWN:=$(SANDBOX_UBUNTU_DOWN)
@@ -47,8 +47,7 @@ $(BUILD_DIR)/packages/deb/$1.done: $(BUILD_DIR)/repos/repos.done
 		sudo -E dch -c $$(SANDBOX_UBUNTU)/tmp/$1/debian/changelog -D $(UBUNTU_RELEASE) -b --force-distribution \
 		-v $(PACKAGE_VERSION)-`awk -F'=' '/DEBRELEASE/ {print $$$$2}' $(BUILD_DIR)/packages/sources/$1/version` \
 		"`awk -F'=' '/DEBMSG/ {print $$$$2}' $(BUILD_DIR)/packages/sources/$1/version`"
-	dpkg-checkbuilddeps $(BUILD_DIR)/repos/$1/debian/control 2>&1 | sed 's/^dpkg-checkbuilddeps: Unmet build dependencies: //g' | sed 's/([^()]*)//g;s/|//g' | sudo tee $$(SANDBOX_UBUNTU)/tmp/$1.installdeps
-	sudo chroot $$(SANDBOX_UBUNTU) /bin/sh -c "cat /tmp/$1.installdeps | xargs --no-run-if-empty env LC_ALL=C DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get -y install"
+	sudo chroot $$(SANDBOX_UBUNTU) /bin/sh -c "mk-build-deps --install --remove --tool 'apt-get --yes --no-remove --no-install-recommends' /tmp/$1/debian/control"
 	sudo chroot $$(SANDBOX_UBUNTU) /bin/sh -c "cd /tmp/$1 ; DEB_BUILD_OPTIONS=nocheck debuild -us -uc -b -d"
 	cp $$(SANDBOX_UBUNTU)/tmp/*.deb $(BUILD_DIR)/packages/deb/packages
 	sudo sh -c "$$$${SANDBOX_UBUNTU_DOWN}"
