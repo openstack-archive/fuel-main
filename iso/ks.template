@@ -23,6 +23,7 @@ services --disabled=sshd
 
 %packages --nobase
 @Core
+e1000
 -firewalld
 -postfix
 -tuned
