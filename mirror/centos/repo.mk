@@ -32,11 +32,9 @@ $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo:
 	@mkdir -p $(@D)
 	/bin/echo -e "$${contents}" > $@
 
-$(BUILD_DIR)/bin/yumdownloader: $(SOURCE_DIR)/mirror/centos/yumdownloader-deps.patch
+$(BUILD_DIR)/bin/yumdownloader:
 	mkdir -p $(@D)
-	cp -a /usr/bin/yumdownloader $(BUILD_DIR)/yumdownloader
-	( cd $(BUILD_DIR) && patch -p0 ) < $<
-	cp -a $(BUILD_DIR)/yumdownloader $@
+	cp -a /usr/bin/yumdownloader $@
 
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: $(call depv,EXTRA_RPM_REPOS)
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: \
