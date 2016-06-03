@@ -219,6 +219,7 @@ rubygem-ffi
 rubygem-ffi-yajl
 rubygem-httpclient
 rubygem-i18n
+rubygem-inifile
 rubygem-ipaddress
 rubygem-json
 rubygem-librarian-puppet-simple
