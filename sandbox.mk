@@ -79,6 +79,8 @@ endef
 SANDBOX_PACKAGES:=bash yum
 
 define SANDBOX_UP
+set -o xtrace
+
 echo "Starting SANDBOX up"
 mkdir -p $(SANDBOX)/etc/yum.repos.d
 cat > $(SANDBOX)/etc/yum.conf <<EOF
@@ -108,9 +110,8 @@ EOF
 sudo rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
 echo "centos-release already installed"
 sudo rm -vf $(SANDBOX)/etc/yum.repos.d/Cent*
+sudo /bin/sh -c "export DBPATH=$$(rpm -E '%_dbpath'); mkdir -p $(SANDBOX)/\$$DBPATH; echo 'mutex_set_max 10000' > $(SANDBOX)/\$$DBPATH/DB_CONFIG"
 sudo /bin/sh -c 'export TMPDIR=$(SANDBOX)/tmp/yum TMP=$(SANDBOX)/tmp/yum; yum -c $(SANDBOX)/etc/external.yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install yum'
-echo 'Rebuilding RPM DB'
-sudo rpm --root=$(SANDBOX) --rebuilddb
 echo 'Installing packages for Sandbox'
 mount | grep -q $(SANDBOX)/mirrors || sudo mount --bind $(LOCAL_MIRROR) $(SANDBOX)/mirrors
 mount | grep -q $(SANDBOX)/proc || sudo mount --bind /proc $(SANDBOX)/proc
@@ -122,6 +123,13 @@ $(yum_epel_repo)
 $(yum_local_repo)
 $(yum_local_mos_repo)
 EOF
+echo 'Rebuilding RPM DB'
+sudo chroot $(SANDBOX) sh -c 'rpm -E "%_dbpath"'
+sudo chroot $(SANDBOX) sh -c 'export DBPATH=$$(rpm -E "%_dbpath"); mkdir -p $(SANDBOX)/$$DBPATH; echo "mutex_set_max 10000" > $(SANDBOX)/$$DBPATH/DB_CONFIG'
+sudo chroot $(SANDBOX) sh -c 'ls -al /var/lib/rpm'
+#sudo ch -c "echo 'mutex_set_max 10000' > $(SANDBOX)/var/lib/rpm/DB_CONFIG"
+sudo sh -c 'chroot $(SANDBOX) rpm --rebuilddb'
+sudo chroot $(SANDBOX) sh -c 'ls -al /var/lib/rpm'
 echo $(SANDBOX_PACKAGES) | xargs -n1 | xargs -I_package sudo sh -c 'rm -vf $(SANDBOX)/etc/yum.repos.d/Cent*; chroot $(SANDBOX) yum -y --nogpgcheck install _package'
 # clean all repos except the MOS + upsream + our epel
 sudo rm -vf $(SANDBOX)/etc/yum.repos.d/epel*
