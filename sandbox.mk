@@ -108,6 +108,7 @@ EOF
 sudo rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
 echo "centos-release already installed"
 sudo rm -vf $(SANDBOX)/etc/yum.repos.d/Cent*
+sudo /bin/sh -c 'export DBPATH=$$(rpm -E "%_dbpath"); mkdir -p $(SANDBOX)/\$$DBPATH; echo "mutex_set_max 10000" > $(SANDBOX)/\$$DBPATH/DB_CONFIG'
 sudo /bin/sh -c 'export TMPDIR=$(SANDBOX)/tmp/yum TMP=$(SANDBOX)/tmp/yum; yum -c $(SANDBOX)/etc/external.yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install yum'
 echo 'Rebuilding RPM DB'
 sudo rpm --root=$(SANDBOX) --rebuilddb
