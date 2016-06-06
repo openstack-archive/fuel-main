@@ -468,7 +468,20 @@ rm -rf ${FS}
 
 
 
+%post --log=/root/anaconda-post-install-extrapackages.log
+#!/bin/bash
+set -x
 
+MASTER_NODE_EXTRA_PACKAGES=""
+source "/root/anaconda.cmdline.vars"
+
+if [ -n "${MASTER_NODE_EXTRA_PACKAGES}" ]; then
+  for pkg in ${MASTER_NODE_EXTRA_PACKAGES}; do
+    yum -y install ${pkg}
+  done
+fi
+
+%end
 
 %post --log=/root/anaconda-post-configure-autologon.log
 #!/bin/bash
