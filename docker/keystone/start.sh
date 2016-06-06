@@ -12,5 +12,11 @@ if [[ $exitcode != 0 && $exitcode != 2 ]]; then
   exit $exitcode
 fi
 
+puppet apply --detailed-exitcodes -v /etc/puppet/modules/nailgun/examples/keystone-token-disable.pp || exitcode=$?
+if [[ $exitcode != 0 && $exitcode != 2 ]]; then
+  echo Puppet apply failed with exit code: $exitcode
+  exit $exitcode
+fi
+
 service openstack-keystone stop
 keystone-all
