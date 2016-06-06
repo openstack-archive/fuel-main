@@ -34,9 +34,7 @@ $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/base.repo:
 
 $(BUILD_DIR)/bin/yumdownloader: $(SOURCE_DIR)/mirror/centos/yumdownloader-deps.patch
 	mkdir -p $(@D)
-	cp -a /usr/bin/yumdownloader $(BUILD_DIR)/yumdownloader
-	( cd $(BUILD_DIR) && patch -p0 ) < $<
-	cp -a $(BUILD_DIR)/yumdownloader $@
+	cp -a /usr/bin/yumdownloader $@
 
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: $(call depv,EXTRA_RPM_REPOS)
 $(BUILD_DIR)/mirror/centos/etc/yum.repos.d/extra.repo: \
