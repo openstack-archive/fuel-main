@@ -17,11 +17,11 @@ $(BUILD_DIR)/packages/rpm/buildd.tar.gz: SANDBOX:=$(BUILD_DIR)/packages/rpm/SAND
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_UP:=$(SANDBOX_UP)
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: export SANDBOX_DOWN:=$(SANDBOX_DOWN)
 $(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done \
-	$(BUILD_DIR)/mirror/centos/mos-repo.done
+$(BUILD_DIR)/mirror/centos/mos-repo.done
 	sh -c "$${SANDBOX_UP}"
 	sh -c "$${SANDBOX_DOWN}"
 	sudo tar czf $@.tmp -C $(SANDBOX) .
-	mv $@.tmp $@
+	mv -f $@.tmp $@
 
 
 # Usage:
@@ -60,10 +60,10 @@ $(BUILD_DIR)/packages/rpm/$1.done:
 	sudo cp -r $(BUILD_DIR)/packages/sources/$1/* $$(SANDBOX)/tmp/SOURCES
 	-test -f $(BUILD_DIR)/packages/sources/$1/changelog && cat $(BUILD_DIR)/packages/sources/$1/changelog >> $$(SPECFILE)
 	sudo cp $$(SPECFILE) $$(SANDBOX)/tmp && \
-	sudo chroot $$(SANDBOX) yum-builddep -y /tmp/$1.spec
+	sudo chroot $$(SANDBOX) sh -c 'yum-builddep -y /tmp/$1.spec'
 	test -f $$(SANDBOX)/tmp/SOURCES/version && \
-		sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" --define "release `awk -F'=' '/RPMRELEASE/ {print $$$$2}' $$(SANDBOX)/tmp/SOURCES/version`" -ba /tmp/$1.spec || \
-		sudo chroot $$(SANDBOX) rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/$1.spec
+		sudo chroot $$(SANDBOX) sh -c 'rpmbuild --nodeps --define "_topdir /tmp" --define "release `awk -F= "/RPMRELEASE/ {print $$$$2}" /tmp/SOURCES/version`" -ba /tmp/$1.spec' || \
+		sudo chroot $$(SANDBOX) sh -c 'rpmbuild --nodeps --define "_topdir /tmp" -ba /tmp/$1.spec'
 	cp $$(SANDBOX)/tmp/RPMS/*/*.rpm $(BUILD_DIR)/packages/rpm/RPMS/x86_64
 	sudo sh -c "$$$${SANDBOX_DOWN}"
 	$$(ACTION.TOUCH)
