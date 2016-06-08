@@ -1,0 +1,9 @@
+Code-Review+2: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Code-Review+2: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Workflow+1: Sergii Golovatiuk <sgolovatiuk@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Wed, 08 Jun 2016 10:30:52 +0000
+Reviewed-on: https://review.openstack.org/326932
+Project: openstack/fuel-main
+Branch: refs/heads/stable/mitaka
