@@ -194,7 +194,11 @@ sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
 if [ -e $(SANDBOX_UBUNTU)/etc/hosts ]; then sudo cp -a $(SANDBOX_UBUNTU)/etc/hosts $(SANDBOX_UBUNTU)/etc/hosts.orig; fi
 sudo cp /etc/hosts $(SANDBOX_UBUNTU)/etc/hosts
 echo "Generating utf8 locale"
-sudo chroot $(SANDBOX_UBUNTU) /bin/sh -c 'locale-gen en_US.UTF-8; dpkg-reconfigure locales'
+sudo chroot $(SANDBOX_UBUNTU) /usr/bin/env -i \
+  LC_ALL=C \
+  DEBIAN_FRONTEND=noninteractive \
+  DEBCONF_NONINTERACTIVE_SEEN=true \
+  /bin/sh -c 'locale-gen en_US.UTF-8; dpkg-reconfigure locales'
 echo "Preparing directory for chroot local mirror"
 sudo mkdir -p $(SANDBOX_UBUNTU)/etc/apt/preferences.d/
 echo "Generating pinning file for Ubuntu SandBox"
