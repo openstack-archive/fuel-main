@@ -49,6 +49,7 @@ for file in %{_builddir}/%{name}-%{version}/fuel-release/*.repo ; do
 done
 install -D -p -m 755 %{_builddir}/%{name}-%{version}/iso/bootstrap_admin_node.sh %{buildroot}%{_sbindir}/bootstrap_admin_node.sh
 install -D -p -m 755 %{_builddir}/%{name}-%{version}/iso/fix_default_repos.py %{buildroot}%{_sbindir}/fix_default_repos.py
+install -D -p -m 755 %{_builddir}/%{name}-%{version}/fuel-release/override_rpm_repos.py %{buildroot}%{_sbindir}/override_rpm_repos.py
 
 %clean
 rm -rf %{buildroot}
@@ -65,6 +66,8 @@ Release:   %{release}
 License:   GPLv2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 URL:       http://github.com/Mirantis
+Requires:  python
+Requires:  PyYAML >= 3.10
 
 %description -n fuel-release
 This packages provides /etc/fuel_release file
@@ -77,6 +80,12 @@ and Yum configuration for Fuel online repositories.
 %config(noreplace) %attr(0644,root,root) /etc/yum.repos.d/*
 %dir /etc/pki/fuel-gpg
 /etc/pki/fuel-gpg/*
+
+%post
+if [[ -f /root/override_rpm_repos.yaml ]]; then
+    rm -f /etc/yum.repos.d/*.repo
+    override_rpm_repos.py --repositories-file /root/override_rpm_repos.yaml --output-file /etc/yum.repos.d/overriden.repo
+fi
 
 %package -n fuel-setup
 
