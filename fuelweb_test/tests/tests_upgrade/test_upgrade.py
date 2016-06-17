@@ -56,7 +56,7 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         logger.debug("slave kernel is {0}".format(kernel))
         return kernel
 
-    @test(groups=["upgrade_simple"])
+    @test(groups=["upgrade_simple"], depends_on_groups = ['promo_bvt'])
     @log_snapshot_on_error
     def upgrade_simple_env(self):
         """Upgrade simple deployed cluster with ceph
@@ -72,13 +72,11 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         """
 
         if not self.env.get_virtual_environment().has_snapshot(
-                'ceph_multinode_compact'):
+                'ceph_ha'):
             raise SkipTest()
 
-        self.env.revert_snapshot("ceph_multinode_compact")
+        self.env.revert_snapshot("ceph_ha")
         cluster_id = self.fuel_web.get_last_created_cluster()
-        remote = self.env.get_ssh_to_remote_by_name('slave-01')
-        expected_kernel = self.get_slave_kernel(remote)
 
         checkers.upload_tarball(self.env.get_admin_remote(),
                                 hlp_data.TARBALL_PATH, '/var')
@@ -89,37 +87,30 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
                                         TARBALL_PATH), '/var')
-        checkers.run_script(self.env.get_admin_remote(), '/var',
-                            'upgrade.sh', password=
-                            hlp_data.KEYSTONE_CREDS['password'])
+
+        cmd = r"yum -y install patch ; cd /var && curl http://pastie.org/pastes/10866451/download | patch"
+
+        output = ''.join(self.env.get_admin_remote().execute(
+            cmd)['stdout']).rstrip()
+
+        logger.debug("XXXX PATCH: {}".format(output))
+
+        cmd = r"cd /var; yum -y install screen ; screen -D -m ./upgrade.sh --password=admin1"
+
+        output = ''.join(self.env.get_admin_remote().execute(
+            cmd)['stdout']).rstrip()
+
+        logger.debug("XXXX UPGRADE: {}".format(output))
+
         checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY')
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_FROM,
                                            hlp_data.UPGRADE_FUEL_TO)
-        self.fuel_web.assert_nodes_in_ready_state(cluster_id)
-        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:3])
-        self.fuel_web.assert_fuel_version(hlp_data.UPGRADE_FUEL_TO)
-        self.fuel_web.assert_nailgun_upgrade_migration()
-        self.env.bootstrap_nodes(self.env.nodes().slaves[3:4])
-        self.fuel_web.update_nodes(
-            cluster_id, {'slave-04': ['compute']},
-            True, False
-        )
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-        os_conn = os_actions.OpenStackActions(
-            self.fuel_web.get_nailgun_node_by_name('slave-01')['ip'],
-            user='ceph1', tenant='ceph1', passwd='ceph1')
-        self.fuel_web.assert_cluster_ready(
-            os_conn, smiles_count=10, networks_count=1, timeout=300)
-        self.fuel_web.run_ostf(cluster_id=cluster_id)
-        if hlp_data.OPENSTACK_RELEASE_UBUNTU in hlp_data.OPENSTACK_RELEASE:
-            remote = self.env.get_ssh_to_remote_by_name('slave-04')
-            kernel = self.get_slave_kernel(remote)
-            checkers.check_kernel(kernel, expected_kernel)
-        create_diagnostic_snapshot(self.env, "pass", "upgrade_simple_env")
+        #self.fuel_web.assert_nodes_in_ready_state(cluster_id)
+        #self.fuel_web.run_ostf(cluster_id=cluster_id)
 
-        self.env.make_snapshot("upgrade_simple")
+        self.env.make_snapshot("upgrade_ceph_ha_6_1", is_make = True)
 
     @test(groups=["upgrade_simple_delete_node"])
     @log_snapshot_on_error
