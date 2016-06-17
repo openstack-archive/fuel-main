@@ -184,7 +184,7 @@ class CephHA(TestBasic):
             return
 
         self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:6])
+        self.env.bootstrap_nodes(self.env.nodes().slaves[:8])
         csettings = {}
         if settings.NEUTRON_ENABLE:
             csettings = {
@@ -209,12 +209,14 @@ class CephHA(TestBasic):
         self.fuel_web.update_nodes(
             cluster_id,
             {
-                'slave-01': ['controller', 'ceph-osd'],
-                'slave-02': ['controller', 'ceph-osd'],
-                'slave-03': ['controller', 'ceph-osd'],
-                'slave-04': ['compute', 'ceph-osd'],
-                'slave-05': ['compute', 'ceph-osd'],
-                'slave-06': ['ceph-osd']
+                'slave-01': ['controller'],
+                'slave-02': ['controller'],
+                'slave-03': ['controller'],
+                'slave-04': ['compute'],
+                'slave-05': ['compute'],
+                'slave-06': ['ceph-osd'],
+                'slave-07': ['ceph-osd'],
+                'slave-08': ['ceph-osd']
             }
         )
         # Depoy cluster
