@@ -353,6 +353,8 @@ build_image ()
 	chmod 755 "$root"
 	suppress_services_start "$root"
 	run_debootstrap "$root"
+	# copy rules for Predictable Network Interface Names 
+	cp -p "$datadir"/ubuntu/files/lib/udev/rules.d/80-net-name-slot.rules "$root"/lib/udev/rules.d/
 	dev_fixup "$root"
 	suppress_services_start "$root"
 	propagate_host_resolv_conf "$root"
