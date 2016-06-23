@@ -32,3 +32,5 @@ Directory structure:
   are listed here.
 - ```sandbox.mk```
   The script that is used for building chroot environments.
+- ```vagrant```
+  The directory that is used for vagrant based build
