@@ -501,7 +501,9 @@ build_ubuntu_bootstrap () {
 # (even if we don't use Ubuntu based bootstrap)
 make_ubuntu_bootstrap_stub
 
-service docker start
+if ! grep -q 'startdocker=no' /root/anaconda.cmdline.vars; then
+  service docker start
+fi
 
 old_sysctl_vm_value=$(sysctl -n vm.min_free_kbytes)
 if [ ${old_sysctl_vm_value} -lt 65535 ]; then
