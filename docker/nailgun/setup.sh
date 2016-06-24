@@ -36,6 +36,9 @@ chmod 600 /root/.ssh/id_rsa.pub
 yum -y install python-editor
 
 systemctl daemon-reload
+
+umount /usr/share/nailgun/static
+
 puppet apply --debug --verbose --color false --detailed-exitcodes \
   /etc/puppet/modules/nailgun/examples/nailgun-only.pp || [[ $? == 2 ]]
 
