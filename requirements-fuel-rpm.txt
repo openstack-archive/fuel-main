@@ -6,7 +6,6 @@ fuel-ha-utils
 fuel-library
 fuelmenu
 fuel-migrate
-fuel-mirror
 fuel-misc
 fuel-nailgun
 fuel-notify
