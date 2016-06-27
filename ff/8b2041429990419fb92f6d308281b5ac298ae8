@@ -1,0 +1,10 @@
+Code-Review+1: Dmitry Teselkin <dteselkin@mirantis.com>
+Code-Review+1: Matthew Mosesohn <mmosesohn@mirantis.com>
+Code-Review+2: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Workflow+1: Vitaly Sedelnik <vsedelnik@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 27 Jun 2016 12:57:48 +0000
+Reviewed-on: https://review.openstack.org/333948
+Project: openstack/fuel-main
+Branch: refs/heads/stable/8.0
