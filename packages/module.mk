@@ -76,8 +76,6 @@ $(eval $(call prepare_git_source,fuel-agent,fuel-agent-$(PACKAGE_VERSION).tar.gz
 $(eval $(call prepare_git_source,nailgun-agent,nailgun-agent-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/nailgun-agent,HEAD,$(FUEL_NAILGUN_AGENT_GERRIT_COMMIT)))
 #FUEL-IMAGE PKGS
 $(eval $(call prepare_git_source,fuel-main,fuel-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-main,HEAD,$(FUELMAIN_GERRIT_COMMIT)))
-#FUEL-MIRROR PKGS
-$(eval $(call prepare_git_source,fuel-mirror,fuel-mirror-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuel-mirror,HEAD,$(FUEL_MIRROR_GERRIT_COMMIT)))
 #FUEL-MENU PKGS
 $(eval $(call prepare_git_source,fuelmenu,fuelmenu-$(PACKAGE_VERSION).tar.gz,$(BUILD_DIR)/repos/fuelmenu,HEAD,$(FUELMENU_GERRIT_COMMIT)))
 #FUEL-UI PKGS
