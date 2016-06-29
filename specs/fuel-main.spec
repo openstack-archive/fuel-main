@@ -21,7 +21,6 @@ Requires: fuelmenu >= %{version}
 Requires: fuel-release >= %{version}
 Requires: network-checker >= %{version}
 Requires: python-fuelclient >= %{version}
-Requires: fuel-mirror >= %{version}
 Requires: shotgun >= %{version}
 Requires: yum
 

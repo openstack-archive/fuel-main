@@ -302,11 +302,15 @@ sed -i -e "s/^\s*PrintMotd no/PrintMotd yes/g" /etc/ssh/sshd_config
 cat >> /etc/motd << EOF
 
 All environments use online repositories by default.
-Use the following commands to create local repositories
-on master node and change default repository settings:
+Use the python-packetary package to create local repositories:
 
-* CentOS: fuel-mirror (see --help for options)
-* Ubuntu: fuel-mirror (see --help for options)
+yum install python-packetary
+packetary --help
+
+Use python-fuelclient package to modify default repository settings:
+
+yum install python-fuelclient (installed by default)
+fuel2 --help
 
 EOF
 

@@ -85,7 +85,6 @@ astute \
 fuel-agent \
 fuel-library$(FUEL_LIBRARY_VERSION) \
 fuel-main \
-fuel-mirror \
 fuel-nailgun \
 fuel-ostf \
 fuel-ui \
