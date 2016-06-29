@@ -40,7 +40,6 @@ $(eval $(call build_repo,fuel-mirror,$(FUEL_MIRROR_REPO),$(FUEL_MIRROR_COMMIT),$
 $(eval $(call build_repo,fuelmenu,$(FUELMENU_REPO),$(FUELMENU_COMMIT),$(FUELMENU_GERRIT_URL),$(FUELMENU_GERRIT_COMMIT)))
 $(eval $(call build_repo,shotgun,$(SHOTGUN_REPO),$(SHOTGUN_COMMIT),$(SHOTGUN_GERRIT_URL),$(SHOTGUN_GERRIT_COMMIT)))
 $(eval $(call build_repo,network-checker,$(NETWORKCHECKER_REPO),$(NETWORKCHECKER_COMMIT),$(NETWORKCHECKER_GERRIT_URL),$(NETWORKCHECKER_GERRIT_COMMIT)))
-$(eval $(call build_repo,fuel-upgrade,$(FUELUPGRADE_REPO),$(FUELUPGRADE_COMMIT),$(FUELUPGRADE_GERRIT_URL),$(FUELUPGRADE_GERRIT_COMMIT)))
 $(eval $(call build_repo,fuel-ui,$(FUEL_UI_REPO),$(FUEL_UI_COMMIT),$(FUEL_UI_GERRIT_URL),$(FUEL_UI_GERRIT_COMMIT)))
 
 $(BUILD_DIR)/repos/fuel-main.done:
