@@ -33,7 +33,7 @@ from settings import TestRailSettings
 from testrail_client import TestRailProject
 
 
-class TestResult():
+class TestResult(object):
     def __init__(self, name, group, status, duration, url=None,
                  version=None, description=None, launchpad_bug=None):
         self.name = name
@@ -137,11 +137,11 @@ def get_tests_results(systest_build):
             duration='{0}s'.format(int(test['duration']) + 1),
             url='{0}testReport/(root)/{1}/'.format(test_build.url,
                                                    test['name']),
-            version='_'.join([test_build.build_data["id"]] +
-                             (test_build.build_data["description"]
-                              or test['name']).split()),
-            description=test_build.build_data["description"] or
-                test['name'],
+            version='_'.join(
+                [test_build.build_data["id"]] + (
+                    test_build.build_data["description"] or test['name']
+                ).split()),
+            description=test_build.build_data["description"] or test['name'],
         )
         tests_results.append(test_result)
     return tests_results
@@ -149,9 +149,10 @@ def get_tests_results(systest_build):
 
 def publish_results(project, milestone_id, test_plan,
                     suite_id, config_id, results):
-    test_run_ids = [run['id'] for entry in test_plan['entries']
-                    for run in entry['runs'] if suite_id == run['suite_id']
-                    and config_id in run['config_ids']]
+    test_run_ids = [
+        run['id'] for entry in test_plan['entries']
+        for run in entry['runs'] if suite_id == run['suite_id'] and
+        config_id in run['config_ids']]
     logger.debug('Looking for previous tests runs on "{0}" using tests suite '
                  '"{1}"...'.format(project.get_config(config_id)['name'],
                                    project.get_suite(suite_id)['name']))

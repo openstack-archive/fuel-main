@@ -256,10 +256,13 @@ class TestHaFailover(TestBasic):
                     ip=ip, namespace='haproxy')
 
                 # The ip should be restored
-                ip_assigned = lambda nodes: \
-                    any([ip in self.fuel_web.ip_address_show(
-                        n.name, 'haproxy', interface)
-                        for n in nodes])
+                def ip_assigned(nodes):
+                    return any(
+                        [
+                            ip in self.fuel_web.ip_address_show(
+                                n.name, 'haproxy', interface)
+                            for n in nodes])
+
                 logger.debug("Waiting while deleted ip restores ...")
                 wait(lambda: ip_assigned(slaves), timeout=30)
                 assert_true(ip_assigned(slaves),
@@ -342,9 +345,10 @@ class TestHaFailover(TestBasic):
             remote = self.fuel_web.get_ssh_for_node(devops_node.name)
             remote.check_call('kill -9 $(pidof haproxy)')
 
-            mysql_started = lambda: \
-                len(remote.check_call(
-                    'ps aux | grep "/usr/sbin/haproxy"')['stdout']) == 3
+            def mysql_started():
+                return len(
+                    remote.check_call(
+                        'ps aux | grep "/usr/sbin/haproxy"')['stdout']) == 3
             wait(mysql_started, timeout=20)
             assert_true(mysql_started(), 'haproxy restarted')
 
@@ -439,9 +443,12 @@ class TestHaFailover(TestBasic):
         remote.execute("iptables -I OUTPUT 1 -m owner --uid-owner heat -m"
                        " state --state NEW,ESTABLISHED,RELATED -j DROP")
 
-        wait(lambda: len(remote.execute
-            ("netstat -nap | grep {0} | grep :5673".
-             format(pid))['stdout']) == 0, timeout=300)
+        wait(
+            lambda: len(
+                remote.execute(
+                    "netstat -nap | grep {0} | grep :5673".format(pid)
+                )['stdout']) == 0,
+            timeout=300)
 
         get_ocf_status = ''.join(
             remote.execute(ocf_status)['stdout']).rstrip()
@@ -488,10 +495,12 @@ class TestHaFailover(TestBasic):
             remote = self.fuel_web.get_ssh_for_node(devops_node.name)
             remote.execute("kill -9 `pgrep nova-compute`")
             wait(
-                lambda: len(remote.execute('pgrep nova-compute')['stdout'])
-                == 1, timeout=120)
-            assert_true(len(remote.execute('pgrep nova-compute')['stdout'])
-                        == 1, 'Nova service was not restarted')
+                lambda: len(
+                    remote.execute('pgrep nova-compute')['stdout']) == 1,
+                timeout=120)
+            assert_true(
+                len(remote.execute('pgrep nova-compute')['stdout']) == 1,
+                'Nova service was not restarted')
             assert_true(len(remote.execute(
                 "grep \"nova-compute.*trying to restart\" "
                 "/var/log/monit.log")['stdout']) > 0,

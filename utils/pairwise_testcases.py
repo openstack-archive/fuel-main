@@ -17,7 +17,7 @@ import metacomm.combinatorics.all_pairs2
 all_pairs = metacomm.combinatorics.all_pairs2.all_pairs2
 
 parameters = [
-    #("os", ["CentOS", "RedHat", "Ubuntu"]),
+    # ("os", ["CentOS", "RedHat", "Ubuntu"]),
     ("mode", ["simple", "HA"]),
     ("controller", [1, 3]),
     ("compute", [1, 2]),
@@ -52,8 +52,8 @@ def is_valid_combination(values, names):
         lambda d: "RedHat" == d["os"] and "neutron GRE" == d["network"],
         lambda d: "RedHat" == d["os"] and "neutron VLAN" == d["network"],
         lambda d: d["cinder"] > 0 and d["storage volume"] == "default",
-        lambda d: d["ceph"] > 0 and d["storage volume"] == "default"
-        and d["storage images"] == "default"
+        lambda d: d["ceph"] > 0 and d["storage volume"] == "default" and
+                  d["storage images"] == "default"
     ]
 
     for rule in rules:

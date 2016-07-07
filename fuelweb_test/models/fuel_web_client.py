@@ -236,8 +236,8 @@ class FuelWebClient(object):
             task = self.task_wait(task, timeout, interval)
             assert_equal(
                 task['status'], 'ready',
-                "Task '{name}' has incorrect status. {} != {}".format(
-                    task['status'], 'ready', name=task["name"]
+                "Task '{name}' has incorrect status. {status} != {exp}".format(
+                    status=task['status'], exp='ready', name=task["name"]
                 )
             )
         else:
@@ -254,8 +254,8 @@ class FuelWebClient(object):
         task = self.task_wait(task, timeout, interval)
         assert_equal(
             'error', task['status'],
-            "Task '{name}' has incorrect status. {} != {}".format(
-                task['status'], 'error', name=task["name"]
+            "Task '{name}' has incorrect status. {status} != {exp}".format(
+                status=task['status'], exp='error', name=task["name"]
             )
         )
 
@@ -281,7 +281,9 @@ class FuelWebClient(object):
     @logwrap
     def assert_pacemaker(self, ctrl_node, online_nodes, offline_nodes):
         logger.info('Assert pacemaker status at devops node %s', ctrl_node)
-        fqdn_names = lambda nodes: sorted([self.fqdn(n) for n in nodes])
+
+        def fqdn_names(nodes):
+            return sorted([self.fqdn(n) for n in nodes])
 
         online = fqdn_names(online_nodes)
         offline = fqdn_names(offline_nodes)
@@ -545,8 +547,11 @@ class FuelWebClient(object):
     @logwrap
     def is_node_discovered(self, nailgun_node):
         return any(
-            map(lambda node: node['mac'] == nailgun_node['mac']
-                and node['status'] == 'discover', self.client.list_nodes()))
+            map(
+                lambda node: (
+                    node['mac'] == nailgun_node['mac'] and
+                    node['status'] == 'discover'),
+                self.client.list_nodes()))
 
     @logwrap
     def run_network_verify(self, cluster_id):
@@ -1407,7 +1412,7 @@ class FuelWebClient(object):
 
     @logwrap
     def get_nailgun_primary_controller(self, slave):
-        #returns controller that is primary in nailgun
+        # returns controller that is primary in nailgun
         remote = self.get_ssh_for_node(slave.name)
         data = yaml.load(''.join(
             remote.execute('cat /etc/astute.yaml')['stdout']))

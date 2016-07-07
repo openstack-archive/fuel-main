@@ -27,7 +27,10 @@ REDHAT_SATELLITE = os.environ.get('REDHAT_SATELLITE', 'satellite.example.com')
 REDHAT_ACTIVATION_KEY = os.environ.get(
     'REDHAT_ACTIVATION_KEY', '1234567890')
 
-openstack_name = lambda release: re.sub('\s\\(.*?\\)$', '', release)
+
+def openstack_name(release):
+    return re.sub('\s\\(.*?\\)$', '', release)
+
 OPENSTACK_CENTOS = openstack_name(OPENSTACK_RELEASE_CENTOS)
 OPENSTACK_REDHAT = openstack_name(OPENSTACK_RELEASE_REDHAT)
 OPENSTACK_UBUNTU = openstack_name(OPENSTACK_RELEASE_UBUNTU)

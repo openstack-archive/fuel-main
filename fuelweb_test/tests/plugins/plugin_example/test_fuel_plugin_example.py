@@ -262,7 +262,7 @@ class ExamplePlugin(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.verify_network(cluster_id)
 
-         # check if service ran on controller
+        # check if service ran on controller
         logger.debug("Start to check service on node {0}".format('slave-01'))
         cmd_curl = 'curl localhost:8234'
         cmd = 'pgrep -f fuel-simple-service'

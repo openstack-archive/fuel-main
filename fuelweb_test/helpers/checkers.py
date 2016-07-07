@@ -89,10 +89,10 @@ def check_cinder_status(remote):
     cinder_services = ''.join(result['stdout'])
     logger.debug('>$ cinder service-list\n{}'.format(cinder_services))
     if result['exit_code'] == 0:
-        return all(' up ' in x.split('enabled')[1]
-                   for x in cinder_services.split('\n')
-                   if 'cinder' in x and 'enabled' in x
-                   and len(x.split('enabled')))
+        return all(
+            ' up ' in x.split('enabled')[1] for
+            x in cinder_services.split('\n') if
+            'cinder' in x and 'enabled' in x and len(x.split('enabled')))
     return False
 
 
@@ -208,8 +208,9 @@ def get_ceph_partitions(remote, device, type="xfs"):
     ret = remote.check_call("parted {device} print | grep {type}".format(
                             device=device, type=type))['stdout']
     if not ret:
-        logger.error("Partition not present! {partitions}: ".format(
-                     remote.check_call("parted {device} print")))
+        logger.error(
+            "Partition not present! {partitions}: ".format(
+                partitions=remote.check_call("parted {device} print")))
         raise Exception
     logger.debug("Partitions: {part}".format(part=ret))
     return ret
@@ -221,8 +222,9 @@ def get_mongo_partitions(remote, device):
                             device=device,
                             size=re.escape('{print $4}')))['stdout']
     if not ret:
-        logger.error("Partition not present! {partitions}: ".format(
-                     remote.check_call("parted {device} print")))
+        logger.error(
+            "Partition not present! {partitions}: ".format(
+                partitions=remote.check_call("parted {device} print")))
         raise Exception
     logger.debug("Partitions: {part}".format(part=ret))
     return ret
@@ -401,7 +403,6 @@ def backup_check(remote):
     logger.info("Backup check archive status")
     path = find_backup(remote)
     assert_true(path, "Can not find backup. Path value {0}".format(path))
-    arch_result = None
     try:
         arch_result = ''.join(
             remote.execute(("if [ -e {0} ]; then echo "

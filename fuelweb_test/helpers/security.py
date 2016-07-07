@@ -110,11 +110,13 @@ class SecurityChecks(object):
                 cmd = 'cat {0}; mv {0}{{,.old}}'.format(tmp_file_path)
                 result = remote.execute(cmd)
                 if ''.join(result['stdout']).strip() == check_string:
-                    raise Exception(('Firewall vulnerability detected. '
-                                    'Unused port {0}/{1} can be accessed'
-                                    ' on {2} (node-{3}) node. Check {4}.old'
-                                    ' and {4}.dump files on the node for de'
-                                    'tails').format(port, protocol,
-                                                    node['name'], node['id'],
-                                                    tmp_file_path))
+                    raise Exception(
+                        'Firewall vulnerability detected. '
+                        'Unused port {0}/{1} can be accessed'
+                        ' on {2} (node-{3}) node. Check {4}.old'
+                        ' and {4}.dump files on the node for de'
+                        'tails'.format(
+                            port, protocol,
+                            node['name'], node['id'],
+                            tmp_file_path))
         logger.info('Firewall test passed')

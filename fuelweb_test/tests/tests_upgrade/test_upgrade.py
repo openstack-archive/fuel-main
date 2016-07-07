@@ -33,9 +33,9 @@ from fuelweb_test.tests import base_test_case as base_test_data
 class UpgradeFuelMaster(base_test_data.TestBasic):
     @classmethod
     def check_upgraded_kernel(cls, admin_remote, slave_remote):
-        #the archive contains several versions of the kernel
-        #regular expression will pick the newer one
-        #that is actually gets installed
+        # the archive contains several versions of the kernel
+        # regular expression will pick the newer one
+        # that is actually gets installed
         cmd = r"find /var/upgrade/repos/*/ubuntu/ -type f -name" \
               r" 'linux-image-*.deb' -printf '%f\n' | sed -rn " \
               r"'s/^linux-image-([0-9, \.]+(\-[0-9]+)?)-.*/\1/p' |" \
@@ -89,9 +89,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
                                         TARBALL_PATH), '/var')
-        checkers.run_script(self.env.get_admin_remote(), '/var',
-                            'upgrade.sh', password=
-                            hlp_data.KEYSTONE_CREDS['password'])
+        checkers.run_script(
+            self.env.get_admin_remote(), '/var',
+            'upgrade.sh', password=hlp_data.KEYSTONE_CREDS['password'])
         checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY')
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
@@ -152,9 +152,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
                                         TARBALL_PATH), '/var')
-        checkers.run_script(self.env.get_admin_remote(), '/var',
-                            'upgrade.sh', password=
-                            hlp_data.KEYSTONE_CREDS['password'])
+        checkers.run_script(
+            self.env.get_admin_remote(), '/var',
+            'upgrade.sh', password=hlp_data.KEYSTONE_CREDS['password'])
         checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY')
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
@@ -208,9 +208,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.
                                         TARBALL_PATH), '/var')
-        checkers.run_script(self.env.get_admin_remote(), '/var',
-                            'upgrade.sh', password=
-                            hlp_data.KEYSTONE_CREDS['password'])
+        checkers.run_script(
+            self.env.get_admin_remote(), '/var',
+            'upgrade.sh', password=hlp_data.KEYSTONE_CREDS['password'])
         checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY')
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
@@ -295,9 +295,9 @@ class UpgradeFuelMaster(base_test_data.TestBasic):
         checkers.untar(self.env.get_admin_remote(),
                        os.path.basename(hlp_data.TARBALL_PATH),
                        '/var')
-        checkers.run_script(self.env.get_admin_remote(), '/var',
-                            'upgrade.sh', password=
-                            hlp_data.KEYSTONE_CREDS['password'])
+        checkers.run_script(
+            self.env.get_admin_remote(), '/var',
+            'upgrade.sh', password=hlp_data.KEYSTONE_CREDS['password'])
         checkers.wait_upgrade_is_done(self.env.get_admin_remote(), 3000,
                                       phrase='*** UPGRADE DONE SUCCESSFULLY')
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
@@ -381,10 +381,10 @@ class RollbackFuelMaster(base_test_data.TestBasic):
                                          "2i \ \ \ \ 2014.2-6.0: blah-blah",
                                          '/var/upgrade/releases/'
                                          'metadata.yaml')
-        checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
-                            password=
-                            hlp_data.KEYSTONE_CREDS['password'],
-                            rollback=True, exit_code=255)
+        checkers.run_script(
+            self.env.get_admin_remote(), '/var', 'upgrade.sh',
+            password=hlp_data.KEYSTONE_CREDS['password'],
+            rollback=True, exit_code=255)
         checkers.wait_rollback_is_done(self.env.get_admin_remote(), 3000)
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_TO,
@@ -444,12 +444,12 @@ class RollbackFuelMaster(base_test_data.TestBasic):
                                          "2i \ \ \ \ 2014.2-6.0: blah-blah",
                                          '/var/upgrade/releases/'
                                          'metadata.yaml')
-        #we expect 255 exit code here because upgrade failed
+        # we expect 255 exit code here because upgrade failed
         # and exit status is 255
-        checkers.run_script(self.env.get_admin_remote(), '/var', 'upgrade.sh',
-                            password=
-                            hlp_data.KEYSTONE_CREDS['password'],
-                            rollback=True, exit_code=255)
+        checkers.run_script(
+            self.env.get_admin_remote(), '/var', 'upgrade.sh',
+            password=hlp_data.KEYSTONE_CREDS['password'],
+            rollback=True, exit_code=255)
         checkers.wait_rollback_is_done(self.env.get_admin_remote(), 3000)
         checkers.check_upgraded_containers(self.env.get_admin_remote(),
                                            hlp_data.UPGRADE_FUEL_TO,

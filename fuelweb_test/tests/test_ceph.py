@@ -1,4 +1,4 @@
-    #    Copyright 2014 Mirantis, Inc.
+#    Copyright 2014 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -303,9 +303,12 @@ class CephRadosGW(TestBasic):
 
         # Check the radosqw daemon is started
         remote = self.fuel_web.get_ssh_for_node('slave-01')
-        radosgw_started = lambda: len(remote.check_call(
-            'ps aux | grep "/usr/bin/radosgw -n '
-            'client.radosgw.gateway"')['stdout']) == 3
+
+        def radosgw_started():
+            return len(remote.check_call(
+                'ps aux | grep "/usr/bin/radosgw -n '
+                'client.radosgw.gateway"')['stdout']) == 3
+
         assert_true(radosgw_started(), 'radosgw daemon started')
 
         self.env.make_snapshot("ceph_rados_gw")
