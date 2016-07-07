@@ -40,7 +40,7 @@ class TestBasic(object):
 
         """
         if snapshot_name:
-            if self.env.get_virtual_environment().has_snapshot(snapshot_name):
+            if self.env.d_env.has_snapshot(snapshot_name):
                 raise SkipTest()
 
 
@@ -69,7 +69,7 @@ class SetupEnvironment(TestBasic):
 
         """
         self.check_run("ready")
-        self.env.revert_snapshot("empty")
+        self.env.revert_snapshot("empty", skip_timesync=True)
 
         if OPENSTACK_RELEASE == OPENSTACK_RELEASE_REDHAT:
             self.fuel_web.update_redhat_credentials()
@@ -99,8 +99,9 @@ class SetupEnvironment(TestBasic):
 
         """
         self.check_run("ready_with_1_slaves")
-        self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:1])
+        self.env.revert_snapshot("ready", skip_timesync=True)
+        self.env.bootstrap_nodes(self.env.d_env.nodes().slaves[:1],
+                                 skip_timesync=True)
         self.env.make_snapshot("ready_with_1_slaves", is_make=True)
 
     @test(depends_on=[prepare_release],
@@ -117,8 +118,9 @@ class SetupEnvironment(TestBasic):
 
         """
         self.check_run("ready_with_3_slaves")
-        self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:3])
+        self.env.revert_snapshot("ready", skip_timesync=True)
+        self.env.bootstrap_nodes(self.env.d_env.nodes().slaves[:3],
+                                 skip_timesync=True)
         self.env.make_snapshot("ready_with_3_slaves", is_make=True)
 
     @test(depends_on=[prepare_release],
@@ -135,8 +137,9 @@ class SetupEnvironment(TestBasic):
 
         """
         self.check_run("ready_with_5_slaves")
-        self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:5])
+        self.env.revert_snapshot("ready", skip_timesync=True)
+        self.env.bootstrap_nodes(self.env.d_env.nodes().slaves[:5],
+                                 skip_timesync=True)
         self.env.make_snapshot("ready_with_5_slaves", is_make=True)
 
     @test(depends_on=[prepare_release],
@@ -153,6 +156,10 @@ class SetupEnvironment(TestBasic):
 
         """
         self.check_run("ready_with_9_slaves")
-        self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:9])
+        self.env.revert_snapshot("ready", skip_timesync=True)
+        # Bootstrap 9 slaves in two stages to get lower load on the host
+        self.env.bootstrap_nodes(self.env.d_env.nodes().slaves[:5],
+                                 skip_timesync=True)
+        self.env.bootstrap_nodes(self.env.d_env.nodes().slaves[5:9],
+                                 skip_timesync=True)
         self.env.make_snapshot("ready_with_9_slaves", is_make=True)

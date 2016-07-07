@@ -54,6 +54,7 @@ import fuelweb_test.settings as help_data
 
 
 class FuelWebClient(object):
+    """FuelWebClient."""  # TODO documentation
 
     def __init__(self, admin_node_ip, environment):
         self.admin_node_ip = admin_node_ip
@@ -1309,7 +1310,7 @@ class FuelWebClient(object):
 
     @logwrap
     def restore_master(self, remote):
-        logger.info("Restore master node")
+        logger.debug("Start restore master node")
         path = checkers.find_backup(remote)
         try:
             remote.execute('dockerctl restore {0}'.format(path))

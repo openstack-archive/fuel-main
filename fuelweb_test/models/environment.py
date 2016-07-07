@@ -15,16 +15,14 @@
 import time
 import yaml
 
-from devops.helpers.helpers import _get_file_size
+from devops.error import TimeoutError
 from devops.helpers.helpers import _tcp_ping
 from devops.helpers.helpers import _wait
-from devops.helpers.helpers import SSHClient
 from devops.helpers.helpers import wait
-from devops.manager import Manager
+from devops.helpers.ntp import sync_time
+from devops.models import Environment
 from ipaddr import IPNetwork
 from keystoneclient import exceptions
-from paramiko import Agent
-from paramiko import RSAKey
 from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_true
 
@@ -33,7 +31,9 @@ from fuelweb_test.helpers.decorators import revert_info
 from fuelweb_test.helpers.decorators import retry
 from fuelweb_test.helpers.decorators import upload_manifests
 from fuelweb_test.helpers.eb_tables import Ebtables
-from fuelweb_test.helpers.fuel_actions import FuelActions
+from fuelweb_test.helpers.fuel_actions import NailgunActions
+from fuelweb_test.helpers.fuel_actions import PostgresActions
+from fuelweb_test.helpers.utils import timestat
 from fuelweb_test.helpers import multiple_networks_hacks
 from fuelweb_test.models.fuel_web_client import FuelWebClient
 from fuelweb_test import settings
@@ -42,6 +42,16 @@ from fuelweb_test import logger
 
 
 class EnvironmentModel(object):
+    """EnvironmentModel."""  # TODO documentation
+
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(EnvironmentModel, cls).__new__(
+                cls, *args, **kwargs)
+        return cls._instance
+
     hostname = 'nailgun'
     domain = 'test.domain.local'
     installation_timeout = 1800
@@ -56,87 +66,31 @@ class EnvironmentModel(object):
     def __init__(self, os_image=None):
         self._virtual_environment = None
         self._keys = None
-        self.manager = Manager()
         self.os_image = os_image
-        self._fuel_web = FuelWebClient(self.get_admin_node_ip(), self)
+        self.fuel_web = FuelWebClient(self.get_admin_node_ip(), self)
 
     @property
     def nailgun_actions(self):
-        return FuelActions.Nailgun(self.get_admin_remote())
+        return NailgunActions(self.d_env.get_admin_remote())
 
     @property
     def postgres_actions(self):
-        return FuelActions.Postgres(self.get_admin_remote())
-
-    def _get_or_create(self):
-        try:
-            return self.manager.environment_get(self.env_name)
-        except Exception:
-            self._virtual_environment = self.describe_environment()
-            self._virtual_environment.define()
-            return self._virtual_environment
-
-    def router(self, router_name=None):
-        router_name = router_name or self.admin_net
-        if router_name == self.admin_net2:
-            return str(IPNetwork(self.get_virtual_environment().
-                                 network_by_name(router_name).ip_network)[2])
-        return str(
-            IPNetwork(
-                self.get_virtual_environment().network_by_name(router_name).
-                ip_network)[1])
-
-    @property
-    def fuel_web(self):
-        """FuelWebClient
-        :rtype: FuelWebClient
-        """
-        return self._fuel_web
+        return PostgresActions(self.d_env.get_admin_remote())
 
     @property
     def admin_node_ip(self):
         return self.fuel_web.admin_node_ip
 
     @property
-    def node_roles(self):
-        return NodeRoles(
-            admin_names=['admin'],
-            other_names=['slave-%02d' % x for x in range(1, int(
-                settings.NODES_COUNT))]
-        )
-
-    @property
     def env_name(self):
         return settings.ENV_NAME
-
-    def add_empty_volume(
-            self, node, name,
-            capacity=settings.NODE_VOLUME_SIZE * 1024 * 1024 * 1024,
-            device='disk', bus='virtio', format='qcow2'):
-        self.manager.node_attach_volume(
-            node=node,
-            volume=self.manager.volume_create(
-                name=name,
-                capacity=capacity,
-                environment=self.get_virtual_environment(),
-                format=format),
-            device=device,
-            bus=bus)
-
-    def add_node(self, memory, name, vcpu=1, boot=None):
-        return self.manager.node_create(
-            name=name,
-            memory=memory,
-            vcpu=vcpu,
-            environment=self.get_virtual_environment(),
-            boot=boot)
 
     @logwrap
     def add_syslog_server(self, cluster_id, port=5514):
         self.fuel_web.add_syslog_server(
-            cluster_id, self.get_host_node_ip(), port)
+            cluster_id, self.d_env.router(), port)
 
-    def bootstrap_nodes(self, devops_nodes, timeout=600):
+    def bootstrap_nodes(self, devops_nodes, timeout=600, skip_timesync=False):
         """Lists registered nailgun nodes
         Start vms and wait until they are registered on nailgun.
         :rtype : List of registered nailgun nodes
@@ -144,152 +98,50 @@ class EnvironmentModel(object):
         # self.dhcrelay_check()
 
         for node in devops_nodes:
+            logger.info("Bootstrapping node: {}".format(node.name))
             node.start()
             # TODO(aglarendil): LP#1317213 temporary sleep
             # remove after better fix is applied
             time.sleep(2)
-        wait(lambda: all(self.nailgun_nodes(devops_nodes)), 15, timeout)
 
-        for node in self.nailgun_nodes(devops_nodes):
-            self.sync_node_time(self.get_ssh_to_remote(node["ip"]))
+        with timestat("wait_for_nodes_to_start_and_register_in_nailgun"):
+            wait(lambda: all(self.nailgun_nodes(devops_nodes)), 15, timeout)
 
+        if not skip_timesync:
+            self.sync_time()
         return self.nailgun_nodes(devops_nodes)
 
-    def create_interfaces(self, networks, node,
-                          model=settings.INTERFACE_MODEL):
-        if settings.BONDING:
-            for network in networks:
-                self.manager.interface_create(
-                    network, node=node, model=model,
-                    interface_map=settings.BONDING_INTERFACES)
-        else:
-            for network in networks:
-                self.manager.interface_create(network, node=node, model=model)
-
-    def describe_environment(self):
-        """Environment
-        :rtype : Environment
-        """
-        environment = self.manager.environment_create(self.env_name)
-        networks = []
-        interfaces = settings.INTERFACE_ORDER
-        if self.multiple_cluster_networks:
-            logger.info('Multiple cluster networks feature is enabled!')
-        if settings.BONDING:
-            interfaces = settings.BONDING_INTERFACES.keys()
-
-        for name in interfaces:
-            networks.append(self.create_networks(name, environment))
-        for name in self.node_roles.admin_names:
-            self.describe_admin_node(name, networks)
-        for name in self.node_roles.other_names:
-            if self.multiple_cluster_networks:
-                networks1 = [net for net in networks if net.name
-                             in settings.NODEGROUPS[0]['pools']]
-                networks2 = [net for net in networks if net.name
-                             in settings.NODEGROUPS[1]['pools']]
-                # If slave index is even number, then attach to
-                # it virtual networks from the second network group.
-                if int(name[-2:]) % 2 == 1:
-                    self.describe_empty_node(name, networks1)
-                elif int(name[-2:]) % 2 == 0:
-                    self.describe_empty_node(name, networks2)
-            else:
-                self.describe_empty_node(name, networks)
-        return environment
-
-    def create_networks(self, name, environment):
-        ip_networks = [
-            IPNetwork(x) for x in settings.POOLS.get(name)[0].split(',')]
-        new_prefix = int(settings.POOLS.get(name)[1])
-        pool = self.manager.create_network_pool(networks=ip_networks,
-                                                prefix=int(new_prefix))
-        return self.manager.network_create(
-            name=name,
-            environment=environment,
-            pool=pool,
-            forward=settings.FORWARDING.get(name),
-            has_dhcp_server=settings.DHCP.get(name))
-
-    def devops_nodes_by_names(self, devops_node_names):
-        return map(
-            lambda name:
-            self.get_virtual_environment().node_by_name(name),
-            devops_node_names)
-
-    @logwrap
-    def describe_admin_node(self, name, networks):
-        node = self.add_node(
-            memory=settings.HARDWARE.get("admin_node_memory", 1024),
-            vcpu=settings.HARDWARE.get("admin_node_cpu", 1),
-            name=name,
-            boot=['hd', 'cdrom'])
-        self.create_interfaces(networks, node)
-
-        if self.os_image is None:
-            self.add_empty_volume(node, name + '-system')
-            self.add_empty_volume(
-                node,
-                name + '-iso',
-                capacity=_get_file_size(settings.ISO_PATH),
-                format='raw',
-                device='cdrom',
-                bus='ide')
-        else:
-            volume = self.manager.volume_get_predefined(self.os_image)
-            vol_child = self.manager.volume_create_child(
-                name=name + '-system',
-                backing_store=volume,
-                environment=self.get_virtual_environment()
-            )
-            self.manager.node_attach_volume(
-                node=node,
-                volume=vol_child
-            )
-        return node
-
-    def describe_empty_node(self, name, networks):
-        node = self.add_node(
-            name=name,
-            memory=settings.HARDWARE.get("slave_node_memory", 1024),
-            vcpu=settings.HARDWARE.get("slave_node_cpu", 1))
-        self.create_interfaces(networks, node)
-        self.add_empty_volume(node, name + '-system')
-
-        if settings.USE_ALL_DISKS:
-            self.add_empty_volume(node, name + '-cinder')
-            self.add_empty_volume(node, name + '-swift')
-
-        return node
-
-    @logwrap
-    def get_admin_remote(self, login=settings.SSH_CREDENTIALS['login'],
-                         password=settings.SSH_CREDENTIALS['password']):
-        """SSH to admin node
-        :rtype : SSHClient
-        """
-        return self.nodes().admin.remote(self.admin_net,
-                                         login=login,
-                                         password=password)
+    def sync_time(self, nodes_names=None, skip_sync=False):
+        if nodes_names is None:
+            roles = ['fuel_master', 'fuel_slave']
+            nodes_names = [node.name for node in self.d_env.get_nodes()
+                           if node.role in roles and
+                           node.driver.node_active(node)]
+        logger.info("Please wait while time on nodes: {0} "
+                    "will be synchronized"
+                    .format(', '.join(sorted(nodes_names))))
+        new_time = sync_time(self.d_env, nodes_names, skip_sync)
+        for name in sorted(new_time):
+                logger.info("New time on '{0}' = {1}".format(name,
+                                                             new_time[name]))
 
     @logwrap
     def get_admin_node_ip(self):
         return str(
-            self.nodes().admin.get_ip_address_by_network_name(self.admin_net))
+            self.d_env.nodes(
+            ).admin.get_ip_address_by_network_name(
+                self.d_env.admin_net))
 
     @logwrap
     def get_ebtables(self, cluster_id, devops_nodes):
         return Ebtables(self.get_target_devs(devops_nodes),
                         self.fuel_web.client.get_cluster_vlans(cluster_id))
 
-    def get_host_node_ip(self):
-        return self.router()
-
     def get_keys(self, node, custom=None):
         params = {
             'ip': node.get_ip_address_by_network_name(self.admin_net),
             'mask': self.get_net_mask(self.admin_net),
-            'gw': self.router(),
+            'gw': self.d_env.router(),
             'hostname': '.'.join((self.hostname, self.domain)),
             'nat_interface': self.nat_interface,
             'dns1': settings.DNS,
@@ -312,81 +164,72 @@ class EnvironmentModel(object):
         ) % params
         return keys
 
-    @logwrap
-    def get_private_keys(self, force=False):
-        if force or self._keys is None:
-            self._keys = []
-            for key_string in ['/root/.ssh/id_rsa',
-                               '/root/.ssh/bootstrap.rsa']:
-                with self.get_admin_remote().open(key_string) as f:
-                    self._keys.append(RSAKey.from_private_key(f))
-        return self._keys
-
-    @logwrap
-    def get_ssh_to_remote(self, ip):
-        return SSHClient(ip,
-                         username=settings.SSH_CREDENTIALS['login'],
-                         password=settings.SSH_CREDENTIALS['password'],
-                         private_keys=self.get_private_keys())
-
-    @logwrap
-    def get_ssh_to_remote_by_key(self, ip, keyfile):
-        try:
-            with open(keyfile) as f:
-                keys = [RSAKey.from_private_key(f)]
-                return SSHClient(ip, private_keys=keys)
-        except IOError:
-            logger.warning('Loading of SSH key from file failed. Trying to use'
-                           ' SSH agent ...')
-            keys = Agent().get_keys()
-            return SSHClient(ip, private_keys=keys)
-
-    @logwrap
-    def get_ssh_to_remote_by_name(self, node_name):
-        return self.get_ssh_to_remote(
-            self.fuel_web.get_nailgun_node_by_devops_node(
-                self.get_virtual_environment().node_by_name(node_name))['ip']
-        )
-
     def get_target_devs(self, devops_nodes):
         return [
             interface.target_dev for interface in [
                 val for var in map(lambda node: node.interfaces, devops_nodes)
                 for val in var]]
 
-    def get_virtual_environment(self):
-        """Returns virtual environment
-        :rtype : devops.models.Environment
-        """
+    @property
+    def d_env(self):
         if self._virtual_environment is None:
-            self._virtual_environment = self._get_or_create()
+            try:
+                return Environment.get(name=settings.ENV_NAME)
+            except Exception:
+                self._virtual_environment = Environment.describe_environment(
+                    boot_from='cdrom')
+                self._virtual_environment.define()
         return self._virtual_environment
+
+    def resume_environment(self):
+        self.d_env.resume()
+        admin = self.d_env.nodes().admin
+
+        try:
+            admin.await(self.d_env.admin_net, timeout=30, by_port=8000)
+        except Exception as e:
+            logger.warning("From first time admin isn't reverted: "
+                           "{0}".format(e))
+            admin.destroy()
+            logger.info('Admin node was destroyed. Wait 10 sec.')
+            time.sleep(10)
+
+            admin.start()
+            logger.info('Admin node started second time.')
+            self.d_env.nodes().admin.await(self.d_env.admin_net)
+            self.set_admin_ssh_password()
+
+            # set collector address in case of admin node destroy
+            if settings.FUEL_STATS_ENABLED:
+                self.nailgun_actions.set_collector_address(
+                    settings.FUEL_STATS_HOST,
+                    settings.FUEL_STATS_PORT,
+                    settings.FUEL_STATS_SSL)
+                # Restart statsenderd in order to apply new collector address
+                self.nailgun_actions.force_fuel_stats_sending()
+                self.fuel_web.client.send_fuel_stats(enabled=True)
+                logger.info('Enabled sending of statistics to {0}:{1}'.format(
+                    settings.FUEL_STATS_HOST, settings.FUEL_STATS_PORT
+                ))
+        self.set_admin_ssh_password()
 
     def get_network(self, net_name):
         return str(
-            IPNetwork(
-                self.get_virtual_environment().network_by_name(net_name).
-                ip_network))
+            IPNetwork(self.d_env.get_network(net_name).ip_network))
 
     def get_net_mask(self, net_name):
-        return str(
-            IPNetwork(
-                self.get_virtual_environment().network_by_name(
-                    net_name).ip_network).netmask)
+        return self.d_env.get_network(name=net_name).ip.netmask
 
     def make_snapshot(self, snapshot_name, description="", is_make=False):
         if settings.MAKE_SNAPSHOT or is_make:
-            self.get_virtual_environment().suspend(verbose=False)
-            self.get_virtual_environment().snapshot(snapshot_name, force=True)
-            revert_info(snapshot_name, description)
+            self.d_env.suspend(verbose=False)
+            time.sleep(10)
+
+            self.d_env.snapshot(snapshot_name, force=True,
+                                description=description)
+            revert_info(snapshot_name, self.get_admin_node_ip(), description)
         if self.__wrapped__ == 'check_fuel_statistics':
-            self.get_virtual_environment().resume()
-            try:
-                self.nodes().admin.await(self.admin_net, timeout=60)
-            except Exception:
-                logger.error('Admin node is unavailable via SSH after '
-                             'environment resume ')
-                raise
+            self.resume_environment()
 
     def nailgun_nodes(self, devops_nodes):
         return map(
@@ -394,64 +237,52 @@ class EnvironmentModel(object):
             devops_nodes
         )
 
+    def check_slaves_are_ready(self):
+        devops_nodes = [node for node in self.d_env.nodes().slaves
+                        if node.driver.node_active(node)]
+        # Bug: 1455753
+        time.sleep(30)
+
+        for node in devops_nodes:
+            try:
+                wait(lambda:
+                     self.fuel_web.get_nailgun_node_by_devops_node(
+                         node)['online'], timeout=60 * 6)
+            except TimeoutError:
+                    raise TimeoutError(
+                        "Node {0} does not become online".format(node.name))
+        return True
+
     def nodes(self):
-        return Nodes(self.get_virtual_environment(), self.node_roles)
+        return self.d_env.nodes()
 
-    def revert_snapshot(self, name):
-        if self.get_virtual_environment().has_snapshot(name):
-            logger.info('We have snapshot with such name %s' % name)
+    def revert_snapshot(self, name, skip_timesync=False):
+        if not self.d_env.has_snapshot(name):
+            return False
 
-            self.get_virtual_environment().revert(name)
-            logger.info('Starting snapshot reverting ....')
+        logger.info('We have snapshot with such name: %s' % name)
 
-            self.get_virtual_environment().resume()
-            logger.info('Starting snapshot resuming ...')
+        logger.info("Reverting the snapshot '{0}' ....".format(name))
+        self.d_env.revert(name)
 
-            admin = self.nodes().admin
+        logger.info("Resuming the snapshot '{0}' ....".format(name))
+        self.resume_environment()
 
-            try:
-                admin.await(
-                    self.admin_net, timeout=10 * 60, by_port=8000)
-            except Exception as e:
-                logger.warning("From first time admin isn't reverted: "
-                               "{0}".format(e))
-                admin.destroy()
-                logger.info('Admin node was destroyed. Wait 10 sec.')
-                time.sleep(10)
-                self.get_virtual_environment().start(self.nodes().admins)
-                logger.info('Admin node started second time.')
-                self.nodes().admin.await(
-                    self.admin_net, timeout=10 * 60, by_port=8000)
+        if not skip_timesync:
+            self.sync_time()
+        try:
+            _wait(self.fuel_web.client.get_releases,
+                  expected=EnvironmentError, timeout=300)
+        except exceptions.Unauthorized:
+            self.set_admin_keystone_password()
+            self.fuel_web.get_nailgun_version()
 
-            self.set_admin_ssh_password()
-            try:
-                _wait(self._fuel_web.client.get_releases,
-                      expected=EnvironmentError, timeout=300)
-            except exceptions.Unauthorized:
-                self.set_admin_keystone_password()
-                self._fuel_web.get_nailgun_version()
-
-            self.sync_time_admin_node()
-
-            for node in self.nodes().slaves:
-                if not node.driver.node_active(node):
-                    continue
-                try:
-                    logger.info("Sync time on revert for node %s" % node.name)
-                    self.sync_node_time(
-                        self.get_ssh_to_remote_by_name(node.name))
-                except Exception as e:
-                    logger.warning(
-                        'Exception caught while trying to sync time on {0}:'
-                        ' {1}'.format(node.name, e))
-                self.run_nailgun_agent(
-                    self.get_ssh_to_remote_by_name(node.name))
-            return True
-        return False
+        _wait(lambda: self.check_slaves_are_ready(), timeout=60 * 6)
+        return True
 
     def set_admin_ssh_password(self):
         try:
-            remote = self.get_admin_remote(
+            remote = self.d_env.get_admin_remote(
                 login=settings.SSH_CREDENTIALS['login'],
                 password=settings.SSH_CREDENTIALS['password'])
             self.execute_remote_cmd(remote, 'date')
@@ -459,7 +290,8 @@ class EnvironmentModel(object):
         except Exception:
             logger.debug('Accessing admin node using SSH credentials:'
                          ' FAIL, trying to change password from default')
-            remote = self.get_admin_remote(login='root', password='r00tme')
+            remote = self.d_env.get_admin_remote(
+                login='root', password='r00tme')
             self.execute_remote_cmd(
                 remote, 'echo -e "{1}\\n{1}" | passwd {0}'
                 .format(settings.SSH_CREDENTIALS['login'],
@@ -470,9 +302,9 @@ class EnvironmentModel(object):
                            settings.SSH_CREDENTIALS['password']))
 
     def set_admin_keystone_password(self):
-        remote = self.get_admin_remote()
+        remote = self.d_env.get_admin_remote()
         try:
-            self._fuel_web.client.get_releases()
+            self.fuel_web.client.get_releases()
         except exceptions.Unauthorized:
             self.execute_remote_cmd(
                 remote, 'fuel user --newpass {0} --change-password'
@@ -484,9 +316,9 @@ class EnvironmentModel(object):
 
     def setup_environment(self, custom=False):
         # start admin node
-        admin = self.nodes().admin
+        admin = self.d_env.nodes().admin
         admin.disk_devices.get(device='cdrom').volume.upload(settings.ISO_PATH)
-        self.get_virtual_environment().start(self.nodes().admins)
+        self.d_env.start(self.d_env.nodes().admins)
         logger.info("Waiting for admin node to start up")
         wait(lambda: admin.driver.node_active(admin), 60)
         logger.info("Proceed with installation")
@@ -495,7 +327,7 @@ class EnvironmentModel(object):
         if custom:
             self.setup_customisation()
         # wait while installation complete
-        admin.await(self.admin_net, timeout=10 * 60)
+        admin.await(self.d_env.admin_net, timeout=10 * 60)
         self.set_admin_ssh_password()
         self.wait_bootstrap()
         time.sleep(10)
@@ -521,13 +353,14 @@ class EnvironmentModel(object):
     @upload_manifests
     def wait_for_provisioning(self):
         _wait(lambda: _tcp_ping(
-            self.nodes().admin.get_ip_address_by_network_name
-            (self.admin_net), 22), timeout=5 * 60)
+            self.d_env.nodes(
+            ).admin.get_ip_address_by_network_name
+            (self.d_env.admin_net), 22), timeout=7 * 60)
 
     def setup_customisation(self):
         self.wait_for_provisioning()
         try:
-            remote = self.get_admin_remote()
+            remote = self.d_env.get_admin_remote()
             pid = remote.execute("pgrep 'fuelmenu'")['stdout'][0]
             pid.rstrip('\n')
             remote.execute("kill -sigusr1 {0}".format(pid))
@@ -551,7 +384,7 @@ class EnvironmentModel(object):
     @logwrap
     def sync_time_admin_node(self):
         logger.info("Sync time on revert for admin")
-        remote = self.get_admin_remote()
+        remote = self.d_env.get_admin_remote()
         self.execute_remote_cmd(remote, 'hwclock -s')
         # Sync time using ntpd
         try:
@@ -574,9 +407,10 @@ class EnvironmentModel(object):
         logger.info("Master node time: {0}".format(remote_date))
 
     def verify_network_configuration(self, node_name):
+        node = self.fuel_web.get_nailgun_node_by_name(node_name)
         checkers.verify_network_configuration(
-            node=self.fuel_web.get_nailgun_node_by_name(node_name),
-            remote=self.get_ssh_to_remote_by_name(node_name)
+            node=node,
+            remote=self.d_env.get_ssh_to_remote(node['ip'])
         )
 
     def wait_bootstrap(self):
@@ -586,19 +420,19 @@ class EnvironmentModel(object):
             float(settings.PUPPET_TIMEOUT)))
         wait(
             lambda: not
-            self.get_admin_remote().execute(
+            self.d_env.get_admin_remote().execute(
                 "grep 'Fuel node deployment' '%s'" % log_path
             )['exit_code'],
             timeout=(float(settings.PUPPET_TIMEOUT))
         )
-        result = self.get_admin_remote().execute("grep 'Fuel node deployment "
-                                                 "complete' '%s'" % log_path
-                                                 )['exit_code']
+        result = self.d_env.get_admin_remote().execute(
+            "grep 'Fuel node deployment "
+            "complete' '%s'" % log_path)['exit_code']
         if result != 0:
             raise Exception('Fuel node deployment failed.')
 
     def dhcrelay_check(self):
-        admin_remote = self.get_admin_remote()
+        admin_remote = self.d_env.get_admin_remote()
         out = admin_remote.execute("dhcpcheck discover "
                                    "--ifaces eth0 "
                                    "--repeat 3 "
@@ -613,7 +447,7 @@ class EnvironmentModel(object):
 
     def get_fuel_settings(self, remote=None):
         if not remote:
-            remote = self.get_admin_remote()
+            remote = self.d_env.get_admin_remote()
         cmd = 'cat {cfg_file}'.format(cfg_file=settings.FUEL_SETTINGS_YAML)
         result = remote.execute(cmd)
         if result['exit_code'] == 0:
@@ -626,7 +460,7 @@ class EnvironmentModel(object):
 
     def admin_install_pkg(self, pkg_name):
         """Install a package <pkg_name> on the admin node"""
-        admin_remote = self.get_admin_remote()
+        admin_remote = self.d_env.get_admin_remote()
         remote_status = admin_remote.execute("rpm -q {0}'".format(pkg_name))
         if remote_status['exit_code'] == 0:
             logger.info("Package '{0}' already installed.".format(pkg_name))
@@ -641,7 +475,7 @@ class EnvironmentModel(object):
 
     def admin_run_service(self, service_name):
         """Start a service <service_name> on the admin node"""
-        admin_remote = self.get_admin_remote()
+        admin_remote = self.d_env.get_admin_remote()
         admin_remote.execute("service {0} start".format(service_name))
         remote_status = admin_remote.execute("service {0} status"
                                              .format(service_name))
@@ -659,7 +493,7 @@ class EnvironmentModel(object):
     # * adds 'nameservers' at start of resolv.conf if merge=True
     # * replaces resolv.conf with 'nameservers' if merge=False
     def modify_resolv_conf(self, nameservers=[], merge=True):
-        remote = self.get_admin_remote()
+        remote = self.d_env.get_admin_remote()
         resolv_conf = remote.execute('cat /etc/resolv.conf')
         assert_equal(0, resolv_conf['exit_code'], 'Executing "{0}" on the '
                      'admin node has failed with: {1}'
@@ -688,12 +522,13 @@ class EnvironmentModel(object):
 
     @logwrap
     def describe_second_admin_interface(self):
-        remote = self.get_admin_remote()
-        second_admin_network = self.get_network(self.admin_net2).split('/')[0]
-        second_admin_netmask = self.get_net_mask(self.admin_net2)
-        second_admin_if = settings.INTERFACES.get(self.admin_net2)
-        second_admin_ip = str(self.nodes().admin.
-                              get_ip_address_by_network_name(self.admin_net2))
+        remote = self.d_env.get_admin_remote()
+        admin_net2_object = self.d_env.get_network(name=self.d_env.admin_net2)
+        second_admin_network = admin_net2_object.ip.network
+        second_admin_netmask = admin_net2_object.ip.netmask
+        second_admin_if = settings.INTERFACES.get(self.d_env.admin_net2)
+        second_admin_ip = str(self.d_env.nodes(
+        ).admin.get_ip_address_by_network_name(self.d_env.admin_net2))
         logger.info(('Parameters for second admin interface configuration: '
                      'Network - {0}, Netmask - {1}, Interface - {2}, '
                      'IP Address - {3}').format(second_admin_network,
@@ -729,27 +564,3 @@ class EnvironmentModel(object):
         return self.postgres_actions.run_query(
             db='nailgun',
             query="select master_node_uid from master_node_settings limit 1;")
-
-
-class NodeRoles(object):
-    def __init__(self,
-                 admin_names=None,
-                 other_names=None):
-        self.admin_names = admin_names or []
-        self.other_names = other_names or []
-
-
-class Nodes(object):
-    def __init__(self, environment, node_roles):
-        self.admins = []
-        self.others = []
-        for node_name in node_roles.admin_names:
-            self.admins.append(environment.node_by_name(node_name))
-        for node_name in node_roles.other_names:
-            self.others.append(environment.node_by_name(node_name))
-        self.slaves = self.others
-        self.all = self.slaves + self.admins
-        self.admin = self.admins[0]
-
-    def __iter__(self):
-        return self.all.__iter__()
