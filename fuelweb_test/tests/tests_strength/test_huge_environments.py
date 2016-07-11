@@ -15,7 +15,7 @@
 from proboscis import SkipTest
 from proboscis import test
 
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test import settings
 from fuelweb_test.tests import base_test_case
 from fuelweb_test.helpers import os_actions
@@ -25,7 +25,7 @@ from fuelweb_test.helpers import os_actions
 class HugeEnvironments(base_test_case.TestBasic):
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_9],
           groups=["nine_nodes_mixed"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def nine_nodes_mixed(self):
         """Deploy cluster with mixed roles on 9 nodes in HA mode
 
@@ -37,7 +37,7 @@ class HugeEnvironments(base_test_case.TestBasic):
             5. Deploy the cluster
             6. Check networks and OSTF
 
-        Snapshot None
+        Duration 150m
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -80,7 +80,7 @@ class HugeEnvironments(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_9],
           groups=["nine_nodes_separate_roles"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def nine_nodes_separate_roles(self):
         """Deploy cluster with separate roles on 9 nodes in HA mode with GRE
 
@@ -94,7 +94,7 @@ class HugeEnvironments(base_test_case.TestBasic):
             7. Deploy the cluster
             8. Check networks and OSTF
 
-        Snapshot None
+        Duration 100m
 
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
@@ -145,7 +145,7 @@ class HugeHaNeutron(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_9],
           groups=["huge_ha_neutron_gre_ceph_ceilometer_rados"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def huge_ha_neutron_gre_ceph_ceilometer_rados(self):
         """Deploy cluster in HA mode with Neutron GRE, RadosGW
 
@@ -158,7 +158,7 @@ class HugeHaNeutron(base_test_case.TestBasic):
             6. Verify smiles count
             7. Run OSTF
 
-        Snapshot None
+        Duration 100m
 
         """
         self.env.revert_snapshot("ready_with_9_slaves")
@@ -169,7 +169,6 @@ class HugeHaNeutron(base_test_case.TestBasic):
             'images_ceph': True,
             'objects_ceph': True,
             'ceilometer': True,
-            'objects_ceph': True,
             'net_provider': 'neutron',
             'net_segment_type': 'gre',
             'tenant': 'haGreCephHugeScale',
@@ -225,7 +224,7 @@ class HugeHaNeutron(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_9],
           groups=["huge_ha_neutron_vlan_ceph_ceilometer_rados"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def huge_ha_neutron_vlan_ceph_ceilometer_rados(self):
         """Deploy cluster in HA mode with Neutron VLAN, RadosGW
 
@@ -238,13 +237,12 @@ class HugeHaNeutron(base_test_case.TestBasic):
             6. Verify smiles count
             7. Run OSTF
 
-        Snapshot None
+        Duration 100m
 
         """
         self.env.revert_snapshot("ready_with_9_slaves")
 
         data = {
-            'ceilometer': True,
             'volumes_ceph': True,
             'images_ceph': True,
             'volumes_lvm': False,

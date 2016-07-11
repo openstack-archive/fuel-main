@@ -24,6 +24,8 @@ from fuelweb_test import logger
 
 
 class OpenStackActions(common.Common):
+    """OpenStackActions."""  # TODO documentation
+
     def __init__(self, controller_ip, user='admin',
                  passwd='admin', tenant='admin'):
         super(OpenStackActions, self).__init__(controller_ip,
@@ -44,7 +46,7 @@ class OpenStackActions(common.Common):
         hypervisor = self.nova.hypervisors.get(hypervisor.id)
         return getattr(hypervisor, "running_vms")
 
-    def get_hypervisor_hostanme(self, hypervisor):
+    def get_hypervisor_hostname(self, hypervisor):
         hypervisor = self.nova.hypervisors.get(hypervisor.id)
         return getattr(hypervisor, "hypervisor_hostname")
 

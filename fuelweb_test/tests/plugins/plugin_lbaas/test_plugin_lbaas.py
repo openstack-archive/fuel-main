@@ -18,7 +18,7 @@ from devops.helpers.helpers import wait
 from proboscis import asserts
 from proboscis import test
 
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.helpers import os_actions
 from fuelweb_test.helpers import checkers
 from fuelweb_test import logger
@@ -29,8 +29,10 @@ from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
 
-@test(groups=["plugins"])
+@test(enabled=False, groups=["plugins"])
 class LbaasPlugin(TestBasic):
+    """LbaasPlugin."""  # TODO documentation
+
     @classmethod
     def check_neutron_agents_statuses(cls, os_conn):
         agents_list = os_conn.list_agents()
@@ -89,7 +91,7 @@ class LbaasPlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_neutron_lbaas_simple"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_neutron_lbaas_simple(self):
         """Deploy cluster in simple mode with LbaaS plugin
 
@@ -105,6 +107,7 @@ class LbaasPlugin(TestBasic):
             9. Create pool and vip
             10. Run OSTF
 
+        Duration 35m
         Snapshot deploy_neutron_vlan_lbaas_simple
 
         """
@@ -113,12 +116,12 @@ class LbaasPlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), LBAAS_PLUGIN_PATH, '/var')
+            self.env.d_env.get_admin_remote(), LBAAS_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
-            self.env.get_admin_remote(),
+            self.env.d_env.get_admin_remote(),
             plugin=os.path.basename(LBAAS_PLUGIN_PATH))
 
         cluster_id = self.fuel_web.create_cluster(
@@ -167,9 +170,9 @@ class LbaasPlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_neutron_lbaas_simple_reset_ready"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_neutron_lbaas_simple_reset_ready(self):
-        """Deploy cluster in simple mode with LbaaS plugin
+        """Deploy and re-deploy cluster in simple mode with LbaaS plugin
 
         Scenario:
             1. Upload plugin to the master node
@@ -188,6 +191,7 @@ class LbaasPlugin(TestBasic):
             14. Create pool and vip
             15. Run OSTF
 
+        Duration 65m
         Snapshot deploy_neutron_lbaas_simple_reset_ready
 
         """
@@ -196,12 +200,12 @@ class LbaasPlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), LBAAS_PLUGIN_PATH, '/var')
+            self.env.d_env.get_admin_remote(), LBAAS_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
-            self.env.get_admin_remote(),
+            self.env.d_env.get_admin_remote(),
             plugin=os.path.basename(LBAAS_PLUGIN_PATH))
 
         cluster_id = self.fuel_web.create_cluster(
@@ -244,7 +248,8 @@ class LbaasPlugin(TestBasic):
 
         self.fuel_web.stop_reset_env_wait(cluster_id)
 
-        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:2])
+        self.fuel_web.wait_nodes_get_online_state(
+            self.env.d_env.nodes().slaves[:2])
 
         self.fuel_web.update_nodes(
             cluster_id,

@@ -1,4 +1,4 @@
-    #    Copyright 2014 Mirantis, Inc.
+#    Copyright 2014 Mirantis, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -21,7 +21,7 @@ from proboscis import test
 
 from fuelweb_test.helpers import os_actions
 from fuelweb_test.helpers import checkers
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test import ostf_test_mapping as map_ostf
 from fuelweb_test import settings
 from fuelweb_test.settings import NEUTRON_ENABLE
@@ -36,7 +36,7 @@ class CephCompact(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["ceph_multinode_compact", "simple_nova_ceph",
                   "ceph_multinode_compact_neutron"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def ceph_multinode_compact(self):
         """Deploy ceph in simple mode
 
@@ -90,7 +90,7 @@ class CephCompactWithCinder(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
           groups=["ceph_multinode_with_cinder"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def ceph_multinode_with_cinder(self):
         """Deploy ceph with cinder in simple mode
 
@@ -112,7 +112,8 @@ class CephCompactWithCinder(TestBasic):
             return
 
         self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:4])
+        self.env.bootstrap_nodes(
+            self.env.d_env.nodes().slaves[:4])
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -163,7 +164,7 @@ class CephHA(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_release],
           groups=["ceph_ha", "ha_nova_ceph", "ha_neutron_ceph", "promo_bvt"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def ceph_ha(self):
         """Deploy ceph with cinder in HA mode
 
@@ -175,6 +176,7 @@ class CephHA(TestBasic):
             5. Deploy the cluster
             6. Check ceph status
 
+        Duration 90m
         Snapshot ceph_ha
 
         """
@@ -184,7 +186,8 @@ class CephHA(TestBasic):
             return
 
         self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:6])
+        self.env.bootstrap_nodes(
+            self.env.d_env.nodes().slaves[:6])
         csettings = {}
         if settings.NEUTRON_ENABLE:
             csettings = {
@@ -232,7 +235,7 @@ class CephRadosGW(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["ceph_rados_gw"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def ceph_rados_gw(self):
         """Deploy ceph with RadosGW for objects
 
@@ -246,6 +249,7 @@ class CephRadosGW(TestBasic):
             7. Run OSTF tests
             8. Check the radosqw daemon is started
 
+        Duration 40m
         Snapshot ceph_rados_gw
 
         """
@@ -316,7 +320,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["ceph_migration"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def migrate_vm_backed_with_ceph(self):
         """Check VM backed with ceph migration in simple mode
 
@@ -332,6 +336,7 @@ class VmBackedWithCephMigrationBasic(TestBasic):
             9. Check cluster and server state after migration
             10. Terminate VM
 
+        Duration 35m
         Snapshot vm_backed_with_ceph_live_migration
 
         """
@@ -509,7 +514,7 @@ class CheckCephPartitionsAfterReboot(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["ceph_partitions"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def check_ceph_partitions_after_reboot(self):
         """Check that Ceph OSD partitions are remounted after reboot
 
@@ -528,6 +533,7 @@ class CheckCephPartitionsAfterReboot(TestBasic):
             13. Read partitions again
             14. Check Ceph health
 
+        Duration 40m
         Snapshot check_ceph_partitions_after_reboot
 
         """
@@ -565,8 +571,8 @@ class CheckCephPartitionsAfterReboot(TestBasic):
 
             logger.info("Warm-restart nodes")
             self.fuel_web.warm_restart_nodes(
-                [self.fuel_web.environment.get_virtual_environment().
-                    node_by_name(node)])
+                [self.fuel_web.environment.d_env.
+                    get_node(name=node)])
 
             logger.info("Get partitions for {node} once again".format(
                 node=node
@@ -586,8 +592,8 @@ class CheckCephPartitionsAfterReboot(TestBasic):
 
             logger.info("Cold-restart nodes")
             self.fuel_web.cold_restart_nodes(
-                [self.fuel_web.environment.get_virtual_environment().
-                    node_by_name(node)])
+                [self.fuel_web.environment.d_env.
+                    get_node(name=node)])
 
             after_reboot_partitions = [checkers.get_ceph_partitions(
                 self.env.get_ssh_to_remote_by_name(node),

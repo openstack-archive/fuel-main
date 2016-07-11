@@ -22,7 +22,7 @@ from proboscis.asserts import assert_equal
 
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers.common import Common
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.helpers import os_actions
 from fuelweb_test import settings
 from fuelweb_test import logger as LOGGER
@@ -38,7 +38,7 @@ class SaharaSimple(TestBasic):
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_sahara_simple_gre"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_sahara_simple_gre(self):
         """Deploy cluster in simple mode with Sahara and Neutron GRE
 
@@ -52,8 +52,8 @@ class SaharaSimple(TestBasic):
             7. Register Sahara image
             8. Run OSTF platform Sahara test only
 
+        Duration 65m
         Snapshot: deploy_sahara_simple_gre
-
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
@@ -66,7 +66,8 @@ class SaharaSimple(TestBasic):
         asserts.assert_true(check_image)
 
         self.env.revert_snapshot("ready_with_3_slaves")
-        LOGGER.debug('Create cluster for sahara tests')
+
+        LOGGER.debug('Create Fuel cluster for Sahara tests')
         data = {
             'sahara': True,
             'net_provider': 'neutron',
@@ -75,7 +76,6 @@ class SaharaSimple(TestBasic):
             'user': 'saharaSimple',
             'password': 'saharaSimple'
         }
-
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             settings=data
@@ -87,7 +87,6 @@ class SaharaSimple(TestBasic):
                 'slave-02': ['compute']
             }
         )
-
         self.fuel_web.deploy_cluster_wait(cluster_id)
         controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         os_conn = os_actions.OpenStackActions(
@@ -95,8 +94,10 @@ class SaharaSimple(TestBasic):
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=5, networks_count=2, timeout=300)
 
+        LOGGER.debug('Verify Sahara service on controller')
+        _ip = self.fuel_web.get_nailgun_node_by_name("slave-01")['ip']
         checkers.verify_service(
-            self.env.get_ssh_to_remote_by_name("slave-01"),
+            self.env.d_env.get_ssh_to_remote(_ip),
             service_name='sahara-all')
 
         common_func = Common(controller['ip'], data['user'], data['password'],
@@ -137,7 +138,7 @@ class SaharaHA(TestBasic):
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_sahara_ha_gre"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_sahara_ha_gre(self):
         """Deploy cluster in HA mode with Sahara and Neutron GRE
 
@@ -151,6 +152,7 @@ class SaharaHA(TestBasic):
             7. Register Sahara image
             8. Run OSTF platform Sahara test only
 
+        Duration 130m
         Snapshot: deploy_sahara_ha_gre
 
         """
@@ -165,7 +167,8 @@ class SaharaHA(TestBasic):
         asserts.assert_true(check_image)
 
         self.env.revert_snapshot("ready_with_5_slaves")
-        LOGGER.debug('Create cluster for sahara tests')
+
+        LOGGER.debug('Create Fuel cluster for Sahara tests')
         data = {
             'sahara': True,
             'net_provider': 'neutron',
@@ -174,7 +177,6 @@ class SaharaHA(TestBasic):
             'user': 'saharaHA',
             'password': 'saharaHA'
         }
-
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=settings.DEPLOYMENT_MODE_HA,
@@ -190,18 +192,17 @@ class SaharaHA(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-
         cluster_vip = self.fuel_web.get_public_vip(cluster_id)
-
         os_conn = os_actions.OpenStackActions(
             cluster_vip, data['user'], data['password'], data['tenant'])
-
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=13, networks_count=2, timeout=300)
 
+        LOGGER.debug('Verify Sahara service on all controllers')
         for slave in ["slave-01", "slave-02", "slave-03"]:
+            _ip = self.fuel_web.get_nailgun_node_by_name(slave)['ip']
             checkers.verify_service(
-                self.env.get_ssh_to_remote_by_name(slave),
+                self.env.d_env.get_ssh_to_remote(_ip),
                 service_name='sahara-all')
 
         common_func = Common(cluster_vip, data['user'], data['password'],
@@ -243,7 +244,7 @@ class MuranoSimple(TestBasic):
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_murano_simple_gre"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_murano_simple_gre(self):
         """Deploy cluster in simple mode with Murano and Neutron GRE
 
@@ -257,8 +258,8 @@ class MuranoSimple(TestBasic):
             7. Register Murano image
             8. Run OSTF Murano platform tests
 
+        Duration 40m
         Snapshot: deploy_murano_simple_gre
-
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
@@ -299,8 +300,9 @@ class MuranoSimple(TestBasic):
             controller['ip'], data['user'], data['password'], data['tenant'])
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=5, networks_count=2, timeout=300)
+        _ip = self.fuel_web.get_nailgun_node_by_name("slave-01")['ip']
         checkers.verify_service(
-            self.env.get_ssh_to_remote_by_name("slave-01"),
+            self.env.d_env.get_ssh_to_remote(_ip),
             service_name='murano-api')
 
         common_func = Common(controller['ip'], data['user'], data['password'],
@@ -365,7 +367,7 @@ class MuranoHA(TestBasic):
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_murano_ha_with_gre"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_murano_ha_with_gre(self):
         """Deploy cluster in ha mode with Murano and Neutron GRE
 
@@ -379,6 +381,7 @@ class MuranoHA(TestBasic):
             7. Register Murano image
             8. Run OSTF Murano platform tests
 
+        Duration 100m
         Snapshot: deploy_murano_ha_with_gre
 
         """
@@ -421,8 +424,9 @@ class MuranoHA(TestBasic):
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=13, networks_count=2, timeout=300)
         for slave in ["slave-01", "slave-02", "slave-03"]:
+            _ip = self.fuel_web.get_nailgun_node_by_name(slave)['ip']
             checkers.verify_service(
-                self.env.get_ssh_to_remote_by_name(slave),
+                self.env.d_env.get_ssh_to_remote(_ip),
                 service_name='murano-api')
 
         common_func = Common(cluster_vip, data['user'], data['password'],
@@ -515,7 +519,7 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_ceilometer_simple_with_mongo"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_ceilometer_simple_with_mongo(self):
         """Deploy cluster in simple mode with Ceilometer
 
@@ -529,8 +533,8 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
             7. Verify ceilometer api is running
             8. Run OSTF
 
+        Duration 45m
         Snapshot: deploy_ceilometer_simple_with_mongo
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -580,8 +584,9 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
             self.env.get_ssh_to_remote_by_name("slave-01"),
             service_name='ceilometer-api')
 
+        _ip = self.fuel_web.get_nailgun_node_by_name("slave-03")['ip']
         partitions = checkers.get_mongo_partitions(
-            self.env.get_ssh_to_remote_by_name("slave-03"), "vda5")
+            self.env.d_env.get_ssh_to_remote(_ip), "vda5")
         assert_equal(partitions[0].rstrip(), mongo_disk_gb,
                      'Mongo size {0} before deployment is not equal'
                      ' to size after {1}'.format(mongo_disk_gb, partitions))
@@ -591,7 +596,7 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_ceilometer_simple_multirole"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_ceilometer_simple_multirole(self):
         """Deploy cluster in simple multirole mode with Ceilometer
 
@@ -604,8 +609,8 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
             6. Verify ceilometer api is running
             7. Run OSTF
 
+        Duration 35m
         Snapshot: deploy_ceilometer_simple_multirole
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -637,7 +642,7 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
 class CeilometerHAMongo(CeilometerOSTFTestsRun):
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_ceilometer_ha_with_mongo"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_ceilometer_ha_with_mongo(self):
         """Deploy cluster in ha mode with Ceilometer
 
@@ -650,6 +655,7 @@ class CeilometerHAMongo(CeilometerOSTFTestsRun):
             6. Verify ceilometer api is running
             7. Run OSTF
 
+        Duration 65m
         Snapshot: deploy_ceilometer_ha_with_mongo
 
         """
@@ -687,7 +693,7 @@ class CeilometerHAMongo(CeilometerOSTFTestsRun):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_ceilometer_ha_multirole"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_ceilometer_ha_multirole(self):
         """Deploy cluster in ha multirole mode with Ceilometer
 
@@ -700,6 +706,7 @@ class CeilometerHAMongo(CeilometerOSTFTestsRun):
             6. Verify ceilometer api is running
             7. Run OSTF
 
+        Duration 80m
         Snapshot: deploy_ceilometer_ha_multirole
 
         """
@@ -740,7 +747,7 @@ class HeatSimple(TestBasic):
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_heat_simple_neutron"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_heat_simple_neutron(self):
         """Deploy Heat cluster in simple mode with Neutron GRE
 
@@ -793,8 +800,9 @@ class HeatSimple(TestBasic):
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=5, networks_count=2, timeout=300)
 
+        _ip = self.fuel_web.get_nailgun_node_by_name("slave-01")['ip']
         checkers.verify_service(
-            self.env.get_ssh_to_remote_by_name("slave-01"),
+            self.env.d_env.get_ssh_to_remote(_ip),
             service_name='heat-api', count=3)
 
         common_func = Common(controller['ip'],
@@ -833,7 +841,7 @@ class HeatSimple(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_heat_simple_nova"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_heat_simple_nova(self):
         """Deploy Heat cluster in simple mode with Nova Network
 
@@ -847,6 +855,7 @@ class HeatSimple(TestBasic):
             7. Register heat image
             8. Run OSTF platform tests
 
+        Duration 40m
         Snapshot: deploy_heat_simple_nova
 
         """
@@ -884,8 +893,9 @@ class HeatSimple(TestBasic):
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)
 
+        _ip = self.fuel_web.get_nailgun_node_by_name("slave-01")['ip']
         checkers.verify_service(
-            self.env.get_ssh_to_remote_by_name("slave-01"),
+            self.env.d_env.get_ssh_to_remote(_ip),
             service_name='heat-api', count=3)
 
         common_func = Common(controller['ip'],
@@ -931,7 +941,7 @@ class HeatHA(TestBasic):
     """
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_heat_ha"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_heat_ha(self):
         """Deploy Heat cluster in HA mode
 
@@ -945,6 +955,7 @@ class HeatHA(TestBasic):
             7. Register heat image
             8. Run OSTF platform tests
 
+        Duration 70m
         Snapshot: deploy_heat_ha
 
         """
@@ -981,6 +992,7 @@ class HeatHA(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+
         cluster_vip = self.fuel_web.get_public_vip(cluster_id)
         os_conn = os_actions.OpenStackActions(
             cluster_vip, data['user'], data['password'], data['tenant'])

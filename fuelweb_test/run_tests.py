@@ -1,3 +1,4 @@
+# noinspection PyUnresolvedReferences
 def import_tests():
     from tests import test_admin_node  # noqa
     from tests import test_ceph  # noqa

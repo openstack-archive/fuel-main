@@ -18,7 +18,7 @@ from proboscis import asserts
 from proboscis import test
 
 from fuelweb_test.helpers.decorators import check_fuel_statistics
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.helpers import os_actions
 from fuelweb_test import settings as hlp_data
 from fuelweb_test import logger
@@ -31,7 +31,7 @@ class EnvironmentAction(base_test_case.TestBasic):
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
           groups=["smoke", "deploy_flat_stop_reset_on_deploying",
                   "image_based"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     @check_fuel_statistics
     def deploy_flat_stop_on_deploying(self):
         """Stop reset cluster in simple mode with flat nova-network
@@ -47,6 +47,7 @@ class EnvironmentAction(base_test_case.TestBasic):
             8. Re-deploy cluster
             9. Run OSTF
 
+        Duration 50m
         Snapshot: deploy_flat_stop_reset_on_deploying
 
         """
@@ -73,7 +74,8 @@ class EnvironmentAction(base_test_case.TestBasic):
         self.fuel_web.provisioning_cluster_wait(cluster_id)
         self.fuel_web.deploy_task_wait(cluster_id=cluster_id, progress=10)
         self.fuel_web.stop_deployment_wait(cluster_id)
-        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:2])
+        self.fuel_web.wait_nodes_get_online_state(
+            self.env.d_env.nodes().slaves[:2])
 
         self.fuel_web.update_nodes(
             cluster_id,
@@ -94,7 +96,7 @@ class EnvironmentAction(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
           groups=["smoke", "deploy_flat_stop_reset_on_provisioning"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_flat_stop_reset_on_provisioning(self):
         """Stop reset cluster in simple mode with flat nova-network
 
@@ -103,12 +105,13 @@ class EnvironmentAction(base_test_case.TestBasic):
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Run provisioning task
-            5. Stop deployment
+            5. Stop provisioning
             6. Reset settings
             7. Add 1 node with cinder role
             8. Re-deploy cluster
             9. Run OSTF
 
+        Duration 40m
         Snapshot: deploy_flat_stop_reset_on_deploying
 
         """
@@ -133,7 +136,8 @@ class EnvironmentAction(base_test_case.TestBasic):
         except Exception:
             logger.debug(traceback.format_exc())
 
-        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:2])
+        self.fuel_web.wait_nodes_get_online_state(
+            self.env.d_env.nodes().slaves[:2])
         self.fuel_web.update_nodes(
             cluster_id,
             {
@@ -153,7 +157,7 @@ class EnvironmentAction(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
           groups=["smoke", "deploy_reset_on_ready"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     @check_fuel_statistics
     def deploy_reset_on_ready(self):
         """Stop reset cluster in simple mode
@@ -169,6 +173,7 @@ class EnvironmentAction(base_test_case.TestBasic):
             8. Verify network
             9. Run OSTF
 
+        Duration 40m
         Snapshot: deploy_reset_on_ready
 
         """
@@ -193,7 +198,8 @@ class EnvironmentAction(base_test_case.TestBasic):
             os_conn, smiles_count=6, networks_count=1, timeout=300)
 
         self.fuel_web.stop_reset_env_wait(cluster_id)
-        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:2])
+        self.fuel_web.wait_nodes_get_online_state(
+            self.env.d_env.nodes().slaves[:2])
 
         self.fuel_web.update_vlan_network_fixed(
             cluster_id, amount=8, network_size=32)
@@ -216,7 +222,7 @@ class EnvironmentActionOnHA(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_5],
           groups=["smoke", "deploy_stop_reset_on_ha"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_stop_reset_on_ha(self):
         """Stop reset cluster in ha mode
 
@@ -230,6 +236,7 @@ class EnvironmentActionOnHA(base_test_case.TestBasic):
             7. Re-deploy cluster
             8. Run OSTF
 
+        Duration 60m
         Snapshot: deploy_stop_reset_on_ha
 
         """
@@ -251,7 +258,8 @@ class EnvironmentActionOnHA(base_test_case.TestBasic):
 
         self.fuel_web.deploy_cluster_wait_progress(cluster_id, progress=10)
         self.fuel_web.stop_deployment_wait(cluster_id)
-        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:3])
+        self.fuel_web.wait_nodes_get_online_state(
+            self.env.d_env.nodes().slaves[:3])
         self.fuel_web.update_nodes(
             cluster_id,
             {

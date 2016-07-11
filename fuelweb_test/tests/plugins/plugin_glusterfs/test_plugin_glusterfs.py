@@ -17,7 +17,7 @@ from proboscis.asserts import assert_equal
 from proboscis.asserts import assert_true
 from proboscis import test
 
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.helpers import checkers
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
@@ -31,6 +31,8 @@ from fuelweb_test.tests.base_test_case import TestBasic
 
 @test(groups=["plugins"])
 class GlusterfsPlugin(TestBasic):
+    """GlusterfsPlugin."""  # TODO documentation
+
     @classmethod
     def check_glusterfs_conf(cls, remote, path, gfs_endpoint):
         cmd = ' cat {0}'.format(path)
@@ -45,7 +47,7 @@ class GlusterfsPlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_glusterfs_simple"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_glusterfs_simple(self):
         """Deploy cluster in simple mode with glusterfs plugin
 
@@ -61,20 +63,20 @@ class GlusterfsPlugin(TestBasic):
             9. Check plugin health
             10. Run OSTF
 
+        Duration 35m
         Snapshot deploy_glusterfs_simple
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), GLUSTER_PLUGIN_PATH, '/var')
+            self.env.d_env.get_admin_remote(), GLUSTER_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
-            self.env.get_admin_remote(),
+            self.env.d_env.get_admin_remote(),
             plugin=os.path.basename(GLUSTER_PLUGIN_PATH))
 
         settings = None
@@ -111,8 +113,9 @@ class GlusterfsPlugin(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         for node in ('slave-01', 'slave-03'):
+            _ip = self.fuel_web.get_nailgun_node_by_name(node)['ip']
             self.check_glusterfs_conf(
-                remote=self.env.get_ssh_to_remote_by_name(node),
+                remote=self.env.d_env.get_ssh_to_remote(_ip),
                 path='/etc/cinder/glusterfs',
                 gfs_endpoint=GLUSTER_CLUSTER_ENDPOINT)
 
@@ -125,7 +128,7 @@ class GlusterfsPlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_glusterfs_ha"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_glusterfs_ha(self):
         """Deploy cluster in ha mode with glusterfs plugin
 
@@ -145,6 +148,7 @@ class GlusterfsPlugin(TestBasic):
             13. Check plugin health
             14. Run ostf
 
+        Duration 50m
         Snapshot deploy_glasterfs_ha
 
         """
@@ -153,12 +157,12 @@ class GlusterfsPlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), GLUSTER_PLUGIN_PATH, '/var')
+            self.env.d_env.get_admin_remote(), GLUSTER_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
-            self.env.get_admin_remote(),
+            self.env.d_env.get_admin_remote(),
             plugin=os.path.basename(GLUSTER_PLUGIN_PATH))
 
         settings = None
@@ -194,8 +198,9 @@ class GlusterfsPlugin(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
+        _ip = self.fuel_web.get_nailgun_node_by_name("slave-03")['ip']
         self.check_glusterfs_conf(
-            remote=self.env.get_ssh_to_remote_by_name('slave-03'),
+            remote=self.env.d_env.get_ssh_to_remote(_ip),
             path='/etc/cinder/glusterfs',
             gfs_endpoint=GLUSTER_CLUSTER_ENDPOINT)
 
@@ -215,8 +220,9 @@ class GlusterfsPlugin(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         for node in ('slave-03', 'slave-04', 'slave-05'):
+            _ip = self.fuel_web.get_nailgun_node_by_name(node)['ip']
             self.check_glusterfs_conf(
-                remote=self.env.get_ssh_to_remote_by_name(node),
+                remote=self.env.d_env.get_ssh_to_remote(_ip),
                 path='/etc/cinder/glusterfs',
                 gfs_endpoint=GLUSTER_CLUSTER_ENDPOINT)
 

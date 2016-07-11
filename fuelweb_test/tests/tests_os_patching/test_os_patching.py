@@ -21,7 +21,7 @@ from proboscis import SkipTest
 from proboscis import test
 
 from fuelweb_test.helpers import checkers
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.helpers import packages_fixture
 from fuelweb_test.helpers import utils
 from fuelweb_test import settings as hlp_data
@@ -31,12 +31,14 @@ from fuelweb_test import logger
 
 @test(groups=["os_patching"])
 class TestPatch(TestBasic):
+    """TestPatch."""  # TODO documentation
+
     def __init__(self, snapshot):
         super(TestPatch, self).__init__()
         self.snapshot = snapshot
 
     @test
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_and_patch(self):
         """Update OS on reverted env
 
@@ -59,16 +61,16 @@ class TestPatch(TestBasic):
         """
         logger.info("snapshot name is {0}".format(self.snapshot))
 
-        if not self.env.get_virtual_environment().has_snapshot(self.snapshot):
+        if not self.env.d_env.has_snapshot(self.snapshot):
             logger.error('There is no shaphot found {0}'.format(self.snapshot))
             raise SkipTest('Can not find snapshot {0}'.format(self.snapshot))
 
-        #  1. Revert  environment
-
+        # 1. Revert  environment
         self.env.revert_snapshot(self.snapshot)
 
         logger.info("Start upload upgrade archive")
-        node_ssh = self.env.get_ssh_to_remote(self.fuel_web.admin_node_ip)
+        node_ssh = self.env.d_env.get_ssh_to_remote(
+            self.fuel_web.admin_node_ip)
 
         # 2. Upload tarball
         checkers.upload_tarball(
@@ -93,7 +95,7 @@ class TestPatch(TestBasic):
         # Get cluster nodes
         nailgun_nodes = [
             self.fuel_web.get_nailgun_node_by_devops_node(node)
-            for node in self.env.nodes().slaves
+            for node in self.env.d_env.nodes().slaves
             if self.fuel_web.get_nailgun_node_by_devops_node(node)]
 
         # Try to remember installed nova-packages before update
@@ -112,8 +114,8 @@ class TestPatch(TestBasic):
 
         # 6. Run upgrade script
 
-        checkers.run_script(node_ssh, '/var/tmp', 'upgrade.sh', password=
-                            hlp_data.KEYSTONE_CREDS['password'])
+        checkers.run_script(node_ssh, '/var/tmp', 'upgrade.sh',
+                            password=hlp_data.KEYSTONE_CREDS['password'])
         logger.info('Check if the upgrade complete.')
 
         checkers.wait_upgrade_is_done(node_ssh=node_ssh,
@@ -289,8 +291,8 @@ class TestPatch(TestBasic):
         self.env.make_snapshot('{0}_and_patch'.format(self.snapshot))
 
     # TODO (tleontovich) enable if rollback will be available
-    #@test(depends_on=[deploy_and_patch])
-    @log_snapshot_on_error
+    # @test(depends_on=[deploy_and_patch])
+    @log_snapshot_after_test
     def deploy_and_rollback(self):
         """Rollback/Downgrade os on reverted env
 
@@ -306,7 +308,7 @@ class TestPatch(TestBasic):
 
         logger.info("snapshot name is {0}".format(self.snapshot))
 
-        if not self.env.get_virtual_environment().has_snapshot(
+        if not self.env.d_env.has_snapshot(
                 '{0}_and_patch'.format(self.snapshot)):
             raise SkipTest('Can not find snapshot {0}'.format(self.snapshot))
 
@@ -318,7 +320,7 @@ class TestPatch(TestBasic):
         # Get cluster nodes
         nailgun_nodes = [
             self.fuel_web.get_nailgun_node_by_devops_node(node)
-            for node in self.env.nodes().slaves
+            for node in self.env.d_env.nodes().slaves
             if self.fuel_web.get_nailgun_node_by_devops_node(node)]
 
         logger.info("Find next nodes {0}".format(nailgun_nodes))

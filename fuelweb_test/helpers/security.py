@@ -23,6 +23,7 @@ from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 
 
 class SecurityChecks(object):
+    """SecurityChecks."""  # TODO documentation
 
     def __init__(self, nailgun_client, environment):
         self.client = nailgun_client
@@ -31,7 +32,7 @@ class SecurityChecks(object):
 
     @logwrap
     def _listen_random_port(self, ip_address, protocol, tmp_file_path):
-        remote = self.environment.get_ssh_to_remote(ip_address)
+        remote = self.environment.d_env.get_ssh_to_remote(ip_address)
         # Install socat
         if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
             cmd = '/usr/bin/apt-get install -y {pkg}'.format(pkg='socat')
@@ -83,7 +84,7 @@ class SecurityChecks(object):
 
     @logwrap
     def verify_firewall(self, cluster_id):
-        admin_remote = self.environment.get_admin_remote()
+        admin_remote = self.environment.d_env.get_admin_remote()
         # Install NetCat
         if not self.environment.admin_install_pkg('nc') == 0:
             raise Exception('Can not install package "nc".')
@@ -106,15 +107,14 @@ class SecurityChecks(object):
                     format(opts=nc_opts, string=check_string, ip=node['ip'],
                            port=port)
                 admin_remote.execute(cmd)
-                remote = self.environment.get_ssh_to_remote(node['ip'])
+                remote = self.environment.d_env.get_ssh_to_remote(node['ip'])
                 cmd = 'cat {0}; mv {0}{{,.old}}'.format(tmp_file_path)
                 result = remote.execute(cmd)
                 if ''.join(result['stdout']).strip() == check_string:
-                    raise Exception(('Firewall vulnerability detected. '
-                                    'Unused port {0}/{1} can be accessed'
-                                    ' on {2} (node-{3}) node. Check {4}.old'
-                                    ' and {4}.dump files on the node for de'
-                                    'tails').format(port, protocol,
-                                                    node['name'], node['id'],
-                                                    tmp_file_path))
+                    msg = ('Firewall vulnerability detected. Unused port '
+                           '{0}/{1} can be accessed on {2} (node-{3}) node. '
+                           'Check {4}.old and {4}.dump files on the node for '
+                           'details'.format(port, protocol, node['name'],
+                                            node['id'], tmp_file_path))
+                    raise Exception(msg)
         logger.info('Firewall test passed')

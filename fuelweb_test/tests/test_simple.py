@@ -21,7 +21,7 @@ from proboscis import test
 
 from fuelweb_test.helpers import checkers
 from devops.helpers.helpers import tcp_ping
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.helpers.eb_tables import Ebtables
 from fuelweb_test.helpers import os_actions
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
@@ -35,7 +35,7 @@ from fuelweb_test import logger
 class OneNodeDeploy(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_release],
           groups=["deploy_one_node"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_one_node(self):
         """Deploy cluster with controller node only
 
@@ -46,10 +46,13 @@ class OneNodeDeploy(TestBasic):
             4. Validate cluster was set up correctly, there are no dead
             services, there are no errors in logs
 
+        Duration 20m
+
         """
         self.env.revert_snapshot("ready")
         self.fuel_web.client.get_root()
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:1])
+        self.env.bootstrap_nodes(
+            self.env.d_env.nodes().slaves[:1])
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__
@@ -75,7 +78,7 @@ class SimpleFlat(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["smoke", "deploy_simple_flat",
                   "simple_nova_flat", "image_based"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_simple_flat(self):
         """Deploy cluster in simple mode with flat nova-network
 
@@ -135,7 +138,7 @@ class SimpleFlat(TestBasic):
 
     @test(depends_on=[deploy_simple_flat],
           groups=["simple_flat_create_instance"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def simple_flat_create_instance(self):
         """Create instance with file injection
 
@@ -144,6 +147,8 @@ class SimpleFlat(TestBasic):
             2. Create instance with file injection
             3. Assert instance was created
             4. Assert file is on instance
+
+        Duration 20m
 
         """
         self.env.revert_snapshot("deploy_simple_flat")
@@ -169,7 +174,7 @@ class SimpleFlat(TestBasic):
 
     @test(depends_on=[deploy_simple_flat],
           groups=["simple_flat_node_deletion"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def simple_flat_node_deletion(self):
         """Remove controller from cluster in simple mode with flat nova-network
 
@@ -178,6 +183,8 @@ class SimpleFlat(TestBasic):
             2. Remove compute nodes
             3. Deploy changes
             4. Verify node returns to unallocated pull
+
+        Duration 8m
 
         """
         self.env.revert_snapshot("deploy_simple_flat")
@@ -198,7 +205,7 @@ class SimpleFlat(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["simple_flat_blocked_vlan"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def simple_flat_blocked_vlan(self):
         """Verify network verification with blocked VLANs
 
@@ -212,6 +219,8 @@ class SimpleFlat(TestBasic):
             6. Block first VLAN
             7. Run Verify network and assert it fails
             8. Restore first VLAN
+
+        Duration 20m
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -234,7 +243,8 @@ class SimpleFlat(TestBasic):
             os_conn, smiles_count=6, networks_count=1, timeout=300)
 
         ebtables = self.env.get_ebtables(
-            cluster_id, self.env.nodes().slaves[:2])
+            cluster_id, self.env.get_virtual_environment(
+            ).nodes().slaves[:2])
         ebtables.restore_vlans()
         try:
             ebtables.block_first_vlan()
@@ -244,7 +254,7 @@ class SimpleFlat(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["simple_flat_add_compute"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def simple_flat_add_compute(self):
         """Add compute node to cluster in simple mode
 
@@ -313,7 +323,7 @@ class SimpleFlat(TestBasic):
 class SimpleVlan(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_simple_vlan", "simple_nova_vlan"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_simple_vlan(self):
         """Deploy cluster in simple mode with nova-network VLAN Manager
 
@@ -375,7 +385,7 @@ class SimpleVlan(TestBasic):
 class MultiroleControllerCinder(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_multirole_controller_cinder"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_multirole_controller_cinder(self):
         """Deploy cluster in simple mode with multi-role controller and cinder
 
@@ -387,6 +397,7 @@ class MultiroleControllerCinder(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 30m
         Snapshot: deploy_multirole_controller_cinder
 
         """
@@ -423,7 +434,7 @@ class MultiroleControllerCinder(TestBasic):
 class MultiroleComputeCinder(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_multirole_compute_cinder"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_multirole_compute_cinder(self):
         """Deploy cluster in simple mode with multi-role compute and cinder
 
@@ -435,6 +446,7 @@ class MultiroleComputeCinder(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 30m
         Snapshot: deploy_multirole_compute_cinder
 
         """
@@ -465,7 +477,7 @@ class MultiroleComputeCinder(TestBasic):
 class FloatingIPs(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_floating_ips"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_floating_ips(self):
         """Deploy cluster with non-default 3 floating IPs ranges
 
@@ -478,6 +490,7 @@ class FloatingIPs(TestBasic):
             6. Verify available floating IP list
             7. Run OSTF
 
+        Duration 30m
         Snapshot: deploy_floating_ips
 
         """
@@ -524,7 +537,7 @@ class FloatingIPs(TestBasic):
 class SimpleCinder(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_simple_cinder", "simple_nova_cinder"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_simple_cinder(self):
         """Deploy cluster in simple mode with cinder
 
@@ -577,7 +590,7 @@ class SimpleCinder(TestBasic):
 class NodeMultipleInterfaces(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_node_multiple_interfaces"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_node_multiple_interfaces(self):
         """Deploy cluster with networks allocated on different interfaces
 
@@ -632,7 +645,7 @@ class NodeMultipleInterfaces(TestBasic):
 class NodeDiskSizes(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["check_nodes_notifications"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def check_nodes_notifications(self):
         """Verify nailgun notifications for discovered nodes
 
@@ -640,6 +653,8 @@ class NodeDiskSizes(TestBasic):
             1. Revert snapshot "ready_with_3_slaves"
             2. Verify hard drive sizes for discovered nodes in /api/nodes
             3. Verify hard drive sizes for discovered nodes in notifications
+
+        Duration 5m
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -670,7 +685,7 @@ class NodeDiskSizes(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["check_nodes_disks"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def check_nodes_disks(self):
         """Verify nailgun notifications for discovered nodes
 
@@ -751,7 +766,7 @@ class NodeDiskSizes(TestBasic):
 class MultinicBootstrap(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_release],
           groups=["multinic_bootstrap_booting"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def multinic_bootstrap_booting(self):
         """Verify slaves booting with blocked mac address
 
@@ -761,10 +776,12 @@ class MultinicBootstrap(TestBasic):
             3. Restore mac addresses and boot first slave
             4. Verify slave mac addresses is equal to unblocked
 
+        Duration 2m
+
         """
         self.env.revert_snapshot("ready")
 
-        slave = self.env.nodes().slaves[0]
+        slave = self.env.d_env.nodes().slaves[0]
         mac_addresses = [interface.mac_address for interface in
                          slave.interfaces.filter(network__name='internal')]
         try:
@@ -773,7 +790,8 @@ class MultinicBootstrap(TestBasic):
             for mac in mac_addresses:
                 Ebtables.restore_mac(mac)
                 slave.destroy(verbose=False)
-                self.env.nodes().admins[0].revert("ready")
+                self.env.get_virtual_environment(
+                ).nodes().admins[0].revert("ready")
                 nailgun_slave = self.env.bootstrap_nodes([slave])[0]
                 assert_equal(mac.upper(), nailgun_slave['mac'].upper())
                 Ebtables.block_mac(mac)
@@ -786,7 +804,7 @@ class MultinicBootstrap(TestBasic):
 class DeleteEnvironment(TestBasic):
     @test(depends_on=[SimpleFlat.deploy_simple_flat],
           groups=["delete_environment"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def delete_environment(self):
         """Delete existing environment
         and verify nodes returns to unallocated state
@@ -795,6 +813,8 @@ class DeleteEnvironment(TestBasic):
             1. Revert "simple flat" environment
             2. Delete environment
             3. Verify node returns to unallocated pull
+
+        Duration 15m
 
         """
         self.env.revert_snapshot("deploy_simple_flat")
@@ -821,7 +841,7 @@ class UntaggedNetworksNegative(TestBasic):
         depends_on=[SetupEnvironment.prepare_slaves_3],
         groups=["untagged_networks_negative"],
         enabled=False)
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def untagged_networks_negative(self):
         """Verify network verification fails with untagged network on eth0
 
@@ -833,6 +853,8 @@ class UntaggedNetworksNegative(TestBasic):
             5. Remove VLAN tagging from networks which are on eth0
             6. Run network verification (assert it fails)
             7. Start cluster deployment (assert it fails)
+
+        Duration 30m
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -879,7 +901,7 @@ class UntaggedNetworksNegative(TestBasic):
 class BackupRestoreSimple(TestBasic):
     @test(depends_on=[SimpleFlat.deploy_simple_flat],
           groups=["simple_backup_restore"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def simple_backup_restore(self):
         """Backup/restore master node with cluster in simple mode
 
@@ -893,6 +915,8 @@ class BackupRestoreSimple(TestBasic):
             7. Check restore
             8. Run OSTF
 
+        Duration 35m
+
         """
         self.env.revert_snapshot("deploy_simple_flat")
 
@@ -902,8 +926,8 @@ class BackupRestoreSimple(TestBasic):
             'novaSimpleFlat', 'novaSimpleFlat', 'novaSimpleFlat')
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=6, networks_count=1, timeout=300)
-        self.fuel_web.backup_master(self.env.get_admin_remote())
-        checkers.backup_check(self.env.get_admin_remote())
+        self.fuel_web.backup_master(self.env.d_env.get_admin_remote())
+        checkers.backup_check(self.env.d_env.get_admin_remote())
 
         self.fuel_web.update_nodes(
             cluster_id, {'slave-03': ['compute']}, True, False)
@@ -911,10 +935,10 @@ class BackupRestoreSimple(TestBasic):
         assert_equal(
             3, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))
 
-        self.fuel_web.restore_master(self.env.get_admin_remote())
-        checkers.restore_check_sum(self.env.get_admin_remote())
-        self.fuel_web.restore_check_nailgun_api(self.env.get_admin_remote())
-        checkers.iptables_check(self.env.get_admin_remote())
+        self.fuel_web.restore_master(self.env.d_env.get_admin_remote())
+        checkers.restore_check_sum(self.env.d_env.get_admin_remote())
+        self.fuel_web.restore_check_nailgun_api(self.env.d_env.get_admin_remote())
+        checkers.iptables_check(self.env.d_env.get_admin_remote())
 
         assert_equal(
             2, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))

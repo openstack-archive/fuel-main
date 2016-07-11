@@ -13,46 +13,70 @@
 #    under the License.
 
 import time
+from urlparse import urlparse
+
+from cinderclient import client as cinderclient
+from glanceclient.v1 import Client as GlanceClient
+from keystoneclient.v2_0 import Client as KeystoneClient
+from keystoneclient.exceptions import ClientException
+from novaclient.v1_1 import Client as novaclient
+import neutronclient.v2_0.client as neutronclient
+from proboscis.asserts import assert_equal
 
 from fuelweb_test import logger as LOGGER
 from fuelweb_test import logwrap as LOGWRAP
 
 
-from cinderclient import client as cinderclient
-from glanceclient.v1 import Client as glanceclient
-from keystoneclient.v2_0 import Client as keystoneclient
-from novaclient.v1_1 import Client as novaclient
-import neutronclient.v2_0.client as neutronclient
-from proboscis.asserts import assert_equal
-
-
 class Common(object):
+    """Common."""  # TODO documentation
 
     def __init__(self, controller_ip, user, password, tenant):
         self.controller_ip = controller_ip
+
+        def make_endpoint(endpoint):
+            parse = urlparse(endpoint)
+            return parse._replace(
+                netloc='{}:{}'.format(
+                    self.controller_ip, parse.port)).geturl()
+
         auth_url = 'http://{0}:5000/v2.0/'.format(self.controller_ip)
+
         LOGGER.debug('Auth URL is {0}'.format(auth_url))
+
+        keystone_args = {'username': user, 'password': password,
+                         'tenant_name': tenant, 'auth_url': auth_url}
+        self.keystone = self._get_keystoneclient(**keystone_args)
+
+        token = self.keystone.auth_token
+        LOGGER.debug('Token is {0}'.format(token))
+
+        neutron_endpoint = self.keystone.service_catalog.url_for(
+            service_type='network', endpoint_type='publicURL')
+        neutron_args = {'username': user, 'password': password,
+                        'tenant_name': tenant, 'auth_url': auth_url,
+                        'endpoint_url': make_endpoint(neutron_endpoint)}
+        self.neutron = neutronclient.Client(**neutron_args)
+
         self.nova = novaclient(username=user,
                                api_key=password,
                                project_id=tenant,
                                auth_url=auth_url)
-        self.keystone = keystoneclient(username=user,
-                                       password=password,
-                                       tenant_name=tenant,
-                                       auth_url=auth_url)
-        self.cinder = cinderclient.Client(1, user, password,
-                                          tenant, auth_url)
-        self.neutron = neutronclient.Client(
-            username=user,
-            password=password,
-            tenant_name=tenant,
-            auth_url=auth_url)
-        token = self.keystone.auth_token
-        LOGGER.debug('Token is {0}'.format(token))
+
+        cinder_endpoint = self.keystone.service_catalog.url_for(
+            service_type='volume', endpoint_type='publicURL')
+        cinder_args = {'version': 1, 'username': user,
+                       'api_key': password, 'project_id': tenant,
+                       'auth_url': auth_url,
+                       'bypass_url': make_endpoint(cinder_endpoint)}
+        self.cinder = cinderclient.Client(**cinder_args)
+
         glance_endpoint = self.keystone.service_catalog.url_for(
             service_type='image', endpoint_type='publicURL')
-        LOGGER.debug('Glance endpoind is {0}'.format(glance_endpoint))
-        self.glance = glanceclient(endpoint=glance_endpoint, token=token)
+        LOGGER.debug('Glance endpoint is {0}'.format(
+            make_endpoint(glance_endpoint)))
+        glance_args = {'endpoint': make_endpoint(glance_endpoint),
+                       'token': token}
+        self.glance = GlanceClient(**glance_args)
 
     def goodbye_security(self):
         secgroup_list = self.nova.security_groups.list()
@@ -75,15 +99,16 @@ class Common(object):
                      format(local_path, image))
         with open('{0}/{1}'.format(local_path, image)) as fimage:
             LOGGER.debug('Try to open image')
-            self.glance.images.create(
+            image = self.glance.images.create(
                 name=image_name, is_public=True,
                 disk_format='qcow2',
                 container_format='bare', data=fimage,
                 properties=properties)
+        return image
 
     def create_key(self, key_name):
         LOGGER.debug('Try to create key {0}'.format(key_name))
-        self.nova.keypairs.create(key_name)
+        return self.nova.keypairs.create(key_name)
 
     def create_instance(self, flavor_name='test_flavor', ram=64, vcpus=1,
                         disk=1, server_name='test_instance', image_name=None,
@@ -131,11 +156,29 @@ class Common(object):
         try:
             _verify_instance_state()
         except AssertionError:
-            LOGGER.debug('Instance is not active, '
-                         'lets provide it the last chance and sleep 60 sec')
+            LOGGER.debug('Instance is not {0}, lets provide it the last '
+                         'chance and sleep 60 sec'.format(expected_state))
             time.sleep(60)
             _verify_instance_state()
 
     def delete_instance(self, server):
-        LOGGER.debug('Try to create instance')
+        LOGGER.debug('Try to delete instance')
         self.nova.servers.delete(server)
+
+    def _get_keystoneclient(self, username, password, tenant_name, auth_url,
+                            retries=3):
+        keystone = None
+        for i in range(retries):
+            try:
+                keystone = KeystoneClient(username=username,
+                                          password=password,
+                                          tenant_name=tenant_name,
+                                          auth_url=auth_url)
+                break
+            except ClientException as e:
+                err = "Try nr {0}. Could not get keystone client, error: {1}"
+                LOGGER.warning(err.format(i + 1, e))
+                time.sleep(5)
+        if not keystone:
+            raise
+        return keystone

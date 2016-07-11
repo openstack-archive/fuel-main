@@ -31,6 +31,8 @@ JENKINS = {
 
 
 class LaunchpadSettings(object):
+    """LaunchpadSettings."""  # TODO documentation
+
     project = os.environ.get('LAUNCHPAD_PROJECT', 'fuel')
     milestone = os.environ.get('LAUNCHPAD_MILESTONE', '6.0.1')
     closed_statuses = [
@@ -40,6 +42,8 @@ class LaunchpadSettings(object):
 
 
 class TestRailSettings(object):
+    """TestRailSettings."""  # TODO documentation
+
     url = os.environ.get('TESTRAIL_URL', 'https://mirantis.testrail.com')
     user = os.environ.get('TESTRAIL_USER', 'user@example.com')
     password = os.environ.get('TESTRAIL_PASSWORD', 'password')

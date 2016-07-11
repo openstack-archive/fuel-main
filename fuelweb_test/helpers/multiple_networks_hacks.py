@@ -29,12 +29,12 @@ from fuelweb_test import logwrap
 @logwrap
 def configure_second_admin_cobbler(self):
     dhcp_template = '/etc/cobbler/dnsmasq.template'
-    remote = self.get_admin_remote()
+    remote = self.d_env.get_admin_remote()
     main_admin_ip = str(self.nodes().admin.
                         get_ip_address_by_network_name(self.admin_net))
     second_admin_ip = str(self.nodes().admin.
                           get_ip_address_by_network_name(self.admin_net2))
-    second_admin_network = self.get_network(self.admin_net2).split('/')[0]
+    second_admin_network = self._get_network(self.admin_net2).split('/')[0]
     second_admin_netmask = self.get_net_mask(self.admin_net2)
     network = IPNetwork('{0}/{1}'.format(second_admin_network,
                                          second_admin_netmask))
@@ -56,7 +56,7 @@ def configure_second_admin_cobbler(self):
 
 @logwrap
 def configure_second_admin_firewall(self, network, netmask):
-    remote = self.get_admin_remote()
+    remote = self.d_env.get_admin_remote()
     # Allow forwarding and correct remote logging
     # for nodes from the second admin network
     rules = [
@@ -93,11 +93,11 @@ def configure_second_admin_firewall(self, network, netmask):
 
 @logwrap
 def configure_second_dhcrelay(self):
-    remote = self.get_admin_remote()
+    remote = self.d_env.get_admin_remote()
     second_admin_if = settings.INTERFACES.get(self.admin_net2)
     sed_cmd = "/  interface:/a \  interface: {0}".format(second_admin_if)
-    self._fuel_web.modify_python_file(remote, sed_cmd,
-                                      settings.FUEL_SETTINGS_YAML)
+    self.fuel_web.modify_python_file(remote, sed_cmd,
+                                     settings.FUEL_SETTINGS_YAML)
     cmd = ('supervisorctl restart dhcrelay_monitor; '
            'pgrep -f "[d]hcrelay.*{0}"').format(second_admin_if)
     result = remote.execute(cmd)

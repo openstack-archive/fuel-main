@@ -17,7 +17,7 @@ from proboscis.asserts import assert_equal
 from proboscis import test
 
 from fuelweb_test import logger
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.helpers import checkers
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
@@ -28,10 +28,11 @@ from fuelweb_test.tests.base_test_case import TestBasic
 
 @test(groups=["plugins"])
 class ExamplePlugin(TestBasic):
+    """ExamplePlugin."""  # TODO documentation
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_neutron_example_simple"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_neutron_example_simple(self):
         """Deploy cluster in simple mode with example plugin
 
@@ -54,13 +55,13 @@ class ExamplePlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(),
+            self.env.d_env.get_admin_remote(),
             EXAMPLE_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
-            self.env.get_admin_remote(),
+            self.env.d_env.get_admin_remote(),
             plugin=os.path.basename(EXAMPLE_PLUGIN_PATH))
 
         segment_type = 'vlan'
@@ -96,19 +97,19 @@ class ExamplePlugin(TestBasic):
         logger.debug("Start to check service on node {0}".format('slave-01'))
         cmd_curl = 'curl localhost:8234'
         cmd = 'pgrep -f fuel-simple-service'
-        res_pgrep = self.env.get_ssh_to_remote_by_name(
-            'slave-01').execute(cmd)
+
+        _ip = self.fuel_web.get_nailgun_node_by_name("slave-01")['ip']
+        res_pgrep = self.env.d_env.get_ssh_to_remote(_ip).execute(cmd)
         assert_equal(0, res_pgrep['exit_code'],
                      'Failed with error {0}'.format(res_pgrep['stderr']))
         assert_equal(1, len(res_pgrep['stdout']),
                      'Failed with error {0}'.format(res_pgrep['stderr']))
         # curl to service
-        res_curl = self.env.get_ssh_to_remote_by_name(
-            'slave-01').execute(cmd_curl)
+        _ip = self.fuel_web.get_nailgun_node_by_name("slave-01")['ip']
+        res_curl = self.env.d_env.get_ssh_to_remote(_ip).execute(cmd_curl)
         assert_equal(0, res_pgrep['exit_code'],
                      'Failed with error {0}'.format(res_curl['stderr']))
 
-        # add verification here
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
@@ -116,7 +117,7 @@ class ExamplePlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_nova_example_ha"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_nova_example_ha(self):
         """Deploy cluster in ha mode with example plugin
 
@@ -132,6 +133,7 @@ class ExamplePlugin(TestBasic):
             9. check plugin health
             10. Run OSTF
 
+        Duration 70m
         Snapshot deploy_nova_example_ha
 
         """
@@ -140,12 +142,12 @@ class ExamplePlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), EXAMPLE_PLUGIN_PATH, '/var')
+            self.env.d_env.get_admin_remote(), EXAMPLE_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
-            self.env.get_admin_remote(),
+            self.env.d_env.get_admin_remote(),
             plugin=os.path.basename(EXAMPLE_PLUGIN_PATH))
 
         cluster_id = self.fuel_web.create_cluster(
@@ -177,8 +179,8 @@ class ExamplePlugin(TestBasic):
             logger.debug("Start to check service on node {0}".format(node))
             cmd_curl = 'curl localhost:8234'
             cmd = 'pgrep -f fuel-simple-service'
-            res_pgrep = self.env.get_ssh_to_remote_by_name(
-                node).execute(cmd)
+            _ip = self.fuel_web.get_nailgun_node_by_name(node)['ip']
+            res_pgrep = self.env.d_env.get_ssh_to_remote(_ip).execute(cmd)
             assert_equal(0, res_pgrep['exit_code'],
                          'Failed with error {0} '
                          'on node {1}'.format(res_pgrep['stderr'], node))
@@ -186,13 +188,12 @@ class ExamplePlugin(TestBasic):
                          'Failed with error {0} on the '
                          'node {1}'.format(res_pgrep['stderr'], node))
             # curl to service
-            res_curl = self.env.get_ssh_to_remote_by_name(
-                node).execute(cmd_curl)
+            _ip = self.fuel_web.get_nailgun_node_by_name(node)['ip']
+            res_curl = self.env.d_env.get_ssh_to_remote(_ip).execute(cmd_curl)
             assert_equal(0, res_pgrep['exit_code'],
                          'Failed with error {0} '
                          'on node {1}'.format(res_curl['stderr'], node))
 
-        # add verification here
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
@@ -200,9 +201,9 @@ class ExamplePlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_neutron_example_ha_add_node"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_neutron_example_ha_add_node(self):
-        """Deploy cluster in ha mode with example plugin
+        """Deploy and scale cluster in ha mode with example plugin
 
         Scenario:
             1. Upload plugin to the master node
@@ -219,6 +220,7 @@ class ExamplePlugin(TestBasic):
             12. Check plugin health
             13. Run OSTF
 
+        Duration 150m
         Snapshot deploy_neutron_example_ha_add_node
 
         """
@@ -227,12 +229,12 @@ class ExamplePlugin(TestBasic):
         # copy plugin to the master node
 
         checkers.upload_tarball(
-            self.env.get_admin_remote(), EXAMPLE_PLUGIN_PATH, '/var')
+            self.env.d_env.get_admin_remote(), EXAMPLE_PLUGIN_PATH, '/var')
 
         # install plugin
 
         checkers.install_plugin_check_code(
-            self.env.get_admin_remote(),
+            self.env.d_env.get_admin_remote(),
             plugin=os.path.basename(EXAMPLE_PLUGIN_PATH))
 
         cluster_id = self.fuel_web.create_cluster(
@@ -262,19 +264,20 @@ class ExamplePlugin(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
         self.fuel_web.verify_network(cluster_id)
 
-         # check if service ran on controller
+        # check if service ran on controller
         logger.debug("Start to check service on node {0}".format('slave-01'))
         cmd_curl = 'curl localhost:8234'
         cmd = 'pgrep -f fuel-simple-service'
-        res_pgrep = self.env.get_ssh_to_remote_by_name(
-            'slave-01').execute(cmd)
+
+        _ip = self.fuel_web.get_nailgun_node_by_name("slave-01")['ip']
+        res_pgrep = self.env.d_env.get_ssh_to_remote(_ip).execute(cmd)
         assert_equal(0, res_pgrep['exit_code'],
                      'Failed with error {0}'.format(res_pgrep['stderr']))
         assert_equal(1, len(res_pgrep['stdout']),
                      'Failed with error {0}'.format(res_pgrep['stderr']))
         # curl to service
-        res_curl = self.env.get_ssh_to_remote_by_name(
-            'slave-01').execute(cmd_curl)
+        _ip = self.fuel_web.get_nailgun_node_by_name("slave-01")['ip']
+        res_curl = self.env.d_env.get_ssh_to_remote(_ip).execute(cmd_curl)
         assert_equal(0, res_pgrep['exit_code'],
                      'Failed with error {0}'.format(res_curl['stderr']))
 

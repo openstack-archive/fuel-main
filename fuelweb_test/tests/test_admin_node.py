@@ -21,7 +21,7 @@ from proboscis import test
 import xmlrpclib
 
 from fuelweb_test.helpers import checkers
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_CENTOS
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -41,6 +41,8 @@ class TestAdminNode(TestBasic):
         Scenario:
             1. Revert snapshot "empty"
             2. test cobbler API and HTTP server through send http request
+
+        Duration 1m
 
         """
         if OPENSTACK_RELEASE_CENTOS not in OPENSTACK_RELEASE:
@@ -63,7 +65,7 @@ class TestAdminNode(TestBasic):
 
     @test(depends_on=[SetupEnvironment.setup_master],
           groups=["test_astuted_alive"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def test_astuted_alive(self):
         """Test astute master and worker processes are alive on master node
 
@@ -71,11 +73,13 @@ class TestAdminNode(TestBasic):
             1. Revert snapshot "empty"
             2. Search for master and child processes
 
+        Duration 1m
+
         """
         if OPENSTACK_RELEASE_CENTOS not in OPENSTACK_RELEASE:
             raise SkipTest()
         self.env.revert_snapshot("empty")
-        ps_output = self.env.get_admin_remote().execute('ps ax')['stdout']
+        ps_output = self.env.d_env.get_admin_remote().execute('ps ax')['stdout']
         astute_master = filter(lambda x: 'astute master' in x, ps_output)
         logger.info("Found astute processes: %s" % astute_master)
         assert_equal(len(astute_master), 1)
@@ -90,7 +94,7 @@ class TestAdminNode(TestBasic):
 class TestAdminNodeBackupRestore(TestBasic):
     @test(depends_on=[SetupEnvironment.setup_master],
           groups=["backup_restore_master_base"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def backup_restore_master_base(self):
         """Backup/restore master node
 
@@ -101,26 +105,30 @@ class TestAdminNodeBackupRestore(TestBasic):
             4. Restore master
             5. Check restore
 
+        Duration 30m
+
         """
         self.env.revert_snapshot("empty")
-        self.fuel_web.backup_master(self.env.get_admin_remote())
-        checkers.backup_check(self.env.get_admin_remote())
-        self.fuel_web.restore_master(self.env.get_admin_remote())
-        self.fuel_web.restore_check_nailgun_api(self.env.get_admin_remote())
-        checkers.restore_check_sum(self.env.get_admin_remote())
-        checkers.iptables_check(self.env.get_admin_remote())
+        self.fuel_web.backup_master(self.env.d_env.get_admin_remote())
+        checkers.backup_check(self.env.d_env.get_admin_remote())
+        self.fuel_web.restore_master(self.env.d_env.get_admin_remote())
+        self.fuel_web.restore_check_nailgun_api(self.env.d_env.get_admin_remote())
+        checkers.restore_check_sum(self.env.d_env.get_admin_remote())
+        checkers.iptables_check(self.env.d_env.get_admin_remote())
 
 
 @test(groups=["setup_master_custom"])
 class TestAdminNodeCustomManifests(TestBasic):
     @test(groups=["setup_master_custom_manifests"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def setup_with_custom_manifests(self):
         """Setup master node with custom manifests
         Scenario:
-        1. Start installation of master node
-        2. Enter "fuelmenu"
-        3. Upload custom manifests
-        4. Kill "fuelmenu" pid
+            1. Start installation of master
+            2. Enter "fuelmenu"
+            3. Upload custom manifests
+            4. Kill "fuelmenu" pid
+
+        Duration 20m
         """
         self.env.setup_environment(custom=True)
