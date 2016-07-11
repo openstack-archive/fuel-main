@@ -35,7 +35,8 @@ class TestNeutronFailover(base_test_case.TestBasic):
         node_fqdn = self.fuel_web.get_fqdn_by_hostname(node)
         logger.debug('node name with dhcp is {0}'.format(node))
         devops_node = self.fuel_web.find_devops_node_by_nailgun_fqdn(
-            node_fqdn, self.env.nodes().slaves[0:6])
+            node_fqdn, self.env.get_virtual_environment(
+            ).nodes().slaves[0:6])
         return devops_node
 
     @classmethod
@@ -43,7 +44,8 @@ class TestNeutronFailover(base_test_case.TestBasic):
         node_with_l3_fqdn = self.fuel_web.get_fqdn_by_hostname(node_with_l3)
         logger.debug("new node with l3 is {0}".format(node_with_l3))
         devops_node = self.fuel_web.find_devops_node_by_nailgun_fqdn(
-            node_with_l3_fqdn, self.env.nodes().slaves[0:6])
+            node_with_l3_fqdn,
+            self.env.get_virtual_environment().nodes().slaves[0:6])
         return devops_node
 
     @classmethod
@@ -94,6 +96,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
             4. Add 1 node with cinder role
             5. Deploy the cluster
 
+        Duration 90m
         Snapshot deploy_ha_neutron
 
         """
@@ -102,7 +105,8 @@ class TestNeutronFailover(base_test_case.TestBasic):
         except SkipTest:
             return
         self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:6])
+        self.env.bootstrap_nodes(
+            self.env.get_virtual_environment().nodes().slaves[:6])
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -141,9 +145,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
             5. Check network connectivity from instance via
                dhcp namespace
             6. Run OSTF
-
-        Snapshot deploy_ha_neutron
-
+        Duration 30m
         """
         self.env.revert_snapshot("deploy_ha_neutron")
         cluster_id = self.fuel_web.get_last_created_cluster()
@@ -208,8 +210,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
                dhcp namespace
             6. Run OSTF
 
-        Snapshot deploy_ha_neutron
-
+        Duration 30m
         """
         self.env.revert_snapshot("deploy_ha_neutron")
         cluster_id = self.fuel_web.get_last_created_cluster()
@@ -268,8 +269,7 @@ class TestNeutronFailover(base_test_case.TestBasic):
                dhcp namespace
             6. Run OSTF
 
-        Snapshot deploy_ha_neutron
-
+        Duration 30m
         """
         self.env.revert_snapshot("deploy_ha_neutron")
         cluster_id = self.fuel_web.get_last_created_cluster()
@@ -300,7 +300,8 @@ class TestNeutronFailover(base_test_case.TestBasic):
             new_devops)['online'], timeout=60 * 10)
         self.fuel_web.wait_mysql_galera_is_up(
             [n.name for n in
-             set(self.env.nodes().slaves[:3]) - {new_devops}])
+             set(self.env.get_virtual_environment(
+             ).nodes().slaves[:3]) - {new_devops}])
 
         try:
             wait(lambda: not node_with_l3 == os_conn.get_l3_agent_hosts(

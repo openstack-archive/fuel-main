@@ -41,6 +41,7 @@ class NeutronGre(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 35m
         Snapshot deploy_neutron_gre
 
         """
@@ -101,6 +102,7 @@ class NeutronVlan(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 35m
         Snapshot deploy_neutron_vlan
 
         """
@@ -157,6 +159,7 @@ class NeutronGreHa(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 80m
         Snapshot deploy_neutron_gre_ha
 
         """
@@ -188,7 +191,6 @@ class NeutronGreHa(TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
-        # assert_equal(str(cluster['net_segment_type']), segment_type)
 
         self.fuel_web.verify_network(cluster_id)
         devops_node = self.fuel_web.get_nailgun_primary_controller(
@@ -223,6 +225,7 @@ class NeutronGreHaPublicNetwork(TestBasic):
             7. Run network verification
             8. Run OSTF
 
+        Duration 80m
         Snapshot deploy_neutron_gre_ha_public_network
 
         """
@@ -255,7 +258,6 @@ class NeutronGreHaPublicNetwork(TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
-        # assert_equal(str(cluster['net_segment_type']), segment_type)
 
         self.fuel_web.verify_network(cluster_id)
 
@@ -284,6 +286,7 @@ class NeutronVlanHa(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 80m
         Snapshot deploy_neutron_vlan_ha
 
         """
@@ -351,8 +354,8 @@ class NeutronVlanHaPublicNetwork(TestBasic):
             7. Run network verification
             8. Run OSTF
 
+        Duration 80m
         Snapshot deploy_neutron_vlan_ha_public_network
-
 
         """
         self.env.revert_snapshot("ready_with_5_slaves")

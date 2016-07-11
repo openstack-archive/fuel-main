@@ -108,7 +108,6 @@ class ExamplePlugin(TestBasic):
         assert_equal(0, res_pgrep['exit_code'],
                      'Failed with error {0}'.format(res_curl['stderr']))
 
-        # add verification here
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
@@ -132,6 +131,7 @@ class ExamplePlugin(TestBasic):
             9. check plugin health
             10. Run OSTF
 
+        Duration 70m
         Snapshot deploy_nova_example_ha
 
         """
@@ -192,7 +192,6 @@ class ExamplePlugin(TestBasic):
                          'Failed with error {0} '
                          'on node {1}'.format(res_curl['stderr'], node))
 
-        # add verification here
         self.fuel_web.run_ostf(
             cluster_id=cluster_id)
 
@@ -202,7 +201,7 @@ class ExamplePlugin(TestBasic):
           groups=["deploy_neutron_example_ha_add_node"])
     @log_snapshot_on_error
     def deploy_neutron_example_ha_add_node(self):
-        """Deploy cluster in ha mode with example plugin
+        """Deploy and scale cluster in ha mode with example plugin
 
         Scenario:
             1. Upload plugin to the master node
@@ -219,6 +218,7 @@ class ExamplePlugin(TestBasic):
             12. Check plugin health
             13. Run OSTF
 
+        Duration 150m
         Snapshot deploy_neutron_example_ha_add_node
 
         """

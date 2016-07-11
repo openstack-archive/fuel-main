@@ -39,6 +39,8 @@ class RepeatableImageBased(TestBasic):
             6. Create snapshot of environment
             7. Revert snapshot and try provision cluster 10 times
 
+        Duration 60m
+
         """
         self.env.revert_snapshot("ready_with_5_slaves")
         cluster_id = self.fuel_web.create_cluster(

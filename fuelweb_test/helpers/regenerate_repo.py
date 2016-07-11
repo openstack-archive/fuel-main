@@ -75,7 +75,7 @@ class CustomRepo(object):
                     .format(settings.CUSTOM_PKGS_MIRROR))
 
         # Modify admin resolv.conf to use local host resolver
-        dns_server = self.env.router()
+        dns_server = self.env.get_virtual_environment().router()
         new_resolv_conf = ["nameserver {0}".format(dns_server)]
 
         # Set the local router as nameserver that will allow
@@ -304,6 +304,7 @@ class CustomRepo(object):
                .format(cmd, err)
 
     def check_puppet_logs(self):
+        logger.info("Check puppet logs for packages with unmet dependences.")
         if settings.OPENSTACK_RELEASE_UBUNTU in settings.OPENSTACK_RELEASE:
             err_deps = self.check_puppet_logs_ubuntu()
         else:
@@ -314,6 +315,7 @@ class CustomRepo(object):
                         .format(err_deps_key))
             for dep in err_deps[err_deps_key]:
                 logger.info('        {0}'.format(dep.strip()))
+        logger.info("Check puppet logs completed.")
 
     def check_puppet_logs_ubuntu(self):
         """ Check puppet-agent.log files on all nodes for package

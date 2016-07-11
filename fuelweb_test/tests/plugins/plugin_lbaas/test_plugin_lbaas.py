@@ -29,7 +29,7 @@ from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
 
-@test(groups=["plugins"])
+@test(enabled=False, groups=["plugins"])
 class LbaasPlugin(TestBasic):
     @classmethod
     def check_neutron_agents_statuses(cls, os_conn):
@@ -105,6 +105,7 @@ class LbaasPlugin(TestBasic):
             9. Create pool and vip
             10. Run OSTF
 
+        Duration 35m
         Snapshot deploy_neutron_vlan_lbaas_simple
 
         """
@@ -169,7 +170,7 @@ class LbaasPlugin(TestBasic):
           groups=["deploy_neutron_lbaas_simple_reset_ready"])
     @log_snapshot_on_error
     def deploy_neutron_lbaas_simple_reset_ready(self):
-        """Deploy cluster in simple mode with LbaaS plugin
+        """Deploy and re-deploy cluster in simple mode with LbaaS plugin
 
         Scenario:
             1. Upload plugin to the master node
@@ -188,6 +189,7 @@ class LbaasPlugin(TestBasic):
             14. Create pool and vip
             15. Run OSTF
 
+        Duration 65m
         Snapshot deploy_neutron_lbaas_simple_reset_ready
 
         """
@@ -244,7 +246,8 @@ class LbaasPlugin(TestBasic):
 
         self.fuel_web.stop_reset_env_wait(cluster_id)
 
-        self.fuel_web.wait_nodes_get_online_state(self.env.nodes().slaves[:2])
+        self.fuel_web.wait_nodes_get_online_state(
+            self.env.get_virtual_environment().nodes().slaves[:2])
 
         self.fuel_web.update_nodes(
             cluster_id,

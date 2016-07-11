@@ -39,6 +39,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
             7. Run test Check network connectivity
                from instance via floating IP' n times
 
+        Duration 1000m
         Snapshot create_delete_ip_n_times_nova_vlan
 
         """
@@ -79,6 +80,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
             6. Run test Check network connectivity
                from instance via floating IP' n times
 
+        Duration 1000m
         Snapshot: create_delete_ip_n_times_nova_flat
 
         """

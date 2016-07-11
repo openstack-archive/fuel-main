@@ -52,8 +52,8 @@ class SaharaSimple(TestBasic):
             7. Register Sahara image
             8. Run OSTF platform Sahara test only
 
+        Duration 65m
         Snapshot: deploy_sahara_simple_gre
-
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
@@ -66,7 +66,8 @@ class SaharaSimple(TestBasic):
         asserts.assert_true(check_image)
 
         self.env.revert_snapshot("ready_with_3_slaves")
-        LOGGER.debug('Create cluster for sahara tests')
+
+        LOGGER.debug('Create Fuel cluster for Sahara tests')
         data = {
             'sahara': True,
             'net_provider': 'neutron',
@@ -75,7 +76,6 @@ class SaharaSimple(TestBasic):
             'user': 'saharaSimple',
             'password': 'saharaSimple'
         }
-
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             settings=data
@@ -87,7 +87,6 @@ class SaharaSimple(TestBasic):
                 'slave-02': ['compute']
             }
         )
-
         self.fuel_web.deploy_cluster_wait(cluster_id)
         controller = self.fuel_web.get_nailgun_node_by_name('slave-01')
         os_conn = os_actions.OpenStackActions(
@@ -165,7 +164,8 @@ class SaharaHA(TestBasic):
         asserts.assert_true(check_image)
 
         self.env.revert_snapshot("ready_with_5_slaves")
-        LOGGER.debug('Create cluster for sahara tests')
+
+        LOGGER.debug('Create Fuel cluster for Sahara tests')
         data = {
             'sahara': True,
             'net_provider': 'neutron',
@@ -174,7 +174,6 @@ class SaharaHA(TestBasic):
             'user': 'saharaHA',
             'password': 'saharaHA'
         }
-
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=settings.DEPLOYMENT_MODE_HA,
@@ -190,15 +189,13 @@ class SaharaHA(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-
         cluster_vip = self.fuel_web.get_public_vip(cluster_id)
-
         os_conn = os_actions.OpenStackActions(
             cluster_vip, data['user'], data['password'], data['tenant'])
-
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=13, networks_count=2, timeout=300)
 
+        LOGGER.debug('Verify Sahara service on all controllers')
         for slave in ["slave-01", "slave-02", "slave-03"]:
             checkers.verify_service(
                 self.env.get_ssh_to_remote_by_name(slave),
@@ -257,8 +254,8 @@ class MuranoSimple(TestBasic):
             7. Register Murano image
             8. Run OSTF Murano platform tests
 
+        Duration 40m
         Snapshot: deploy_murano_simple_gre
-
         """
         if settings.OPENSTACK_RELEASE == settings.OPENSTACK_RELEASE_REDHAT:
             raise SkipTest()
@@ -379,6 +376,7 @@ class MuranoHA(TestBasic):
             7. Register Murano image
             8. Run OSTF Murano platform tests
 
+        Duration 100m
         Snapshot: deploy_murano_ha_with_gre
 
         """
@@ -529,8 +527,8 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
             7. Verify ceilometer api is running
             8. Run OSTF
 
+        Duration 45m
         Snapshot: deploy_ceilometer_simple_with_mongo
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -604,8 +602,8 @@ class CeilometerSimpleMongo(CeilometerOSTFTestsRun):
             6. Verify ceilometer api is running
             7. Run OSTF
 
+        Duration 35m
         Snapshot: deploy_ceilometer_simple_multirole
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -700,6 +698,7 @@ class CeilometerHAMongo(CeilometerOSTFTestsRun):
             6. Verify ceilometer api is running
             7. Run OSTF
 
+        Duration 80m
         Snapshot: deploy_ceilometer_ha_multirole
 
         """
@@ -847,6 +846,7 @@ class HeatSimple(TestBasic):
             7. Register heat image
             8. Run OSTF platform tests
 
+        Duration 40m
         Snapshot: deploy_heat_simple_nova
 
         """
@@ -945,6 +945,7 @@ class HeatHA(TestBasic):
             7. Register heat image
             8. Run OSTF platform tests
 
+        Duration 70m
         Snapshot: deploy_heat_ha
 
         """
@@ -981,6 +982,7 @@ class HeatHA(TestBasic):
             }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
+
         cluster_vip = self.fuel_web.get_public_vip(cluster_id)
         os_conn = os_actions.OpenStackActions(
             cluster_vip, data['user'], data['password'], data['tenant'])

@@ -28,7 +28,7 @@ import json
 import urllib2
 
 
-class APIClient:
+class APIClient(object):
     def __init__(self, base_url):
         self.user = ''
         self.password = ''
