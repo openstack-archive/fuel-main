@@ -17,7 +17,7 @@ import os
 import stat
 
 
-class PuppetTest:
+class PuppetTest(object):
     """This class represents single test of the Puppet module."""
 
     def __init__(self, test_file_path):

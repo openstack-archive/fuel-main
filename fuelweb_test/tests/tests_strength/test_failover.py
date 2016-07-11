@@ -53,6 +53,7 @@ class TestHaFailover(TestBasic):
             4. Deploy the cluster
             8. Make snapshot
 
+        Duration 70m
         Snapshot deploy_ha
 
         """
@@ -119,14 +120,18 @@ class TestHaFailover(TestBasic):
             6. Check pacemaker status
             7. Run OSTF
 
+        Duration 35m
         """
 
-        for devops_node in self.env.nodes().slaves[:2]:
+        for devops_node in self.env.get_virtual_environment(
+        ).nodes().slaves[:2]:
             self.env.revert_snapshot("deploy_ha")
             devops_node.suspend(False)
             self.fuel_web.assert_pacemaker(
-                self.env.nodes().slaves[2].name,
-                set(self.env.nodes().slaves[:3]) - {devops_node},
+                self.env.get_virtual_environment().nodes(
+                ).slaves[2].name,
+                set(self.env.get_virtual_environment(
+                ).nodes().slaves[:3]) - {devops_node},
                 [devops_node])
 
             cluster_id = self.fuel_web.client.get_cluster_id(
@@ -140,7 +145,8 @@ class TestHaFailover(TestBasic):
             # Wait until MySQL Galera is UP on online controllers
             self.fuel_web.wait_mysql_galera_is_up(
                 [n.name for n in
-                 set(self.env.nodes().slaves[:3]) - {devops_node}])
+                 set(self.env.get_virtual_environment(
+                 ).nodes().slaves[:3]) - {devops_node}])
 
             self.fuel_web.run_ostf(
                 cluster_id=cluster_id,
@@ -161,18 +167,21 @@ class TestHaFailover(TestBasic):
             5. Check pacemaker status
             6. Run OSTF
 
-        Snapshot deploy_ha
+        Duration 45m
 
         """
 
-        for devops_node in self.env.nodes().slaves[:2]:
+        for devops_node in self.env.get_virtual_environment(
+        ).nodes().slaves[:2]:
             self.env.revert_snapshot("deploy_ha")
 
             remote = self.fuel_web.get_ssh_for_node(devops_node.name)
             remote.check_call('ifconfig eth2 down')
             self.fuel_web.assert_pacemaker(
-                self.env.nodes().slaves[2].name,
-                set(self.env.nodes().slaves[:3]) - {devops_node},
+                self.env.get_virtual_environment(
+                ).nodes().slaves[2].name,
+                set(self.env.get_virtual_environment(
+                ).nodes().slaves[:3]) - {devops_node},
                 [devops_node])
 
         cluster_id = self.fuel_web.client.get_cluster_id(
@@ -200,7 +209,7 @@ class TestHaFailover(TestBasic):
             3. Verify it is restored
             4. Run OSTF
 
-        Snapshot deploy_ha
+        Duration 30m
 
         """
         logger.debug('Start reverting of deploy_ha snapshot')
@@ -209,7 +218,8 @@ class TestHaFailover(TestBasic):
             self.fuel_web.client.get_cluster_id(self.__class__.__name__)
         logger.debug('Cluster id is {0}'.format(cluster_id))
         interfaces = ('hapr-p', 'hapr-m')
-        slaves = self.env.nodes().slaves[:3]
+        slaves = self.env.get_virtual_environment(
+        ).nodes().slaves[:3]
         logger.debug("Current nodes are {0}".format([i.name for i in slaves]))
         ips_amount = 0
         for devops_node in slaves:
@@ -292,12 +302,13 @@ class TestHaFailover(TestBasic):
             4. Go to another controller
             5. Run OSTF
 
-        Snapshot deploy_ha
+        Duration 15m
 
         """
         self.env.revert_snapshot("deploy_ha")
 
-        for devops_node in self.env.nodes().slaves[:3]:
+        for devops_node in self.env.get_virtual_environment(
+        ).nodes().slaves[:3]:
             remote = self.fuel_web.get_ssh_for_node(devops_node.name)
             logger.info('Terminating MySQL on {0}'.format(devops_node.name))
 
@@ -333,12 +344,13 @@ class TestHaFailover(TestBasic):
             4. Go to another controller
             5. Run OSTF
 
-        Snapshot deploy_ha
+        Duration 25m
 
         """
         self.env.revert_snapshot("deploy_ha")
 
-        for devops_node in self.env.nodes().slaves[:3]:
+        for devops_node in self.env.get_virtual_environment(
+        ).nodes().slaves[:3]:
             remote = self.fuel_web.get_ssh_for_node(devops_node.name)
             remote.check_call('kill -9 $(pidof haproxy)')
 
@@ -366,12 +378,13 @@ class TestHaFailover(TestBasic):
             2. Verify resources are configured
             3. Go to next controller
 
-        Snapshot deploy_ha
+        Duration 15m
 
         """
         self.env.revert_snapshot("deploy_ha")
 
-        devops_ctrls = self.env.nodes().slaves[:3]
+        devops_ctrls = self.env.get_virtual_environment(
+        ).nodes().slaves[:3]
         for devops_node in devops_ctrls:
             config = self.fuel_web.get_pacemaker_config(devops_node.name)
             for n in devops_ctrls:
@@ -409,7 +422,7 @@ class TestHaFailover(TestBasic):
             6. Check heat-engine process is running with new pid
             7. Check amqp connection re-appears for heat-engine
 
-        Snapshot ha_pacemaker_restart_heat_engine
+        Duration 15m
 
         """
         self.env.revert_snapshot("deploy_ha")
@@ -426,7 +439,8 @@ class TestHaFailover(TestBasic):
             ' monitor 2>&1"'.format(heat_name)
 
         remote = self.fuel_web.get_ssh_for_node(
-            self.env.nodes().slaves[0].name)
+            self.env.get_virtual_environment(
+            ).nodes().slaves[0].name)
         pid = ''.join(remote.execute('pgrep heat-engine')['stdout'])
         get_ocf_status = ''.join(
             remote.execute(ocf_status)['stdout']).rstrip()
@@ -480,11 +494,12 @@ class TestHaFailover(TestBasic):
             2. Kill nova-compute service
             3. Check service is restarted by monit
 
-        Snapshot ha_check_monit
+        Duration 25m
 
         """
         self.env.revert_snapshot("deploy_ha")
-        for devops_node in self.env.nodes().slaves[3:5]:
+        for devops_node in self.env.get_virtual_environment(
+        ).nodes().slaves[3:5]:
             remote = self.fuel_web.get_ssh_for_node(devops_node.name)
             remote.execute("kill -9 `pgrep nova-compute`")
             wait(

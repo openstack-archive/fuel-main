@@ -48,6 +48,7 @@ class TestHaVLAN(TestBasic):
             8. Run OSTF
             9. Create snapshot
 
+        Duration 70m
         Snapshot deploy_ha_vlan
 
         """
@@ -120,6 +121,7 @@ class TestHaFlat(TestBasic):
             7. Run OSTF
             8. Make snapshot
 
+        Duration 70m
         Snapshot deploy_ha_flat
 
         """
@@ -190,6 +192,7 @@ class TestHaFlatAddCompute(TestBasic):
             8. Run network verification
             9. Run OSTF
 
+        Duration 80m
         Snapshot ha_flat_add_compute
 
         """
@@ -215,7 +218,8 @@ class TestHaFlatAddCompute(TestBasic):
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=16, networks_count=1, timeout=300)
 
-        self.env.bootstrap_nodes(self.env.nodes().slaves[5:6])
+        self.env.bootstrap_nodes(
+            self.env.get_virtual_environment().nodes().slaves[5:6])
         self.fuel_web.update_nodes(
             cluster_id, {'slave-06': ['compute']}, True, False
         )
@@ -251,6 +255,7 @@ class TestHaFlatScalability(TestBasic):
             9. Run network verification
             10. Run OSTF
 
+        Duration 110m
         Snapshot ha_flat_scalability
 
         """
@@ -274,9 +279,12 @@ class TestHaFlatScalability(TestBasic):
             True, False
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        for devops_node in self.env.nodes().slaves[:3]:
+        for devops_node in self.env.get_virtual_environment(
+        ).nodes().slaves[:3]:
             self.fuel_web.assert_pacemaker(
-                devops_node.name, self.env.nodes().slaves[:3], [])
+                devops_node.name,
+                self.env.get_virtual_environment(
+                ).nodes().slaves[:3], [])
 
         self.fuel_web.update_nodes(
             cluster_id, {'slave-04': ['controller'],
@@ -284,9 +292,12 @@ class TestHaFlatScalability(TestBasic):
             True, False
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        for devops_node in self.env.nodes().slaves[:5]:
+        for devops_node in self.env.get_virtual_environment(
+        ).nodes().slaves[:5]:
             self.fuel_web.assert_pacemaker(
-                devops_node.name, self.env.nodes().slaves[:5], [])
+                devops_node.name,
+                self.env.get_virtual_environment(
+                ).nodes().slaves[:5], [])
             ret = self.fuel_web.get_pacemaker_status(devops_node.name)
             assert_true(
                 re.search('vip__management\s+\(ocf::mirantis:ns_IPaddr2\):'
@@ -412,6 +423,8 @@ class BackupRestoreHa(TestBasic):
             7. Check restore
             8. Run OSTF
 
+        Duration 50m
+
         """
         self.env.revert_snapshot("deploy_ha_flat")
 
@@ -423,7 +436,8 @@ class BackupRestoreHa(TestBasic):
             os_conn, smiles_count=16, networks_count=1, timeout=300)
         self.fuel_web.backup_master(self.env.get_admin_remote())
         checkers.backup_check(self.env.get_admin_remote())
-        self.env.bootstrap_nodes(self.env.nodes().slaves[5:6])
+        self.env.bootstrap_nodes(
+            self.env.get_virtual_environment().nodes().slaves[5:6])
         self.fuel_web.update_nodes(
             cluster_id, {'slave-06': ['compute']}, True, False
         )
@@ -439,7 +453,8 @@ class BackupRestoreHa(TestBasic):
         assert_equal(
             5, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))
 
-        self.env.bootstrap_nodes(self.env.nodes().slaves[5:6])
+        self.env.bootstrap_nodes(
+            self.env.get_virtual_environment().nodes().slaves[5:6])
         self.fuel_web.update_nodes(
             cluster_id, {'slave-06': ['compute']}, True, False
         )

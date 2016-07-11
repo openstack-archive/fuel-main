@@ -46,10 +46,13 @@ class OneNodeDeploy(TestBasic):
             4. Validate cluster was set up correctly, there are no dead
             services, there are no errors in logs
 
+        Duration 20m
+
         """
         self.env.revert_snapshot("ready")
         self.fuel_web.client.get_root()
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:1])
+        self.env.bootstrap_nodes(
+            self.env.get_virtual_environment().nodes().slaves[:1])
 
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__
@@ -145,6 +148,8 @@ class SimpleFlat(TestBasic):
             3. Assert instance was created
             4. Assert file is on instance
 
+        Duration 20m
+
         """
         self.env.revert_snapshot("deploy_simple_flat")
         data = {
@@ -178,6 +183,8 @@ class SimpleFlat(TestBasic):
             2. Remove compute nodes
             3. Deploy changes
             4. Verify node returns to unallocated pull
+
+        Duration 8m
 
         """
         self.env.revert_snapshot("deploy_simple_flat")
@@ -213,6 +220,8 @@ class SimpleFlat(TestBasic):
             7. Run Verify network and assert it fails
             8. Restore first VLAN
 
+        Duration 20m
+
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -234,7 +243,8 @@ class SimpleFlat(TestBasic):
             os_conn, smiles_count=6, networks_count=1, timeout=300)
 
         ebtables = self.env.get_ebtables(
-            cluster_id, self.env.nodes().slaves[:2])
+            cluster_id, self.env.get_virtual_environment(
+            ).nodes().slaves[:2])
         ebtables.restore_vlans()
         try:
             ebtables.block_first_vlan()
@@ -387,6 +397,7 @@ class MultiroleControllerCinder(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 30m
         Snapshot: deploy_multirole_controller_cinder
 
         """
@@ -435,6 +446,7 @@ class MultiroleComputeCinder(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 30m
         Snapshot: deploy_multirole_compute_cinder
 
         """
@@ -478,6 +490,7 @@ class FloatingIPs(TestBasic):
             6. Verify available floating IP list
             7. Run OSTF
 
+        Duration 30m
         Snapshot: deploy_floating_ips
 
         """
@@ -641,6 +654,8 @@ class NodeDiskSizes(TestBasic):
             2. Verify hard drive sizes for discovered nodes in /api/nodes
             3. Verify hard drive sizes for discovered nodes in notifications
 
+        Duration 5m
+
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -761,6 +776,8 @@ class MultinicBootstrap(TestBasic):
             3. Restore mac addresses and boot first slave
             4. Verify slave mac addresses is equal to unblocked
 
+        Duration 2m
+
         """
         self.env.revert_snapshot("ready")
 
@@ -773,7 +790,8 @@ class MultinicBootstrap(TestBasic):
             for mac in mac_addresses:
                 Ebtables.restore_mac(mac)
                 slave.destroy(verbose=False)
-                self.env.nodes().admins[0].revert("ready")
+                self.env.get_virtual_environment(
+                ).nodes().admins[0].revert("ready")
                 nailgun_slave = self.env.bootstrap_nodes([slave])[0]
                 assert_equal(mac.upper(), nailgun_slave['mac'].upper())
                 Ebtables.block_mac(mac)
@@ -795,6 +813,8 @@ class DeleteEnvironment(TestBasic):
             1. Revert "simple flat" environment
             2. Delete environment
             3. Verify node returns to unallocated pull
+
+        Duration 15m
 
         """
         self.env.revert_snapshot("deploy_simple_flat")
@@ -833,6 +853,8 @@ class UntaggedNetworksNegative(TestBasic):
             5. Remove VLAN tagging from networks which are on eth0
             6. Run network verification (assert it fails)
             7. Start cluster deployment (assert it fails)
+
+        Duration 30m
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -892,6 +914,8 @@ class BackupRestoreSimple(TestBasic):
             6. Restore master
             7. Check restore
             8. Run OSTF
+
+        Duration 35m
 
         """
         self.env.revert_snapshot("deploy_simple_flat")

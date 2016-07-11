@@ -476,11 +476,6 @@ def install_plugin_check_code(
         'Install script fails with next message {0}'.format(''.join(stderr)))
 
 
-def check_kernel(kernel, expected_kernel):
-    assert_equal(kernel, expected_kernel,
-                 "kernel version is wrong, it is {0}".format(kernel))
-
-
 @logwrap
 def check_action_logs(scenario, postgres_actions):
     def _check(_action, _group=False):
@@ -828,3 +823,6 @@ def check_swift_ring(remote):
         assert_true(float(balance) == 0,
                     "swift ring builder {1} is not ok,"
                     " balance is {0}".format(balance, ring))
+def check_kernel(kernel, expected_kernel):
+    assert_equal(kernel, expected_kernel,
+                 "kernel version is wrong, it is {0}".format(kernel))

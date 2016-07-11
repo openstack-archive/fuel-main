@@ -31,14 +31,15 @@ class VcenterDeploy(TestBasic):
           groups=["smoke", "vcenter_one_node_simple"])
     @log_snapshot_on_error
     def vcenter_one_node_simple(self):
-        """Deploy cluster with controller node only
+        """Deploy vcenter cluster with controller node only
 
         Scenario:
             1. Create cluster
             2. Add 1 node with controller role
             3. Deploy the cluster
-            4. Validate cluster was set up correctly, there are no dead
-            5. Create instance and delete instance.
+            4. Verify that the cluster was set up correctly, there are no
+               dead services
+            5. Create instance and delete instance
 
         """
         self.env.revert_snapshot("ready_with_1_slaves")
@@ -57,7 +58,7 @@ class VcenterDeploy(TestBasic):
         )
         logger.info("cluster is {}".format(cluster_id))
 
-        # Add nodes to roles
+        # Assign role to node
         self.fuel_web.update_nodes(
             cluster_id,
             {'slave-01': ['controller']}
@@ -115,14 +116,14 @@ class VcenterDeploy(TestBasic):
         time.sleep(60)
 
         ctrl_ip = self.fuel_web.get_nailgun_node_by_name('slave-01')['ip']
-        logger.info("Controller ip is {}".format(ctrl_ip))
+        logger.info("Controller IP is {}".format(ctrl_ip))
         os = os_actions.OpenStackActions(ctrl_ip)
         hypervisors = os.get_hypervisors()
 
         # Check hypervisor quantity and create instances
-        assert_true(len(hypervisors) > 1, 'Not enoght vCenter clusters.')
+        assert_true(len(hypervisors) > 1, 'Not enough vCenter clusters.')
         if len(hypervisors) > 1:
-            logger.info("Create Instances and assign floating ips:")
+            logger.info("Create instances and assign floating IPs:")
             for i in range(1, 6):
                 srv = os.create_server_for_migration(timeout=300)
                 logger.info(os.get_instance_detail(srv).to_dict()['name'])
@@ -135,12 +136,12 @@ class VcenterDeploy(TestBasic):
         for hypervisor in hypervisors:
             assert_true(os.get_hypervisor_vms_count(hypervisor) != 0,
                         "No active VMs on " +
-                        os.get_hypervisor_hostanme(hypervisor))
-            logger.info("{} active VMs  on Hypervisor {}".format(
+                        os.get_hypervisor_hostname(hypervisor))
+            logger.info("{} active VMs on Hypervisor {}".format(
                         os.get_hypervisor_vms_count(hypervisor),
-                        os.get_hypervisor_hostanme(hypervisor)))
+                        os.get_hypervisor_hostname(hypervisor)))
 
-        # Get instances ips from different hypervisors
+        # Get instances IPs from different hypervisors
         servers_for_check = {}
         ips_for_check = []
         servers = os.get_servers()
@@ -179,9 +180,11 @@ class VcenterDeploy(TestBasic):
 
         Scenario:
             1. Create cluster
-            2. Add 2 nodes with controller and cinder roles
+            2. Add 2 nodes
+               1 controller
+               1 cinder (VMDK backend)
             3. Deploy the cluster
-            4. Run osft
+            4. Run OSTF
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -204,7 +207,7 @@ class VcenterDeploy(TestBasic):
         )
         logger.info("cluster is {0}".format(cluster_id))
 
-        # Add nodes to roles
+        # Assign roles to nodes
         self.fuel_web.update_nodes(
             cluster_id,
             {'slave-01': ['controller'],
@@ -214,23 +217,24 @@ class VcenterDeploy(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         # Wait until nova-compute get information about clusters
-        # Fix me. Later need to change sleep with wait function.
+        # FIXME: Later need to change sleep with wait function.
         time.sleep(60)
 
-        self.fuel_web.run_ostf(cluster_id=cluster_id,
-                               test_sets=['smoke', 'sanity'])
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["vcenter_ha"])
     @log_snapshot_on_error
     def vcenter_ha(self):
-        """Deploy cluster with 3 controller nodes and run osft
+        """Deploy cluster with 3 controllers and run OSTF
 
         Scenario:
             1. Create cluster
             2. Add 3 nodes with controller role
             3. Deploy the cluster
-            4. Run osft
+            4. Run OSTF
+
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
@@ -256,7 +260,8 @@ class VcenterDeploy(TestBasic):
             cluster_id,
             {'slave-01': ['controller'],
              'slave-02': ['controller'],
-             'slave-03': ['controller']}
+             'slave-03': ['controller']
+             }
         )
         # Deploy cluster
         self.fuel_web.deploy_cluster_wait(cluster_id)

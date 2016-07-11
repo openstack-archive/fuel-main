@@ -31,7 +31,7 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
         """Deploy cluster in simple mode with flat nova-network
 
         Scenario:
-            1. Create cluster
+            1. Create cluster in ha mode with 1 controller
             2. Add 1 node with controller role
             3. Add 1 node with compute role
             4. Deploy the cluster
@@ -42,6 +42,8 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
             8. Run OSTF
             9. Shut down master node
             10. Run openstack verification
+
+        Duration 1000m
 
         """
         self.env.revert_snapshot("ready_with_3_slaves")
@@ -71,7 +73,7 @@ class DeploySimpleMasterNodeFail(base_test_case.TestBasic):
         logger.info('PASS OSTF')
 
         logger.info('Destroy admin node...')
-        self.env.nodes().admin.destroy()
+        self.env.get_virtual_environment().nodes().admin.destroy()
         logger.info('Admin node destroyed')
 
         common_func = common.Common(

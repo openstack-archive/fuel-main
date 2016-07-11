@@ -33,7 +33,7 @@ from settings import TestRailSettings
 from testrail_client import TestRailProject
 
 
-class TestResult():
+class TestResult(object):
     def __init__(self, name, group, status, duration, url=None,
                  version=None, description=None, launchpad_bug=None):
         self.name = name

@@ -56,6 +56,9 @@ def log_snapshot_on_error(func):
     """
     @functools.wraps(func)
     def wrapper(*args, **kwagrs):
+        logger.info("\n" + "<" * 5 + "#" * 30 + "[ {} ]"
+                    .format(func.__name__) + "#" * 30 + ">" * 5 + "\n{}"
+                    .format(func.__doc__))
         try:
             return func(*args, **kwagrs)
         except SkipTest:
@@ -83,9 +86,13 @@ def log_snapshot_on_error(func):
                                      format(traceback.format_exc()))
                 finally:
                     logger.debug(args)
-                    args[0].env.make_snapshot(snapshot_name=name[-50:],
-                                              description=description,
-                                              is_make=True)
+                    try:
+                        args[0].env.make_snapshot(snapshot_name=name[-50:],
+                                                  description=description,
+                                                  is_make=True)
+                    except:
+                        logger.error("Error making the environment snapshot:"
+                                     " {0}".format(traceback.format_exc()))
             raise test_exception, None, exc_trace
     return wrapper
 
@@ -106,7 +113,15 @@ def upload_manifests(func):
             if settings.UPLOAD_MANIFESTS:
                 logger.info("Uploading new manifests from %s" %
                             settings.UPLOAD_MANIFESTS_PATH)
-                remote = args[0].environment.get_admin_remote()
+                if args[0].__class__.__name__ == "EnvironmentModel":
+                    environment = args[0]
+                elif args[0].__class__.__name__ == "FuelWebClient":
+                    environment = args[0].environment
+                else:
+                    logger.warning("Can't upload manifests: method of "
+                                   "unexpected class is decorated.")
+                    return result
+                remote = environment.get_admin_remote()
                 remote.execute('rm -rf /etc/puppet/modules/*')
                 remote.upload(settings.UPLOAD_MANIFESTS_PATH,
                               '/etc/puppet/modules/')
@@ -224,9 +239,7 @@ def custom_repo(func):
 def check_fuel_statistics(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        args[0].env.__wrapped__ = 'check_fuel_statistics'
         result = func(*args, **kwargs)
-        args[0].env.__wrapped__ = None
         if not settings.FUEL_STATS_CHECK:
             return result
         logger.info('Test "{0}" passed. Checking stats.'.format(func.__name__))

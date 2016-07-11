@@ -20,7 +20,7 @@ import jinja2
 from puppet_module import PuppetModule
 
 
-class PuppetTestGenerator:
+class PuppetTestGenerator(object):
     """Puppet Test Generator
     This is main class. It finds all modules in the given directory and creates
     tests for them.
