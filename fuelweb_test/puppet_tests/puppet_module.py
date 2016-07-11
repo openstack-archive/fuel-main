@@ -24,7 +24,7 @@ path = os.path.dirname(path)
 sys.path.insert(0, path)
 
 
-class PuppetModule:
+class PuppetModule(object):
     """This class represents Puppet module."""
 
     def __init__(self, local_module_path):

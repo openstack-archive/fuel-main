@@ -16,7 +16,7 @@ from proboscis.asserts import assert_equal
 from proboscis import SkipTest
 from proboscis import test
 
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import OPENSTACK_RELEASE
@@ -29,7 +29,7 @@ from fuelweb_test.tests.base_test_case import TestBasic
 class BondingSimple(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_bonding_active_backup"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_bonding_active_backup(self):
         """Deploy cluster in simple mode with bonding
 
@@ -42,6 +42,7 @@ class BondingSimple(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 30m
         Snapshot deploy_bonding_active_backup
 
         """
@@ -117,7 +118,7 @@ class BondingSimple(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_bonding_balance_slb"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_bonding_balance_slb(self):
         """Deploy cluster in simple mode with bonding
 
@@ -130,6 +131,7 @@ class BondingSimple(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 30m
         Snapshot deploy_bonding_balance_slb
 
         """
@@ -208,9 +210,9 @@ class BondingSimple(TestBasic):
 class BondingHA(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_bonding_ha_active_backup"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_bonding_ha_active_backup(self):
-        """Deploy cluster in HA mode with bonding
+        """Deploy cluster in HA mode with bonding (active backup)
 
         Scenario:
             1. Create cluster
@@ -221,6 +223,7 @@ class BondingHA(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 70m
         Snapshot deploy_bonding_ha_active_backup
 
         """
@@ -299,9 +302,9 @@ class BondingHA(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_bonding_ha_balance_slb"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_bonding_ha_balance_slb(self):
-        """Deploy cluster in HA mode with bonding
+        """Deploy cluster in HA mode with bonding (balance SLB)
 
         Scenario:
             1. Create cluster
@@ -312,6 +315,7 @@ class BondingHA(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 70m
         Snapshot deploy_bonding_ha_balance_slb
 
         """

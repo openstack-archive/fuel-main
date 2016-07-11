@@ -47,13 +47,12 @@ from fuelweb_test.settings import OPENSTACK_RELEASE_UBUNTU
 from fuelweb_test.settings import OSTF_TEST_NAME
 from fuelweb_test.settings import OSTF_TEST_RETRIES_COUNT
 from fuelweb_test.settings import TIMEOUT
-from fuelweb_test.settings import VCENTER_USE
-
 
 import fuelweb_test.settings as help_data
 
 
 class FuelWebClient(object):
+    """FuelWebClient."""  # TODO documentation
 
     def __init__(self, admin_node_ip, environment):
         self.admin_node_ip = admin_node_ip
@@ -119,6 +118,9 @@ class FuelWebClient(object):
     @logwrap
     def assert_ostf_run_certain(self, cluster_id, tests_must_be_passed,
                                 timeout=10 * 60):
+        """Wait for OSTF tests to finish, check that the tests specified
+           in [tests_must_be_passed] are passed"""
+
         logger.info('Assert OSTF tests are passed at cluster #%s: %s',
                     cluster_id, tests_must_be_passed)
         set_result_list = self._ostf_test_wait(cluster_id, timeout)
@@ -186,20 +188,20 @@ class FuelWebClient(object):
         if failed_test_name:
             for test_name in failed_test_name:
                 assert_true(test_name in actual_failed_names,
-                            'WARNINg unexpected fail,'
-                            'expected {0} actual {1}'.format(
+                            'WARNING! Unexpected fail: '
+                            'expected {0}, actual {1}'.format(
                                 failed_test_name, actual_failed_names))
 
         assert_true(
-            failed <= should_fail, 'Failed tests,  fails: {} should fail:'
-                                   ' {} failed tests name: {}'
-                                   ''.format(failed, should_fail,
-                                             failed_tests_res))
+            failed <= should_fail, 'Failed {0} OSTF tests; should fail'
+                                   ' {1} tests. Names of failed tests: {2}'
+                                   .format(failed, should_fail,
+                                           failed_tests_res))
 
     def assert_release_state(self, release_name, state='available'):
         logger.info('Assert release %s has state %s', release_name, state)
         for release in self.client.get_releases():
-            if release["name"].find(release_name) != -1:
+            if release["name"].lower().find(release_name) != -1:
                 assert_equal(release['state'], state,
                              'Release state {0}'.format(release['state']))
                 return release["id"]
@@ -268,23 +270,26 @@ class FuelWebClient(object):
         return nailgun_node['fqdn']
 
     @logwrap
-    def get_pcm_nodes(self, ctrl_node):
+    def get_pcm_nodes(self, ctrl_node, pure=False):
         nodes = {}
         remote = self.get_ssh_for_node(ctrl_node)
         pcs_status = remote.execute('pcs status nodes')['stdout']
         pcm_nodes = yaml.load(''.join(pcs_status).strip())
         for status in ('Online', 'Offline', 'Standby'):
             list_nodes = (pcm_nodes['Pacemaker Nodes'][status] or '').split()
-            nodes[status] = [self.get_fqdn_by_hostname(x) for x in list_nodes]
+            if not pure:
+                nodes[status] = [self.get_fqdn_by_hostname(x)
+                                 for x in list_nodes]
+            else:
+                nodes[status] = list_nodes
         return nodes
 
     @logwrap
     def assert_pacemaker(self, ctrl_node, online_nodes, offline_nodes):
         logger.info('Assert pacemaker status at devops node %s', ctrl_node)
-        fqdn_names = lambda nodes: sorted([self.fqdn(n) for n in nodes])
 
-        online = fqdn_names(online_nodes)
-        offline = fqdn_names(offline_nodes)
+        online = sorted([self.fqdn(n) for n in online_nodes])
+        offline = sorted([self.fqdn(n) for n in offline_nodes])
         try:
             wait(lambda: self.get_pcm_nodes(ctrl_node)['Online'] == online and
                  self.get_pcm_nodes(ctrl_node)['Offline'] == offline,
@@ -337,8 +342,7 @@ class FuelWebClient(object):
                 data.update(
                     {
                         'net_provider': settings["net_provider"],
-                        'net_segment_type': settings[
-                            "net_segment_type"]
+                        'net_segment_type': settings["net_segment_type"],
                     }
                 )
 
@@ -380,7 +384,7 @@ class FuelWebClient(object):
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "kvm"
 
-            if VCENTER_USE:
+            if help_data.VCENTER_USE:
                 logger.info('Set Hypervisor type to vCenter')
                 hpv_data = attributes['editable']['common']['libvirt_type']
                 hpv_data['value'] = "vcenter"
@@ -388,6 +392,7 @@ class FuelWebClient(object):
             logger.debug("Try to update cluster "
                          "with next attributes {0}".format(attributes))
             self.client.update_cluster_attributes(cluster_id, attributes)
+
             logger.debug("Attributes of cluster were updated,"
                          " going to update networks ...")
             if MULTIPLE_NETWORKS:
@@ -472,8 +477,7 @@ class FuelWebClient(object):
     def get_nailgun_node_roles(self, nodes_dict):
         nailgun_node_roles = []
         for node_name in nodes_dict:
-            slave = self.environment.get_virtual_environment().\
-                node_by_name(node_name)
+            slave = self.environment.d_env.get_node(name=node_name)
             node = self.get_nailgun_node_by_devops_node(slave)
             nailgun_node_roles.append((node, nodes_dict[node_name]))
         return nailgun_node_roles
@@ -482,7 +486,7 @@ class FuelWebClient(object):
     def get_nailgun_node_by_name(self, node_name):
         logger.info('Get nailgun node by %s devops node', node_name)
         return self.get_nailgun_node_by_devops_node(
-            self.environment.get_virtual_environment().node_by_name(node_name))
+            self.environment.d_env.get_node(name=node_name))
 
     @logwrap
     def get_nailgun_node_by_devops_node(self, devops_node):
@@ -532,8 +536,7 @@ class FuelWebClient(object):
     @logwrap
     def get_ssh_for_node(self, node_name):
         ip = self.get_nailgun_node_by_devops_node(
-            self.environment.get_virtual_environment().
-            node_by_name(node_name))['ip']
+            self.environment.d_env.get_node(name=node_name))['ip']
         return self.environment.get_ssh_to_remote(ip)
 
     @logwrap
@@ -648,8 +651,7 @@ class FuelWebClient(object):
                 node_roles = nodes_dict[node_name]
                 node_group = 'default'
 
-            devops_node = self.environment.get_virtual_environment().\
-                node_by_name(node_name)
+            devops_node = self.environment.d_env.get_node(name=node_name)
 
             wait(lambda:
                  self.get_nailgun_node_by_devops_node(devops_node)['online'],
@@ -866,7 +868,7 @@ class FuelWebClient(object):
 
     def common_net_settings(self, network_configuration):
         nc = network_configuration["networking_parameters"]
-        public = IPNetwork(self.environment.get_network("public"))
+        public = IPNetwork(self.environment._get_network("public"))
 
         float_range = public if not BONDING else list(public.subnet(27))[0]
         nc["floating_ranges"] = self.get_range(float_range, 1)
@@ -881,7 +883,7 @@ class FuelWebClient(object):
                     self.net_settings(net_config, net_name)
             else:
                 pub_subnets = list(IPNetwork(
-                    self.environment.get_network("public")).subnet(27))
+                    self.environment._get_network("public")).subnet(27))
                 if "floating" == net_name:
                     self.net_settings(net_config, pub_subnets[0],
                                       floating=True, jbond=True)
@@ -906,7 +908,7 @@ class FuelWebClient(object):
                     self.net_settings(net_config, admin_net)
             else:
                 pub_subnets = list(IPNetwork(
-                    self.environment.get_network(public_net)).subnet(27))
+                    self.environment._get_network(public_net)).subnet(27))
 
                 if "floating" == net_name:
                     self.net_settings(net_config, pub_subnets[0],
@@ -921,7 +923,7 @@ class FuelWebClient(object):
         if jbond:
             ip_network = net_name
         else:
-            ip_network = IPNetwork(self.environment.get_network(net_name))
+            ip_network = IPNetwork(self.environment._get_network(net_name))
             if 'admin' in net_name:
                 net_config['ip_ranges'] = self.get_range(ip_network, 2)
 
@@ -932,10 +934,12 @@ class FuelWebClient(object):
 
         if jbond:
             if net_config['name'] == 'public':
-                net_config['gateway'] = self.environment.router('public')
+                net_config['gateway'] = \
+                    self.environment.d_env.router('public')
         else:
             net_config['vlan_start'] = None
-            net_config['gateway'] = self.environment.router(net_name)
+            net_config['gateway'] = self.environment.get_virtual_environment(
+            ).router(net_name)
 
     def get_range(self, ip_network, ip_range=0):
         net = list(IPNetwork(ip_network))
@@ -951,7 +955,7 @@ class FuelWebClient(object):
 
     def get_floating_ranges(self, network_set=''):
         net_name = 'public{0}'.format(network_set)
-        net = list(IPNetwork(self.environment.get_network(net_name)))
+        net = list(IPNetwork(self.environment._get_network(net_name)))
         ip_ranges, expected_ips = [], []
 
         for i in [0, -20, -40]:
@@ -1144,7 +1148,7 @@ class FuelWebClient(object):
 
     @logwrap
     def sync_ceph_time(self, ceph_nodes):
-        self.environment.sync_time_admin_node()
+        self.environment.sync_time(['admin'])
         if OPENSTACK_RELEASE_UBUNTU in OPENSTACK_RELEASE:
             cmd = 'service ceph-all restart'
         else:
@@ -1223,12 +1227,12 @@ class FuelWebClient(object):
         release_ids = []
         for release in full_list:
             if release_version:
-                if release_name in release['name'] \
+                if release_name in release['name'].lower() \
                         and release_version == release['version']:
                     logger.debug('release data is {0}'.format(release))
                     release_ids.append(release['id'])
             else:
-                if release_name in release['name']:
+                if release_name in release['name'].lower():
                     release_ids.append(release['id'])
         return release_ids
 
@@ -1376,13 +1380,13 @@ class FuelWebClient(object):
         logger.debug("node name is {0}".format(node_name))
         fqdn = self.get_fqdn_by_hostname(node_name)
         devops_node = self.find_devops_node_by_nailgun_fqdn(
-            fqdn, self.environment.nodes().slaves)
+            fqdn, self.environment.d_env.nodes().slaves)
         return devops_node
 
     @logwrap
     def get_fqdn_by_hostname(self, hostname):
-        if self.environment.domain not in hostname:
-            hostname += "." + self.environment.domain
+        if self.environment.d_env.domain not in hostname:
+            hostname += "." + self.environment.d_env.domain
             return hostname
         else:
             return hostname
@@ -1416,5 +1420,5 @@ class FuelWebClient(object):
         logger.debug("node name is {0}".format(node_name))
         fqdn = self.get_fqdn_by_hostname(node_name)
         devops_node = self.find_devops_node_by_nailgun_fqdn(
-            fqdn, self.environment.nodes().slaves)
+            fqdn, self.environment.d_env.nodes().slaves)
         return devops_node

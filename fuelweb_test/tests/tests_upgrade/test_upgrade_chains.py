@@ -21,7 +21,7 @@ from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 
 from fuelweb_test.helpers import checkers
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test import logger
 from fuelweb_test import settings as hlp_data
 from fuelweb_test.tests import base_test_case as base_test_data
@@ -33,7 +33,7 @@ class UpgradeFuelChains(base_test_data.TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["prepare_upgrade_env", "prepare_upgrade_env_classic"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def prepare_upgrade_env(self):
         """Deploy cluster in ha mode with 1 controller and Neutron VLAN
 
@@ -80,7 +80,7 @@ class UpgradeFuelChains(base_test_data.TestBasic):
         self.env.make_snapshot("prepare_upgrade_env", is_make=True)
 
     @test(groups=["upgrade_first_stage", "upgrade_first_stage_classic"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def upgrade_first_stage(self):
         """Upgrade ha one controller deployed cluster and deploy new one
 
@@ -167,7 +167,7 @@ class UpgradeFuelChains(base_test_data.TestBasic):
         self.env.make_snapshot("upgrade_first_stage", is_make=True)
 
     @test(groups=["upgrade_second_stage", "upgrade_second_stage_classic"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def upgrade_second_stage(self):
         """Upgrade master second time with 2 available clusters
 

@@ -28,7 +28,9 @@ import json
 import urllib2
 
 
-class APIClient:
+class APIClient(object):
+    """APIClient."""  # TODO documentation
+
     def __init__(self, base_url):
         self.user = ''
         self.password = ''
@@ -99,4 +101,5 @@ class APIClient:
 
 
 class APIError(Exception):
+    """APIError."""  # TODO documentation
     pass

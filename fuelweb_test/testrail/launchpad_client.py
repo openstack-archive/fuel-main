@@ -16,6 +16,8 @@ from launchpadlib.launchpad import Launchpad
 
 
 class LaunchpadBug(object):
+    """LaunchpadBug."""  # TODO documentation
+
     def __init__(self, bug_id):
         self.launchpad = Launchpad.login_anonymously('just testing',
                                                      'production',

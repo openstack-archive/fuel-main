@@ -15,7 +15,7 @@ from nose.tools import assert_equals
 
 from proboscis import test
 
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers import http
 from fuelweb_test.helpers import os_actions
@@ -29,7 +29,7 @@ from fuelweb_test import logger
 class SimpleZabbix(TestBasic):
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_simple_zabbix"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_simple_zabbix(self):
         """Deploy cluster in simple mode with zabbix-server
 
@@ -47,12 +47,13 @@ class SimpleZabbix(TestBasic):
             11. Run OSTF
             12. Login in zabbix dashboard
 
+        Duration 30m
         Snapshot: deploy_simple_zabbix
-
         """
         self.env.revert_snapshot("ready_with_3_slaves")
 
-        node_ssh = self.env.get_ssh_to_remote(self.fuel_web.admin_node_ip)
+        node_ssh = self.env.d_env.get_ssh_to_remote(
+            self.fuel_web.admin_node_ip)
 
         # Turn on experimental mode
         checkers.check_enable_experimental_mode(
@@ -98,7 +99,7 @@ class SimpleZabbix(TestBasic):
 
         # login in dashboard
         node_ip = self.fuel_web.get_nailgun_node_by_devops_node(
-            self.env.get_virtual_environment().node_by_name('slave-03'))['ip']
+            self.env.d_env.get_node(name='slave-03'))['ip']
 
         dashboard_url = 'http://{0}/zabbix/'.format(node_ip)
 

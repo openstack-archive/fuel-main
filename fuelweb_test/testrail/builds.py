@@ -73,7 +73,7 @@ def get_build_artifact(url, artifact):
     return s
 
 
-class Build():
+class Build(object):
     def __init__(self, name, number):
         """Get build info via Jenkins API, get test info via direct HTTP
         request.
@@ -143,9 +143,8 @@ class Build():
         return data
 
     def __str__(self):
-        string = "\n".join([
-            "{0}: {1}".format(*item) for item in self.build_record()
-        ])
+        string = "\n".join(
+            ["{0}: {1}".format(*item) for item in self.build_record()])
         return string
 
     def build_record(self):

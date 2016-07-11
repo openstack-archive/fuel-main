@@ -53,3 +53,13 @@ def debug(logger):
     return wrapper
 
 logwrap = debug(logger)
+
+
+class quiet_logger(object):
+    """Reduce logging level while context is executed."""
+
+    def __enter__(self):
+        console.setLevel(logging.ERROR)
+
+    def __exit__(self, exp_type, exp_value, traceback):
+        console.setLevel(logging.INFO)

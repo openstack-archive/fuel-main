@@ -15,7 +15,7 @@
 
 from proboscis import test
 
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test import settings as hlp_date
 from fuelweb_test.tests import base_test_case
 
@@ -25,7 +25,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
           groups=["create_delete_ip_n_times_nova_vlan"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def create_delete_ip_n_times_nova_vlan(self):
         """Deploy cluster in simple mode with VLAN Manager
 
@@ -39,6 +39,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
             7. Run test Check network connectivity
                from instance via floating IP' n times
 
+        Duration 1000m
         Snapshot create_delete_ip_n_times_nova_vlan
 
         """
@@ -66,7 +67,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
 
     @test(depends_on=[base_test_case.SetupEnvironment.prepare_slaves_3],
           groups=["create_delete_ip_n_times_nova_flat"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_create_delete_ip_n_times_nova_flat(self):
         """Deploy cluster in simple mode with flat nova-network
 
@@ -79,6 +80,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
             6. Run test Check network connectivity
                from instance via floating IP' n times
 
+        Duration 1000m
         Snapshot: create_delete_ip_n_times_nova_flat
 
         """
@@ -103,7 +105,7 @@ class OstfRepeatableTests(base_test_case.TestBasic):
         self.env.make_snapshot("create_delete_ip_n_times_nova_flat")
 
     @test(groups=["run_ostf_n_times_against_custom_environment"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def run_ostf_n_times_against_custom_deployment(self):
         cluster_id = self.fuel_web.client.get_cluster_id(
             hlp_date.DEPLOYMENT_NAME)

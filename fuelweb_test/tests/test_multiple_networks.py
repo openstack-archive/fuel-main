@@ -17,7 +17,7 @@ from proboscis import test
 from proboscis.asserts import assert_equal
 
 from fuelweb_test.helpers.decorators import check_fuel_statistics
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import MULTIPLE_NETWORKS
 from fuelweb_test.settings import NODEGROUPS
@@ -27,9 +27,11 @@ from fuelweb_test.tests.base_test_case import SetupEnvironment
 
 @test(groups=["multiple_cluster_networks", "thread_7"])
 class TestMultipleClusterNets(TestBasic):
+    """TestMultipleClusterNets."""  # TODO documentation
+
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["multiple_cluster_networks", "multiple_cluster_net_setup"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def multiple_cluster_net_setup(self):
         """Check master node deployment and configuration with 2 sets of nets
 
@@ -37,7 +39,7 @@ class TestMultipleClusterNets(TestBasic):
             1. Revert snapshot with 5 slaves
             2. Check that slaves got IPs via DHCP from both admin/pxe networks
             3. Make environment snapshot
-
+        Duration 6m
         Snapshot multiple_cluster_net_setup
 
         """
@@ -47,7 +49,7 @@ class TestMultipleClusterNets(TestBasic):
         self.env.revert_snapshot("ready_with_5_slaves")
 
         # Get network parts of IP addresses with /24 netmask
-        networks = ['.'.join(self.env.get_network(n).split('.')[0:-1]) for n
+        networks = ['.'.join(self.env._get_network(n).split('.')[0:-1]) for n
                     in [self.env.admin_net, self.env.admin_net2]]
         nodes_addresses = ['.'.join(node['ip'].split('.')[0:-1]) for node in
                            self.fuel_web.client.list_nodes()]
@@ -61,7 +63,7 @@ class TestMultipleClusterNets(TestBasic):
     @test(depends_on=[multiple_cluster_net_setup],
           groups=["multiple_cluster_networks",
                   "multiple_cluster_net_neutron_gre_ha", "thread_7"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     @check_fuel_statistics
     def deploy_neutron_gre_ha_nodegroups(self):
         """Deploy HA environment with NeutronGRE and 2 nodegroups
@@ -74,6 +76,7 @@ class TestMultipleClusterNets(TestBasic):
             5. Deploy cluster
             6. Run health checks (OSTF)
 
+        Duration 110m
         Snapshot deploy_neutron_gre_ha_nodegroups
 
         """
@@ -116,7 +119,7 @@ class TestMultipleClusterNets(TestBasic):
     @test(depends_on=[multiple_cluster_net_setup],
           groups=["multiple_cluster_networks",
                   "multiple_cluster_net_ceph_ha", "thread_7"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_ceph_ha_nodegroups(self):
         """Deploy HA environment with NeutronGRE, Ceph and 2 nodegroups
 
@@ -128,6 +131,7 @@ class TestMultipleClusterNets(TestBasic):
             5. Deploy cluster
             6. Run health checks (OSTF)
 
+        Duration 110m
         Snapshot deploy_neutron_gre_ha_nodegroups
 
         """

@@ -91,8 +91,8 @@ def check_cinder_status(remote):
     if result['exit_code'] == 0:
         return all(' up ' in x.split('enabled')[1]
                    for x in cinder_services.split('\n')
-                   if 'cinder' in x and 'enabled' in x
-                   and len(x.split('enabled')))
+                   if 'cinder' in x and 'enabled' in x and
+                   len(x.split('enabled')))
     return False
 
 
@@ -271,6 +271,8 @@ def check_upgraded_containers(remote, version_from, version_to):
 
 @logwrap
 def upload_tarball(node_ssh, tar_path, tar_target):
+    assert_true(tar_path, "Source path for uploading 'tar_path' is empty, "
+                "please check test settings!")
     check_archive_type(tar_path)
     try:
         logger.debug("Start to upload tar file")
@@ -390,6 +392,7 @@ def find_backup(remote):
         arch_path = ''.join(
             remote.execute("ls -1u /var/backup/fuel/{0}/*.lrz".
                            format(arch_dir.strip()))["stdout"])
+        logger.debug('arch_path is {0}'.format(arch_path))
         return arch_path
     except Exception as e:
         logger.error('exception is {0}'.format(e))
@@ -474,11 +477,6 @@ def install_plugin_check_code(
     assert_equal(
         chan.recv_exit_status(), exit_code,
         'Install script fails with next message {0}'.format(''.join(stderr)))
-
-
-def check_kernel(kernel, expected_kernel):
-    assert_equal(kernel, expected_kernel,
-                 "kernel version is wrong, it is {0}".format(kernel))
 
 
 @logwrap
@@ -589,6 +587,7 @@ def execute_query_on_collector(collector_remote, master_uuid, query,
         query = "{0} where master_node_uid = '{1}';".format(query, master_uuid)
     cmd = 'PGPASSWORD={0} psql -qt -h 127.0.0.1 -U {1} -d {2} -c "{3}"'.\
         format(collector_db_pass, collector_db_user, collector_db, query)
+    logger.debug('query collector is {0}'.format(cmd))
     return ''.join(collector_remote.execute(cmd)['stdout']).strip()
 
 
@@ -828,3 +827,6 @@ def check_swift_ring(remote):
         assert_true(float(balance) == 0,
                     "swift ring builder {1} is not ok,"
                     " balance is {0}".format(balance, ring))
+def check_kernel(kernel, expected_kernel):
+    assert_equal(kernel, expected_kernel,
+                 "kernel version is wrong, it is {0}".format(kernel))

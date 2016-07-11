@@ -16,7 +16,7 @@ from proboscis.asserts import assert_equal
 from proboscis import test
 
 from fuelweb_test.helpers import checkers
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.settings import DEPLOYMENT_MODE_SIMPLE
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -26,10 +26,11 @@ from fuelweb_test import logger
 
 @test(groups=["thread_1", "neutron", "bvt_1"])
 class NeutronGre(TestBasic):
+    """NeutronGre."""  # TODO documentation
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_neutron_gre", "simple_neutron_gre"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_neutron_gre(self):
         """Deploy cluster in simple mode with Neutron GRE
 
@@ -41,6 +42,7 @@ class NeutronGre(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 35m
         Snapshot deploy_neutron_gre
 
         """
@@ -86,10 +88,11 @@ class NeutronGre(TestBasic):
 
 @test(groups=["thread_1", "neutron"])
 class NeutronVlan(TestBasic):
+    """NeutronVlan."""  # TODO documentation
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
           groups=["deploy_neutron_vlan", "simple_neutron_vlan"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_neutron_vlan(self):
         """Deploy cluster in simple mode with Neutron VLAN
 
@@ -101,6 +104,7 @@ class NeutronVlan(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 35m
         Snapshot deploy_neutron_vlan
 
         """
@@ -142,10 +146,11 @@ class NeutronVlan(TestBasic):
 
 @test(groups=["neutron", "ha", "ha_neutron", "image_based"])
 class NeutronGreHa(TestBasic):
+    """NeutronGreHa."""  # TODO documentation
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_neutron_gre_ha", "ha_neutron_gre"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_neutron_gre_ha(self):
         """Deploy cluster in HA mode with Neutron GRE
 
@@ -157,6 +162,7 @@ class NeutronGreHa(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 80m
         Snapshot deploy_neutron_gre_ha
 
         """
@@ -188,11 +194,10 @@ class NeutronGreHa(TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
-        # assert_equal(str(cluster['net_segment_type']), segment_type)
 
         self.fuel_web.verify_network(cluster_id)
         devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
+            self.env.d_env.nodes().slaves[0])
         logger.debug("devops node name is {0}".format(devops_node.name))
         remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
         checkers.check_swift_ring(remote)
@@ -205,10 +210,11 @@ class NeutronGreHa(TestBasic):
 
 @test(groups=["thread_6", "neutron", "ha", "ha_neutron"])
 class NeutronGreHaPublicNetwork(TestBasic):
+    """NeutronGreHaPublicNetwork."""  # TODO documentation
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_neutron_gre_ha_public_network"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_neutron_gre_ha_with_public_network(self):
         """Deploy cluster in HA mode with Neutron GRE and public network
            assigned to all nodes
@@ -223,6 +229,7 @@ class NeutronGreHaPublicNetwork(TestBasic):
             7. Run network verification
             8. Run OSTF
 
+        Duration 80m
         Snapshot deploy_neutron_gre_ha_public_network
 
         """
@@ -255,7 +262,6 @@ class NeutronGreHaPublicNetwork(TestBasic):
 
         cluster = self.fuel_web.client.get_cluster(cluster_id)
         assert_equal(str(cluster['net_provider']), 'neutron')
-        # assert_equal(str(cluster['net_segment_type']), segment_type)
 
         self.fuel_web.verify_network(cluster_id)
 
@@ -269,10 +275,11 @@ class NeutronGreHaPublicNetwork(TestBasic):
 
 @test(groups=["neutron", "ha", "ha_neutron", "bvt_1"])
 class NeutronVlanHa(TestBasic):
+    """NeutronVlanHa."""  # TODO documentation
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_neutron_vlan_ha", "ha_neutron_vlan"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_neutron_vlan_ha(self):
         """Deploy cluster in HA mode with Neutron VLAN
 
@@ -284,6 +291,7 @@ class NeutronVlanHa(TestBasic):
             5. Run network verification
             6. Run OSTF
 
+        Duration 80m
         Snapshot deploy_neutron_vlan_ha
 
         """
@@ -320,7 +328,7 @@ class NeutronVlanHa(TestBasic):
 
         self.fuel_web.verify_network(cluster_id)
         devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
+            self.env.d_env.nodes().slaves[0])
         logger.debug("devops node name is {0}".format(devops_node.name))
         remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
         checkers.check_swift_ring(remote)
@@ -333,10 +341,11 @@ class NeutronVlanHa(TestBasic):
 
 @test(groups=["thread_6", "neutron", "ha", "ha_neutron"])
 class NeutronVlanHaPublicNetwork(TestBasic):
+    """NeutronVlanHaPublicNetwork."""  # TODO documentation
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_neutron_vlan_ha_public_network"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_neutron_vlan_ha_with_public_network(self):
         """Deploy cluster in HA mode with Neutron VLAN and public network
            assigned to all nodes
@@ -351,8 +360,8 @@ class NeutronVlanHaPublicNetwork(TestBasic):
             7. Run network verification
             8. Run OSTF
 
+        Duration 80m
         Snapshot deploy_neutron_vlan_ha_public_network
-
 
         """
         self.env.revert_snapshot("ready_with_5_slaves")

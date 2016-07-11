@@ -35,11 +35,11 @@ class PuppetEnvironment(EnvironmentModel):
         return os.environ.get('PPENV_NAME', 'pp-integration')
 
     def start_env(self):
-        self.get_virtual_environment().start(self.nodes())
+        self.d_env.start(self.d_env.nodes())
 
     def execute_cmd(self, command, debug=True):
         """Execute command on node."""
-        return self.get_admin_remote().execute(command,
+        return self.d_env.get_admin_remote().execute(command,
                                                verbose=debug)['exit_code']
 
     def await(self, timeout=1200):

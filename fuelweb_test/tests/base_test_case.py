@@ -15,7 +15,7 @@
 from proboscis import SkipTest
 from proboscis import test
 
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.models.environment import EnvironmentModel
 from fuelweb_test.settings import OPENSTACK_RELEASE
 from fuelweb_test.settings import OPENSTACK_RELEASE_REDHAT
@@ -40,7 +40,7 @@ class TestBasic(object):
 
         """
         if snapshot_name:
-            if self.env.get_virtual_environment().has_snapshot(snapshot_name):
+            if self.env.d_env.has_snapshot(snapshot_name):
                 raise SkipTest()
 
 
@@ -81,7 +81,7 @@ class SetupEnvironment(TestBasic):
 
         # Bug #1289297. Install and run 'atop' on the admin node to check it's
         # health status .
-        if (self.env.admin_install_pkg("atop") == 0):
+        if self.env.admin_install_pkg("atop") == 0:
             self.env.admin_run_service("atop")
 
         self.env.make_snapshot("ready", is_make=True)
@@ -100,12 +100,13 @@ class SetupEnvironment(TestBasic):
         """
         self.check_run("ready_with_1_slaves")
         self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:1])
+        self.env.bootstrap_nodes(self.env.get_virtual_environment(
+        ).nodes().slaves[:1])
         self.env.make_snapshot("ready_with_1_slaves", is_make=True)
 
     @test(depends_on=[prepare_release],
           groups=["prepare_slaves_3"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def prepare_slaves_3(self):
         """Bootstrap 3 slave nodes
 
@@ -118,12 +119,13 @@ class SetupEnvironment(TestBasic):
         """
         self.check_run("ready_with_3_slaves")
         self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:3])
+        self.env.bootstrap_nodes(self.env.get_virtual_environment(
+        ).nodes().slaves[:3])
         self.env.make_snapshot("ready_with_3_slaves", is_make=True)
 
     @test(depends_on=[prepare_release],
           groups=["prepare_slaves_5"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def prepare_slaves_5(self):
         """Bootstrap 5 slave nodes
 
@@ -136,12 +138,13 @@ class SetupEnvironment(TestBasic):
         """
         self.check_run("ready_with_5_slaves")
         self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:5])
+        self.env.bootstrap_nodes(self.env.get_virtual_environment(
+        ).nodes().slaves[:5])
         self.env.make_snapshot("ready_with_5_slaves", is_make=True)
 
     @test(depends_on=[prepare_release],
           groups=["prepare_slaves_9"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def prepare_slaves_9(self):
         """Bootstrap 9 slave nodes
 
@@ -154,5 +157,6 @@ class SetupEnvironment(TestBasic):
         """
         self.check_run("ready_with_9_slaves")
         self.env.revert_snapshot("ready")
-        self.env.bootstrap_nodes(self.env.nodes().slaves[:9])
+        self.env.bootstrap_nodes(self.env.get_virtual_environment(
+        ).nodes().slaves[:9])
         self.env.make_snapshot("ready_with_9_slaves", is_make=True)

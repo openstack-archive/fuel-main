@@ -19,7 +19,7 @@ from proboscis.asserts import assert_true
 from proboscis import test
 
 from fuelweb_test.helpers import checkers
-from fuelweb_test.helpers.decorators import log_snapshot_on_error
+from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.helpers import os_actions
 from fuelweb_test.settings import DEPLOYMENT_MODE_HA
 from fuelweb_test.tests.base_test_case import SetupEnvironment
@@ -32,7 +32,7 @@ class TestHaVLAN(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_ha_vlan", "ha_nova_vlan"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_ha_vlan(self):
         """Deploy cluster in HA mode with VLAN Manager
 
@@ -48,6 +48,7 @@ class TestHaVLAN(TestBasic):
             8. Run OSTF
             9. Create snapshot
 
+        Duration 70m
         Snapshot deploy_ha_vlan
 
         """
@@ -88,7 +89,7 @@ class TestHaVLAN(TestBasic):
 
         self.fuel_web.verify_network(cluster_id)
         devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
+            self.env.d_env.nodes().slaves[0])
         logger.debug("devops node name is {0}".format(devops_node.name))
         remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
         checkers.check_swift_ring(remote)
@@ -105,7 +106,7 @@ class TestHaFlat(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["deploy_ha_flat", "ha_nova_flat"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def deploy_ha_flat(self):
         """Deploy cluster in HA mode with flat nova-network
 
@@ -120,6 +121,7 @@ class TestHaFlat(TestBasic):
             7. Run OSTF
             8. Make snapshot
 
+        Duration 70m
         Snapshot deploy_ha_flat
 
         """
@@ -157,7 +159,7 @@ class TestHaFlat(TestBasic):
 
         self.fuel_web.security.verify_firewall(cluster_id)
         devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
+            self.env.d_env.nodes().slaves[0])
         logger.debug("devops node name is {0}".format(devops_node.name))
         remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
         checkers.check_swift_ring(remote)
@@ -174,7 +176,7 @@ class TestHaFlatAddCompute(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["ha_flat_add_compute"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def ha_flat_add_compute(self):
         """Add compute node to cluster in HA mode with flat nova-network
 
@@ -190,6 +192,7 @@ class TestHaFlatAddCompute(TestBasic):
             8. Run network verification
             9. Run OSTF
 
+        Duration 80m
         Snapshot ha_flat_add_compute
 
         """
@@ -215,7 +218,8 @@ class TestHaFlatAddCompute(TestBasic):
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=16, networks_count=1, timeout=300)
 
-        self.env.bootstrap_nodes(self.env.nodes().slaves[5:6])
+        self.env.bootstrap_nodes(
+            self.env.d_env.nodes().slaves[5:6])
         self.fuel_web.update_nodes(
             cluster_id, {'slave-06': ['compute']}, True, False
         )
@@ -235,7 +239,7 @@ class TestHaFlatScalability(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["ha_flat_scalability", "ha_nova_flat_scalability"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def ha_flat_scalability(self):
         """Check HA mode on scalability
 
@@ -251,6 +255,7 @@ class TestHaFlatScalability(TestBasic):
             9. Run network verification
             10. Run OSTF
 
+        Duration 110m
         Snapshot ha_flat_scalability
 
         """
@@ -274,9 +279,12 @@ class TestHaFlatScalability(TestBasic):
             True, False
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        for devops_node in self.env.nodes().slaves[:3]:
+        for devops_node in self.env.get_virtual_environment(
+        ).nodes().slaves[:3]:
             self.fuel_web.assert_pacemaker(
-                devops_node.name, self.env.nodes().slaves[:3], [])
+                devops_node.name,
+                self.env.get_virtual_environment(
+                ).nodes().slaves[:3], [])
 
         self.fuel_web.update_nodes(
             cluster_id, {'slave-04': ['controller'],
@@ -284,9 +292,12 @@ class TestHaFlatScalability(TestBasic):
             True, False
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        for devops_node in self.env.nodes().slaves[:5]:
+        for devops_node in self.env.get_virtual_environment(
+        ).nodes().slaves[:5]:
             self.fuel_web.assert_pacemaker(
-                devops_node.name, self.env.nodes().slaves[:5], [])
+                devops_node.name,
+                self.env.get_virtual_environment(
+                ).nodes().slaves[:5], [])
             ret = self.fuel_web.get_pacemaker_status(devops_node.name)
             assert_true(
                 re.search('vip__management\s+\(ocf::mirantis:ns_IPaddr2\):'
@@ -305,7 +316,7 @@ class TestHaFlatScalability(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["ha_flat_scalability_with_swift"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def ha_flat_scalability_with_swift(self):
         """Check HA mode on scalability with swift checks
 
@@ -341,7 +352,7 @@ class TestHaFlatScalability(TestBasic):
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
         devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
+            self.env.d_env.nodes().slaves[0])
         logger.debug("devops node name is {0}".format(devops_node.name))
         remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
         checkers.check_swift_ring(remote)
@@ -352,12 +363,12 @@ class TestHaFlatScalability(TestBasic):
             True, False
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        for devops_node in self.env.nodes().slaves[:3]:
+        for devops_node in self.env.d_env.nodes().slaves[:3]:
             self.fuel_web.assert_pacemaker(
-                devops_node.name, self.env.nodes().slaves[:3], [])
+                devops_node.name, self.env.d_env.nodes().slaves[:3], [])
 
         devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
+            self.env.d_env.nodes().slaves[0])
         logger.debug("devops node name is {0}".format(devops_node.name))
         remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
         checkers.check_swift_ring(remote)
@@ -368,9 +379,9 @@ class TestHaFlatScalability(TestBasic):
             True, False
         )
         self.fuel_web.deploy_cluster_wait(cluster_id)
-        for devops_node in self.env.nodes().slaves[:5]:
+        for devops_node in self.env.d_env.nodes().slaves[:5]:
             self.fuel_web.assert_pacemaker(
-                devops_node.name, self.env.nodes().slaves[:5], [])
+                devops_node.name, self.env.d_env.nodes().slaves[:5], [])
             ret = self.fuel_web.get_pacemaker_status(devops_node.name)
             assert_true(
                 re.search('vip__management\s+\(ocf::mirantis:ns_IPaddr2\):'
@@ -381,7 +392,7 @@ class TestHaFlatScalability(TestBasic):
 
         self.fuel_web.security.verify_firewall(cluster_id)
         devops_node = self.fuel_web.get_nailgun_primary_controller(
-            self.env.nodes().slaves[0])
+            self.env.d_env.nodes().slaves[0])
         logger.debug("devops node name is {0}".format(devops_node.name))
         remote = self.env.get_ssh_to_remote_by_name(devops_node.name)
         checkers.check_swift_ring(remote)
@@ -398,7 +409,7 @@ class BackupRestoreHa(TestBasic):
 
     @test(depends_on=[TestHaFlat.deploy_ha_flat],
           groups=["known_issues", "backup_restore_ha_flat"])
-    @log_snapshot_on_error
+    @log_snapshot_after_test
     def backup_restore_ha_flat(self):
         """Backup/restore master node with cluster in ha mode
 
@@ -412,6 +423,8 @@ class BackupRestoreHa(TestBasic):
             7. Check restore
             8. Run OSTF
 
+        Duration 50m
+
         """
         self.env.revert_snapshot("deploy_ha_flat")
 
@@ -421,9 +434,10 @@ class BackupRestoreHa(TestBasic):
             'novaHaFlat', 'novaHaFlat', 'novaHaFlat')
         self.fuel_web.assert_cluster_ready(
             os_conn, smiles_count=16, networks_count=1, timeout=300)
-        self.fuel_web.backup_master(self.env.get_admin_remote())
-        checkers.backup_check(self.env.get_admin_remote())
-        self.env.bootstrap_nodes(self.env.nodes().slaves[5:6])
+        self.fuel_web.backup_master(self.env.d_env.get_admin_remote())
+        checkers.backup_check(self.env.d_env.get_admin_remote())
+        self.env.bootstrap_nodes(
+            self.env.d_env.nodes().slaves[5:6])
         self.fuel_web.update_nodes(
             cluster_id, {'slave-06': ['compute']}, True, False
         )
@@ -431,15 +445,16 @@ class BackupRestoreHa(TestBasic):
         assert_equal(
             6, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))
 
-        self.fuel_web.restore_master(self.env.get_admin_remote())
-        checkers.restore_check_sum(self.env.get_admin_remote())
-        self.fuel_web.restore_check_nailgun_api(self.env.get_admin_remote())
-        checkers.iptables_check(self.env.get_admin_remote())
+        self.fuel_web.restore_master(self.env.d_env.get_admin_remote())
+        checkers.restore_check_sum(self.env.d_env.get_admin_remote())
+        self.fuel_web.restore_check_nailgun_api(self.env.d_env.get_admin_remote())
+        checkers.iptables_check(self.env.d_env.get_admin_remote())
 
         assert_equal(
             5, len(self.fuel_web.client.list_cluster_nodes(cluster_id)))
 
-        self.env.bootstrap_nodes(self.env.nodes().slaves[5:6])
+        self.env.bootstrap_nodes(
+            self.env.d_env.nodes().slaves[5:6])
         self.fuel_web.update_nodes(
             cluster_id, {'slave-06': ['compute']}, True, False
         )

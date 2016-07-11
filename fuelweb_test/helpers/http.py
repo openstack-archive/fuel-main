@@ -22,6 +22,7 @@ from fuelweb_test import logger
 
 
 class HTTPClient(object):
+    """HTTPClient."""  # TODO documentation
 
     def __init__(self, url, keystone_url, credentials, **kwargs):
         logger.info('Initiate HTTPClient with url %s', url)
@@ -110,6 +111,8 @@ class HTTPClient(object):
 
 
 class HTTPClientZabbix(object):
+    """HTTPClientZabbix."""  # TODO documentation
+
     def __init__(self, url):
         self.url = url
         self.opener = urllib2.build_opener(urllib2.HTTPHandler)

@@ -48,7 +48,7 @@ def save_logs(url, filename):
         logger.error(e)
 
 
-def log_snapshot_on_error(func):
+def log_snapshot_after_test(func):
     """Snapshot environment in case of error.
 
     Decorator to snapshot environment when error occurred in test.
@@ -56,6 +56,9 @@ def log_snapshot_on_error(func):
     """
     @functools.wraps(func)
     def wrapper(*args, **kwagrs):
+        logger.info("\n" + "<" * 5 + "#" * 30 + "[ {} ]"
+                    .format(func.__name__) + "#" * 30 + ">" * 5 + "\n{}"
+                    .format(func.__doc__))
         try:
             return func(*args, **kwagrs)
         except SkipTest:
@@ -76,16 +79,20 @@ def log_snapshot_on_error(func):
                     logger.error("Fetching of diagnostic snapshot failed: {0}".
                                  format(traceback.format_exc()))
                     try:
-                        admin_remote = args[0].env.get_admin_remote()
+                        admin_remote = args[0].env.d_env.get_admin_remote()
                         pull_out_logs_via_ssh(admin_remote, name)
                     except:
                         logger.error("Fetching of raw logs failed: {0}".
                                      format(traceback.format_exc()))
                 finally:
                     logger.debug(args)
-                    args[0].env.make_snapshot(snapshot_name=name[-50:],
-                                              description=description,
-                                              is_make=True)
+                    try:
+                        args[0].env.make_snapshot(snapshot_name=name[-50:],
+                                                  description=description,
+                                                  is_make=True)
+                    except:
+                        logger.error("Error making the environment snapshot:"
+                                     " {0}".format(traceback.format_exc()))
             raise test_exception, None, exc_trace
     return wrapper
 
@@ -106,7 +113,15 @@ def upload_manifests(func):
             if settings.UPLOAD_MANIFESTS:
                 logger.info("Uploading new manifests from %s" %
                             settings.UPLOAD_MANIFESTS_PATH)
-                remote = args[0].environment.get_admin_remote()
+                if args[0].__class__.__name__ == "EnvironmentModel":
+                    environment = args[0]
+                elif args[0].__class__.__name__ == "FuelWebClient":
+                    environment = args[0].environment
+                else:
+                    logger.warning("Can't upload manifests: method of "
+                                   "unexpected class is decorated.")
+                    return result
+                remote = environment.d_env.get_admin_remote()
                 remote.execute('rm -rf /etc/puppet/modules/*')
                 remote.upload(settings.UPLOAD_MANIFESTS_PATH,
                               '/etc/puppet/modules/')
@@ -150,7 +165,7 @@ def update_ostf(func):
                     raise ValueError('REFSPEC should be set for CI tests.')
                 logger.info("Uploading new patchset from {0}"
                             .format(settings.GERRIT_REFSPEC))
-                remote = args[0].environment.get_admin_remote()
+                remote = args[0].environment.d_env.get_admin_remote()
                 remote.upload(settings.PATCH_PATH.rstrip('/'),
                               '/tmp/fuel-ostf')
                 remote.execute('source /opt/fuel_plugins/ostf/bin/activate; '
@@ -224,16 +239,14 @@ def custom_repo(func):
 def check_fuel_statistics(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        args[0].env.__wrapped__ = 'check_fuel_statistics'
         result = func(*args, **kwargs)
-        args[0].env.__wrapped__ = None
         if not settings.FUEL_STATS_CHECK:
             return result
         logger.info('Test "{0}" passed. Checking stats.'.format(func.__name__))
         fuel_settings = args[0].env.get_fuel_settings()
         nailgun_actions = args[0].env.nailgun_actions
         postgres_actions = args[0].env.postgres_actions
-        remote_collector = args[0].env.get_ssh_to_remote_by_key(
+        remote_collector = args[0].env.d_env.get_ssh_to_remote_by_key(
             settings.FUEL_STATS_HOST,
             '{0}/.ssh/id_rsa'.format(expanduser("~")))
         master_uuid = args[0].env.get_masternode_uuid()
