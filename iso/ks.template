@@ -449,6 +449,7 @@ set -x
 
 source "/root/anaconda.cmdline.vars"
 SOURCE=/tmp/source
+FS=/tmp/fs
 
 # Prepare bootstrap_admin_node config
 mkdir -p /etc/fuel
@@ -461,7 +462,7 @@ wait_for_external_config=${wait_for_external_config:-no}
 EOF
 
 # Unmounting source
-umount -f ${SOURCE}
+umount -f ${SOURCE} || true
 rm -rf ${SOURCE}
 
 umount -f ${FS} || true
