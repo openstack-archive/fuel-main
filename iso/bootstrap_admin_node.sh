@@ -25,6 +25,7 @@ VBOX_BLACKLIST_MODULES="i2c_piix4 intel_rapl"
 BOOTSTRAP_PACKAGES="yum-plugin-priorities yum-utils fuel-release"
 
 FUEL_PACKAGES=" \
+augeas \
 authconfig \
 bind-utils \
 bridge-utils \
@@ -337,6 +338,9 @@ fi
 if [ -f "${CUSTOM_REPOS}" ]; then
   fix_default_repos.py fuelmenu --repositories-file "${CUSTOM_REPOS}" || fail
 fi
+
+# setup stringify_facts for the puppet
+augtool set /files/etc/puppet/puppet.conf/main/stringify_facts false
 
 fuelmenu --save-only --iface=$ADMIN_INTERFACE || fail
 set +x
