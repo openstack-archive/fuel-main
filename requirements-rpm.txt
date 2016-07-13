@@ -1,6 +1,7 @@
 ami-creator
 apr-util
 atop
+augeas
 augeas-libs
 bakefile
 @Base
