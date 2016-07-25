@@ -133,12 +133,14 @@ LOCAL_MIRROR_UBUNTU_OS_BASEURL:=$(LOCAL_MIRROR_UBUNTU)
 # 'usa', 'cz'
 ifeq ($(USE_MIRROR),usa)
 MIRROR_FUEL?=http://mirror.seed-us1.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/os/x86_64/
+MIRROR_FUEL_PROPOSED?=http://mirror.seed-us1.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/proposed/x86_64/
 MIRROR_UBUNTU?=mirror.seed-us1.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
 endif
 
 ifeq ($(USE_MIRROR),cz)
 MIRROR_FUEL?=http://mirror.seed-cz1.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/os/x86_64/
+MIRROR_FUEL_PROPOSED?=http://mirror.seed-cz1.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/proposed/x86_64/
 MIRROR_UBUNTU?=mirror.seed-cz1.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
 endif
@@ -148,7 +150,7 @@ endif
 # The actual name will be constracted prepending "yum_repo_" prefix.
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
-YUM_REPOS?=official extras fuel
+YUM_REPOS?=official extras fuel fuelproposed
 MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_MAJOR)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
@@ -167,6 +169,7 @@ MIRROR_MOS_UBUNTU_SECTION?=main restricted
 # MIRROR_FUEL affects build process only if YUM_REPOS variable contains 'fuel'.
 # Otherwise it is ignored entirely.
 MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/os/x86_64/
+MIRROR_FUEL_PROPOSED?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/proposed/x86_64/
 
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.

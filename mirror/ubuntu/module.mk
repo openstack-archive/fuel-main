@@ -79,7 +79,7 @@ $(BUILD_DIR)/mirror/ubuntu/mirror.done:
 	--method=$(MIRROR_MOS_UBUNTU_METHOD) \
 	--host=$(MIRROR_MOS_UBUNTU) \
 	--root=$(MIRROR_MOS_UBUNTU_ROOT) \
-	--dist=$(MIRROR_MOS_UBUNTU_SUITE) \
+	--dist=$(MIRROR_MOS_UBUNTU_SUITE),$(MIRROR_MOS_UBUNTU_SUITE)-proposed \
 	--section=$(subst $(space),$(comma),$(MIRROR_MOS_UBUNTU_SECTION)) \
 	--arch=$(UBUNTU_ARCH) \
 	$(LOCAL_MIRROR_UBUNTU)/
