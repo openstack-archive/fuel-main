@@ -83,5 +83,15 @@ $(BUILD_DIR)/mirror/ubuntu/mirror.done:
 	--section=$(subst $(space),$(comma),$(MIRROR_MOS_UBUNTU_SECTION)) \
 	--arch=$(UBUNTU_ARCH) \
 	$(LOCAL_MIRROR_UBUNTU)/
+	set -ex; debmirror --progress --checksums --nocleanup \
+	--nosource --ignore-release-gpg --rsync-extra=none \
+	--exclude-deb-section='^debug$$' \
+	--method=$(MIRROR_MOS_UBUNTU_METHOD) \
+	--host=$(MIRROR_MOS_UBUNTU) \
+	--root=$(MIRROR_MOS_UBUNTU_ROOT) \
+	--dist=$(MIRROR_MOS_UBUNTU_SUITE)-proposed \
+	--section=$(subst $(space),$(comma),$(MIRROR_MOS_UBUNTU_SECTION)) \
+	--arch=$(UBUNTU_ARCH) \
+	$(LOCAL_MIRROR_UBUNTU)/
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/.temp $(LOCAL_MIRROR_UBUNTU)/project
 	$(ACTION.TOUCH)
