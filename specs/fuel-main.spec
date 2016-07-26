@@ -62,7 +62,7 @@ rm -rf %{buildroot}
 Summary:   Fuel release package
 Version:   %{version}
 Release:   %{release}
-License:   GPLv2
+License:   Apache
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 URL:       http://github.com/Mirantis
 
@@ -83,7 +83,7 @@ and Yum configuration for Fuel online repositories.
 Summary:   Fuel deployment script package
 Version:   %{version}
 Release:   %{release}
-License:   GPLv2
+License:   Apache
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 URL:       http://github.com/Mirantis
 
