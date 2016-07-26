@@ -24,7 +24,18 @@ Architectures: $(UBUNTU_ARCH)
 VerifyRelease: blindtrust
 endef
 
-
+define debmirror_mos_ubuntu
+set -ex; debmirror --progress --checksums --nocleanup \
+  --nosource --ignore-release-gpg --rsync-extra=none \
+  --exclude-deb-section='^debug$$' \
+  --method=$(MIRROR_MOS_UBUNTU_METHOD) \
+  --host=$(MIRROR_MOS_UBUNTU) \
+  --root=$(MIRROR_MOS_UBUNTU_ROOT) \
+  --dist=$1 \
+  --section=$(subst $(space),$(comma),$(MIRROR_MOS_UBUNTU_SECTION)) \
+  --arch=$(UBUNTU_ARCH) \
+  $(LOCAL_MIRROR_UBUNTU)/
+endef
 
 # Two operation modes:
 # USE_MIRROR=none - mirroring mode, rsync full mirror from internal build server
@@ -73,15 +84,6 @@ $(BUILD_DIR)/mirror/ubuntu/repo.done: \
 
 $(BUILD_DIR)/mirror/ubuntu/mirror.done:
 	mkdir -p $(LOCAL_MIRROR_UBUNTU)
-	set -ex; debmirror --progress --checksums --nocleanup \
-	--nosource --ignore-release-gpg --rsync-extra=none \
-	--exclude-deb-section='^debug$$' \
-	--method=$(MIRROR_MOS_UBUNTU_METHOD) \
-	--host=$(MIRROR_MOS_UBUNTU) \
-	--root=$(MIRROR_MOS_UBUNTU_ROOT) \
-	--dist=$(MIRROR_MOS_UBUNTU_SUITE) \
-	--section=$(subst $(space),$(comma),$(MIRROR_MOS_UBUNTU_SECTION)) \
-	--arch=$(UBUNTU_ARCH) \
-	$(LOCAL_MIRROR_UBUNTU)/
+	$(foreach dist,$(MIRROR_MOS_UBUNTU_SUITE) $(MIRROR_MOS_UBUNTU_SUITE)-proposed,$(call debmirror_mos_ubuntu,$(dist)))
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/.temp $(LOCAL_MIRROR_UBUNTU)/project
 	$(ACTION.TOUCH)
