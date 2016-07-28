@@ -24,7 +24,18 @@ Architectures: $(UBUNTU_ARCH)
 VerifyRelease: blindtrust
 endef
 
-
+define do_debmirror
+set -ex; ./debmirror --progress --checksums --nocleanup \
+  --nosource --ignore-release-gpg --rsync-extra=none \
+  --exclude-deb-section='^debug$$' \
+  --method=$(MIRROR_MOS_UBUNTU_METHOD) \
+  --host=$(MIRROR_MOS_UBUNTU) \
+  --root=$(MIRROR_MOS_UBUNTU_ROOT) \
+  --dist=$(MIRROR_MOS_UBUNTU_SUITE)$1 \
+  --section=$(subst $(space),$(comma),$(MIRROR_MOS_UBUNTU_SECTION)) \
+  --arch=$(UBUNTU_ARCH) \
+  $(LOCAL_MIRROR_UBUNTU)/
+endef
 
 # Two operation modes:
 # USE_MIRROR=none - mirroring mode, rsync full mirror from internal build server
@@ -47,10 +58,33 @@ $(reprepro_updates_conf)
 EOF
 endef
 
+define debmirror_patch_00
+cat > patch -p1 ./debmirror << EOF
+diff --git a/debmirror b/debmirror
+index 0c2543c..f2fdd61 100755
+--- a/debmirror
++++ b/debmirror
+@@ -2116,7 +2116,7 @@ sub name_release {
+ 
+   if ($$origin eq "none") {
+     $$codename = $$dist_raw;
+-  } elsif ($$origin eq "Ubuntu" or $$origin eq "Canonical") {
++  } elsif ($$origin eq "Ubuntu" or $$origin eq "Canonical" or $$origin eq "Mirantis") {
+     if ($$suite) {
+       say("Ubuntu Release file: using Suite ($$suite).");
+       $$codename = $$suite;
+EOF
+endef
+
 $(BUILD_DIR)/mirror/ubuntu/reprepro_config.done: export config_reprepro:=$(config_reprepro)
 $(BUILD_DIR)/mirror/ubuntu/reprepro_config.done:
 	mkdir -p $(REPREPRO_CONF_DIR)
 	sh -c "$${config_reprepro}"
+	$(ACTION.TOUCH)
+
+$(BUILD_DIR)/mirror/ubuntu/prepare_debmirror.done:
+	cp /usr/bin/debmirror .
+	sh -c "$${debmirror_patch_00}"
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/ubuntu/reprepro.done: \
@@ -71,17 +105,10 @@ $(BUILD_DIR)/mirror/ubuntu/repo.done: \
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/lists
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/mirror/ubuntu/mirror.done:
+$(BUILD_DIR)/mirror/ubuntu/mirror.done: \
+		$(BUILD_DIR)/mirror/ubuntu/prepare_debmirror.done
 	mkdir -p $(LOCAL_MIRROR_UBUNTU)
-	set -ex; debmirror --progress --checksums --nocleanup \
-	--nosource --ignore-release-gpg --rsync-extra=none \
-	--exclude-deb-section='^debug$$' \
-	--method=$(MIRROR_MOS_UBUNTU_METHOD) \
-	--host=$(MIRROR_MOS_UBUNTU) \
-	--root=$(MIRROR_MOS_UBUNTU_ROOT) \
-	--dist=$(MIRROR_MOS_UBUNTU_SUITE) \
-	--section=$(subst $(space),$(comma),$(MIRROR_MOS_UBUNTU_SECTION)) \
-	--arch=$(UBUNTU_ARCH) \
-	$(LOCAL_MIRROR_UBUNTU)/
+	$(call do_debmirror)
+	$(call do_debmirror,-proposed)
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/.temp $(LOCAL_MIRROR_UBUNTU)/project
 	$(ACTION.TOUCH)
