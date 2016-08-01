@@ -18,7 +18,7 @@ endef
 #
 # VERSION=$(PRODUCT_VERSION)
 # RPMRELEASE=1.mos${commit_num}
-# DEBRELEASE=1~u14.04+mos${commit_num}
+# DEBRELEASE=1~u16.04+mos${commit_num}
 # DEBFULLNAME=Commit Author
 # DEBEMAIL=Commit Author email address
 # DEBMSG={commit_sha} {Commit message}
@@ -35,7 +35,7 @@ $(BUILD_DIR)/packages/sources/$1/$2:
 	echo "%changelog\n* `LC_TIME=C date +\"%a %b %d %Y\"` `git -C $3 log -1 --pretty=format:%an` \
 		<`git -C $3 log -1 --pretty=format:%ae`> - $(PACKAGE_VERSION)-1.mos`git -C $3 rev-list --no-merges $4 --count`" > $$(CHANGELOGFILE)
 	echo "`git -C $3 log -10 --pretty='- %h %s'`" >> $$(CHANGELOGFILE)
-	echo DEBRELEASE=1~u14.04+mos`git -C $3 rev-list --no-merges $4 --count` >> $$(VERSIONFILE)
+	echo DEBRELEASE=1~u16.04+mos`git -C $3 rev-list --no-merges $4 --count` >> $$(VERSIONFILE)
 	echo DEBFULLNAME=`git -C $3 log -1 --pretty=format:%an` >> $$(VERSIONFILE)
 	echo DEBEMAIL=`git -C $3 log -1 --pretty=format:%ae` >> $$(VERSIONFILE)
 	echo DEBMSG=`git -C $3 rev-parse --short HEAD` `git -C $3 log -1 --pretty=%s` >> $$(VERSIONFILE)
