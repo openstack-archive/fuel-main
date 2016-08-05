@@ -46,6 +46,7 @@ ntp \
 ntpdate \
 puppet \
 python-pypcap \
+python-timmy \
 rsync \
 rubygem-netaddr \
 rubygem-openstack \

@@ -188,6 +188,7 @@ python-suds
 python-swiftclient
 python-tablib
 python-testresources
+python-timmy
 python-unicodecsv
 python-unittest2
 python-urllib3
