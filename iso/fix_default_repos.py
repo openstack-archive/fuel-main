@@ -130,7 +130,7 @@ def fix_fuel_repos(address, port, user, password,
         "operating_system": release_os
     }
 
-    update_release_repos(repositories, release_match)
+    update_release_repos(repositories, release_match, replace_repos=True)
 
 
 def fix_fuelmenu_repos(repositories, replace_repos=False):
