@@ -20,6 +20,7 @@ nailgun-mcagents
 network-checker
 python-fuelclient
 python-packetary
+python-timmy
 rubygem-astute
 send2syslog
 shotgun
