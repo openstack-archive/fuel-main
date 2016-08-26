@@ -1,0 +1,98 @@
+#!/bin/sh
+
+cd /etc/sysconfig/network-scripts
+. ./network-functions
+
+[ -f ../network ] && . ../network
+
+unset REALDEVICE
+if [ "$1" = --realdevice ] ; then
+    REALDEVICE=$2
+    shift 2
+fi
+
+CONFIG=$1
+source_config
+
+[ -z "$REALDEVICE" ] && REALDEVICE=$DEVICE
+
+if [ "$ISALIAS" = no ] ; then
+    /etc/sysconfig/network-scripts/ifup-aliases ${DEVICE} ${CONFIG}
+fi
+
+/etc/sysconfig/network-scripts/ifup-routes ${REALDEVICE} ${DEVNAME}
+
+
+if [ "$PEERDNS" != "no" ] ||[ -n "$RESOLV_MODS" -a "$RESOLV_MODS" != "no" ]; then
+  [ -n "$MS_DNS1" ] && DNS1=$MS_DNS1
+  [ -n "$MS_DNS2" ] && DNS2=$MS_DNS2
+  if [ -n "$DNS1" ] && ! grep -q "^nameserver $DNS1" /etc/resolv.conf &&
+   tr=$(mktemp /tmp/XXXXXX) ; then
+    current_replacement="$DNS1"
+    next_replacement="$DNS2"
+    search=
+    (cat /etc/resolv.conf ; echo EOF ; echo EOF) | while read answer ; do
+	case $answer in
+	    nameserver*|EOF)
+		if [ -n "$current_replacement" ] ; then
+		    echo "nameserver $current_replacement" >> $tr
+		    if [ -n "$next_replacement" ] ; then
+			current_replacement="$next_replacement"
+			next_replacement=
+		    else
+			current_replacement=
+		    fi
+		else
+		    if [ "$answer" != EOF ] ; then
+			echo "$answer" >> $tr
+		    fi
+		fi
+		;;
+	    domain*|search*)
+	        if [ -n "$DOMAIN" ]; then
+	            echo "$answer" | while read key value ; do
+		        search="$search $value"
+		    done
+		else
+		    echo "$answer" >> $tr
+		fi
+		;;
+	    *)
+		echo "$answer" >> $tr
+		;;
+	esac
+    done
+    if [ -n "$DOMAIN" ]; then
+        echo "search $DOMAIN $search" >> $tr
+    fi
+
+    # backup resolv.conf
+    cp -af /etc/resolv.conf /etc/resolv.conf.save
+
+    # maintain permissions
+    # but set umask in case it doesn't exist!
+    oldumask=$(umask)
+    umask 022
+    change_resolv_conf $tr 
+    rm -f $tr
+    umask $oldumask
+  fi
+fi
+
+# Set static hostname from /etc/sysconfig/network
+# That address to issue https://bugs.launchpad.net/fuel/+bug/1604365
+[ -n $HOSTNAME ] && set_hostname ${HOSTNAME} || set_hostname localhost
+
+# Inform firewall which network zone (empty means default) this interface belongs to
+if [ -x /usr/bin/firewall-cmd -a "${REALDEVICE}" != "lo" ]; then
+    /usr/bin/firewall-cmd --zone="${ZONE}" --change-interface="${DEVICE}" > /dev/null 2>&1
+fi
+
+# Notify programs that have requested notification
+do_netreport
+
+if [ -x /sbin/ifup-local ]; then
+    /sbin/ifup-local ${DEVICE}
+fi
+
+exit 0
