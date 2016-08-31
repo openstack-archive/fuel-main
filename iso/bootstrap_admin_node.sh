@@ -554,8 +554,8 @@ else
 fi
 
 #Check if repo is accessible
-echo "Checking for access to updates repository..."
-repourl=$(yum repolist all -v | awk '{if ($1 ~ "baseurl" && $3 ~ "updates") print $3}' | head -1)
+echo "Checking for access to updates repository/mirrorlist..."
+repourl=$(yum repolist all -v | awk '{if ($1 ~ "baseurl|mirrors" && $3 ~ "updates") print $3}' | head -1)
 if urlaccesscheck check "$repourl" ; then
   UPDATE_ISSUES=0
 else
