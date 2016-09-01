@@ -485,7 +485,8 @@ build_ubuntu_bootstrap () {
         local ret=1
         echo ${bs_progress_message} >&2
         set_ui_bootstrap_error "${bs_progress_message}" >&2
-        if fuel-bootstrap -v --debug build --activate >>"$bs_build_log" 2>&1; then
+        if fuel-bootstrap -v --debug build --activate \
+          --kernel-flavor linux-image-generic-lts-xenial >>"$bs_build_log" 2>&1; then
           ret=0
           fuel notify --topic "done" --send "${bs_done_message}"
         else
