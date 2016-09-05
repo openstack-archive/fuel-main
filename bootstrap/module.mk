@@ -127,7 +127,7 @@ $(BUILD_DIR)/bootstrap/initramfs.img: \
 
 $(BUILD_DIR)/bootstrap/linux: $(BUILD_DIR)/mirror/centos/build.done
 	mkdir -p $(BUILD_DIR)/bootstrap
-	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		(cd $(BUILD_DIR)/bootstrap/; cpio -imd './boot/vmlinuz*')
 	mv $(BUILD_DIR)/bootstrap/boot/vmlinuz* $(BUILD_DIR)/bootstrap/linux
 	rm -r $(BUILD_DIR)/bootstrap/boot
@@ -233,11 +233,11 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 # Perhaps this stuff should be moved to global config.mk
 
 	# Installing kernel modules
-	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio $(CPIOARGS) -idm './lib/modules/*' './boot/vmlinuz*' )
-	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio $(CPIOARGS) -idm './lib/firmware/*' )
-	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name 'libmlx4*' | xargs rpm2cpio | \
+	find $(LOCAL_MIRROR) -name 'libmlx4*' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio $(CPIOARGS) -idm './etc/*' './usr/lib64/*' )
 	for version in `ls -1 $(INITRAMROOT)/lib/modules`; do \
 		sudo depmod -b $(INITRAMROOT) $$version; \
