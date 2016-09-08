@@ -1,0 +1,15 @@
+[Unit]
+SourcePath=/etc/rc.d/init.d/setup-bootdev
+Description=LSB: Setup necessary network interface to DHCP
+Before=network.service
+
+[Service]
+Type=forking
+Restart=no
+TimeoutSec=5min
+IgnoreSIGPIPE=no
+KillMode=process
+GuessMainPID=no
+RemainAfterExit=yes
+ExecStart=/etc/rc.d/init.d/setup-bootdev start
+ExecStop=/etc/rc.d/init.d/setup-bootdev stop
