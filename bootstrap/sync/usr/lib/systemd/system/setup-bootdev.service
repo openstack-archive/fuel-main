@@ -1,15 +1,11 @@
 [Unit]
-Name=Setup boot device
-ConditionFileExecutable=/usr/bin/setup-bootdev
+Description=Setup boot device
 ConditionPathExists=/etc/sysconfig/network-scripts/network-functions
 Before=network.service mcollective.service ntpdate.service ntpd.service
-After=sysinit.target
 
 [Service]
 Type=oneshot
+Restart=no
+TimeoutSec=5min
 ExecStart=/usr/bin/setup-bootdev
-ExecStartPost=-/usr/bin/fix-configs-on-startup
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
+RemainAfterExit=no
