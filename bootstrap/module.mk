@@ -171,6 +171,12 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 	sudo ln -snf /etc/systemd/system/ntpd.service $(INITRAMROOT)/etc/systemd/system/default.target.wants/ntpd.service
 	sudo ln -snf /usr/lib/systemd/system/ntpdate.service $(INITRAMROOT)/etc/systemd/system/default.target.wants/ntpdate.service
 
+	# Enable setup-bootdev service
+	sudo ln -snf /usr/lib/systemd/system/setup-bootdev.service $(INITRAMROOT)/etc/systemd/system/default.target.wants/setup-bootdev.service
+
+	# Enable fix-configs-on-startup service
+	sudo ln -snf /usr/lib/systemd/system/fix-configs-on-startup.service $(INITRAMROOT)/etc/systemd/system/default.target.wants/fix-configs-on-startup.service
+
 	# Enabling pre-init boot interface discovery
 	#sudo chroot $(INITRAMROOT) chkconfig setup-bootdev on
 

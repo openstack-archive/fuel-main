@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup configs on bootstrap startup
+Wants=network-online.target
+Before=mcollective.service ntpdate.service ntpd.service
+After=network-online.target
+
+[Service]
+Type=oneshot
+Restart=no
+TimeoutSec=5min
+ExecStart=/usr/bin/fix-configs-on-startup
+RemainAfterExit=no
