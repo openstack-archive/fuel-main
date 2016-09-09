@@ -174,10 +174,6 @@ MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PROD
 # Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm,priority bar,ftp://repo.foo,priority"
 EXTRA_RPM_REPOS?=
 
-# define RPM repo which contains fuel rpm-build-dep packages, in format
-# EXTRA_RPM_BUILDDEP_REPO=http://my.cool.repo/rpm
-EXTRA_RPM_BUILDDEP_REPO?=
-
 comma:=,
 
 # Path to yaml configuration file to build ISO ks.cfg
