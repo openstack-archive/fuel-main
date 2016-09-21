@@ -24,7 +24,18 @@ Architectures: $(UBUNTU_ARCH)
 VerifyRelease: blindtrust
 endef
 
-
+define do_debmirror
+set -ex; ./debmirror --progress --checksums --nocleanup \
+  --nosource --ignore-release-gpg --rsync-extra=none \
+  --exclude-deb-section='^debug$$' \
+  --method=$(MIRROR_MOS_UBUNTU_METHOD) \
+  --host=$(MIRROR_MOS_UBUNTU) \
+  --root=$(MIRROR_MOS_UBUNTU_ROOT) \
+  --dist=$(MIRROR_MOS_UBUNTU_SUITE)$1 \
+  --section=$(subst $(space),$(comma),$(MIRROR_MOS_UBUNTU_SECTION)) \
+  --arch=$(UBUNTU_ARCH) \
+  $(LOCAL_MIRROR_UBUNTU)/
+endef
 
 # Two operation modes:
 # USE_MIRROR=none - mirroring mode, rsync full mirror from internal build server
@@ -53,6 +64,11 @@ $(BUILD_DIR)/mirror/ubuntu/reprepro_config.done:
 	sh -c "$${config_reprepro}"
 	$(ACTION.TOUCH)
 
+$(BUILD_DIR)/mirror/ubuntu/prepare_debmirror.done:
+	cp /usr/bin/debmirror .
+	patch -p1 ./debmirror < ./00-debmirror.patch
+	$(ACTION.TOUCH)
+
 $(BUILD_DIR)/mirror/ubuntu/reprepro.done: \
 		$(BUILD_DIR)/mirror/ubuntu/mirror.done \
 		$(BUILD_DIR)/mirror/ubuntu/reprepro_config.done
@@ -71,17 +87,12 @@ $(BUILD_DIR)/mirror/ubuntu/repo.done: \
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/lists
 	$(ACTION.TOUCH)
 
-$(BUILD_DIR)/mirror/ubuntu/mirror.done:
+$(BUILD_DIR)/mirror/ubuntu/mirror.done: \
+		$(BUILD_DIR)/mirror/ubuntu/prepare_debmirror.done
 	mkdir -p $(LOCAL_MIRROR_UBUNTU)
-	set -ex; debmirror --progress --checksums --nocleanup \
-	--nosource --ignore-release-gpg --rsync-extra=none \
-	--exclude-deb-section='^debug$$' \
-	--method=$(MIRROR_MOS_UBUNTU_METHOD) \
-	--host=$(MIRROR_MOS_UBUNTU) \
-	--root=$(MIRROR_MOS_UBUNTU_ROOT) \
-	--dist=$(MIRROR_MOS_UBUNTU_SUITE) \
-	--section=$(subst $(space),$(comma),$(MIRROR_MOS_UBUNTU_SECTION)) \
-	--arch=$(UBUNTU_ARCH) \
-	$(LOCAL_MIRROR_UBUNTU)/
+	$(call do_debmirror)
+	$(call do_debmirror,-proposed)
+	-$(call do_debmirror,-updates)
+	-$(call do_debmirror,-security)
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/.temp $(LOCAL_MIRROR_UBUNTU)/project
 	$(ACTION.TOUCH)

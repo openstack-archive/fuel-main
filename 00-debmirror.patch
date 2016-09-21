@@ -1,0 +1,13 @@
+diff --git a/debmirror b/debmirror
+index 0c2543c..f2fdd61 100755
+--- a/debmirror
++++ b/debmirror
+@@ -2116,7 +2116,7 @@ sub name_release {
+ 
+   if ($origin eq "none") {
+     $codename = $dist_raw;
+-  } elsif ($origin eq "Ubuntu" or $origin eq "Canonical") {
++  } elsif ($origin eq "Ubuntu" or $origin eq "Canonical" or $origin eq "Mirantis") {
+     if ($suite) {
+       say("Ubuntu Release file: using Suite ($suite).");
+       $codename = $suite;
