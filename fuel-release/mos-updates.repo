@@ -6,3 +6,4 @@ enabled=1
 gpgcheck=1
 gpgkey=file:///etc/pki/fuel-gpg/RPM-GPG-KEY-mos
 skip_if_unavailable=1
+priority=9
