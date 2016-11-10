@@ -49,7 +49,6 @@ ipxe-roms
 kernel
 kernel-devel
 kernel-headers
-kmod-e1000
 leveldb
 libevent-devel
 libiscsi
