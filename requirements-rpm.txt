@@ -1,4 +1,3 @@
-ami-creator
 apr-util
 atop
 augeas
