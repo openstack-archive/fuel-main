@@ -1,0 +1,12 @@
+Verified+1: Fuel CI <fuel-ci-bot@mirantis.com>
+Code-Review+1: Roman Vyalov <rvyalov@mirantis.com>
+Code-Review+2: Alexey Shtokolov <ashtokolov@gmail.com>
+Code-Review+2: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Workflow+1: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Workflow+1: Sergey Kulanov <skulanov@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 14 Nov 2016 12:47:34 +0000
+Reviewed-on: https://review.openstack.org/397174
+Project: openstack/fuel-main
+Branch: refs/heads/master
