@@ -63,19 +63,19 @@ DENY_RPM_DOWNGRADE?=1
 NO_UI_OPTIMIZE:=0
 
 # Repos and versions
-FUELLIB_COMMIT?=master
-NAILGUN_COMMIT?=master
-PYTHON_FUELCLIENT_COMMIT?=master
-FUEL_AGENT_COMMIT?=master
-FUEL_NAILGUN_AGENT_COMMIT?=master
-ASTUTE_COMMIT?=master
-OSTF_COMMIT?=master
-FUEL_MIRROR_COMMIT?=master
-FUELMENU_COMMIT?=master
-SHOTGUN_COMMIT?=master
-NETWORKCHECKER_COMMIT?=master
-FUELUPGRADE_COMMIT?=master
-FUEL_UI_COMMIT?=master
+FUELLIB_COMMIT?=stable/newton
+NAILGUN_COMMIT?=stable/newton
+PYTHON_FUELCLIENT_COMMIT?=stable/newton
+FUEL_AGENT_COMMIT?=stable/newton
+FUEL_NAILGUN_AGENT_COMMIT?=stable/newton
+ASTUTE_COMMIT?=stable/newton
+OSTF_COMMIT?=stable/newton
+FUEL_MIRROR_COMMIT?=stable/newton
+FUELMENU_COMMIT?=stable/newton
+SHOTGUN_COMMIT?=stable/newton
+NETWORKCHECKER_COMMIT?=stable/newton
+FUELUPGRADE_COMMIT?=stable/newton
+FUEL_UI_COMMIT?=stable/newton
 
 FUELLIB_REPO?=https://github.com/openstack/fuel-library.git
 NAILGUN_REPO?=https://github.com/openstack/fuel-web.git
