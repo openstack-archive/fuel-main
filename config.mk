@@ -172,11 +172,11 @@ MIRROR_FUEL?=http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PROD
 # Each repo must be comma separated tuple with repo-name and repo-path.
 # Repos must be separated by space.
 # Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm,priority bar,ftp://repo.foo,priority"
-EXTRA_RPM_REPOS?=
+EXTRA_RPM_REPOS?="proposed,http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/snapshots/proposed-latest/x86_64/"
 
 # define RPM repo which contains fuel rpm-build-dep packages, in format
 # EXTRA_RPM_BUILDDEP_REPO=http://my.cool.repo/rpm
-EXTRA_RPM_BUILDDEP_REPO?=
+EXTRA_RPM_BUILDDEP_REPO?="http://mirror.fuel-infra.org/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos$(CENTOS_MAJOR)/snapshots/proposed-latest/x86_64/"
 
 comma:=,
 
