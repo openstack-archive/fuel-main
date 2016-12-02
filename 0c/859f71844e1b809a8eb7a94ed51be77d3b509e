@@ -1,0 +1,9 @@
+Code-Review+1: Valeriy Saharov <vsakharov@mirantis.com>
+Code-Review+2: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Workflow+1: Denis V. Meltsaykin <dmeltsaykin@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 02 Dec 2016 12:12:19 +0000
+Reviewed-on: https://review.openstack.org/403719
+Project: openstack/fuel-main
+Branch: refs/heads/stable/7.0
