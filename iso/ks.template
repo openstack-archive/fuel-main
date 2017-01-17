@@ -1,5 +1,7 @@
 install
 text
+repo --name=mos --baseurl=file:///run/install/repo/mos-centos
+repo --name=extra --baseurl=file:///run/install/repo/extra-repos/proposed
 %include /tmp/source.ks
 {{reboot}}
 lang en_US.UTF-8
