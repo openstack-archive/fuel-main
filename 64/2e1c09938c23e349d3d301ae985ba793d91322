@@ -1,0 +1,10 @@
+Code-Review+1: Dmitry Kaigarodsev <dkaiharodsev@mirantis.com>
+Code-Review+1: Dmitry Pyzhov <dpyzhov+gerrit@mirantis.com>
+Code-Review+2: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Workflow+1: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Tue, 17 Jan 2017 15:40:12 +0000
+Reviewed-on: https://review.openstack.org/421289
+Project: openstack/fuel-main
+Branch: refs/heads/stable/mitaka
