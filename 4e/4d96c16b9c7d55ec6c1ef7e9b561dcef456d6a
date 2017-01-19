@@ -1,0 +1,9 @@
+Code-Review+2: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Code-Review+1: Alexey Shtokolov <ashtokolov@mirantis.com>
+Workflow+1: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 19 Jan 2017 17:12:07 +0000
+Reviewed-on: https://review.openstack.org/422589
+Project: openstack/fuel-main
+Branch: refs/heads/stable/mitaka
