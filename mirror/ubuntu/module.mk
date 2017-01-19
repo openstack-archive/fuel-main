@@ -94,5 +94,7 @@ $(BUILD_DIR)/mirror/ubuntu/mirror.done: \
 	-$(call do_debmirror,-proposed)
 	-$(call do_debmirror,-updates)
 	-$(call do_debmirror,-security)
+	-$(call do_debmirror,-holdback)
+	-$(call do_debmirror,-hotfix)
 	rm -rf $(LOCAL_MIRROR_UBUNTU)/.temp $(LOCAL_MIRROR_UBUNTU)/project
 	$(ACTION.TOUCH)
