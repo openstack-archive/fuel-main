@@ -13,7 +13,7 @@ index c913136..115e566 100644
  fuel-createmirror
 +fuel-dockerctl
 +fuel-ha-utils
- fuel-library
+ fuel-library7.0
  fuelmenu
 +fuel-migrate
 +fuel-misc
