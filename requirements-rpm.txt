@@ -5,6 +5,7 @@ augeas-libs
 bakefile
 @Base
 bash
+bind
 bzip2
 cloud-init
 cloud-utils
