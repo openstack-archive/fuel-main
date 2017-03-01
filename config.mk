@@ -16,7 +16,7 @@ ARTS_DIR:=$(abspath $(ARTS_DIR))
 LOCAL_MIRROR?=$(TOP_DIR)/local_mirror
 LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 
-PRODUCT_VERSION?=10.0
+PRODUCT_VERSION?=11.0
 
 # This variable is used for naming of auxillary objects
 # related to product: repositories, mirrors etc
@@ -63,19 +63,19 @@ DENY_RPM_DOWNGRADE?=1
 NO_UI_OPTIMIZE:=0
 
 # Repos and versions
-FUELLIB_COMMIT?=master
-NAILGUN_COMMIT?=master
-PYTHON_FUELCLIENT_COMMIT?=master
-FUEL_AGENT_COMMIT?=master
-FUEL_NAILGUN_AGENT_COMMIT?=master
-ASTUTE_COMMIT?=master
-OSTF_COMMIT?=master
-FUEL_MIRROR_COMMIT?=master
-FUELMENU_COMMIT?=master
-SHOTGUN_COMMIT?=master
-NETWORKCHECKER_COMMIT?=master
-FUELUPGRADE_COMMIT?=master
-FUEL_UI_COMMIT?=master
+FUELLIB_COMMIT?=stable/ocata
+NAILGUN_COMMIT?=stable/ocata
+PYTHON_FUELCLIENT_COMMIT?=stable/ocata
+FUEL_AGENT_COMMIT?=stable/ocata
+FUEL_NAILGUN_AGENT_COMMIT?=stable/ocata
+ASTUTE_COMMIT?=stable/ocata
+OSTF_COMMIT?=stable/ocata
+FUEL_MIRROR_COMMIT?=stable/ocata
+FUELMENU_COMMIT?=stable/ocata
+SHOTGUN_COMMIT?=stable/ocata
+NETWORKCHECKER_COMMIT?=stable/ocata
+FUELUPGRADE_COMMIT?=stable/ocata
+FUEL_UI_COMMIT?=stable/ocata
 
 FUELLIB_REPO?=https://github.com/openstack/fuel-library.git
 NAILGUN_REPO?=https://github.com/openstack/fuel-web.git
