@@ -16,7 +16,7 @@ ARTS_DIR:=$(abspath $(ARTS_DIR))
 LOCAL_MIRROR?=$(TOP_DIR)/local_mirror
 LOCAL_MIRROR:=$(abspath $(LOCAL_MIRROR))
 
-PRODUCT_VERSION?=10.0
+PRODUCT_VERSION?=11.0
 
 # This variable is used for naming of auxillary objects
 # related to product: repositories, mirrors etc
@@ -24,8 +24,8 @@ PRODUCT_NAME:=mos
 
 CURRENT_VERSION:=$(PRODUCT_VERSION)
 
-PACKAGE_VERSION?=10.0.0
-FUEL_LIBRARY_VERSION?=10.0
+PACKAGE_VERSION?=11.0.0
+FUEL_LIBRARY_VERSION?=11.0
 
 # Artifacts names
 ISO_NAME?=fuel-$(PRODUCT_VERSION)
