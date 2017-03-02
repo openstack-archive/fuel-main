@@ -2,8 +2,8 @@
 %define repo_name fuel-main
 
 %define name fuel
-%{!?version: %define version 10.0.0}
-%{!?fuel_release: %define fuel_release 10.0}
+%{!?version: %define version 11.0.0}
+%{!?fuel_release: %define fuel_release 11.0}
 %{!?release: %define release 1}
 
 Name: %{name}
