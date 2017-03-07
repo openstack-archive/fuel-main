@@ -102,6 +102,7 @@ python-cliff-tablib
 python-cmd2
 python-coverage
 python-crypto
+python-daemon
 python-daemonize
 python-decorator
 python-django
