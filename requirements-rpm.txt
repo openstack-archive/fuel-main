@@ -22,7 +22,6 @@ debootstrap
 deltarpm
 dhcp
 dnsmasq
-docker
 dpkg
 dpkg-dev
 dpkg-devel
@@ -107,7 +106,6 @@ python-daemon
 python-daemonize
 python-decorator
 python-django
-python-docker-py
 python-dogpile-cache
 python-dogpile-core
 python-ecdsa

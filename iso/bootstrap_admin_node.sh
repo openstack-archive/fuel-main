@@ -31,7 +31,6 @@ bind-utils \
 bridge-utils \
 daemonize \
 dhcp \
-docker \
 fuel \
 fuel-bootstrap-cli \
 fuel-openstack-metadata \
@@ -284,12 +283,6 @@ systemctl restart network
 echo "Applying default Fuel settings..."
 set -x
 
-# Set correct docker volume group
-echo "VG=docker" >> /etc/sysconfig/docker-storage-setup
-
-# Disable create iptables rules by docker
-echo "DOCKER_NETWORK_OPTIONS=--iptables=false" > /etc/sysconfig/docker-network
-
 # Disable subscription-manager plugins
 sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/product-id.conf || :
 sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/subscription-manager.conf || :
@@ -509,8 +502,6 @@ build_ubuntu_bootstrap () {
 # Create empty files to make cobbler happy
 # (even if we don't use Ubuntu based bootstrap)
 make_ubuntu_bootstrap_stub
-
-service docker start
 
 old_sysctl_vm_value=$(sysctl -n vm.min_free_kbytes)
 if [ ${old_sysctl_vm_value} -lt 65535 ]; then
