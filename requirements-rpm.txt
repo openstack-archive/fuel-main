@@ -30,7 +30,6 @@ ethtool
 euca2ools
 fabric
 fence-agents-all
-gcc
 gdisk
 genisoimage
 GeoIP
