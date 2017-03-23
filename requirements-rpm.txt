@@ -47,9 +47,9 @@ httpd
 iproute
 iptables
 ipxe-roms
-kernel-2.6.32-504.16.2.el6
-kernel-devel-2.6.32-504.16.2.el6
-kernel-headers-2.6.32-504.16.2.el6
+kernel-2.6.32-642.15.1.el6
+kernel-devel-2.6.32-642.15.1.el6
+kernel-headers-2.6.32-642.15.1.el6
 kernel-lt
 kmod-hpsa
 leveldb
