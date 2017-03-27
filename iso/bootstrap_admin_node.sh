@@ -1,5 +1,11 @@
 #!/bin/bash
 
+yum install -y python-distributed python-sortedcollections python-pip
+pip install cloudpickle==0.2.2
+pip install click==6.6
+pip install tornado==4.4.2
+pip install zict==0.1.1
+
 # LANG variable is a workaround for puppet-3.4.2 bug. See LP#1312758 for details
 export LANG=en_US.UTF8
 
@@ -58,7 +64,7 @@ tcpdump \
 telnet \
 vim \
 virt-what \
-wget \
+wget
 "
 
 ASTUTE_YAML='/etc/fuel/astute.yaml'
