@@ -61,6 +61,7 @@ libyaml
 linux-firmware
 logrotate
 lrzip
+lshw
 lvm2
 mailcap
 mcollective
