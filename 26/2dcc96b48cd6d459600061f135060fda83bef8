@@ -1,0 +1,8 @@
+Code-Review+2: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Workflow+1: Vladimir Kozhukalov <vkozhukalov@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Tue, 04 Apr 2017 09:15:24 +0000
+Reviewed-on: https://review.openstack.org/451328
+Project: openstack/fuel-main
+Branch: refs/heads/stable/ocata
