@@ -1,6 +1,4 @@
 .PHONY: clean-docker
-# This module downloads ubuntu installation images.
-include $(SOURCE_DIR)/mirror/docker/base-images.mk
 
 clean: clean-docker
 
