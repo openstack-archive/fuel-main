@@ -28,6 +28,9 @@ done
 yum clean expire-cache
 yum update -y
 
+yum repolist
+yum info fuel-library8.0.noarch
+
 packages="psmisc python-editor nailgun-mcagents sysstat "
 packages+="rubygem-amqp rubygem-amq-protocol rubygem-i18n rubygem-tzinfo "
 packages+="rubygem-minitest rubygem-open4 rubygem-Platform rubygem-symboltable "

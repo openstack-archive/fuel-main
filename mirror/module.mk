@@ -15,7 +15,6 @@ include $(SOURCE_DIR)/mirror/docker/module.mk
 $(BUILD_DIR)/mirror/build.done: \
 		$(BUILD_DIR)/mirror/centos/build.done \
 		$(BUILD_DIR)/mirror/ubuntu/build.done \
-		$(BUILD_DIR)/mirror/docker/build.done
 	$(ACTION.TOUCH)
 
 $(BUILD_DIR)/mirror/make-changelog.done: $(BUILD_DIR)/mirror/build.done
