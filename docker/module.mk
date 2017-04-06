@@ -68,16 +68,11 @@ $(BUILD_DIR)/docker/$1.done: \
 	$$(ACTION.TOUCH)
 endef
 
-$(BUILD_DIR)/docker/base-images.done: \
-		$(BUILD_DIR)/mirror/docker/build.done
-	for container in $(LOCAL_MIRROR_DOCKER_BASEURL)/*.xz; do xz -dkc -T0 $$container | sudo docker load; done
-	$(ACTION.TOUCH)
-
 $(BUILD_DIR)/docker/fuel-centos.done: export docker_upstream_mirror:=$(yum_upstream_repo)
 $(BUILD_DIR)/docker/fuel-centos.done: \
-		$(BUILD_DIR)/docker/base-images.done \
 		$(BUILD_DIR)/mirror/centos/build.done \
 		$(BUILD_DIR)/packages/rpm/build.done
+	mkdir -p $(BUILD_DIR)/docker/ 
 	rm -rf $(BUILD_DIR)/docker/fuel-centos-build
 	cp -a $(SOURCE_DIR)/docker/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
 	echo "$${docker_upstream_mirror}" > $(BUILD_DIR)/docker/fuel-centos-build/upstream.repo
