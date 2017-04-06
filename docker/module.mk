@@ -55,7 +55,7 @@ $(BUILD_DIR)/docker/$1.done: \
 	cp $(BUILD_DIR)/iso/isoroot/version.yaml $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml
 	sed -e 's/production:.*/production: "docker-build"/' -i $(BUILD_DIR)/docker/$1/etc/fuel/version.yaml
 	cp $(SOURCE_DIR)/docker/docker-astute.yaml $(BUILD_DIR)/docker/$1/etc/fuel/astute.yaml
-	sudo docker build --force-rm -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
+	sudo docker build --pull --force-rm -t fuel/$1_$(PRODUCT_VERSION) $(BUILD_DIR)/docker/$1
 	sudo docker run --name=FUEL_$1_$(PRODUCT_VERSION) \
 		--net=bridge -d -i -t --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro fuel/$1_$(PRODUCT_VERSION)
 	sudo docker exec -i FUEL_$1_$(PRODUCT_VERSION) /usr/local/bin/setup.sh 2>&1 \
@@ -68,23 +68,18 @@ $(BUILD_DIR)/docker/$1.done: \
 	$$(ACTION.TOUCH)
 endef
 
-$(BUILD_DIR)/docker/base-images.done: \
-		$(BUILD_DIR)/mirror/docker/build.done
-	for container in $(LOCAL_MIRROR_DOCKER_BASEURL)/*.xz; do xz -dkc -T0 $$container | sudo docker load; done
-	$(ACTION.TOUCH)
-
 $(BUILD_DIR)/docker/fuel-centos.done: export docker_upstream_mirror:=$(yum_upstream_repo)
 $(BUILD_DIR)/docker/fuel-centos.done: \
-		$(BUILD_DIR)/docker/base-images.done \
 		$(BUILD_DIR)/mirror/centos/build.done \
 		$(BUILD_DIR)/packages/rpm/build.done
+	mkdir -p $(BUILD_DIR)/docker/ 
 	rm -rf $(BUILD_DIR)/docker/fuel-centos-build
 	cp -a $(SOURCE_DIR)/docker/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
 	echo "$${docker_upstream_mirror}" > $(BUILD_DIR)/docker/fuel-centos-build/upstream.repo
 	test -n "$(EXTRA_RPM_REPOS)" || sed -e "/_EXTRA_RPM_REPOS_/d" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
 	sed -e "s|_CENTOS_RELEASE_|$(CENTOS_RELEASE)|g" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
 	sed -e "s|_EXTRA_RPM_REPOS_|$(EXTRA_RPM_REPOS)|" -i $(BUILD_DIR)/docker/fuel-centos-build/Dockerfile
-	sudo docker build -t fuel/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
+	sudo docker build --pull -t fuel/fuel-centos-build $(BUILD_DIR)/docker/fuel-centos-build
 	mkdir -p $(BUILD_DIR)/docker/fuel-centos/
 	echo ">>> Generating fuel/centos base image..."
 	sudo docker -D run --name=FUEL_CENTOS_$(PRODUCT_VERSION) --net=bridge -d -i -t --privileged \

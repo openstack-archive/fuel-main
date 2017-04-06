@@ -368,7 +368,7 @@ if [ -f /root/.build_images ]; then
     # remove this line. fuel-library is to use PRODUCTION value from astute.yaml instead of
     # the same value from version.yaml. It is a part of version.yaml deprecation plan.
     sed -e 's/production:.*/production: "docker-build"/' -i $WORKDIR/$image/etc/fuel/version.yaml
-    docker build -t fuel/${image}_${FUEL_RELEASE} $WORKDIR/$image
+    docker build --pull -t fuel/${image}_${FUEL_RELEASE} $WORKDIR/$image
   done
   docker rm -f $REPO_CONT_ID
   rm -rf "$WORKDIR"
