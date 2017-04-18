@@ -26,6 +26,7 @@ define prepare_git_source
 $(BUILD_DIR)/packages/sources/$1/$2: $(BUILD_DIR)/repos/repos.done
 $(BUILD_DIR)/packages/source_$1.done: $(BUILD_DIR)/packages/sources/$1/$2
 $(BUILD_DIR)/packages/sources/$1/$2: VERSIONFILE:=$(BUILD_DIR)/packages/sources/$1/version
+$(BUILD_DIR)/packages/sources/$1/$2: GIT_VERSIONS:=$(BUILD_DIR)/listing_git_source_versions.txt
 $(BUILD_DIR)/packages/sources/$1/$2: CHANGELOGFILE:=$(BUILD_DIR)/packages/sources/$1/changelog
 $(BUILD_DIR)/packages/sources/$1/$2:
 	mkdir -p $(BUILD_DIR)/packages/sources/$1
@@ -39,6 +40,7 @@ $(BUILD_DIR)/packages/sources/$1/$2:
 	echo DEBFULLNAME=`git -C $3 log -1 --pretty=format:%an` >> $$(VERSIONFILE)
 	echo DEBEMAIL=`git -C $3 log -1 --pretty=format:%ae` >> $$(VERSIONFILE)
 	echo DEBMSG=`git -C $3 rev-parse --short HEAD` `git -C $3 log -1 --pretty=%s` >> $$(VERSIONFILE)
+	echo $1=`git -C $3 rev-parse HEAD` >> $$(GIT_VERSIONS)
 	cd $(BUILD_DIR)/packages/sources/$1 && tar -rf $1.tar version
 ifneq ($(USE_PREDEFINED_FUEL_LIB_PUPPET_MODULES),)
 	if [ "$1" = "fuel-library$(FUEL_LIBRARY_VERSION)" ]; then cd $(BUILD_DIR)/packages/sources/$1 && tar -rf $1.tar upstream_modules.tar.gz; fi
