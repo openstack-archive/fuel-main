@@ -23,6 +23,7 @@ else
 $(BUILD_DIR)/docker/build.done: \
 		$(BUILD_DIR)/docker/fuel-centos.done \
 		$(BUILD_DIR)/docker/sources.done
+	sudo docker pull busybox
 	sudo docker save fuel/centos busybox $(foreach cnt,$(containers), fuel/$(cnt)_$(PRODUCT_VERSION):latest) > $(BUILD_DIR)/docker/fuel-images.tar
 	lrzip -L2 -U -D -f $(BUILD_DIR)/docker/fuel-images.tar -o $(BUILD_DIR)/docker/$(DOCKER_ART_NAME)
 	rm -f $(BUILD_DIR)/docker/fuel-images.tar
