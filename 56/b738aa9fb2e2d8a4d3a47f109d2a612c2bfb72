@@ -1,0 +1,9 @@
+Code-Review+2: Vladimir Kuklin <vkuklin@mirantis.com>
+Code-Review+1: Alexander Evseev <aevseev@mirantis.com>
+Workflow+1: Denis V. Meltsaykin <dmeltsaykin@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Thu, 20 Apr 2017 10:33:00 +0000
+Reviewed-on: https://review.openstack.org/457638
+Project: openstack/fuel-main
+Branch: refs/heads/stable/mitaka
