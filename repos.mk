@@ -44,6 +44,7 @@ $(eval $(call build_repo,fuel-upgrade,$(FUELUPGRADE_REPO),$(FUELUPGRADE_COMMIT),
 $(eval $(call build_repo,fuel-ui,$(FUEL_UI_REPO),$(FUEL_UI_COMMIT),$(FUEL_UI_GERRIT_URL),$(FUEL_UI_GERRIT_COMMIT)))
 
 $(BUILD_DIR)/repos/fuel-main.done:
+	mkdir -p $(BUILD_DIR)/repos/
 	ln -s $(SOURCE_DIR) $(BUILD_DIR)/repos/fuel-main
 	$(ACTION.TOUCH)
 $(BUILD_DIR)/repos/repos.done: $(BUILD_DIR)/repos/fuel-main.done $(BUILD_DIR)/repos/fuel-library$(FUEL_LIBRARY_VERSION).done
