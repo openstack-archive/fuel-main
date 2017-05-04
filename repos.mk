@@ -6,16 +6,18 @@ clean-repos:
 repos: $(BUILD_DIR)/repos/repos.done
 
 fuel_components_repos:=
+$(BUILD_DIR)/repos:
+	mkdir -p $@
+
 # Usage:
 # (eval (call build_repo,repo_name,repo_uri,sha))
 define build_repo
 $(BUILD_DIR)/repos/$1/%: $(BUILD_DIR)/repos/$1.done
-$(BUILD_DIR)/repos/repos.done: $(BUILD_DIR)/repos/$1.done
+$(BUILD_DIR)/repos/repos.done: $(BUILD_DIR)/repos/$1.done $(BUILD_DIR)/repos
 fuel_components_repos:=$(fuel_components_repos) $1
 
-$(BUILD_DIR)/repos/$1.done:
+$(BUILD_DIR)/repos/$1.done: $(BUILD_DIR)/repos
 	# Clone repo and checkout required commit
-	mkdir -p $(BUILD_DIR)/repos
 	rm -rf $(BUILD_DIR)/repos/$1
 
 	#Clone everything and checkout to branch (or hash)
@@ -43,8 +45,7 @@ $(eval $(call build_repo,network-checker,$(NETWORKCHECKER_REPO),$(NETWORKCHECKER
 $(eval $(call build_repo,fuel-upgrade,$(FUELUPGRADE_REPO),$(FUELUPGRADE_COMMIT),$(FUELUPGRADE_GERRIT_URL),$(FUELUPGRADE_GERRIT_COMMIT)))
 $(eval $(call build_repo,fuel-ui,$(FUEL_UI_REPO),$(FUEL_UI_COMMIT),$(FUEL_UI_GERRIT_URL),$(FUEL_UI_GERRIT_COMMIT)))
 
-$(BUILD_DIR)/repos/fuel-main.done:
-	mkdir -p $(BUILD_DIR)/repos/
+$(BUILD_DIR)/repos/fuel-main.done: $(BUILD_DIR)/repos
 	ln -s $(SOURCE_DIR) $(BUILD_DIR)/repos/fuel-main
 	$(ACTION.TOUCH)
 $(BUILD_DIR)/repos/repos.done: $(BUILD_DIR)/repos/fuel-main.done $(BUILD_DIR)/repos/fuel-library$(FUEL_LIBRARY_VERSION).done
