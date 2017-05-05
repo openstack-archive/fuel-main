@@ -542,6 +542,7 @@ fi
 # Sync time
 systemctl stop ntpd
 systemctl start ntpdate || echo "Failed to synchronize time with 'ntpdate'"
+systemctl enable ntpd
 systemctl start ntpd
 
 bash /etc/rc.local
