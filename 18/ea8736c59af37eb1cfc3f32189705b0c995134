@@ -1,0 +1,8 @@
+Code-Review+2: Vladimir Kozhukalov <kozhukalov@gmail.com>
+Workflow+1: Denis V. Meltsaykin <dmeltsaykin@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Wed, 28 Jun 2017 10:09:08 +0000
+Reviewed-on: https://review.openstack.org/457621
+Project: openstack/fuel-main
+Branch: refs/heads/stable/8.0
