@@ -58,3 +58,4 @@ test -f /etc/ntp/step-tickers && echo $masternode_ip > /etc/ntp/step-tickers
 sed -i "s/^plugin.rabbitmq.pool.1.host\b.*$/plugin.rabbitmq.pool.1.host = $masternode_ip/" /etc/mcollective/server.cfg
 sed -i "s/^plugin.rabbitmq.pool.1.user\b.*$/plugin.rabbitmq.pool.1.user = $mco_user/" /etc/mcollective/server.cfg
 sed -i "s/^plugin.rabbitmq.pool.1.password\b.*$/plugin.rabbitmq.pool.1.password= $mco_pass/" /etc/mcollective/server.cfg
+service mcollective restart
