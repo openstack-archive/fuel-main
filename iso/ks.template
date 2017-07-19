@@ -463,6 +463,7 @@ cat > /etc/yum.repos.d/nailgun.repo << EOF
 name=Nailgun Local Repo
 baseurl=file:/var/www/nailgun/${OPENSTACK_VERSION}/centos/x86_64
 gpgcheck=0
+exclude=linux-firmware*
 EOF
 
 # Disable subscription-manager plugins
