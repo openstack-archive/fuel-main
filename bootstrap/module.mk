@@ -66,6 +66,7 @@ name=Mirantis mirror
 baseurl=file://$(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 gpgcheck=0
 enabled=1
+exclude=$(EXLUDE_PACKAGES_CENTOS_NAIGUN)
 endef
 
 define bootstrap_yum_conf
@@ -87,8 +88,8 @@ endef
 #FIXME Partial-Bug: #1403088
 YUM:=sudo yum -c $(BUILD_DIR)/bootstrap/etc/yum.conf --exclude=ruby-2.1.1  --exclude=ruby21 --installroot=$(INITRAMROOT) -y --nogpgcheck
 
-KERNEL_PATTERN:=kernel-lt-3.10.*
-KERNEL_FIRMWARE_PATTERN:=linux-firmware*
+KERNEL_PATTERN:=kernel-2.6*
+KERNEL_FIRMWARE_PATTERN:=kernel-firmware-2.6*
 
 clean: clean-bootstrap
 
@@ -193,6 +194,14 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 	-sudo chroot $(INITRAMROOT) chkconfig exim off
 	-sudo chroot $(INITRAMROOT) chkconfig postfix off
 	-sudo chroot $(INITRAMROOT) chown smmsp:smmsp /var/spool/clientmqueue
+
+	# Save list of installed packages
+	-sudo chroot $(INITRAMROOT) sh -c "rpm --dbpath /root/.rpmdb -qa |sort > /bootstrap_packages"
+	-sudo sh -c "find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs basename -a >> $(INITRAMROOT)/bootstrap_kernel"
+	-sudo sh -c "find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs basename -a >> $(INITRAMROOT)/bootstrap_kernel"
+
+	# Cleanup
+	-sudo sh -c "rm -rf $(INITRAMROOT)/root/.rpmdb"
 
 	# Installing kernel modules
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
