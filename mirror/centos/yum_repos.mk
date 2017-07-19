@@ -63,6 +63,7 @@ gpgcheck=0
 enabled=1
 includepkgs=$(x86_rpm_packages_whitelist)
 priority=90
+exclude=*.i?86 *.i686
 
 [updates_i686_whitelisted]
 name=CentOS-$(CENTOS_RELEASE) - Updates
@@ -72,6 +73,7 @@ gpgcheck=0
 enabled=1
 includepkgs=$(x86_rpm_packages_whitelist)
 priority=90
+exclude=*.i?86 *.i686
 
 [extras]
 name=CentOS-$(CENTOS_RELEASE) - Extras
@@ -80,6 +82,7 @@ baseurl=$(MIRROR_CENTOS)/extras/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=0
 priority=90
+exclude=*.i?86 *.i686
 
 [centosplus]
 name=CentOS-$(CENTOS_RELEASE) - Plus
@@ -88,6 +91,7 @@ baseurl=$(MIRROR_CENTOS)/centosplus/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=0
 priority=90
+exclude=*.i?86 *.i686
 
 [contrib]
 name=CentOS-$(CENTOS_RELEASE) - Contrib
@@ -96,6 +100,7 @@ baseurl=$(MIRROR_CENTOS)/contrib/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=0
 priority=90
+exclude=*.i?86 *.i686
 endef
 
 define yum_repo_fuel
@@ -106,6 +111,7 @@ baseurl=$(MIRROR_FUEL)
 gpgcheck=0
 enabled=1
 priority=20
+exclude=*.i?86 *.i686
 endef
 
 define yum_repo_proprietary
@@ -115,6 +121,7 @@ baseurl = $(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 gpgcheck = 0
 enabled = 1
 priority=20
+exclude=*.i?86 *.i686
 endef
 
 define yum_repo_release
@@ -124,13 +131,15 @@ baseurl = $(RELEASE_CENTOS_MIRROR)
 gpgcheck = 0
 enabled = 1
 priority=30
+exclude=*.i?86 *.i686
 endef
 
-# Accept EXTRA_RPM_REPOS in a form of a list of: name,url,priority
+# Accept EXTRA_RPM_REPOS in a form of a list of: name,url,priority,exclude_list
 # Accept EXTRA_RPM_REPOS in a form of list of (default priority=10): name,url
 get_repo_name=$(shell echo $1 | cut -d ',' -f 1)
 get_repo_url=$(shell echo $1 | cut -d ',' -f2)
 get_repo_priority=$(shell val=`echo $1 | cut -d ',' -f3`; echo $${val:-10})
+get_repo_exclude=$(shell val=`echo $1 | cut -d ',' -f4-`; echo $${val})
 
 # It's a callable object.
 # Usage: $(call create_extra_repo,repo)
@@ -144,4 +153,5 @@ baseurl = $(call get_repo_url,$1)
 gpgcheck = 0
 enabled = 1
 priority = $(call get_repo_priority,$1)
+exclude = $(call get_repo_exclude,$1)
 endef
