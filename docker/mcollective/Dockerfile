@@ -4,7 +4,7 @@ MAINTAINER Aleksandr Didenko adidenko@mirantis.com
 
 WORKDIR /root
 
-RUN rm -rf /etc/yum.repos.d/*; echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/os/x86_64/\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean expire-cache; yum update -y; echo sudo ruby21-mcollective shotgun fuel-agent fuel-provisioning-scripts | xargs -n1 yum install -y --quiet
+RUN rm -rf /etc/yum.repos.d/*; echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=http://$(route -n | awk '/^0.0.0.0/ { print $2 }'):_PORT_/os/x86_64/\ngpgcheck=0\nexclude=linux-firmware*" > /etc/yum.repos.d/nailgun.repo; yum clean expire-cache; yum update -y; echo sudo ruby21-mcollective shotgun fuel-agent fuel-provisioning-scripts | xargs -n1 yum install -y --quiet
 
 ADD etc /etc
 ADD start.sh /usr/local/bin/start.sh
@@ -18,6 +18,6 @@ RUN mkdir -p /opt/nailgun/bin /var/www/nailgun/dump; ln -s /usr/bin/nailgun_dump
 # let's disable some services and commands since we don't need them in our container
 RUN echo -e '#!/bin/bash\n#chkconfig: 345 20 80\nexit 0' > /etc/init.d/mcollective
 
-RUN chmod +x /usr/local/bin/start.sh; echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/x86_64\ngpgcheck=0" > /etc/yum.repos.d/nailgun.repo; yum clean all
+RUN chmod +x /usr/local/bin/start.sh; echo -e "[nailgun]\nname=Nailgun Local Repo\nbaseurl=file:/var/www/nailgun/centos/x86_64\ngpgcheck=0\nexclude=linux-firmware*" > /etc/yum.repos.d/nailgun.repo; yum clean all
 
 CMD ["/usr/local/bin/start.sh"]
