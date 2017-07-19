@@ -174,7 +174,7 @@ rm -rf /boot
 # and they don't have any external dependencies that should make
 # anaconda install them
 rpm -e MAKEDEV ethtool upstart initscripts iputils policycoreutils iptables \
-    iproute
+    iproute linux-firmware kernel-firmware || true
 
 # Remove files that are known to take up lots of space but leave
 # directories intact since those may be required by new rpms.
