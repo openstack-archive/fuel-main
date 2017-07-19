@@ -67,7 +67,7 @@ MASTER_NETMASK?=255.255.255.0
 MASTER_GW?=10.20.0.1
 
 CENTOS_MAJOR:=6
-CENTOS_MINOR:=6
+CENTOS_MINOR?=9
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
 CENTOS_IMAGE_RELEASE:=$(CENTOS_MAJOR)$(CENTOS_MINOR)
@@ -91,9 +91,13 @@ else
 # so we are not going to build 1-st level packages
 BUILD_PACKAGES:=0
 # but is going to use release repo
-RELEASE_CENTOS_MIRROR?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)-release/centos/os/$(CENTOS_ARCH)
-YUM_REPOS:=proprietary release
+RELEASE_FUEL_MIRROR?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)-release/centos/os/$(CENTOS_ARCH)
+YUM_REPOS:=proprietary fuel_release fuel
 endif
+
+# README TBD
+RPM_EXLUDE_BASE?=111
+
 
 # by default we are not allowed to downgrade rpm packages,
 # setting this flag to 0 will cause to use repo priorities only (!)
@@ -154,7 +158,7 @@ ifeq ($(USE_MIRROR),ext)
 YUM_REPOS?=proprietary
 MIRROR_CENTOS?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://vault.centos.org/$(CENTOS_RELEASE)
+SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirror.karneval.cz/pub/centos/$(CENTOS_RELEASE)
 MIRROR_UBUNTU?=mirror.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
@@ -197,7 +201,7 @@ MIRROR_DOCKER?=http://mirror.seed-us1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/dock
 endif
 
 ifeq ($(USE_MIRROR),cz)
-YUM_REPOS?=proprietary
+YUM_REPOS?=proprietary fuel
 MIRROR_CENTOS?=http://mirror.seed-cz1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=mirror.seed-cz1.fuel-infra.org
@@ -235,7 +239,10 @@ MIRROR_FUEL?=http://perestroika-repo-tst.infra.mirantis.net/mos-repos/centos/$(P
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.
 # Repos must be separated by space.
-# Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm,priority bar,ftp://repo.foo,priority"
+# Format: EXTRA_RPM_REPOS="anuname,url,priority,exclude_list"
+# Default priority=10; 
+# Each item after priority, means to be exluded
+# Example: EXTRA_RPM_REPOS="foo,http://my.cool.repo/rpm,priority bar,ftp://repo.foo foo1,http://my.cool.repo/rpm,10,python-requests*,*.i?86,*.i686, foo2,http://my.cool.repo/rpm,,python-requests*,*.i?86,*.i686"
 EXTRA_RPM_REPOS?=
 
 # Comma or space separated list. Available feature groups:
