@@ -87,16 +87,19 @@ UBUNTU_ARCH:=amd64
 UBUNTU_IMAGE_RELEASE:=$(UBUNTU_MAJOR)$(UBUNTU_MINOR)
 SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
-
 # Rebuld packages locally (do not use upstream versions):
 # BUILD_PACKAGES?=1
 
 # we are using patching feature
 # so we are not going to build 1-st level packages
 BUILD_PACKAGES?=0
-# but is going to use release repo
-RELEASE_CENTOS_MIRROR?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)-release/centos/os/$(CENTOS_ARCH)
-YUM_REPOS?=proprietary release
+
+# List of packages, which should not be downloaded from upstream centos repos
+# Separator=comma
+EXLUDE_PACKAGES_CENTOS?=python-requests*,centos-release
+
+# Exclude thus packages, to be installed from naillgun repo
+EXLUDE_PACKAGES_CENTOS_NAIGUN?=iwl*-firmware*,libertas-*-firmware,linux-firmware,kernel-firmware,kernel
 
 # by default we are not allowed to downgrade rpm packages,
 # setting this flag to 0 will cause to use repo priorities only (!)
@@ -154,18 +157,16 @@ LOCAL_MIRROR_DOCKER_BASEURL:=$(LOCAL_MIRROR_DOCKER)
 USE_MIRROR?=ext
 
 ifeq ($(USE_MIRROR),ext)
-YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
+MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://vault.centos.org/$(CENTOS_RELEASE)
+SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirror.karneval.cz/pub/centos/$(CENTOS_RELEASE)
 MIRROR_UBUNTU?=mirror.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 endif
 
 ifeq ($(USE_MIRROR),srt)
-YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://osci-mirror-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)/centos
+MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=osci-mirror-srt.srt.mirantis.net
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
@@ -173,8 +174,7 @@ MIRROR_DOCKER?=http://osci-mirror-srt.srt.mirantis.net/fwm/$(PRODUCT_VERSION)/do
 endif
 
 ifeq ($(USE_MIRROR),msk)
-YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://osci-mirror-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)/centos
+MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
@@ -182,8 +182,7 @@ MIRROR_DOCKER?=http://osci-mirror-msk.msk.mirantis.net/fwm/$(PRODUCT_VERSION)/do
 endif
 
 ifeq ($(USE_MIRROR),hrk)
-YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://osci-mirror-kha.kha.mirantis.net/fwm/$(PRODUCT_VERSION)/centos
+MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=osci-mirror-kha.kha.mirantis.net
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
@@ -191,8 +190,7 @@ MIRROR_DOCKER?=http://osci-mirror-kha.kha.mirantis.net/fwm/$(PRODUCT_VERSION)/do
 endif
 
 ifeq ($(USE_MIRROR),usa)
-YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://mirror.seed-us1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
+MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=mirror.seed-us1.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
@@ -200,8 +198,7 @@ MIRROR_DOCKER?=http://mirror.seed-us1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/dock
 endif
 
 ifeq ($(USE_MIRROR),cz)
-YUM_REPOS?=proprietary
-MIRROR_CENTOS?=http://mirror.seed-cz1.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
+MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
 MIRROR_UBUNTU?=mirror.seed-cz1.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
@@ -213,10 +210,10 @@ endif
 # The actual name will be constracted prepending "yum_repo_" prefix.
 # Example: YUM_REPOS?=official epel => yum_repo_official and yum_repo_epel
 # will be used.
-YUM_REPOS?=official fuel subscr_manager
-MIRROR_CENTOS?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+YUM_REPOS?=official fuel
+MIRROR_CENTOS?=http://mirror.centos.org/centos/$(CENTOS_RELEASE)
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirrors-local-msk.msk.mirantis.net/centos-$(PRODUCT_VERSION)/$(CENTOS_RELEASE)
+SANDBOX_MIRROR_CENTOS_UPSTREAM?=$(MIRROR_CENTOS)
 SANDBOX_MIRROR_EPEL?=http://mirror.yandex.ru/epel/
 MIRROR_UBUNTU_METHOD?=http
 MIRROR_UBUNTU?=osci-mirror-msk.msk.mirantis.net
@@ -233,12 +230,16 @@ MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
 # MIRROR_FUEL affects build process only if YUM_REPOS variable contains 'fuel'.
 # Otherwise it is ignored entirely.
 # MIRROR_FUEL?=http://perestroika-repo-tst.infra.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/os/x86_64
-MIRROR_FUEL?=http://perestroika-repo-tst.infra.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/os/x86_64
+MIRROR_FUEL?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)-release/centos/os/$(CENTOS_ARCH)
+#MIRROR_FUEL?=http://perestroika-repo-tst.infra.mirantis.net/mos-repos/centos/$(PRODUCT_NAME)$(PRODUCT_VERSION)-centos6-fuel/os/x86_64
 
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.
 # Repos must be separated by space.
-# Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm,priority bar,ftp://repo.foo,priority"
+# Format: EXTRA_RPM_REPOS="anyname,url,priority,exclude_list"
+# Default priority=10
+# Each item after priority, means to be exluded
+# Example: EXTRA_RPM_REPOS="foo,http://my.cool.repo/rpm,priority bar,ftp://repo.foo foo1,http://my.cool.repo/rpm,10,python-requests*,*.i?86,*.i686, foo2,http://my.cool.repo/rpm,,python-requests*,*.i?86,*.i686"
 EXTRA_RPM_REPOS?=
 
 # Comma or space separated list. Available feature groups:
