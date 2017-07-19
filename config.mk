@@ -67,7 +67,7 @@ MASTER_NETMASK?=255.255.255.0
 MASTER_GW?=10.20.0.1
 
 CENTOS_MAJOR:=6
-CENTOS_MINOR:=6
+CENTOS_MINOR?=9
 CENTOS_RELEASE:=$(CENTOS_MAJOR).$(CENTOS_MINOR)
 CENTOS_ARCH:=x86_64
 CENTOS_IMAGE_RELEASE:=$(CENTOS_MAJOR)$(CENTOS_MINOR)
@@ -154,7 +154,7 @@ ifeq ($(USE_MIRROR),ext)
 YUM_REPOS?=proprietary
 MIRROR_CENTOS?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/centos
 MIRROR_CENTOS_KERNEL?=$(MIRROR_CENTOS)
-SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://vault.centos.org/$(CENTOS_RELEASE)
+SANDBOX_MIRROR_CENTOS_UPSTREAM?=http://mirror.karneval.cz/pub/centos/$(CENTOS_RELEASE)
 MIRROR_UBUNTU?=mirror.fuel-infra.org
 MIRROR_MOS_UBUNTU?=$(MIRROR_UBUNTU)
 MIRROR_DOCKER?=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)/docker
@@ -235,7 +235,10 @@ MIRROR_FUEL?=http://perestroika-repo-tst.infra.mirantis.net/mos-repos/centos/$(P
 # Additional CentOS repos.
 # Each repo must be comma separated tuple with repo-name and repo-path.
 # Repos must be separated by space.
-# Example: EXTRA_RPM_REPOS="lolo,http://my.cool.repo/rpm,priority bar,ftp://repo.foo,priority"
+# Format: EXTRA_RPM_REPOS="anuname,url,priority,exclude_list"
+# Default priority=10; 
+# Each item after priority, means to be exluded
+# Example: EXTRA_RPM_REPOS="foo,http://my.cool.repo/rpm,priority bar,ftp://repo.foo foo1,http://my.cool.repo/rpm,10,python-requests*,*.i?86,*.i686, foo2,http://my.cool.repo/rpm,,python-requests*,*.i?86,*.i686,"
 EXTRA_RPM_REPOS?=
 
 # Comma or space separated list. Available feature groups:
