@@ -253,11 +253,13 @@ docker-io
 fuel-bootstrap-image
 fuel-bootstrap-image-builder
 fuel-createmirror
-fuel-target-centos-images{{CENTOS_RELEASE}}
+fuel-target-centos-images{{IBP_CENTOS_RELEASE}}
 fuel-package-updates
 fuelmenu
 fuel-docker-images
 gdisk
+kernel-firmware
+-linux-firmware
 lrzip
 lsof
 man
@@ -327,6 +329,14 @@ esac
 #!/bin/bash
 
 set -x
+
+function fix_firmware {
+  # Install upstream firmware package
+  # For more info, check https://review.openstack.org/#/c/485264/
+  rpm -v -e --nodeps linux-firmware || :
+  yum clean all || :
+  yum install -y --skip-broken kernel-firmware || :
+}
 
 function save_cfg {
     scrFile="/etc/sysconfig/network-scripts/ifcfg-$admin_interface"
@@ -463,7 +473,10 @@ cat > /etc/yum.repos.d/nailgun.repo << EOF
 name=Nailgun Local Repo
 baseurl=file:/var/www/nailgun/${OPENSTACK_VERSION}/centos/x86_64
 gpgcheck=0
+exclude=linux-firmware*
 EOF
+
+fix_firmware
 
 # Disable subscription-manager plugins
 sed -i 's/^enabled.*/enabled=0/' /etc/yum/pluginconf.d/product-id.conf || :
@@ -508,7 +521,7 @@ cp ${SOURCE}/version.yaml /etc/fuel/release_versions/`cat  ${SOURCE}/openstack_v
 # Generete Fuel UUID
 uuidgen > /etc/fuel/fuel-uuid
 
-# Run fuel menu 
+# Run fuel menu
 [ -z "$showmenu" ] && showmenu="no"
 
 # Pause during bootstrap_admin_node to wait for external config
