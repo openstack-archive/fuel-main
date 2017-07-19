@@ -47,10 +47,10 @@ httpd
 iproute
 iptables
 ipxe-roms
-kernel-2.6.32-642.15.1.el6
-kernel-devel-2.6.32-642.15.1.el6
-kernel-headers-2.6.32-642.15.1.el6
-kernel-lt
+kernel-2.6.32-696.6.3.el6
+kernel-devel-2.6.32-696.6.3.el6
+kernel-firmware-2.6.32-696.6.3.el6
+kernel-headers-2.6.32-696.6.3.el6
 kmod-hpsa
 leveldb
 libevent-devel
@@ -62,7 +62,6 @@ libusbx
 libvirt-client
 libvirt-python
 libyaml
-linux-firmware
 logrotate
 lrzip
 lvm2
