@@ -18,7 +18,9 @@
 # base and updates repos are "cloned". Those "cloned" repos contain
 # a few whitelisted i686 packages (for now only syslinux).
 # Note: these packages should be also excluded from base and updates.
-x86_rpm_packages_whitelist:=syslinux*
+# Note: 24.07.2017 - perhaps, syslinux issue not actual yet
+#x86_rpm_packages_whitelist:=syslinux*
+
 
 define yum_conf
 [main]
@@ -43,7 +45,7 @@ name=CentOS-$(CENTOS_RELEASE) - Base
 baseurl=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
-exclude=*i686 $(x86_rpm_packages_whitelist)
+exclude=$(EXLUDE_PACKAGES_CENTOS)
 priority=90
 
 [updates]
@@ -52,85 +54,74 @@ name=CentOS-$(CENTOS_RELEASE) - Updates
 baseurl=$(MIRROR_CENTOS)/updates/$(CENTOS_ARCH)
 gpgcheck=0
 enabled=1
-exclude=*i686 $(x86_rpm_packages_whitelist)
+exclude=$(EXLUDE_PACKAGES_CENTOS)
 priority=90
 
-[base_i686_whitelisted]
-name=CentOS-$(CENTOS_RELEASE) - Base
-#mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=os
-baseurl=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
-gpgcheck=0
-enabled=1
-includepkgs=$(x86_rpm_packages_whitelist)
-priority=90
-
-[updates_i686_whitelisted]
-name=CentOS-$(CENTOS_RELEASE) - Updates
-#mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=updates
-baseurl=$(MIRROR_CENTOS)/updates/$(CENTOS_ARCH)
-gpgcheck=0
-enabled=1
-includepkgs=$(x86_rpm_packages_whitelist)
-priority=90
-
-[extras]
-name=CentOS-$(CENTOS_RELEASE) - Extras
-#mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=extras
-baseurl=$(MIRROR_CENTOS)/extras/$(CENTOS_ARCH)
-gpgcheck=0
-enabled=0
-priority=90
-
-[centosplus]
-name=CentOS-$(CENTOS_RELEASE) - Plus
-#mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=centosplus
-baseurl=$(MIRROR_CENTOS)/centosplus/$(CENTOS_ARCH)
-gpgcheck=0
-enabled=0
-priority=90
-
-[contrib]
-name=CentOS-$(CENTOS_RELEASE) - Contrib
-#mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=contrib
-baseurl=$(MIRROR_CENTOS)/contrib/$(CENTOS_ARCH)
-gpgcheck=0
-enabled=0
-priority=90
+#[base_i686_whitelisted]
+#name=CentOS-$(CENTOS_RELEASE) - Base
+##mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=os
+#baseurl=$(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
+#gpgcheck=0
+#enabled=1
+#includepkgs=$(x86_rpm_packages_whitelist)
+#priority=90
+#exclude=*.i?86 *.i686
+#
+#[updates_i686_whitelisted]
+#name=CentOS-$(CENTOS_RELEASE) - Updates
+##mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=updates
+#baseurl=$(MIRROR_CENTOS)/updates/$(CENTOS_ARCH)
+#gpgcheck=0
+#enabled=1
+#includepkgs=$(x86_rpm_packages_whitelist)
+#priority=90
+#exclude=*.i?86 *.i686
+#
+#[extras]
+#name=CentOS-$(CENTOS_RELEASE) - Extras
+##mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=extras
+#baseurl=$(MIRROR_CENTOS)/extras/$(CENTOS_ARCH)
+#gpgcheck=0
+#enabled=0
+#priority=90
+#exclude=$(EXLUDE_PACKAGES_CENTOS)
+#
+#[centosplus]
+#name=CentOS-$(CENTOS_RELEASE) - Plus
+##mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=centosplus
+#baseurl=$(MIRROR_CENTOS)/centosplus/$(CENTOS_ARCH)
+#gpgcheck=0
+#enabled=0
+#priority=90
+#exclude=$(EXLUDE_PACKAGES_CENTOS)
+#
+#[contrib]
+#name=CentOS-$(CENTOS_RELEASE) - Contrib
+##mirrorlist=http://mirrorlist.centos.org/?release=$(CENTOS_RELEASE)&arch=$(CENTOS_ARCH)&repo=contrib
+#baseurl=$(MIRROR_CENTOS)/contrib/$(CENTOS_ARCH)
+#gpgcheck=0
+#enabled=0
+#priority=90
+#exclude=$(EXLUDE_PACKAGES_CENTOS)
 endef
 
 define yum_repo_fuel
 [fuel]
-name=Mirantis OpenStack Custom Packages
-#mirrorlist=http://download.mirantis.com/epel-fuel-grizzly-3.1/mirror.internal.list
+name=Mirantis OpenStack and Fuel Packages
+#baseurl=http://mirror.fuel-infra.org/fwm/$(PRODUCT_VERSION)-release/centos/os/$(CENTOS_ARCH)
 baseurl=$(MIRROR_FUEL)
 gpgcheck=0
 enabled=1
 priority=20
+exclude=*.i?86,*.i686,$(EXLUDE_PACKAGES_CENTOS_NAIGUN)
 endef
 
-define yum_repo_proprietary
-[proprietary]
-name = CentOS $(CENTOS_RELEASE) - Proprietary
-baseurl = $(MIRROR_CENTOS)/os/$(CENTOS_ARCH)
-gpgcheck = 0
-enabled = 1
-priority=20
-endef
-
-define yum_repo_release
-[release]
-name = CentOS $(CENTOS_RELEASE) - Release $(PRODUCT_VERSION)
-baseurl = $(RELEASE_CENTOS_MIRROR)
-gpgcheck = 0
-enabled = 1
-priority=30
-endef
-
-# Accept EXTRA_RPM_REPOS in a form of a list of: name,url,priority
+# Accept EXTRA_RPM_REPOS in a form of a list of: name,url,priority,exclude_list
 # Accept EXTRA_RPM_REPOS in a form of list of (default priority=10): name,url
 get_repo_name=$(shell echo $1 | cut -d ',' -f 1)
 get_repo_url=$(shell echo $1 | cut -d ',' -f2)
 get_repo_priority=$(shell val=`echo $1 | cut -d ',' -f3`; echo $${val:-10})
+get_repo_exclude=$(shell val=`echo $1 | cut -d ',' -f4-`; echo $${val})
 
 # It's a callable object.
 # Usage: $(call create_extra_repo,repo)
@@ -144,4 +135,5 @@ baseurl = $(call get_repo_url,$1)
 gpgcheck = 0
 enabled = 1
 priority = $(call get_repo_priority,$1)
+exclude = $(call get_repo_exclude,$1)
 endef
