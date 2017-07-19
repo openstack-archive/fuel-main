@@ -163,12 +163,12 @@ endif
 
 fuel_rpm_packages_late:=\
 fuel-bootstrap-image \
-fuel-target-centos-images$(CENTOS_RELEASE)
+fuel-target-centos-images$(IBP_CENTOS_RELEASE)
 
 $(eval $(foreach pkg,$(fuel_rpm_packages_late),$(call build_rpm,$(pkg),-late)$(NEWLINE)))
 
 $(eval $(call inc_rpm_package_release,fuel-bootstrap-image))
-$(eval $(call inc_rpm_package_release,fuel-target-centos-images$(CENTOS_RELEASE)))
+$(eval $(call inc_rpm_package_release,fuel-target-centos-images$(IBP_CENTOS_RELEASE)))
 $(eval $(call inc_rpm_package_release,fuel-docker-images))
 
 $(BUILD_DIR)/packages/rpm/repo.done: $(BUILD_DIR)/bootstrap/fuel-bootstrap-image-builder-rpm.done
