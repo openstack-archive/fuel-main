@@ -229,8 +229,8 @@ $(ISO_PATH): $(BUILD_DIR)/iso/isoroot.done
 
 	mkdir -p $(BUILD_DIR)/iso/efi_tmp/efi_image
 	# We need to have a partition which will be pointed from ISO as efi partition
-	# vmlinuz + initrd + bootloader + conffile = about 38MB
-	dd bs=1M count=40 if=/dev/zero of=$(BUILD_DIR)/iso/efi_tmp/efiboot.img
+	# vmlinuz + initrd + bootloader + conffile = about 70MB
+	dd bs=1M count=100 if=/dev/zero of=$(BUILD_DIR)/iso/efi_tmp/efiboot.img
 	# UEFI standard say to us that EFI partition should be some FAT-related filesystem
 	mkfs.vfat $(BUILD_DIR)/iso/efi_tmp/efiboot.img
 	sudo umount -l $(BUILD_DIR)/iso/efi_tmp/efi_image || true
