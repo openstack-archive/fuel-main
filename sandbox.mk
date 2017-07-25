@@ -47,7 +47,7 @@ endef
 SANDBOX_PACKAGES:=bash yum
 
 define SANDBOX_UP
-echo "Starting SANDBOX up"
+echo "INFO: Starting SANDBOX up"
 mkdir -p $(SANDBOX)/etc/yum.repos.d
 cat > $(SANDBOX)/etc/yum.conf <<EOF
 $(sandbox_yum_conf)
@@ -70,7 +70,7 @@ check_obsoletes=1
 full_match=1
 EOF
 sudo rpm -i --root=$(SANDBOX) `find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name "centos-release*rpm" | head -1` || \
-echo "centos-release already installed"
+echo "INFO: centos-release already installed"
 sudo rm -f $(SANDBOX)/etc/yum.repos.d/Cent*
 echo 'Rebuilding RPM DB'
 sudo rpm --root=$(SANDBOX) --rebuilddb
@@ -125,7 +125,7 @@ endef
 
 define SANDBOX_UBUNTU_UP
 set -e
-echo "SANDBOX_UBUNTU_UP: start"
+echo "INFO: SANDBOX_UBUNTU_UP: start"
 mkdir -p $(SANDBOX_UBUNTU)
 mkdir -p $(SANDBOX_UBUNTU)/usr/sbin
 cat > $(BUILD_DIR)/policy-rc.d << EOF
@@ -138,44 +138,44 @@ mkdir -p $(SANDBOX_UBUNTU)/etc/init.d
 touch $(SANDBOX_UBUNTU)/etc/init.d/.legacy-bootordering
 mkdir -p $(SANDBOX_UBUNTU)/usr/sbin
 cp -a $(BUILD_DIR)/policy-rc.d $(SANDBOX_UBUNTU)/usr/sbin
-echo "Running debootstrap"
+echo "INFO: Running debootstrap"
 sudo debootstrap --no-check-gpg --include=ca-certificates --arch=$(UBUNTU_ARCH) $(MIRROR_UBUNTU_SUITE) $(SANDBOX_UBUNTU) $(MIRROR_UBUNTU_METHOD)://$(MIRROR_UBUNTU)$(MIRROR_UBUNTU_ROOT)
 if [ -e $(SANDBOX_UBUNTU)/etc/resolv.conf ]; then sudo cp -a $(SANDBOX_UBUNTU)/etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf.orig; fi
 sudo cp /etc/resolv.conf $(SANDBOX_UBUNTU)/etc/resolv.conf
 if [ -e $(SANDBOX_UBUNTU)/etc/hosts ]; then sudo cp -a $(SANDBOX_UBUNTU)/etc/hosts $(SANDBOX_UBUNTU)/etc/hosts.orig; fi
 sudo cp /etc/hosts $(SANDBOX_UBUNTU)/etc/hosts
-echo "Generating utf8 locale"
+echo "INFO: Generating utf8 locale"
 sudo chroot $(SANDBOX_UBUNTU) /bin/sh -c 'locale-gen en_US.UTF-8; dpkg-reconfigure locales'
-echo "Preparing directory for chroot local mirror"
+echo "INFO: Preparing directory for chroot local mirror"
 sudo mkdir -p $(SANDBOX_UBUNTU)/etc/apt/preferences.d/
-echo "Generating pinning file for Ubuntu SandBox"
+echo "INFO: Generating pinning file for Ubuntu SandBox"
 cat > $(BUILD_DIR)/mirror/ubuntu/preferences << EOF
 $(apt_preferences)
 EOF
 sudo cp $(BUILD_DIR)/mirror/ubuntu/preferences $(SANDBOX_UBUNTU)/etc/apt/preferences.d/
-echo "Configuring apt sources.list"
+echo "INFO: Configuring apt sources.list"
 cat > $(BUILD_DIR)/mirror/ubuntu/sources.list << EOF
 $(apt_sources_list)
 EOF
 sudo cp $(BUILD_DIR)/mirror/ubuntu/sources.list $(SANDBOX_UBUNTU)/etc/apt/
 sudo cp $(BUILD_DIR)/policy-rc.d $(SANDBOX_UBUNTU)/usr/sbin
-echo "Allowing using unsigned repos"
+echo "INFO: Allowing using unsigned repos"
 echo "APT::Get::AllowUnauthenticated 1;" | sudo tee $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/02mirantis-unauthenticated
 if [ "$(SANDBOX_COPY_CERTS)" = "1" ] ; then
-echo "Copying local certificates and CA to chroot"
+echo "INFO: Copying local certificates and CA to chroot"
 sudo bash -c "mkdir -p $(SANDBOX_UBUNTU)/usr/share/ca-certificates/ ; rsync -arzL /etc/ssl/certs/ $(SANDBOX_UBUNTU)/usr/share/ca-certificates/local/"
 echo "Acquire::https {  Verify-Peer \"true\";  Verify-Host \"true\"; }; " | sudo tee -a $(SANDBOX_UBUNTU)/etc/apt/apt.conf.d/05-local-ssl-certs
 sudo chroot $(SANDBOX_UBUNTU) sh -xc "(cd  /usr/share/ca-certificates; find local -type f) >> /etc/ca-certificates.conf"
 sudo chroot $(SANDBOX_UBUNTU) update-ca-certificates
 fi
-echo "Updating apt package database"
+echo "INFO: Updating apt package database"
 sudo chroot $(SANDBOX_UBUNTU) bash -c "(mkdir -p '$${TEMP}'; mkdir -p /tmp/user/0)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get update
 if ! mountpoint -q $(SANDBOX_UBUNTU)/proc; then sudo mount -t proc sandboxproc $(SANDBOX_UBUNTU)/proc; fi
-echo "Installing additional packages: $(SANDBOX_DEB_PKGS)"
+echo "INFO: Installing additional packages: $(SANDBOX_DEB_PKGS)"
 sudo chroot $(SANDBOX_UBUNTU) apt-get dist-upgrade --yes
 test -n "$(SANDBOX_DEB_PKGS)" && sudo chroot $(SANDBOX_UBUNTU) env LC_ALL=C DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get install --yes $(SANDBOX_DEB_PKGS)
-echo "SANDBOX_UBUNTU_UP: done"
+echo "INFO: SANDBOX_UBUNTU_UP: done"
 endef
 
 define SANDBOX_UBUNTU_DOWN
