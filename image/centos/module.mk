@@ -33,19 +33,23 @@ $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME): export SANDBOX_DOWN:=$(SANDBO
 $(BUILD_DIR)/images/$(TARGET_CENTOS_IMG_ART_NAME):
 	@mkdir -p $(@D)
 	mkdir -p $(BUILD_DIR)/image/centos
-	sudo sh -c "$${SANDBOX_UP}"
-	sudo yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install tar python-setuptools git python-imgcreate python-argparse PyYAML
-	sudo cp /etc/mtab $(SANDBOX)/etc/mtab
-	sudo mkdir -p $(SANDBOX)/run/shm
-	sudo cp $(SOURCE_DIR)/image/centos/build_centos_image.py $(SANDBOX)/build_centos_image.py
-	sudo cp $(SOURCE_DIR)/image/centos/centos.ks $(SANDBOX)/centos.ks
-	sudo mkdir -p $(SANDBOX)/mirror
-	sudo mount -o bind $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(SANDBOX)/mirror
-	sudo chroot $(SANDBOX) python build_centos_image.py -k centos.ks -n centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH) -s "$(SEPARATE_IMAGES)" -O centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH).yaml
-	sudo umount $(SANDBOX)/mirror
-	sudo mv $(SANDBOX)/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)* $(BUILD_DIR)/image/centos/
+	touch  $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)-boot.img
+	touch  $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH).img
+	echo 'WARNING: "Centos target system depracated.See LP#1706581 for more info"' >> $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH).yaml
+	echo 'WARNING: "Use ubuntu release.See info in command `fuel release` "' >> $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH).yaml
+#	sudo sh -c "$${SANDBOX_UP}"
+#	sudo yum -c $(SANDBOX)/etc/yum.conf --installroot=$(SANDBOX) -y --nogpgcheck install tar python-setuptools git python-imgcreate python-argparse PyYAML
+#	sudo cp /etc/mtab $(SANDBOX)/etc/mtab
+#	sudo mkdir -p $(SANDBOX)/run/shm
+#	sudo cp $(SOURCE_DIR)/image/centos/build_centos_image.py $(SANDBOX)/build_centos_image.py
+#	sudo cp $(SOURCE_DIR)/image/centos/centos.ks $(SANDBOX)/centos.ks
+#	sudo mkdir -p $(SANDBOX)/mirror
+#	sudo mount -o bind $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(SANDBOX)/mirror
+#	sudo chroot $(SANDBOX) python build_centos_image.py -k centos.ks -n centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH) -s "$(SEPARATE_IMAGES)" -O centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH).yaml
+#	sudo umount $(SANDBOX)/mirror
+#	sudo mv $(SANDBOX)/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)* $(BUILD_DIR)/image/centos/
 	gzip -f $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)*.img
-	sudo sh -c "$${SANDBOX_DOWN}"
+#	sudo sh -c "$${SANDBOX_DOWN}"
 	tar cf $@.tmp $(BUILD_DIR)/image/centos/centos_$(CENTOS_IMAGE_RELEASE)_$(CENTOS_ARCH)* --xform s:^:/: --xform s:$(BUILD_DIR)/image/centos/::
 	mv $@.tmp $@
 endif
