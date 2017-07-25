@@ -345,7 +345,7 @@ selinux-policy
 send2syslog
 shotgun
 snappy
-subscription-manager
+#subscription-manager
 sudo
 supervisor
 syslinux
