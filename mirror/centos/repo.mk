@@ -67,12 +67,13 @@ $(BUILD_DIR)/mirror/centos/rpm-download.done: $(BUILD_DIR)/mirror/centos/urls.li
 	xargs -n1 -P4 wget -Nnv -P "$$dst" < $<
 	$(ACTION.TOUCH)
 
-# apply patch for requiremetns rpm, since we are using patching feature
-ifneq ($(PATCHING_CI),0)
+# BUILD_PACKAGES=0 - apply patch for requirements rpm, since we need fuel-packages
+ifeq ($(BUILD_PACKAGES),0)
 $(BUILD_DIR)/requirements-rpm.txt: \
 		$(SOURCE_DIR)/requirements-rpm.txt \
-		$(SOURCE_DIR)/requirements-rpm.txt.patch
-	patch $< $(SOURCE_DIR)/requirements-rpm.txt.patch -o $(@)
+		$(SOURCE_DIR)/requirements-fuel-rpm.txt
+	cat $^ | sort -u > $@.tmp
+	mv $@.tmp $@
 else
 $(BUILD_DIR)/requirements-rpm.txt: $(SOURCE_DIR)/requirements-rpm.txt
 	$(ACTION.COPY)

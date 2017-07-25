@@ -1,0 +1,15 @@
+fencing-agent
+fuel
+fuel-agent
+fuel-bootstrap-image-builder
+fuel-dockerctl
+fuel-ha-utils
+fuel-migrate
+fuel-misc
+fuel-notify
+fuel-package-updates
+fuel-provisioning-scripts
+fuel-rabbit-fence
+nailgun
+nailgun-net-check
+ruby21-nailgun-mcagents
