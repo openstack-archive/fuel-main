@@ -253,7 +253,7 @@ docker-io
 fuel-bootstrap-image
 fuel-bootstrap-image-builder
 fuel-createmirror
-fuel-target-centos-images{{CENTOS_RELEASE}}
+fuel-target-centos-images{{IBP_CENTOS_RELEASE}}
 fuel-package-updates
 fuelmenu
 fuel-docker-images
@@ -274,7 +274,7 @@ ruby21-rubygem-netaddr
 ruby21-rubygem-openstack
 selinux-policy-targeted
 strace
-subscription-manager
+-subscription-manager
 sysstat
 system-config-firewall-base
 tcpdump
