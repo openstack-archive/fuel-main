@@ -32,7 +32,7 @@ $(BUILD_DIR)/packages/sources/$1/version: $(BUILD_DIR)/packages/rpm/buildd.tar.g
 $(BUILD_DIR)/packages/sources/$1/version:
 	mkdir -p $$(@D)
 	echo -e "RELEASE=\c" > $$@.tmp
-ifeq ($(BUILD_PACKAGES),1)
+ifeq ($(BUILD_PACKAGES),0)
 	bash -c "set -o pipefail && \
 		yum -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) info $1 | grep Release | tr -d ' ' | cut -d':' -f2 | xargs -I{} expr {} + 1 >> $$@.tmp"
 else
