@@ -152,14 +152,22 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 	# Copying bash init files
 	sudo cp -f $(INITRAMROOT)/etc/skel/.bash* $(INITRAMROOT)/root/
 
+	# Save list of installed packages
+	$(YUM) list | sort >> $(BUILD_DIR)/bootstrap/bootstrap_packages.tmp
+	sudo cp $(BUILD_DIR)/bootstrap/bootstrap_packages.tmp $(INITRAMROOT)/bootstrap_packages
+	sudo rm -f $(BUILD_DIR)/bootstrap/bootstrap_packages.tmp
+	-sudo sh -c "find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs basename -a >> $(INITRAMROOT)/bootstrap_kernel"
+	-sudo sh -c "find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs basename -a >> $(INITRAMROOT)/bootstrap_kernel"
+
 	# Removing garbage
 	sudo rm -rf $(INITRAMROOT)/home/*
 	sudo rm -rf \
 		$(INITRAMROOT)/var/cache/yum \
+#		$(INITRAMROOT)/root/.rpmdb
 		$(INITRAMROOT)/var/lib/yum \
 		$(INITRAMROOT)/usr/share/doc \
-        $(INITRAMROOT)/usr/share/locale \
-	sudo rm -rf $(INITRAMROOT)/tmp/*
+		$(INITRAMROOT)/usr/share/locale \
+		$(INITRAMROOT)/tmp/*
 
 	$(ACTION.TOUCH)
 
