@@ -194,6 +194,14 @@ $(BUILD_DIR)/bootstrap/prepare-initram-root.done: \
 	-sudo chroot $(INITRAMROOT) chkconfig postfix off
 	-sudo chroot $(INITRAMROOT) chown smmsp:smmsp /var/spool/clientmqueue
 
+	# Save list of installed packages
+	-sudo chroot $(INITRAMROOT) sh -c "rpm --dbpath /root/.rpmdb -qa |sort > /bootstrap_packages"
+	-sudo sh -c "find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs basename -a >> $(INITRAMROOT)/bootstrap_kernel"
+	-sudo sh -c "find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_FIRMWARE_PATTERN)' | xargs basename -a >> $(INITRAMROOT)/bootstrap_kernel"
+
+	# Cleanup
+	-sudo sh -c "rm -rf $(INITRAMROOT)/root/.rpmdb"
+
 	# Installing kernel modules
 	find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs rpm2cpio | \
 		( cd $(INITRAMROOT); sudo cpio -idm './lib/modules/*' './boot/vmlinuz*' )
