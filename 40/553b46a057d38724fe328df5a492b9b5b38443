@@ -1,0 +1,8 @@
+Code-Review+2: Denis V. Meltsaykin <dmeltsaykin@mirantis.com>
+Workflow+1: Denis V. Meltsaykin <dmeltsaykin@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Tue, 01 Aug 2017 10:45:44 +0000
+Reviewed-on: https://review.openstack.org/489175
+Project: openstack/fuel-main
+Branch: refs/heads/stable/7.0
