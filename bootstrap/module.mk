@@ -153,7 +153,7 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 	sudo cp -f $(INITRAMROOT)/etc/skel/.bash* $(INITRAMROOT)/root/
 
 	# Save list of installed packages
-	$(YUM) list | sort >> $(BUILD_DIR)/bootstrap/bootstrap_packages.tmp
+	$(YUM) list installed | sort >> $(BUILD_DIR)/bootstrap/bootstrap_packages.tmp
 	sudo cp $(BUILD_DIR)/bootstrap/bootstrap_packages.tmp $(INITRAMROOT)/bootstrap_packages
 	sudo rm -f $(BUILD_DIR)/bootstrap/bootstrap_packages.tmp
 	-sudo sh -c "find $(LOCAL_MIRROR_CENTOS_OS_BASEURL) -name '$(KERNEL_PATTERN)' | xargs basename -a >> $(INITRAMROOT)/bootstrap_kernel"
