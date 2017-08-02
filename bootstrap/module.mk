@@ -153,6 +153,8 @@ $(BUILD_DIR)/bootstrap/customize-initram-root.done: \
 	sudo cp -f $(INITRAMROOT)/etc/skel/.bash* $(INITRAMROOT)/root/
 
 	# Save list of installed packages
+	sleep 60m || true
+	rm -rf ~/.rpmdb
 	$(YUM) list | sort >> $(BUILD_DIR)/bootstrap/bootstrap_packages.tmp
 	sudo cp $(BUILD_DIR)/bootstrap/bootstrap_packages.tmp $(INITRAMROOT)/bootstrap_packages
 	sudo rm -f $(BUILD_DIR)/bootstrap/bootstrap_packages.tmp
