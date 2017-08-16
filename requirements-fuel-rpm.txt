@@ -1,6 +1,7 @@
 fencing-agent
 fuel
 fuel-agent
+fuel-bootstrap-image
 fuel-bootstrap-image-builder
 fuel-dockerctl
 fuel-ha-utils

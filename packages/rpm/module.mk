@@ -25,14 +25,15 @@ $(BUILD_DIR)/packages/rpm/buildd.tar.gz: $(BUILD_DIR)/mirror/centos/repo.done
 # Usage:
 # (eval (inc_rpm_package_release,package_name))
 # If we are running patching then increment package release number by 1
-# else - just assign release number 1
+# else - just assign release number 1. Increment will be, if of
+# BUILD_PACKAGES or PATCHING_CI variable enabled.
 define inc_rpm_package_release
 $(BUILD_DIR)/packages/sources/$1/version: SANDBOX:=$(BUILD_DIR)/packages/rpm/SANDBOX/buildd
 $(BUILD_DIR)/packages/sources/$1/version: $(BUILD_DIR)/packages/rpm/buildd.tar.gz
 $(BUILD_DIR)/packages/sources/$1/version:
 	mkdir -p $$(@D)
 	echo -e "RELEASE=\c" > $$@.tmp
-ifeq ($(BUILD_PACKAGES),0)
+ifeq ($(or $(findstring $(BUILD_PACKAGES),1),$(findstring $(PATCHING_CI),1)),1)
 	bash -c "set -o pipefail && \
 		yum -c $$(SANDBOX)/etc/yum.conf --installroot=$$(SANDBOX) info $1 | grep Release | tr -d ' ' | cut -d':' -f2 | xargs -I{} expr {} + 1 >> $$@.tmp"
 else
@@ -178,7 +179,7 @@ $(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/mirror/centos/repo.done
 ifneq (0,$(strip $(BUILD_PACKAGES)))
 $(BUILD_DIR)/packages/rpm/repo-late.done: $(BUILD_DIR)/packages/rpm/repo.done
 endif
-	find $(BUILD_DIR)/packages/rpm/RPMS -name '*.rpm' -exec cp -u --target-directory $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages {} +
+	find $(BUILD_DIR)/packages/rpm/RPMS -type f -name '*.rpm' ! -name '*.src.rpm' -exec cp -u --target-directory $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/Packages {} +
 	createrepo -g $(LOCAL_MIRROR_CENTOS_OS_BASEURL)/comps.xml \
 		-o $(LOCAL_MIRROR_CENTOS_OS_BASEURL) $(LOCAL_MIRROR_CENTOS_OS_BASEURL)
 	$(ACTION.TOUCH)
