@@ -67,8 +67,10 @@ $(BUILD_DIR)/mirror/centos/rpm-download.done: $(BUILD_DIR)/mirror/centos/urls.li
 	xargs -n1 -P4 wget -Nnv -P "$$dst" < $<
 	$(ACTION.TOUCH)
 
-# BUILD_PACKAGES=0 - apply patch for requirements rpm, since we need fuel-packages
-ifeq ($(BUILD_PACKAGES),0)
+# Apply patch for requirements rpm, since we need fuel-packages if
+# BUILD_PACKAGES or PATCHING_CI variable enabled.
+# In case PATCHING_CI - we need them only for increment value
+ifeq ($(or $(findstring $(BUILD_PACKAGES),1),$(findstring $(PATCHING_CI),1)),1)
 $(BUILD_DIR)/requirements-rpm.txt: \
 		$(SOURCE_DIR)/requirements-rpm.txt \
 		$(SOURCE_DIR)/requirements-fuel-rpm.txt
