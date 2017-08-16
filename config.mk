@@ -89,10 +89,11 @@ SEPARATE_IMAGES?=/boot,ext2 /,ext4
 
 # Rebuld packages locally (do not use upstream versions):
 # BUILD_PACKAGES?=1
-
-# we are using patching feature
-# so we are not going to build 1-st level packages
 BUILD_PACKAGES?=0
+
+# If we are using patching feature, we are not going to build 1-st level
+# packages, but we still need to build "packages-late"
+PATCHING_CI?=0
 
 # List of packages, which should not be downloaded from upstream centos repos
 # Separator=comma
