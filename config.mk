@@ -90,17 +90,17 @@ NETWORKCHECKER_REPO?=https://github.com/openstack/network-checker.git
 FUEL_UI_REPO?=https://github.com/openstack/fuel-ui.git
 
 # Gerrit URLs and commits
-FUELLIB_GERRIT_URL?=https://review.openstack.org/openstack/fuel-library
-NAILGUN_GERRIT_URL?=https://review.openstack.org/openstack/fuel-web
-PYTHON_FUELCLIENT_GERRIT_URL?=https://review.openstack.org/openstack/python-fuelclient
-FUEL_AGENT_GERRIT_URL?=https://review.openstack.org/openstack/fuel-agent
-FUEL_NAILGUN_AGENT_GERRIT_URL?=https://review.openstack.org/openstack/fuel-nailgun-agent
-ASTUTE_GERRIT_URL?=https://review.openstack.org/openstack/fuel-astute
-OSTF_GERRIT_URL?=https://review.openstack.org/openstack/fuel-ostf
-FUELMENU_GERRIT_URL?=https://review.openstack.org/openstack/fuel-menu
-SHOTGUN_GERRIT_URL?=https://review.openstack.org/openstack/shotgun
-NETWORKCHECKER_GERRIT_URL?=https://review.openstack.org/openstack/network-checker
-FUEL_UI_GERRIT_URL?=https://review.openstack.org/openstack/fuel-ui
+FUELLIB_GERRIT_URL?=https://review.opendev.org/openstack/fuel-library
+NAILGUN_GERRIT_URL?=https://review.opendev.org/openstack/fuel-web
+PYTHON_FUELCLIENT_GERRIT_URL?=https://review.opendev.org/openstack/python-fuelclient
+FUEL_AGENT_GERRIT_URL?=https://review.opendev.org/openstack/fuel-agent
+FUEL_NAILGUN_AGENT_GERRIT_URL?=https://review.opendev.org/openstack/fuel-nailgun-agent
+ASTUTE_GERRIT_URL?=https://review.opendev.org/openstack/fuel-astute
+OSTF_GERRIT_URL?=https://review.opendev.org/openstack/fuel-ostf
+FUELMENU_GERRIT_URL?=https://review.opendev.org/openstack/fuel-menu
+SHOTGUN_GERRIT_URL?=https://review.opendev.org/openstack/shotgun
+NETWORKCHECKER_GERRIT_URL?=https://review.opendev.org/openstack/network-checker
+FUEL_UI_GERRIT_URL?=https://review.opendev.org/openstack/fuel-ui
 
 FUELLIB_GERRIT_COMMIT?=none
 NAILGUN_GERRIT_COMMIT?=none
